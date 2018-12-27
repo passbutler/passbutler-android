@@ -24,11 +24,8 @@ abstract class ToolBarFragment : BaseFragment() {
         val rootView = inflater.inflate(R.layout.fragment_toolbar, container, false)
 
         toolBar = rootView.findViewById(R.id.toolbar)
-//        toolBar?.title = getToolBarTitle()
-//        toolBar?.navigationIcon = resources.getDrawable(R.drawable.ic_menu_camera, null) // TODO: back arrow
-
-//        // TODO: make work
-        (activity as AppCompatActivity).setSupportActionBar(toolBar)
+        toolBar?.title = getToolBarTitle()
+        toolBar?.navigationIcon = resources.getDrawable(R.drawable.ic_menu_camera, null) // TODO: back arrow
 
         floatingActionButton = rootView.findViewById(R.id.main_fab)
 

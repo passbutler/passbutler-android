@@ -15,8 +15,7 @@ class RootFragment : BaseFragment() {
 
         activity?.let {
             val rootFragment = this
-            val rootFragmentFragmentManager = childFragmentManager
-            fragmentPresentingHelper = FragmentPresentingHelper(it, rootFragment, rootFragmentFragmentManager, R.id.frameLayout_fragment_root_content_container)
+            fragmentPresentingHelper = FragmentPresentingHelper(it, rootFragment, R.id.frameLayout_fragment_root_content_container)
         }
     }
 

@@ -2,17 +2,17 @@ package de.sicherheitskritisch.pass.ui
 
 import android.app.Activity
 import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
 import android.util.Log
 import de.sicherheitskritisch.pass.RootFragment
 
-// TODO: rootFragmentFragmentManager val needed?
 class FragmentPresentingHelper(
     private val activity: Activity,
     private val rootFragment: RootFragment,
-    private val rootFragmentFragmentManager: FragmentManager,
-    private val containerResourceId: Int
+    private val rootFragmentContainerResourceId: Int
 ) : FragmentPresenting {
+
+    private val rootFragmentFragmentManager
+        get() = rootFragment.childFragmentManager
 
     override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean) {
         if (!activity.isFinishing) {
@@ -30,9 +30,9 @@ class FragmentPresentingHelper(
                 val newFragmentTag = fragment.javaClass.toString()
 
                 if (replaceFragment) {
-                    fragmentTransaction.replace(containerResourceId, fragment, newFragmentTag)
+                    fragmentTransaction.replace(rootFragmentContainerResourceId, fragment, newFragmentTag)
                 } else {
-                    fragmentTransaction.add(containerResourceId, fragment)
+                    fragmentTransaction.add(rootFragmentContainerResourceId, fragment)
                 }
 
                 if (addToBackstack) {
