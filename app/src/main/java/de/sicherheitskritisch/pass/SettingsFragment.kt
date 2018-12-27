@@ -3,7 +3,6 @@ package de.sicherheitskritisch.pass
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.view.*
-import de.sicherheitskritisch.pass.databinding.FragmentOverviewBinding
 import de.sicherheitskritisch.pass.databinding.FragmentSettingsBinding
 import de.sicherheitskritisch.pass.ui.ToolBarFragment
 

@@ -12,7 +12,6 @@ import de.sicherheitskritisch.pass.ui.BaseFragment
 class OverviewFragment : BaseFragment() {
 
     private var toolBar: Toolbar? = null
-
     private var drawerLayout: DrawerLayout? = null
     private val navigationItemSelectedListener = NavigationItemSelectedListener()
 
@@ -23,7 +22,7 @@ class OverviewFragment : BaseFragment() {
         toolBar?.title = getString(R.string.app_name)
 
         setupDrawerLayout(rootView)
-//        setHasOptionsMenu(true)
+        setHasOptionsMenu(true)
 
         return rootView
     }
