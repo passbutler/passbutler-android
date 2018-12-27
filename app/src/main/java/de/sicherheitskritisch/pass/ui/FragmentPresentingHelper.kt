@@ -21,8 +21,7 @@ class FragmentPresentingHelper(
     override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean) {
         if (!activity.isFinishing) {
 
-            fragment.enterTransition = createSlideInTransition()
-            fragment.exitTransition = createSlideOutTransition()
+            addTransitionToAnimatedFragment(fragment)
 
             val fragmentTransaction = rootFragmentFragmentManager.beginTransaction()
 
@@ -57,15 +56,42 @@ class FragmentPresentingHelper(
         }
     }
 
-    private fun createSlideInTransition(): Transition {
+    private fun addTransitionToAnimatedFragment(fragment: Fragment) {
+        if (fragment is AnimatedFragment) {
+            when (fragment.transitionType) {
+                AnimatedFragment.TransitionType.SLIDE_HORIZONTAL -> {
+                    fragment.enterTransition = createHorizontalSlideInTransition()
+                    fragment.exitTransition = createHorizontalSlideOutTransition()
+                }
+                AnimatedFragment.TransitionType.SLIDE_VERTICAL -> {
+                    fragment.enterTransition = createVerticalSlideInTransition()
+                    fragment.exitTransition = createVerticalSlideOutTransition()
+                }
+            }
+        }
+    }
+
+    private fun createHorizontalSlideInTransition(): Transition {
         val transitionSet = TransitionSet()
         transitionSet.addTransition(Slide(Gravity.END))
         return transitionSet
     }
 
-    private fun createSlideOutTransition(): Transition {
+    private fun createHorizontalSlideOutTransition(): Transition {
         val transitionSet = TransitionSet()
         transitionSet.addTransition(Slide(Gravity.START))
+        return transitionSet
+    }
+
+    private fun createVerticalSlideInTransition(): Transition {
+        val transitionSet = TransitionSet()
+        transitionSet.addTransition(Slide(Gravity.BOTTOM))
+        return transitionSet
+    }
+
+    private fun createVerticalSlideOutTransition(): Transition {
+        val transitionSet = TransitionSet()
+        transitionSet.addTransition(Slide(Gravity.TOP))
         return transitionSet
     }
 

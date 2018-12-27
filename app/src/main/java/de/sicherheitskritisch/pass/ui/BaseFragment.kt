@@ -4,7 +4,7 @@ import android.content.Context
 import android.support.v4.app.Fragment
 import de.sicherheitskritisch.pass.MainActivity
 
-open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPressedListener {
+open class BaseFragment : AnimatedFragment(), FragmentPresenting, MainActivity.OnBackPressedListener {
     var fragmentPresentingHelper: FragmentPresentingHelper? = null
 
     override fun onAttach(context: Context?) {

@@ -9,6 +9,8 @@ import de.sicherheitskritisch.pass.ui.ToolBarFragment
 
 class SettingsFragment : ToolBarFragment() {
 
+    override val transitionType = TransitionType.SLIDE_VERTICAL
+
     override fun getToolBarTitle() = getString(R.string.app_name)
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
