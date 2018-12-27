@@ -17,8 +17,6 @@ class RootFragment : BaseFragment() {
             val rootFragment = this
             fragmentPresentingHelper = FragmentPresentingHelper(it, rootFragment, R.id.frameLayout_fragment_root_content_container)
         }
-
-        (activity as? MainActivity)?.addOnBackPressedListener(this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -40,11 +38,6 @@ class RootFragment : BaseFragment() {
         } else {
             false
         }
-    }
-
-    override fun onDetach() {
-        (activity as? MainActivity)?.removeOnBackPressedListener(this)
-        super.onDetach()
     }
 
     companion object {

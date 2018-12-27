@@ -21,13 +21,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        var handled = false
+        val onBackPressedListenerStack = onBackPressedListener.reversed()
+        val noFragmentHandledBackpress = (onBackPressedListenerStack.firstOrNull { it.onHandleBackPress() } == null)
 
-        onBackPressedListener.forEach {
-            handled = it.onHandleBackPress()
-        }
-
-        if (!handled) {
+        if (noFragmentHandledBackpress) {
             super.onBackPressed()
         }
     }

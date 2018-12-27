@@ -58,11 +58,14 @@ class OverviewFragment : BaseFragment() {
         }
     }
 
-//    override fun onBackPressed() {
-//        drawerLayout?.takeIf { it.isDrawerOpen(GravityCompat.START) }?.closeDrawer(GravityCompat.START) ?: run {
-//            super.onBackPressed()
-//        }
-//    }
+    override fun onHandleBackPress(): Boolean {
+        return if (drawerLayout?.isDrawerOpen(GravityCompat.START) == true) {
+            drawerLayout?.closeDrawer(GravityCompat.START)
+            true
+        } else {
+            false
+        }
+    }
 
     private inner class NavigationItemSelectedListener : NavigationView.OnNavigationItemSelectedListener {
         override fun onNavigationItemSelected(item: MenuItem): Boolean {
