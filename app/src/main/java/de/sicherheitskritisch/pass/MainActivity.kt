@@ -6,6 +6,8 @@ import android.util.Log
 
 class MainActivity : AppCompatActivity() {
 
+    private val onBackPressedListener = mutableListOf<OnBackPressedListener>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -16,6 +18,30 @@ class MainActivity : AppCompatActivity() {
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.frameLayout_main_activity_content_container, rootFragment, rootFragment.tag)
         fragmentTransaction.commit()
+    }
+
+    override fun onBackPressed() {
+        var handled = false
+
+        onBackPressedListener.forEach {
+            handled = it.onHandleBackPress()
+        }
+
+        if (!handled) {
+            super.onBackPressed()
+        }
+    }
+
+    fun addOnBackPressedListener(listener: OnBackPressedListener) {
+        onBackPressedListener.add(listener)
+    }
+
+    fun removeOnBackPressedListener(listener: OnBackPressedListener) {
+        onBackPressedListener.remove(listener)
+    }
+
+    interface OnBackPressedListener {
+        fun onHandleBackPress(): Boolean
     }
 
     companion object {
