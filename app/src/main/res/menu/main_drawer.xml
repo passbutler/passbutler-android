@@ -5,33 +5,25 @@
 
     <group android:checkableBehavior="single">
         <item
-                android:id="@+id/nav_camera"
-                android:icon="@drawable/ic_menu_camera"
-                android:title="Import"/>
+            android:id="@+id/drawer_menu_item_about"
+            android:icon="@drawable/icon_home_24dp"
+            android:title="@string/drawer_menu_item_about" />
         <item
-                android:id="@+id/nav_gallery"
-                android:icon="@drawable/ic_menu_gallery"
-                android:title="Gallery"/>
-        <item
-                android:id="@+id/nav_slideshow"
-                android:icon="@drawable/ic_menu_slideshow"
-                android:title="Slideshow"/>
-        <item
-                android:id="@+id/nav_manage"
-                android:icon="@drawable/ic_menu_manage"
-                android:title="Tools"/>
+            android:id="@+id/drawer_menu_item_settings"
+            android:icon="@drawable/icon_settings_24dp"
+            android:title="@string/drawer_menu_item_settings" />
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="@string/drawer_menu_category_external_links">
         <menu>
             <item
-                    android:id="@+id/nav_share"
-                    android:icon="@drawable/ic_menu_share"
-                    android:title="Share"/>
+                android:id="@+id/drawer_menu_item_homepage"
+                android:icon="@drawable/icon_home_24dp"
+                android:title="@string/drawer_menu_item_homepage" />
             <item
-                    android:id="@+id/nav_send"
-                    android:icon="@drawable/ic_menu_send"
-                    android:title="Send"/>
+                android:id="@+id/drawer_menu_item_googleplay"
+                android:icon="@drawable/icon_starrate_24dp"
+                android:title="@string/drawer_menu_item_googleplay" />
         </menu>
     </item>
 

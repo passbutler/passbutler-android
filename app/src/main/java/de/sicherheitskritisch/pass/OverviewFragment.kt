@@ -33,8 +33,8 @@ class OverviewFragment : BaseFragment() {
                 activity,
                 this,
                 toolBar,
-                R.string.navigation_drawer_open,
-                R.string.navigation_drawer_close
+                R.string.drawer_open_description,
+                R.string.drawer_close_description
             )
             addDrawerListener(toggle)
             toggle.syncState()
@@ -68,7 +68,7 @@ class OverviewFragment : BaseFragment() {
     private inner class NavigationItemSelectedListener : NavigationView.OnNavigationItemSelectedListener {
         override fun onNavigationItemSelected(item: MenuItem): Boolean {
             when (item.itemId) {
-                R.id.nav_camera -> {
+                R.id.drawer_menu_item_settings -> {
                     showFragment(SettingsFragment.newInstance())
                 }
             }
