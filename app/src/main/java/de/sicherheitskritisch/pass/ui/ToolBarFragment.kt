@@ -28,7 +28,9 @@ abstract class ToolBarFragment : BaseFragment(), AnimatedFragment {
             layoutParams = newLayoutParams
 
             title = getToolBarTitle()
-            navigationIcon = resources.getDrawable(R.drawable.ic_action_back, null)
+            navigationIcon = resources.getDrawable(R.drawable.icon_arrow_back_24dp, null)?.apply {
+                setTint(resources.getColor(R.color.white, null))
+            }
 
             setNavigationOnClickListener {
                 popBackstack()
