@@ -18,6 +18,14 @@
     <string name="drawer_menu_item_googleplay">Google Play</string>
     <string name="drawer_menu_category_external_links">Externe Links</string>
 
+    <!-- About -->
+
+    <string name="about_title">Über / Lizenz</string>
+
+    <string name="about_header">Pass Passwortmanager</string>
+    <string name="about_subheader">Version %s (gebaut am %s)</string>
+    <string name="about_passage_1">Programmiert von Bastian Raschke</string>
+
     <!-- Settings -->
 
     <string name="settings_title">Einstellungen</string>

@@ -8,7 +8,12 @@ import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.widget.Toolbar
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import de.sicherheitskritisch.pass.ui.BaseFragment
 
 class OverviewFragment : BaseFragment() {
@@ -70,6 +75,9 @@ class OverviewFragment : BaseFragment() {
     private inner class NavigationItemSelectedListener : NavigationView.OnNavigationItemSelectedListener {
         override fun onNavigationItemSelected(item: MenuItem): Boolean {
             when (item.itemId) {
+                R.id.drawer_menu_item_about -> {
+                    showFragment(AboutFragment.newInstance())
+                }
                 R.id.drawer_menu_item_settings -> {
                     showFragment(SettingsFragment.newInstance())
                 }
