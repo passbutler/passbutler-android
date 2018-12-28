@@ -9,8 +9,6 @@ import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.widget.Toolbar
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -29,7 +27,6 @@ class OverviewFragment : BaseFragment() {
         toolBar?.title = getString(R.string.app_name)
 
         setupDrawerLayout(rootView)
-        setHasOptionsMenu(true)
 
         return rootView
     }
@@ -49,17 +46,6 @@ class OverviewFragment : BaseFragment() {
 
         rootView.findViewById<NavigationView>(R.id.navigationView).apply {
             setNavigationItemSelectedListener(navigationItemSelectedListener)
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
-        inflater?.inflate(R.menu.main_menu, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -84,7 +70,6 @@ class OverviewFragment : BaseFragment() {
                 R.id.drawer_menu_item_homepage -> {
                     val intent = Intent(Intent.ACTION_VIEW)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-
                     intent.data = Uri.parse(URL_HOMEPAGE)
                     startActivity(intent)
                 }
