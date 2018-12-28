@@ -6,7 +6,7 @@ import de.sicherheitskritisch.pass.MainActivity
 
 open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPressedListener {
 
-    var fragmentPresentingHelper: FragmentPresentingHelper? = null
+    var fragmentPresentingDelegate: FragmentPresentingDelegate? = null
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -19,13 +19,17 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
     }
 
     override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean) {
-        fragmentPresentingHelper?.showFragment(fragment, replaceFragment, addToBackstack)
+        fragmentPresentingDelegate?.showFragment(fragment, replaceFragment, addToBackstack)
     }
 
     override fun popBackstack() {
-        fragmentPresentingHelper?.popBackstack()
+        fragmentPresentingDelegate?.popBackstack()
     }
 
+    /**
+     * Override the method to execute custom functionality on backpress action.
+     * Return `true` if the fragment handled the action, `false` otherwise.
+     */
     override fun onHandleBackPress(): Boolean {
         return false
     }

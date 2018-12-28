@@ -6,16 +6,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import de.sicherheitskritisch.pass.ui.BaseFragment
-import de.sicherheitskritisch.pass.ui.FragmentPresentingHelper
+import de.sicherheitskritisch.pass.ui.FragmentPresentingDelegate
 
 class RootFragment : BaseFragment() {
+
+    /**
+     * The fragment manager is used by `FragmentPresentingDelegate` to provide fragment handling
+     * used by the one-activity app concept.
+     */
+    val rootFragmentManager
+        get() = childFragmentManager
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
 
         activity?.let {
             val rootFragment = this
-            fragmentPresentingHelper = FragmentPresentingHelper(it, rootFragment, R.id.frameLayout_fragment_root_content_container)
+            fragmentPresentingDelegate = FragmentPresentingDelegate(it, rootFragment, R.id.frameLayout_fragment_root_content_container)
         }
     }
 
@@ -32,7 +39,13 @@ class RootFragment : BaseFragment() {
     }
 
     override fun onHandleBackPress(): Boolean {
-        return if (childFragmentManager.backStackEntryCount > 0) {
+        // If more than one fragment is on the backstack, pop backstack
+        return if (rootFragmentManager.backStackEntryCount > 0) {
+            /*
+             * This method will indirectly call `popBackStack()` of `rootFragmentManager`.
+             * Use `FragmentPresentingDelegate` nevertheless to avoid redundant safety checks
+             * done in `FragmentPresentingDelegate.popBackstack()`
+             */
             popBackstack()
             true
         } else {

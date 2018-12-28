@@ -9,21 +9,22 @@ import android.util.Log
 import android.view.Gravity
 import de.sicherheitskritisch.pass.RootFragment
 
-class FragmentPresentingHelper(
+/**
+ * Provides implementation of fragment management used by the one-activity app concept.
+ * This delegate is delegated in `BaseFragment` and provided in `RootFragment`.
+ */
+class FragmentPresentingDelegate(
     private val activity: Activity,
     private val rootFragment: RootFragment,
     private val rootFragmentContainerResourceId: Int
 ) : FragmentPresenting {
-
-    private val rootFragmentFragmentManager
-        get() = rootFragment.childFragmentManager
 
     override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean) {
         if (!activity.isFinishing) {
 
             addTransitionToAnimatedFragment(fragment)
 
-            val fragmentTransaction = rootFragmentFragmentManager.beginTransaction()
+            val fragmentTransaction = rootFragment.rootFragmentManager.beginTransaction()
 
             // TODO: debouncing
 
@@ -31,7 +32,7 @@ class FragmentPresentingHelper(
                 fragmentTransaction.show(fragment)
             } else {
                 if (fragment is BaseFragment) {
-                    fragment.fragmentPresentingHelper = this
+                    fragment.fragmentPresentingDelegate = this
                 }
 
                 val newFragmentTag = fragment.javaClass.toString()
@@ -97,11 +98,11 @@ class FragmentPresentingHelper(
 
     override fun popBackstack() {
         if (!activity.isFinishing && !rootFragment.isStateSaved) {
-            rootFragmentFragmentManager.popBackStack()
+            rootFragment.rootFragmentManager.popBackStack()
         }
     }
 
     companion object {
-        private const val TAG = "FragmentPresentingHelper"
+        private const val TAG = "FragmentPresentingDelegate"
     }
 }
