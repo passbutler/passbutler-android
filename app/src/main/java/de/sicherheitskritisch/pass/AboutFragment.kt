@@ -7,11 +7,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import de.sicherheitskritisch.pass.databinding.FragmentAboutBinding
+import de.sicherheitskritisch.pass.ui.AnimatedFragment
 import de.sicherheitskritisch.pass.ui.ToolBarFragment
 import java.text.SimpleDateFormat
 import java.util.*
 
 class AboutFragment : ToolBarFragment() {
+
+    override val transitionType = AnimatedFragment.TransitionType.SLIDE_VERTICAL
 
     private val versionName
         get() = BuildConfig.VERSION_NAME
@@ -23,8 +26,6 @@ class AboutFragment : ToolBarFragment() {
             val formatter = SimpleDateFormat(dateTimeFormatPattern, locale)
             return formatter.format(BuildConfig.BUILD_TIME)
         }
-
-    override val transitionType = TransitionType.SLIDE_VERTICAL
 
     override fun getToolBarTitle() = getString(R.string.about_title)
 

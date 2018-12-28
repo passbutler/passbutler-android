@@ -10,7 +10,9 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import de.sicherheitskritisch.pass.R
 
-abstract class ToolBarFragment : BaseFragment() {
+abstract class ToolBarFragment : BaseFragment(), AnimatedFragment {
+
+    override val transitionType = AnimatedFragment.TransitionType.SLIDE_HORIZONTAL
 
     private var toolBar: Toolbar? = null
     private var floatingActionButton: FloatingActionButton? = null
