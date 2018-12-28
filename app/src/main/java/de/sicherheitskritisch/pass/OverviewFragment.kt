@@ -18,6 +18,7 @@ class OverviewFragment : BaseFragment() {
 
     private var toolBar: Toolbar? = null
     private var drawerLayout: DrawerLayout? = null
+    private var navigationView: NavigationView? = null
     private val navigationItemSelectedListener = NavigationItemSelectedListener()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -44,7 +45,7 @@ class OverviewFragment : BaseFragment() {
             toggle.syncState()
         }
 
-        rootView.findViewById<NavigationView>(R.id.navigationView).apply {
+        navigationView = rootView.findViewById<NavigationView>(R.id.navigationView).apply {
             setNavigationItemSelectedListener(navigationItemSelectedListener)
         }
     }
@@ -60,29 +61,42 @@ class OverviewFragment : BaseFragment() {
 
     private inner class NavigationItemSelectedListener : NavigationView.OnNavigationItemSelectedListener {
         override fun onNavigationItemSelected(item: MenuItem): Boolean {
-            when (item.itemId) {
+            val shouldCloseDrawer = when (item.itemId) {
+                R.id.drawer_menu_item_overview -> {
+                    // Do nothing except close drawer
+                    true
+                }
                 R.id.drawer_menu_item_about -> {
-                    showFragment(AboutFragment.newInstance())
+                    showFragment(AboutFragment.newInstance(), replaceFragment = true)
+                    true
                 }
                 R.id.drawer_menu_item_settings -> {
                     showFragment(SettingsFragment.newInstance())
+                    true
                 }
                 R.id.drawer_menu_item_homepage -> {
-                    val intent = Intent(Intent.ACTION_VIEW)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    intent.data = Uri.parse(URL_HOMEPAGE)
-                    startActivity(intent)
+                    startExternalUriIntent(URL_HOMEPAGE)
+                    false
                 }
                 R.id.drawer_menu_item_googleplay -> {
-                    val intent = Intent(Intent.ACTION_VIEW)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    intent.data = Uri.parse(URL_GOOGLE_PLAY)
-                    startActivity(intent)
+                    startExternalUriIntent(URL_GOOGLE_PLAY)
+                    false
                 }
+                else -> true
             }
 
-            drawerLayout?.closeDrawer(GravityCompat.START)
+            if (shouldCloseDrawer) {
+                drawerLayout?.closeDrawer(GravityCompat.START)
+            }
+
             return true
+        }
+
+        private fun startExternalUriIntent(uriString: String) {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            intent.data = Uri.parse(uriString)
+            startActivity(intent)
         }
     }
 

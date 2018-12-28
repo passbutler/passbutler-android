@@ -4,14 +4,23 @@
       tools:showIn="navigation_view">
 
     <group android:checkableBehavior="single">
+        <!-- The overview is always checked (the drawer is only shown on overview fragment -->
         <item
-            android:id="@+id/drawer_menu_item_about"
+            android:id="@+id/drawer_menu_item_overview"
+            android:checkable="true"
+            android:checked="true"
             android:icon="@drawable/icon_home_24dp"
-            android:title="@string/drawer_menu_item_about" />
+            android:title="@string/drawer_menu_item_overview" />
         <item
             android:id="@+id/drawer_menu_item_settings"
+            android:checkable="false"
             android:icon="@drawable/icon_settings_24dp"
             android:title="@string/drawer_menu_item_settings" />
+        <item
+            android:id="@+id/drawer_menu_item_about"
+            android:checkable="false"
+            android:icon="@drawable/icon_info_24dp"
+            android:title="@string/drawer_menu_item_about" />
     </group>
 
     <item android:title="@string/drawer_menu_category_external_links">
