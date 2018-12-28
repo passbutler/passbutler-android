@@ -1,5 +1,7 @@
 package de.sicherheitskritisch.pass
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
@@ -71,6 +73,19 @@ class OverviewFragment : BaseFragment() {
                 R.id.drawer_menu_item_settings -> {
                     showFragment(SettingsFragment.newInstance())
                 }
+                R.id.drawer_menu_item_homepage -> {
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+
+                    intent.data = Uri.parse(URL_HOMEPAGE)
+                    startActivity(intent)
+                }
+                R.id.drawer_menu_item_googleplay -> {
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    intent.data = Uri.parse(URL_GOOGLE_PLAY)
+                    startActivity(intent)
+                }
             }
 
             drawerLayout?.closeDrawer(GravityCompat.START)
@@ -79,6 +94,9 @@ class OverviewFragment : BaseFragment() {
     }
 
     companion object {
+        private const val URL_HOMEPAGE = "https://sicherheitskritisch.de"
+        private const val URL_GOOGLE_PLAY = "market://details?id=de.sicherheitskritisch.pass"
+
         fun newInstance() = OverviewFragment()
     }
 }
