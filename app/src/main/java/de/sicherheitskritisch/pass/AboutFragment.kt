@@ -1,12 +1,11 @@
 package de.sicherheitskritisch.pass
 
-import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import de.sicherheitskritisch.pass.databinding.FragmentAboutBinding
+import android.widget.TextView
 import de.sicherheitskritisch.pass.ui.ToolBarFragment
 import java.text.SimpleDateFormat
 import java.util.*
@@ -27,11 +26,11 @@ class AboutFragment : ToolBarFragment() {
     override fun getToolBarTitle() = getString(R.string.about_title)
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val binding = DataBindingUtil.inflate<FragmentAboutBinding>(inflater, R.layout.fragment_about, container, false)
+        val rootView = inflater.inflate(R.layout.fragment_about, container, false)
 
-        binding.textViewSubheader.text = getString(R.string.about_subheader, versionName, formattedBuildTime)
+        rootView.findViewById<TextView>(R.id.textView_subheader).text = getString(R.string.about_subheader, versionName, formattedBuildTime)
 
-        return binding.root
+        return rootView
     }
 
     companion object {
