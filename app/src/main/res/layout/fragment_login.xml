@@ -67,7 +67,7 @@
                     app:layout_constraintVertical_chainStyle="packed"
                     >
 
-                    <EditText
+                    <android.support.design.widget.TextInputEditText
                         android:id="@+id/editText_username"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -94,7 +94,7 @@
                     app:layout_constraintVertical_chainStyle="packed"
                     >
 
-                    <EditText
+                    <android.support.design.widget.TextInputEditText
                         android:id="@+id/editText_password"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
