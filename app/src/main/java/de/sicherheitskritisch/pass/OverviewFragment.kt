@@ -79,8 +79,11 @@ class OverviewFragment : BaseFragment(), AnimatedFragment {
                     true
                 }
                 R.id.drawer_menu_item_logout -> {
+                    val loginViewModel = LoginViewModel()
+                    val loginFragment = LoginFragment.newInstance(loginViewModel)
+
                     // Replace fragment and do not add to backstack (the login screen will be the first screen)
-                    showFragment(LoginFragment.newInstance(), replaceFragment = true, addToBackstack = false)
+                    showFragment(loginFragment, replaceFragment = true, addToBackstack = false)
                     true
                 }
                 R.id.drawer_menu_item_homepage -> {

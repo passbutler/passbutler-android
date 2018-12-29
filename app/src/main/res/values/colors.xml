@@ -11,5 +11,6 @@
     <color name="colorTextPassageSmall">#595959</color>
 
     <color name="colorBackground">#fafafa</color>
+    <color name="colorBackgroundTransparent">#c8ffffff</color>
 
 </resources>
