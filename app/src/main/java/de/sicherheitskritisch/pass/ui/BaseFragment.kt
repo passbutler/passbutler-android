@@ -35,6 +35,12 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
      * Return `true` if the fragment handled the action, `false` otherwise.
      */
     override fun onHandleBackPress(): Boolean {
-        return false
+        // Only if more than one fragment is on the backstack, handle action and pop backstack
+        return if (backstackCount() > 0) {
+            popBackstack()
+            true
+        } else {
+            false
+        }
     }
 }
