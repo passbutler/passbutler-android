@@ -66,12 +66,13 @@ class OverviewFragment : BaseFragment() {
                     // Do nothing except close drawer
                     true
                 }
-                R.id.drawer_menu_item_about -> {
-                    showFragment(AboutFragment.newInstance(), replaceFragment = true)
-                    true
-                }
                 R.id.drawer_menu_item_settings -> {
                     showFragment(SettingsFragment.newInstance())
+                    true
+                }
+                R.id.drawer_menu_item_about -> {
+                    // TODO: Remove replace flag
+                    showFragment(AboutFragment.newInstance(), replaceFragment = true)
                     true
                 }
                 R.id.drawer_menu_item_homepage -> {

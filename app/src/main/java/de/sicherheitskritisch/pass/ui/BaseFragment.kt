@@ -26,6 +26,10 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
         fragmentPresentingDelegate?.popBackstack()
     }
 
+    override fun backstackCount(): Int {
+        return fragmentPresentingDelegate?.backstackCount() ?: 0
+    }
+
     /**
      * Override the method to execute custom functionality on backpress action.
      * Return `true` if the fragment handled the action, `false` otherwise.

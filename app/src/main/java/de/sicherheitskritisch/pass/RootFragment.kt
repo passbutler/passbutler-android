@@ -22,7 +22,8 @@ class RootFragment : BaseFragment() {
 
         activity?.let {
             val rootFragment = this
-            fragmentPresentingDelegate = FragmentPresentingDelegate(it, rootFragment, R.id.frameLayout_fragment_root_content_container)
+            val contentContainerResourceId = R.id.frameLayout_fragment_root_content_container
+            fragmentPresentingDelegate = FragmentPresentingDelegate(it, rootFragment, contentContainerResourceId)
         }
     }
 
@@ -38,14 +39,14 @@ class RootFragment : BaseFragment() {
         showFragment(overviewFragment, replaceFragment = true, addToBackstack = false)
     }
 
+    /*
+     * This methods `backstackCount()` and `popBackstack()` will indirectly call on `rootFragmentManager`,
+     * but the `FragmentPresentingDelegate` is used nevertheless to have consistent calls and
+     * avoid redundant safety checks done in `FragmentPresentingDelegate.popBackstack()`
+     */
     override fun onHandleBackPress(): Boolean {
-        // If more than one fragment is on the backstack, pop backstack
-        return if (rootFragmentManager.backStackEntryCount > 0) {
-            /*
-             * This method will indirectly call `popBackStack()` of `rootFragmentManager`.
-             * Use `FragmentPresentingDelegate` nevertheless to avoid redundant safety checks
-             * done in `FragmentPresentingDelegate.popBackstack()`
-             */
+        // Only if more than one fragment is on the backstack, handle action and pop backstack
+        return if (backstackCount() > 0) {
             popBackstack()
             true
         } else {

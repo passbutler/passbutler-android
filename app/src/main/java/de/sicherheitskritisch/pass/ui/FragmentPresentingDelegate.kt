@@ -35,12 +35,13 @@ class FragmentPresentingDelegate(
                     fragment.fragmentPresentingDelegate = this
                 }
 
+                // TODO: check tag
                 val newFragmentTag = fragment.javaClass.toString()
 
                 if (replaceFragment) {
                     fragmentTransaction.replace(rootFragmentContainerResourceId, fragment, newFragmentTag)
                 } else {
-                    fragmentTransaction.add(rootFragmentContainerResourceId, fragment)
+                    fragmentTransaction.add(rootFragmentContainerResourceId, fragment, newFragmentTag)
                 }
 
                 if (addToBackstack) {
@@ -100,6 +101,10 @@ class FragmentPresentingDelegate(
         if (!activity.isFinishing && !rootFragment.isStateSaved) {
             rootFragment.rootFragmentManager.popBackStack()
         }
+    }
+
+    override fun backstackCount(): Int {
+        return rootFragment.rootFragmentManager.backStackEntryCount
     }
 
     companion object {
