@@ -35,16 +35,16 @@ class FragmentPresentingDelegate(
                     fragment.fragmentPresentingDelegate = this
                 }
 
-                val fragmentClassnameWithPath = fragment.javaClass.canonicalName
+                val fragmentTag = getFragmentTag(fragment)
 
                 if (replaceFragment) {
-                    fragmentTransaction.replace(rootFragmentContainerResourceId, fragment, fragmentClassnameWithPath)
+                    fragmentTransaction.replace(rootFragmentContainerResourceId, fragment, fragmentTag)
                 } else {
-                    fragmentTransaction.add(rootFragmentContainerResourceId, fragment, fragmentClassnameWithPath)
+                    fragmentTransaction.add(rootFragmentContainerResourceId, fragment, fragmentTag)
                 }
 
                 if (addToBackstack) {
-                    fragmentTransaction.addToBackStack(fragmentClassnameWithPath)
+                    fragmentTransaction.addToBackStack(fragmentTag)
                 }
             }
 
@@ -108,5 +108,10 @@ class FragmentPresentingDelegate(
 
     companion object {
         private const val TAG = "FragmentPresentingDelegate"
+
+        fun getFragmentTag(fragment: Fragment): String {
+            val fragmentClassnameWithPath = fragment.javaClass.canonicalName ?: fragment.javaClass.toString()
+            return fragmentClassnameWithPath
+        }
     }
 }
