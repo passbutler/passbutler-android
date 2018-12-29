@@ -35,17 +35,16 @@ class FragmentPresentingDelegate(
                     fragment.fragmentPresentingDelegate = this
                 }
 
-                // TODO: check tag
-                val newFragmentTag = fragment.javaClass.toString()
+                val fragmentClassnameWithPath = fragment.javaClass.canonicalName
 
                 if (replaceFragment) {
-                    fragmentTransaction.replace(rootFragmentContainerResourceId, fragment, newFragmentTag)
+                    fragmentTransaction.replace(rootFragmentContainerResourceId, fragment, fragmentClassnameWithPath)
                 } else {
-                    fragmentTransaction.add(rootFragmentContainerResourceId, fragment, newFragmentTag)
+                    fragmentTransaction.add(rootFragmentContainerResourceId, fragment, fragmentClassnameWithPath)
                 }
 
                 if (addToBackstack) {
-                    fragmentTransaction.addToBackStack(newFragmentTag)
+                    fragmentTransaction.addToBackStack(fragmentClassnameWithPath)
                 }
             }
 
