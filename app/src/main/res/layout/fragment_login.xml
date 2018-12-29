@@ -5,6 +5,12 @@
 
     <data>
 
+        <import type="android.view.View" />
+
+        <variable
+            name="viewModel"
+            type="de.sicherheitskritisch.pass.LoginViewModel" />
+
     </data>
 
     <FrameLayout
@@ -13,17 +19,6 @@
         android:layout_height="match_parent"
         android:background="@color/colorBackground"
         android:transitionGroup="true">
-
-        <!-- Progress screen -->
-        <ProgressBar
-            android:id="@+id/login_progress"
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="gone"
-            tools:visibility="gone"
-            />
 
         <!-- Login screen -->
         <ScrollView
@@ -127,6 +122,24 @@
             </android.support.constraint.ConstraintLayout>
 
         </ScrollView>
+
+        <!-- Progress screen (clickable to avoid touch-through overlay) -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorBackgroundTransparent"
+            android:clickable="true"
+            android:visibility="@{viewModel.isLoading().getValue() ? View.VISIBLE : View.GONE, default=gone}">
+
+            <ProgressBar
+                android:id="@+id/login_progress"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                />
+
+        </FrameLayout>
 
     </FrameLayout>
 

@@ -1,14 +1,15 @@
 package de.sicherheitskritisch.pass
 
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import de.sicherheitskritisch.pass.ui.BaseFragment
+import de.sicherheitskritisch.pass.ui.BaseViewModelFragment
 import de.sicherheitskritisch.pass.ui.FragmentPresentingDelegate
 
-class RootFragment : BaseFragment() {
+class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
     /**
      * The fragment manager is used by `FragmentPresentingDelegate` to provide fragment handling
@@ -24,6 +25,9 @@ class RootFragment : BaseFragment() {
             val rootFragment = this
             val contentContainerResourceId = R.id.frameLayout_fragment_root_content_container
             fragmentPresentingDelegate = FragmentPresentingDelegate(it, rootFragment, contentContainerResourceId)
+
+            // Retrieve shared `RootViewModel` from activity backed `ViewModelProviders`
+            viewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
         }
     }
 
@@ -34,13 +38,16 @@ class RootFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val isLoggedIn = false
+        val isLoggedIn = viewModel?.isLoggedIn?.value ?: false
 
         // Replace fragment and do not add to backstack (it is first screen)
         if (isLoggedIn) {
-            showFragment(OverviewFragment.newInstance(), replaceFragment = true, addToBackstack = false)
+            val overviewFragment = OverviewFragment.newInstance()
+            showFragment(overviewFragment, replaceFragment = true, addToBackstack = false)
         } else {
-            showFragment(LoginFragment.newInstance(), replaceFragment = true, addToBackstack = false)
+            val loginViewModel = LoginViewModel()
+            val loginFragment = LoginFragment.newInstance(loginViewModel)
+            showFragment(loginFragment, replaceFragment = true, addToBackstack = false)
         }
     }
 
