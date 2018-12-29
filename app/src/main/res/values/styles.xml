@@ -51,4 +51,13 @@
         <item name="android:ellipsize">end</item>
     </style>
 
+    <style name="PrimaryButton"
+           parent="TextAppearance.AppCompat.Small">
+        <item name="android:textSize">15sp</item>
+        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
 </resources>
