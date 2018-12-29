@@ -12,9 +12,12 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import de.sicherheitskritisch.pass.ui.AnimatedFragment
 import de.sicherheitskritisch.pass.ui.BaseFragment
 
-class OverviewFragment : BaseFragment() {
+class OverviewFragment : BaseFragment(), AnimatedFragment {
+
+    override val transitionType = AnimatedFragment.TransitionType.SLIDE_HORIZONTAL
 
     private var toolBar: Toolbar? = null
     private var drawerLayout: DrawerLayout? = null
@@ -73,6 +76,11 @@ class OverviewFragment : BaseFragment() {
                 R.id.drawer_menu_item_about -> {
                     // TODO: Remove replace flag
                     showFragment(AboutFragment.newInstance(), replaceFragment = true)
+                    true
+                }
+                R.id.drawer_menu_item_logout -> {
+                    // Replace fragment and do not add to backstack (the login screen will be the first screen)
+                    showFragment(LoginFragment.newInstance(), replaceFragment = true, addToBackstack = false)
                     true
                 }
                 R.id.drawer_menu_item_homepage -> {

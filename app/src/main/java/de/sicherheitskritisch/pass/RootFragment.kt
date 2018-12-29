@@ -36,8 +36,8 @@ class RootFragment : BaseFragment() {
 
         val isLoggedIn = false
 
+        // Replace fragment and do not add to backstack (it is first screen)
         if (isLoggedIn) {
-            // Show overview as first but do not add to backstack (it is first screen)
             showFragment(OverviewFragment.newInstance(), replaceFragment = true, addToBackstack = false)
         } else {
             showFragment(LoginFragment.newInstance(), replaceFragment = true, addToBackstack = false)

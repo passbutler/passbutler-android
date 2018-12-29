@@ -10,8 +10,9 @@
     <FrameLayout
         android:id="@+id/frameLayout_root_container"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:background="@color/colorBackground"
-        android:layout_height="match_parent">
+        android:transitionGroup="true">
 
         <!-- Progress screen -->
         <ProgressBar
