@@ -5,6 +5,7 @@ import android.support.transition.Slide
 import android.support.transition.Transition
 import android.support.transition.TransitionSet
 import android.support.v4.app.Fragment
+import android.support.v4.view.animation.FastOutSlowInInterpolator
 import android.util.Log
 import android.view.Gravity
 import de.sicherheitskritisch.pass.RootFragment
@@ -73,26 +74,32 @@ class FragmentPresentingDelegate(
     }
 
     private fun createHorizontalSlideInTransition(): Transition {
-        val transitionSet = TransitionSet()
+        val transitionSet = createTransitionSetWithDefaultInterpolator()
         transitionSet.addTransition(Slide(Gravity.END))
         return transitionSet
     }
 
     private fun createHorizontalSlideOutTransition(): Transition {
-        val transitionSet = TransitionSet()
+        val transitionSet = createTransitionSetWithDefaultInterpolator()
         transitionSet.addTransition(Slide(Gravity.START))
         return transitionSet
     }
 
     private fun createVerticalSlideInTransition(): Transition {
-        val transitionSet = TransitionSet()
+        val transitionSet = createTransitionSetWithDefaultInterpolator()
         transitionSet.addTransition(Slide(Gravity.BOTTOM))
         return transitionSet
     }
 
     private fun createVerticalSlideOutTransition(): Transition {
-        val transitionSet = TransitionSet()
+        val transitionSet = createTransitionSetWithDefaultInterpolator()
         transitionSet.addTransition(Slide(Gravity.TOP))
+        return transitionSet
+    }
+
+    private fun createTransitionSetWithDefaultInterpolator(): TransitionSet {
+        val transitionSet = TransitionSet()
+        transitionSet.interpolator = FastOutSlowInInterpolator()
         return transitionSet
     }
 
