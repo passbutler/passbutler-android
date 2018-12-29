@@ -15,9 +15,10 @@
     <string name="drawer_menu_item_overview">Übersicht</string>
     <string name="drawer_menu_item_settings">Einstellungen</string>
     <string name="drawer_menu_item_about">Über / Lizenz</string>
-    <string name="drawer_menu_item_homepage">Sicherheitskritisch</string>
-    <string name="drawer_menu_item_googleplay">Google Play</string>
+
     <string name="drawer_menu_category_external_links">Externe Links</string>
+    <string name="drawer_menu_item_homepage">Sicherheitskritisch.de</string>
+    <string name="drawer_menu_item_googleplay">Bewerten auf Google Play</string>
 
     <!-- About -->
 

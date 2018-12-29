@@ -27,11 +27,11 @@
         <menu>
             <item
                 android:id="@+id/drawer_menu_item_homepage"
-                android:icon="@drawable/icon_home_24dp"
+                android:icon="@drawable/icon_open_in_browser_24dp"
                 android:title="@string/drawer_menu_item_homepage" />
             <item
                 android:id="@+id/drawer_menu_item_googleplay"
-                android:icon="@drawable/icon_starrate_24dp"
+                android:icon="@drawable/icon_favorite_24dp"
                 android:title="@string/drawer_menu_item_googleplay" />
         </menu>
     </item>
