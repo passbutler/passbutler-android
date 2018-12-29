@@ -10,6 +10,7 @@
     <FrameLayout
         android:id="@+id/frameLayout_root_container"
         android:layout_width="match_parent"
+        android:background="@color/colorBackground"
         android:layout_height="match_parent">
 
         <!-- Progress screen -->
@@ -27,17 +28,21 @@
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fillViewport="true">
+            android:fillViewport="true"
+            >
 
             <android.support.constraint.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                >
 
                 <ImageView
                     android:id="@+id/imageView_logo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/default_vertical_spacing"
+                    android:layout_marginEnd="@dimen/login_margin_horizontal"
+                    android:layout_marginStart="@dimen/login_margin_horizontal"
+                    android:layout_marginTop="@dimen/default_margin_vertical"
                     app:layout_constraintBottom_toTopOf="@+id/textInputLayout_username"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -51,8 +56,8 @@
                     android:id="@+id/textInputLayout_username"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/default_margin_horizontal"
-                    android:layout_marginStart="@dimen/default_margin_horizontal"
+                    android:layout_marginEnd="@dimen/login_margin_horizontal"
+                    android:layout_marginStart="@dimen/login_margin_horizontal"
                     android:layout_marginTop="@dimen/default_vertical_spacing"
                     app:layout_constraintBottom_toTopOf="@+id/textInputLayout_password"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -78,8 +83,8 @@
                     android:id="@+id/textInputLayout_password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/default_margin_horizontal"
-                    android:layout_marginStart="@dimen/default_margin_horizontal"
+                    android:layout_marginEnd="@dimen/login_margin_horizontal"
+                    android:layout_marginStart="@dimen/login_margin_horizontal"
                     android:layout_marginTop="0dp"
                     app:layout_constraintBottom_toTopOf="@+id/button_login"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -106,10 +111,10 @@
                     style="@style/PrimaryButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/default_vertical_spacing"
-                    android:layout_marginEnd="@dimen/default_margin_horizontal"
-                    android:layout_marginStart="@dimen/default_margin_horizontal"
-                    android:layout_marginTop="@dimen/default_vertical_spacing"
+                    android:layout_marginBottom="@dimen/default_margin_vertical"
+                    android:layout_marginEnd="@dimen/login_margin_horizontal"
+                    android:layout_marginStart="@dimen/login_margin_horizontal"
+                    android:layout_marginTop="@dimen/large_vertical_spacing"
                     android:text="@string/login_button_text"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
