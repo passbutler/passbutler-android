@@ -37,7 +37,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
             viewModel?.login(username, password)
         }
 
-        viewModel?.isLoading?.observe(viewLifecycleOwner, Observer<Boolean> {
+        viewModel?.isLoading?.observe(this, Observer<Boolean> {
             it?.let { shouldShowProgress ->
                 binding.frameLayoutProgressContainer.showFadeAnimation(shouldShowProgress)
             }
