@@ -1,10 +1,12 @@
 package de.sicherheitskritisch.pass
 
+import android.arch.lifecycle.Observer
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import de.sicherheitskritisch.pass.common.showFadeAnimation
 import de.sicherheitskritisch.pass.common.signal
 import de.sicherheitskritisch.pass.databinding.FragmentLoginBinding
 import de.sicherheitskritisch.pass.ui.AnimatedFragment
@@ -36,7 +38,11 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
             viewModel?.login(username, password)
         }
 
-        // TODO: fade in/out progress
+        viewModel?.isLoading?.observe(viewLifecycleOwner, Observer<Boolean> {
+            it?.let { shouldShowProgress ->
+                binding.frameLayoutProgressContainer.showFadeAnimation(shouldShowProgress)
+            }
+        })
 
         return binding.root
     }

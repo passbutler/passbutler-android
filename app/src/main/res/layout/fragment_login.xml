@@ -125,11 +125,12 @@
 
         <!-- Progress screen (clickable to avoid touch-through overlay) -->
         <FrameLayout
+            android:id="@+id/frameLayout_progress_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/colorBackgroundTransparent"
             android:clickable="true"
-            android:visibility="@{viewModel.isLoading().getValue() ? View.VISIBLE : View.GONE, default=gone}">
+            android:visibility="gone">
 
             <ProgressBar
                 android:id="@+id/login_progress"
