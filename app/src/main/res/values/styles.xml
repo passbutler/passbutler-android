@@ -20,8 +20,8 @@
            parent="ThemeOverlay.AppCompat.Light" />
 
     <style name="Headline"
-           parent="TextAppearance.AppCompat.Caption">
-        <item name="android:textSize">20sp</item>
+           parent="TextAppearance.AppCompat.Headline">
+        <item name="android:textSize">24sp</item>
         <item name="android:lineSpacingExtra">6sp</item>
         <item name="android:textColorHint">@color/colorHeadline</item>
         <item name="android:textColor">@color/colorHeadline</item>
@@ -32,7 +32,7 @@
     </style>
 
     <style name="TextPassage"
-           parent="TextAppearance.AppCompat.Caption">
+           parent="TextAppearance.AppCompat.Medium">
         <item name="android:textSize">15sp</item>
         <item name="android:textColorHint">@color/colorTextPassage</item>
         <item name="android:textColor">@color/colorTextPassage</item>
@@ -42,7 +42,7 @@
     </style>
 
     <style name="TextPassageSmall"
-           parent="TextAppearance.AppCompat.Caption">
+           parent="TextAppearance.AppCompat.Small">
         <item name="android:textSize">12sp</item>
         <item name="android:textColorHint">@color/colorTextPassageSmall</item>
         <item name="android:textColor">@color/colorTextPassageSmall</item>
@@ -52,11 +52,11 @@
     </style>
 
     <style name="PrimaryButton"
-           parent="TextAppearance.AppCompat.Small">
+           parent="TextAppearance.AppCompat.Button">
         <item name="android:textSize">15sp</item>
         <item name="android:background">@color/colorPrimary</item>
         <item name="android:textColor">@color/white</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">true</item>
         <item name="android:ellipsize">end</item>
     </style>
 
