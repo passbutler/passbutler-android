@@ -10,6 +10,8 @@
     <color name="colorTextPassage">#313131</color>
     <color name="colorTextPassageSmall">#595959</color>
 
+    <color name="colorTextEditTextHint">#a1a1a1</color>
+
     <color name="colorBackground">#fafafa</color>
     <color name="colorBackgroundTransparent">#c8ffffff</color>
 

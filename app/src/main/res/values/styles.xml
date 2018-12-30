@@ -60,4 +60,10 @@
         <item name="android:ellipsize">end</item>
     </style>
 
+    <style name="TextInputLayout"
+           parent="Widget.Design.TextInputLayout">
+        <!-- Manually set hint color to avoid on-click color change caused by clickability of parent layout: -->
+        <item name="android:textColorHint">@color/colorTextEditTextHint</item>
+    </style>
+
 </resources>

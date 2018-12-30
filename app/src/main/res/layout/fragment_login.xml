@@ -28,6 +28,7 @@
 
             <!-- The `focusableInTouchMode` with `clickable` removed edit text field focus if user clicked outer area -->
             <android.support.constraint.ConstraintLayout
+                android:id="@+id/constraintLayout_login_screen_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clickable="true"
@@ -52,6 +53,7 @@
 
                 <android.support.design.widget.TextInputLayout
                     android:id="@+id/textInputLayout_serverurl"
+                    style="@style/TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/login_margin_horizontal"
@@ -79,6 +81,7 @@
 
                 <android.support.design.widget.TextInputLayout
                     android:id="@+id/textInputLayout_username"
+                    style="@style/TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/login_margin_horizontal"
@@ -106,6 +109,7 @@
 
                 <android.support.design.widget.TextInputLayout
                     android:id="@+id/textInputLayout_password"
+                    style="@style/TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/login_margin_horizontal"
