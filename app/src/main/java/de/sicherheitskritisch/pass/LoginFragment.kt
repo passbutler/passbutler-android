@@ -1,6 +1,5 @@
 package de.sicherheitskritisch.pass
 
-import android.arch.lifecycle.Observer
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.text.TextUtils
@@ -10,8 +9,9 @@ import android.view.ViewGroup
 import android.webkit.URLUtil
 import de.sicherheitskritisch.pass.common.FormFieldValidator
 import de.sicherheitskritisch.pass.common.FormValidationResult
+import de.sicherheitskritisch.pass.common.RequestSendingViewHandler
+import de.sicherheitskritisch.pass.common.RequestSendingViewModel
 import de.sicherheitskritisch.pass.common.showFadeAnimation
-import de.sicherheitskritisch.pass.common.signal
 import de.sicherheitskritisch.pass.common.validateForm
 import de.sicherheitskritisch.pass.databinding.FragmentLoginBinding
 import de.sicherheitskritisch.pass.ui.AnimatedFragment
@@ -21,36 +21,35 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
     override val transitionType = AnimatedFragment.TransitionType.SLIDE_HORIZONTAL
 
-    private val requestFinishedSuccessfullySignal = signal {
-        showFragmentAsFirstScreen(OverviewFragment.newInstance())
-    }
+    private var binding: FragmentLoginBinding? = null
+
+    private var loginRequestSendingViewHandler: LoginRequestSendingViewHandler? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel?.requestFinishedSuccessfully?.addSignal(requestFinishedSuccessfullySignal)
+
+        viewModel?.let {
+            loginRequestSendingViewHandler = LoginRequestSendingViewHandler(it)
+            loginRequestSendingViewHandler?.registerObservers()
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val binding = DataBindingUtil.inflate<FragmentLoginBinding>(inflater, R.layout.fragment_login, container, false)
-        binding.setLifecycleOwner(this)
-        binding.viewModel = viewModel
+        this.binding = DataBindingUtil.inflate<FragmentLoginBinding>(inflater, R.layout.fragment_login, container, false).also {binding->
+            binding.setLifecycleOwner(this)
+            binding.viewModel = viewModel
 
-        binding.imageViewLogo.setOnLongClickListener {
-            loginDemoClicked()
-            true
-        }
-
-        binding.buttonLogin.setOnClickListener {
-            loginClicked(binding)
-        }
-
-        viewModel?.isLoading?.observe(this, Observer<Boolean> {
-            it?.let { shouldShowProgress ->
-                binding.frameLayoutProgressContainer.showFadeAnimation(shouldShowProgress)
+            binding.imageViewLogo.setOnLongClickListener {
+                loginDemoClicked()
+                true
             }
-        })
 
-        return binding.root
+            binding.buttonLogin.setOnClickListener {
+                loginClicked(binding)
+            }
+        }
+
+        return binding?.root
     }
 
     private fun loginDemoClicked() {
@@ -93,8 +92,22 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
     }
 
     override fun onDestroy() {
-        viewModel?.requestFinishedSuccessfully?.removeSignal(requestFinishedSuccessfullySignal)
+        loginRequestSendingViewHandler?.unregisterObservers()
         super.onDestroy()
+    }
+
+    private inner class LoginRequestSendingViewHandler(requestSendingViewModel: RequestSendingViewModel) : RequestSendingViewHandler(requestSendingViewModel) {
+        override fun onIsLoadingChanged(isLoading: Boolean) {
+            binding?.frameLayoutProgressContainer?.showFadeAnimation(isLoading)
+        }
+
+        override fun onRequestErrorChanged(requestError: Exception) {
+            // TODO: Show snackbar
+        }
+
+        override fun onRequestFinishedSuccessfully() {
+            showFragmentAsFirstScreen(OverviewFragment.newInstance())
+        }
     }
 
     companion object {

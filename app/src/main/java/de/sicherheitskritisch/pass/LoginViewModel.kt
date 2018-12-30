@@ -1,9 +1,9 @@
 package de.sicherheitskritisch.pass
 
-import de.sicherheitskritisch.pass.common.RequestSendingViewModel
+import de.sicherheitskritisch.pass.common.DefaultRequestSendingViewModel
 import java.util.*
 
-class LoginViewModel : RequestSendingViewModel() {
+class LoginViewModel : DefaultRequestSendingViewModel() {
 
     internal fun loginUser(serverUrl: String, username: String, password: String) {
         isLoading.value = true
