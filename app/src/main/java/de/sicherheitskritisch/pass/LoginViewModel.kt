@@ -1,13 +1,23 @@
 package de.sicherheitskritisch.pass
 
-import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.ViewModel
+import android.os.Handler
+import android.os.Looper
+import de.sicherheitskritisch.pass.common.RequestSendingViewModel
+import java.util.*
 
-class LoginViewModel : ViewModel() {
-
-    val isLoading = MutableLiveData<Boolean>().also { it.value = false }
+class LoginViewModel : RequestSendingViewModel() {
 
     internal fun login(username: String, password: String) {
-        isLoading.value = !(isLoading.value ?: false)
+        isLoading.value = true
+
+        // TODO: Remove mocking
+        Timer().schedule(object : TimerTask() {
+            override fun run() {
+                Handler(Looper.getMainLooper()).post {
+                    isLoading.value = false
+                    requestFinishedSuccessfully.emit()
+                }
+            }
+        }, 2000)
     }
 }
