@@ -32,6 +32,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
         binding.buttonLogin.setOnClickListener {
             // TODO: Validate values
+            val serverUrl = binding.editTextServerurl.text.toString()
             val username = binding.editTextUsername.text.toString()
             val password = binding.editTextPassword.text.toString()
             viewModel?.login(username, password)

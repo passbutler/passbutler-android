@@ -3,7 +3,8 @@
 
     <!-- Login -->
 
-    <string name="login_username_hint">E-Mail-Adresse</string>
+    <string name="login_serverurl_hint">Server URL</string>
+    <string name="login_username_hint">Benutzername</string>
     <string name="login_password_hint">Passwort</string>
 
     <string name="login_button_text">Anmelden</string>
