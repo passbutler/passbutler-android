@@ -5,7 +5,7 @@ import java.util.*
 
 class LoginViewModel : RequestSendingViewModel() {
 
-    internal fun login(username: String, password: String) {
+    internal fun loginUser(serverUrl: String, username: String, password: String) {
         isLoading.value = true
 
         // TODO: Remove mocking
@@ -16,5 +16,9 @@ class LoginViewModel : RequestSendingViewModel() {
                 requestFinishedSuccessfully.emit()
             }
         }, 2000)
+    }
+
+    internal fun loginDemoUser() {
+        loginUser("https://127.0.0.1", "demouser", "demopassword")
     }
 }

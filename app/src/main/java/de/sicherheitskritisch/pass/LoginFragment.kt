@@ -35,6 +35,11 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         binding.setLifecycleOwner(this)
         binding.viewModel = viewModel
 
+        binding.imageViewLogo.setOnLongClickListener {
+            loginDemoClicked()
+            true
+        }
+
         binding.buttonLogin.setOnClickListener {
             loginClicked(binding)
         }
@@ -46,6 +51,10 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         })
 
         return binding.root
+    }
+
+    private fun loginDemoClicked() {
+        viewModel?.loginDemoUser()
     }
 
     private fun loginClicked(binding: FragmentLoginBinding) {
@@ -75,7 +84,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
                 val serverUrl = binding.editTextServerurl.text.toString()
                 val username = binding.editTextUsername.text.toString()
                 val password = binding.editTextPassword.text.toString()
-                viewModel?.login(username, password)
+                viewModel?.loginUser(serverUrl, username, password)
             }
             is FormValidationResult.Invalid -> {
                 formValidationResult.firstInvalidFormField.requestFocus()
