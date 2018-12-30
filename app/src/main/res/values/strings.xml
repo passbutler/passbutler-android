@@ -4,8 +4,14 @@
     <!-- Login -->
 
     <string name="login_serverurl_hint">Server URL</string>
+    <string name="login_serverurl_validation_error_empty">Server URL nicht ausgefüllt</string>
+    <string name="login_serverurl_validation_error_invalid">Server URL nicht gültig</string>
+
     <string name="login_username_hint">Benutzername</string>
+    <string name="login_username_validation_error_empty">Benutzername nicht ausgefüllt</string>
+
     <string name="login_password_hint">Passwort</string>
+    <string name="login_password_validation_error_empty">Passwort nicht ausgefüllt</string>
 
     <string name="login_button_text">Anmelden</string>
 
