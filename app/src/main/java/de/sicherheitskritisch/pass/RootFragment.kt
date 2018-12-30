@@ -11,13 +11,6 @@ import de.sicherheitskritisch.pass.ui.FragmentPresentingDelegate
 
 class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
-    /**
-     * The fragment manager is used by `FragmentPresentingDelegate` to provide fragment handling
-     * used by the one-activity app concept.
-     */
-    val rootFragmentManager
-        get() = childFragmentManager
-
     override fun onAttach(context: Context?) {
         super.onAttach(context)
 

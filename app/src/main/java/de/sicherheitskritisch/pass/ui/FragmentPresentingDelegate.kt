@@ -8,24 +8,29 @@ import android.support.v4.app.Fragment
 import android.support.v4.view.animation.FastOutSlowInInterpolator
 import android.util.Log
 import android.view.Gravity
-import de.sicherheitskritisch.pass.RootFragment
 
 /**
  * Provides implementation of fragment management used by the one-activity app concept.
- * This delegate is delegated in `BaseFragment` and provided in `RootFragment`.
+ * This delegate is delegated in `BaseFragment` and provided in the root fragment.
  */
 class FragmentPresentingDelegate(
     private val activity: Activity,
-    private val rootFragment: RootFragment,
+    private val rootFragment: Fragment,
     private val rootFragmentContainerResourceId: Int
 ) : FragmentPresenting {
+
+    /**
+     * The fragment manager is used to provide fragment handling for the one-activity app concept
+     */
+    private val rootFragmentManager
+        get() = rootFragment.childFragmentManager
 
     override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean) {
         if (!activity.isFinishing) {
 
             addTransitionToAnimatedFragment(fragment)
 
-            val fragmentTransaction = rootFragment.rootFragmentManager.beginTransaction()
+            val fragmentTransaction = rootFragmentManager.beginTransaction()
 
             // TODO: debouncing
 
@@ -109,12 +114,12 @@ class FragmentPresentingDelegate(
 
     override fun popBackstack() {
         if (!activity.isFinishing && !rootFragment.isStateSaved) {
-            rootFragment.rootFragmentManager.popBackStack()
+            rootFragmentManager.popBackStack()
         }
     }
 
     override fun backstackCount(): Int {
-        return rootFragment.rootFragmentManager.backStackEntryCount
+        return rootFragmentManager.backStackEntryCount
     }
 
     companion object {
