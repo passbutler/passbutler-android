@@ -35,12 +35,12 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        this.binding = DataBindingUtil.inflate<FragmentLoginBinding>(inflater, R.layout.fragment_login, container, false).also {binding->
+        this.binding = DataBindingUtil.inflate<FragmentLoginBinding>(inflater, R.layout.fragment_login, container, false).also { binding ->
             binding.setLifecycleOwner(this)
             binding.viewModel = viewModel
 
             binding.imageViewLogo.setOnLongClickListener {
-                loginDemoClicked()
+                loginDemoClicked(binding)
                 true
             }
 
@@ -52,7 +52,14 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         return binding?.root
     }
 
-    private fun loginDemoClicked() {
+    private fun loginDemoClicked(binding: FragmentLoginBinding) {
+        // Clean form field errors first to be sure everything looks clean if the progress shows up
+        val formFields = listOf(binding.editTextServerurl, binding.editTextUsername, binding.editTextPassword)
+        formFields.forEach { it.error = null }
+
+        // Remove focus for the same reason
+        removeFormFieldsFocus()
+
         viewModel?.loginDemoUser()
     }
 
@@ -80,6 +87,8 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
         when (formValidationResult) {
             is FormValidationResult.Valid -> {
+                removeFormFieldsFocus()
+
                 val serverUrl = binding.editTextServerurl.text.toString()
                 val username = binding.editTextUsername.text.toString()
                 val password = binding.editTextPassword.text.toString()
@@ -89,6 +98,13 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
                 formValidationResult.firstInvalidFormField.requestFocus()
             }
         }
+    }
+
+    /**
+     * Removes focus of all form fields.
+     */
+    private fun removeFormFieldsFocus() {
+        binding?.constraintLayoutLoginScreenContainer?.requestFocus()
     }
 
     override fun onDestroy() {
