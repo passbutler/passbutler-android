@@ -1,7 +1,5 @@
 package de.sicherheitskritisch.pass
 
-import android.os.Handler
-import android.os.Looper
 import de.sicherheitskritisch.pass.common.RequestSendingViewModel
 import java.util.*
 
@@ -13,10 +11,9 @@ class LoginViewModel : RequestSendingViewModel() {
         // TODO: Remove mocking
         Timer().schedule(object : TimerTask() {
             override fun run() {
-                Handler(Looper.getMainLooper()).post {
-                    isLoading.value = false
-                    requestFinishedSuccessfully.emit()
-                }
+                // Thus this is not executed on main thread, use `postValue` instead of `value` setter
+                isLoading.postValue(false)
+                requestFinishedSuccessfully.emit()
             }
         }, 2000)
     }
