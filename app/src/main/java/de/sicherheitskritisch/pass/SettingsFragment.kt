@@ -6,9 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import de.sicherheitskritisch.pass.databinding.FragmentSettingsBinding
+import de.sicherheitskritisch.pass.ui.AnimatedFragment
 import de.sicherheitskritisch.pass.ui.ToolBarFragment
 
 class SettingsFragment : ToolBarFragment() {
+
+    override val transitionType = AnimatedFragment.TransitionType.SLIDE_VERTICAL
 
     override fun getToolBarTitle() = getString(R.string.settings_title)
 

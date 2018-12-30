@@ -6,11 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import de.sicherheitskritisch.pass.ui.AnimatedFragment
 import de.sicherheitskritisch.pass.ui.ToolBarFragment
 import java.text.SimpleDateFormat
 import java.util.*
 
 class AboutFragment : ToolBarFragment() {
+
+    override val transitionType = AnimatedFragment.TransitionType.SLIDE_VERTICAL
 
     private val versionName
         get() = BuildConfig.VERSION_NAME

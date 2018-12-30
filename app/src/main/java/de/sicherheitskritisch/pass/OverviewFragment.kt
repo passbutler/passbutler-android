@@ -74,8 +74,7 @@ class OverviewFragment : BaseFragment(), AnimatedFragment {
                     true
                 }
                 R.id.drawer_menu_item_about -> {
-                    // TODO: Remove replace flag
-                    showFragment(AboutFragment.newInstance(), replaceFragment = true)
+                    showFragment(AboutFragment.newInstance())
                     true
                 }
                 R.id.drawer_menu_item_logout -> {
