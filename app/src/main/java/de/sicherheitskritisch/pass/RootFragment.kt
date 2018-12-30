@@ -39,15 +39,21 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
         super.onViewCreated(view, savedInstanceState)
 
         val isLoggedIn = viewModel?.isLoggedIn?.value ?: false
+        val isUnlocked = viewModel?.isUnlocked?.value ?: false
 
-        // Replace fragment and do not add to backstack (it is first screen)
-        if (isLoggedIn) {
-            val overviewFragment = OverviewFragment.newInstance()
-            showFragment(overviewFragment, replaceFragment = true, addToBackstack = false)
-        } else {
-            val loginViewModel = LoginViewModel()
-            val loginFragment = LoginFragment.newInstance(loginViewModel)
-            showFragment(loginFragment, replaceFragment = true, addToBackstack = false)
+        when {
+            !isLoggedIn -> {
+                val loginViewModel = LoginViewModel()
+                val loginFragment = LoginFragment.newInstance(loginViewModel)
+                showFragmentAsFirstScreen(loginFragment)
+            }
+            !isUnlocked -> {
+                // TODO: show lock screen
+            }
+            else -> {
+                val overviewFragment = OverviewFragment.newInstance()
+                showFragmentAsFirstScreen(overviewFragment)
+            }
         }
     }
 

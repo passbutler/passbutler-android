@@ -58,6 +58,10 @@ class FragmentPresentingDelegate(
         }
     }
 
+    override fun showFragmentAsFirstScreen(fragment: Fragment) {
+        showFragment(fragment, replaceFragment = true, addToBackstack = false)
+    }
+
     private fun addTransitionToAnimatedFragment(fragment: Fragment) {
         if (fragment is AnimatedFragment) {
             when (fragment.transitionType) {

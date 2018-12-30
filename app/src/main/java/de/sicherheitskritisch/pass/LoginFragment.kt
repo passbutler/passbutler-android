@@ -17,8 +17,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
     override val transitionType = AnimatedFragment.TransitionType.SLIDE_HORIZONTAL
 
     private val requestFinishedSuccessfullySignal = signal {
-        // Replace fragment and do not add to backstack (it is first screen)
-        showFragment(OverviewFragment.newInstance(), replaceFragment = true, addToBackstack = false)
+        showFragmentAsFirstScreen(OverviewFragment.newInstance())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -22,6 +22,10 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
         fragmentPresentingDelegate?.showFragment(fragment, replaceFragment, addToBackstack)
     }
 
+    override fun showFragmentAsFirstScreen(fragment: Fragment) {
+        fragmentPresentingDelegate?.showFragmentAsFirstScreen(fragment)
+    }
+
     override fun popBackstack() {
         fragmentPresentingDelegate?.popBackstack()
     }
