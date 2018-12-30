@@ -14,7 +14,6 @@
     </data>
 
     <FrameLayout
-        android:id="@+id/frameLayout_root_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/colorBackground"
@@ -27,9 +26,12 @@
             android:fillViewport="true"
             >
 
+            <!-- The `focusableInTouchMode` with `clickable` removed edit text field focus if user clicked outer area -->
             <android.support.constraint.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusableInTouchMode="true"
                 >
 
                 <ImageView
