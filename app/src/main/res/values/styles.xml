@@ -66,4 +66,14 @@
         <item name="android:textColorHint">@color/colorTextEditTextHint</item>
     </style>
 
+    <!-- Special styles -->
+
+    <style name="TextPassageBlack"
+           parent="TextPassage">
+        <item name="android:textColorHint">@color/black</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textColorHighlight">@color/black</item>
+        <item name="android:textColorLink">@color/black</item>
+    </style>
+
 </resources>

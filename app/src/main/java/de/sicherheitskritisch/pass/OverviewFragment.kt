@@ -1,5 +1,6 @@
 package de.sicherheitskritisch.pass
 
+import android.arch.lifecycle.Observer
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -12,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import de.sicherheitskritisch.pass.ui.AnimatedFragment
 import de.sicherheitskritisch.pass.ui.BaseFragment
 
@@ -22,17 +24,22 @@ class OverviewFragment : BaseFragment(), AnimatedFragment {
     private var toolBar: Toolbar? = null
     private var drawerLayout: DrawerLayout? = null
     private var navigationView: NavigationView? = null
+    private var navigationHeaderView: View? = null
+
     private val navigationItemSelectedListener = NavigationItemSelectedListener()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_overview, container, false)
 
-        toolBar = rootView.findViewById(R.id.toolbar)
-        toolBar?.title = getString(R.string.app_name)
-
+        setupToolBar(rootView)
         setupDrawerLayout(rootView)
 
         return rootView
+    }
+
+    private fun setupToolBar(rootView: View) {
+        toolBar = rootView.findViewById(R.id.toolbar)
+        toolBar?.title = getString(R.string.app_name)
     }
 
     private fun setupDrawerLayout(rootView: View) {
@@ -51,7 +58,13 @@ class OverviewFragment : BaseFragment(), AnimatedFragment {
         navigationView = rootView.findViewById<NavigationView>(R.id.navigationView).apply {
             setNavigationItemSelectedListener(navigationItemSelectedListener)
         }
-    }
+        navigationHeaderView = navigationView?.inflateHeaderView(R.layout.main_drawer_header)
+
+        viewModel.username.observe(this, Observer {
+            navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_subtitle)?.also { subtitleView ->
+                subtitleView.text = viewModel.username.value
+            }
+        })    }
 
     override fun onHandleBackPress(): Boolean {
         return if (drawerLayout?.isDrawerOpen(GravityCompat.START) == true) {
