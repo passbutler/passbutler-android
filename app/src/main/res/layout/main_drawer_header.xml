@@ -36,7 +36,6 @@
         style="@style/TextPassage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@{viewModel.username.getValue()}"
         tools:text="@string/drawer_header_subtitle"
         />
 

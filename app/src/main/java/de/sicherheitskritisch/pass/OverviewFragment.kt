@@ -62,9 +62,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         }
         navigationHeaderView = navigationView?.inflateHeaderView(R.layout.main_drawer_header)
 
-        viewModel.username.observe(this, Observer {
+        viewModel.userAccountViewModel.observe(this, Observer {
             navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_subtitle)?.also { subtitleView ->
-                subtitleView.text = viewModel.username.value
+                subtitleView.text = viewModel.userAccountViewModel.value?.username
             }
         })
     }

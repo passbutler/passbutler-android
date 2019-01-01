@@ -13,3 +13,12 @@ fun <T> LiveData<T>.observe(owner: LifecycleOwner, notifyOnRegister: Boolean, ob
         observer.onChanged(null)
     }
 }
+
+@MainThread
+fun <T> LiveData<T>.observeForever(notifyOnRegister: Boolean, observer: Observer<T>) {
+    observeForever(observer)
+
+    if (notifyOnRegister) {
+        observer.onChanged(null)
+    }
+}
