@@ -40,7 +40,7 @@ class RootViewModel : ViewModel() {
             override fun run() {
                 asyncCallback.onFailure(Exception())
             }
-        }, 2000)
+        }, 1000)
     }
 
     @MainThread
@@ -51,7 +51,7 @@ class RootViewModel : ViewModel() {
                 userAccountViewModel.postValue(UserAccountViewModel(UserAccount("localhost", "demo@sicherheitskritisch.de")))
                 asyncCallback.onSuccess()
             }
-        }, 500)
+        }, 1000)
     }
 
     @MainThread
