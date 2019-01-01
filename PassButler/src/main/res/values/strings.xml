@@ -15,6 +15,9 @@
 
     <string name="login_button_text">Anmelden</string>
 
+    <string name="login_failed_title">Anmeldung hat leider nicht geklappt</string>
+
+
     <!-- Drawer -->
 
     <string name="drawer_header_title">Pass Butler</string>

@@ -2,6 +2,7 @@ package de.sicherheitskritisch.passbutler
 
 import android.databinding.DataBindingUtil
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -118,7 +119,10 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         }
 
         override fun onRequestErrorChanged(requestError: Exception) {
-            // TODO: Show snackbar
+            binding?.constraintLayoutLoginScreenContainer?.let {
+                val snackbarMessage = getString(R.string.login_failed_title)
+                Snackbar.make(it, snackbarMessage, Snackbar.LENGTH_SHORT).show()
+            }
         }
     }
 

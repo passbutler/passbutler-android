@@ -38,8 +38,7 @@ class RootViewModel : ViewModel() {
         // TODO: Remove mocking
         Timer().schedule(object : TimerTask() {
             override fun run() {
-                userAccountViewModel.postValue(UserAccountViewModel(UserAccount(serverUrl, username)))
-                asyncCallback.onSuccess()
+                asyncCallback.onFailure(Exception())
             }
         }, 2000)
     }
@@ -52,7 +51,7 @@ class RootViewModel : ViewModel() {
                 userAccountViewModel.postValue(UserAccountViewModel(UserAccount("localhost", "demo@sicherheitskritisch.de")))
                 asyncCallback.onSuccess()
             }
-        }, 1500)
+        }, 500)
     }
 
     @MainThread
