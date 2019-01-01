@@ -4,6 +4,8 @@ import android.arch.lifecycle.Observer
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
@@ -77,6 +79,9 @@ class OverviewFragment : BaseFragment(), AnimatedFragment {
     }
 
     private inner class NavigationItemSelectedListener : NavigationView.OnNavigationItemSelectedListener {
+
+        private val mainThreadHandler = Handler(Looper.getMainLooper())
+
         override fun onNavigationItemSelected(item: MenuItem): Boolean {
             val shouldCloseDrawer = when (item.itemId) {
                 R.id.drawer_menu_item_overview -> {
@@ -111,10 +116,19 @@ class OverviewFragment : BaseFragment(), AnimatedFragment {
             }
 
             if (shouldCloseDrawer) {
-                drawerLayout?.closeDrawer(GravityCompat.START)
+                closeDrawerDelayed()
             }
 
             return true
+        }
+
+        /**
+         * Closes drawer a little delayed to make show new fragment transaction more pretty.
+         */
+        private fun closeDrawerDelayed() {
+            mainThreadHandler.postDelayed({
+                drawerLayout?.closeDrawer(GravityCompat.START)
+            }, 100)
         }
 
         private fun startExternalUriIntent(uriString: String) {
