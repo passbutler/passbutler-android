@@ -17,9 +17,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import de.sicherheitskritisch.pass.ui.AnimatedFragment
-import de.sicherheitskritisch.pass.ui.BaseFragment
+import de.sicherheitskritisch.pass.ui.BaseViewModelFragment
 
-class OverviewFragment : BaseFragment(), AnimatedFragment {
+class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment {
 
     override val transitionType = AnimatedFragment.TransitionType.SLIDE_HORIZONTAL
 
@@ -97,11 +97,7 @@ class OverviewFragment : BaseFragment(), AnimatedFragment {
                     true
                 }
                 R.id.drawer_menu_item_logout -> {
-                    val loginViewModel = LoginViewModel()
-                    val loginFragment = LoginFragment.newInstance(loginViewModel)
-
-                    // Replace fragment and do not add to backstack (the login screen will be the first screen)
-                    showFragment(loginFragment, replaceFragment = true, addToBackstack = false)
+                    viewModel.logoutUser()
                     true
                 }
                 R.id.drawer_menu_item_homepage -> {
@@ -143,6 +139,6 @@ class OverviewFragment : BaseFragment(), AnimatedFragment {
         private const val URL_HOMEPAGE = "https://sicherheitskritisch.de"
         private const val URL_GOOGLE_PLAY = "market://details?id=de.sicherheitskritisch.pass"
 
-        fun newInstance() = OverviewFragment()
+        fun newInstance(viewModel: OverviewViewModel) = OverviewFragment().also { it.viewModel = viewModel }
     }
 }

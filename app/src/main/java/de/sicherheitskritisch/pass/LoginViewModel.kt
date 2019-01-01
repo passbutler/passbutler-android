@@ -1,24 +1,34 @@
 package de.sicherheitskritisch.pass
 
+import de.sicherheitskritisch.pass.common.AsyncCallbackResult
 import de.sicherheitskritisch.pass.common.DefaultRequestSendingViewModel
-import java.util.*
+import de.sicherheitskritisch.pass.common.asyncCallback
 
-class LoginViewModel : DefaultRequestSendingViewModel() {
+class LoginViewModel(private val rootViewModel: RootViewModel) : DefaultRequestSendingViewModel() {
 
     internal fun loginUser(serverUrl: String, username: String, password: String) {
         isLoading.value = true
 
-        // TODO: Remove mocking
-        Timer().schedule(object : TimerTask() {
-            override fun run() {
-                // Thus this is not executed on main thread, use `postValue` instead of `value` setter
-                isLoading.postValue(false)
-                requestFinishedSuccessfully.emit()
+        rootViewModel.loginUser(serverUrl, username, password, asyncCallback { result ->
+            isLoading.postValue(false)
+
+            when (result) {
+                is AsyncCallbackResult.Success -> requestFinishedSuccessfully.emit()
+                is AsyncCallbackResult.Failure -> requestError.postValue(result.error)
             }
-        }, 2000)
+        })
     }
 
     internal fun loginDemoUser() {
-        loginUser("https://127.0.0.1", "demouser", "demopassword")
+        isLoading.value = true
+
+        rootViewModel.loginDemoUser(asyncCallback { result ->
+            isLoading.postValue(false)
+
+            when (result) {
+                is AsyncCallbackResult.Success -> requestFinishedSuccessfully.emit()
+                is AsyncCallbackResult.Failure -> requestError.postValue(result.error)
+            }
+        })
     }
 }

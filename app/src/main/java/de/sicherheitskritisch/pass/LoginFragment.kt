@@ -120,10 +120,6 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         override fun onRequestErrorChanged(requestError: Exception) {
             // TODO: Show snackbar
         }
-
-        override fun onRequestFinishedSuccessfully() {
-            showFragmentAsFirstScreen(OverviewFragment.newInstance())
-        }
     }
 
     companion object {

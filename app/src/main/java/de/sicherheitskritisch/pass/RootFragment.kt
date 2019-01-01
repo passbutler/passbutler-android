@@ -1,11 +1,13 @@
 package de.sicherheitskritisch.pass
 
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import de.sicherheitskritisch.pass.common.observe
 import de.sicherheitskritisch.pass.ui.BaseViewModelFragment
 import de.sicherheitskritisch.pass.ui.FragmentPresentingDelegate
 
@@ -31,26 +33,33 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val isLoggedIn = viewModel?.isLoggedIn?.value ?: false
-        val isUnlocked = viewModel?.isUnlocked?.value ?: false
+        viewModel.rootScreenState.observe(this, true, Observer {
+            updateRootScreen()
+        })
+    }
 
-        when {
-            !isLoggedIn -> {
-                val loginViewModel = LoginViewModel()
-                val loginFragment = LoginFragment.newInstance(loginViewModel)
-                showFragmentAsFirstScreen(loginFragment)
-            }
-            !isUnlocked -> {
-                // TODO: show lock screen
+    private fun updateRootScreen() {
+        val rootScreenState = viewModel.rootScreenState.value
+
+        when (rootScreenState) {
+            is RootViewModel.RootScreenState.LoggedIn -> {
+                // TODO: show lock screen if locked
+                // val isUnlocked = rootScreenState.isUnlocked
+
+                val overviewViewModel = OverviewViewModel(viewModel)
+                val overviewFragment = OverviewFragment.newInstance(overviewViewModel)
+                showFragmentAsFirstScreen(overviewFragment)
             }
             else -> {
-                val overviewFragment = OverviewFragment.newInstance()
-                showFragmentAsFirstScreen(overviewFragment)
+                val loginViewModel = LoginViewModel(viewModel)
+                val loginFragment = LoginFragment.newInstance(loginViewModel)
+                showFragmentAsFirstScreen(loginFragment)
             }
         }
     }
 
     companion object {
+        // No `viewModel` argument supplied because it is retrieved from `ViewModelProviders`
         fun newInstance() = RootFragment()
     }
 }
