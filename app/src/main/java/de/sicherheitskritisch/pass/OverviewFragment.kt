@@ -64,7 +64,8 @@ class OverviewFragment : BaseFragment(), AnimatedFragment {
             navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_subtitle)?.also { subtitleView ->
                 subtitleView.text = viewModel.username.value
             }
-        })    }
+        })
+    }
 
     override fun onHandleBackPress(): Boolean {
         return if (drawerLayout?.isDrawerOpen(GravityCompat.START) == true) {

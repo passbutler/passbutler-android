@@ -31,7 +31,9 @@ class AboutFragment : ToolBarFragment() {
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val rootView = inflater.inflate(R.layout.fragment_about, container, false)
 
-        rootView.findViewById<TextView>(R.id.textView_subheader).text = getString(R.string.about_subheader, versionName, formattedBuildTime)
+        rootView.findViewById<TextView>(R.id.textView_subheader).also { subHeader ->
+            subHeader.text = getString(R.string.about_subheader, versionName, formattedBuildTime)
+        }
 
         return rootView
     }

@@ -1,6 +1,17 @@
 package de.sicherheitskritisch.pass.common
 
+interface Signal {
+    fun emitted()
+}
+
+fun signal(emitted: (() -> Unit)) = object : Signal {
+    override fun emitted() {
+        emitted.invoke()
+    }
+}
+
 class SignalEmitter {
+
     private val signalObservers = mutableListOf<Signal>()
 
     fun emit() {
@@ -10,14 +21,4 @@ class SignalEmitter {
 
     fun addSignal(signal: Signal) = signalObservers.add(signal)
     fun removeSignal(signal: Signal) = signalObservers.remove(signal)
-}
-
-interface Signal {
-    fun emitted()
-}
-
-fun signal(emitted: (() -> Unit)) = object : Signal {
-    override fun emitted() {
-        emitted.invoke()
-    }
 }

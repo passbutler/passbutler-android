@@ -27,8 +27,9 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        loginRequestSendingViewHandler = LoginRequestSendingViewHandler(viewModel)
-        loginRequestSendingViewHandler?.registerObservers()
+        loginRequestSendingViewHandler = LoginRequestSendingViewHandler(viewModel).apply {
+            registerObservers()
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -51,8 +52,9 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
     private fun loginDemoClicked(binding: FragmentLoginBinding) {
         // Clean form field errors first to be sure everything looks clean if the progress shows up
-        val formFields = listOf(binding.editTextServerurl, binding.editTextUsername, binding.editTextPassword)
-        formFields.forEach { it.error = null }
+        listOf(binding.editTextServerurl, binding.editTextUsername, binding.editTextPassword).forEach { formField ->
+            formField.error = null
+        }
 
         // Remove focus for the same reason
         removeFormFieldsFocus()
@@ -84,6 +86,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
         when (formValidationResult) {
             is FormValidationResult.Valid -> {
+                // Remove focus before login to be sure keyboard is hidden
                 removeFormFieldsFocus()
 
                 val serverUrl = binding.editTextServerurl.text.toString()
