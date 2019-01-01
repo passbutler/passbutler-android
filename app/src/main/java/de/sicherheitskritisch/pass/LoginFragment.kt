@@ -22,16 +22,13 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
     override val transitionType = AnimatedFragment.TransitionType.SLIDE_HORIZONTAL
 
     private var binding: FragmentLoginBinding? = null
-
     private var loginRequestSendingViewHandler: LoginRequestSendingViewHandler? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel?.let {
-            loginRequestSendingViewHandler = LoginRequestSendingViewHandler(it)
-            loginRequestSendingViewHandler?.registerObservers()
-        }
+        loginRequestSendingViewHandler = LoginRequestSendingViewHandler(viewModel)
+        loginRequestSendingViewHandler?.registerObservers()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -60,7 +57,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         // Remove focus for the same reason
         removeFormFieldsFocus()
 
-        viewModel?.loginDemoUser()
+        viewModel.loginDemoUser()
     }
 
     private fun loginClicked(binding: FragmentLoginBinding) {
@@ -92,7 +89,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
                 val serverUrl = binding.editTextServerurl.text.toString()
                 val username = binding.editTextUsername.text.toString()
                 val password = binding.editTextPassword.text.toString()
-                viewModel?.loginUser(serverUrl, username, password)
+                viewModel.loginUser(serverUrl, username, password)
             }
             is FormValidationResult.Invalid -> {
                 formValidationResult.firstInvalidFormField.requestFocus()
