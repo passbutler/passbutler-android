@@ -1,0 +1,59 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+
+    dataBinding {
+        enabled = true
+    }
+
+    defaultConfig {
+        applicationId "de.sicherheitskritisch.passbutler"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        // Added custom build field to get compile time
+        buildConfigField "java.util.Date", "BUILD_TIME", "new java.util.Date(" + System.currentTimeMillis() + "L)"
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            useProguard false
+            debuggable true
+            minifyEnabled false
+        }
+
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+
+    // Android support libraries
+    implementation "com.android.support:appcompat-v7:$rootProject.ext.androidSupportLibraryVersion"
+    implementation "com.android.support:support-v4:$rootProject.ext.androidSupportLibraryVersion"
+    implementation "com.android.support:design:$rootProject.ext.androidSupportLibraryVersion"
+
+    // Android constraint layout library
+    implementation "com.android.support.constraint:constraint-layout:$rootProject.ext.androidConstraintLayoutLibraryVersion"
+
+    // Android Lifecycle and ViewModel components
+    implementation "android.arch.lifecycle:extensions:$rootProject.ext.androidLifecycleVersion"
+    annotationProcessor "android.arch.lifecycle:compiler:$rootProject.ext.androidLifecycleVersion"
+
+    // Kotlin Coroutines for Android
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.ext.kotlinCoroutinesVersion"
+
+    testImplementation 'junit:junit:4.12'
+}
