@@ -127,8 +127,6 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
     }
 
     companion object {
-        private const val TAG = "LoginFragment"
-
         fun newInstance(viewModel: LoginViewModel) = LoginFragment().also { it.viewModel = viewModel }
     }
 }

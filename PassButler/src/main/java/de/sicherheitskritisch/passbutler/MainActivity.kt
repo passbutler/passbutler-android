@@ -2,7 +2,7 @@ package de.sicherheitskritisch.passbutler
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
+import de.sicherheitskritisch.passbutler.common.L
 
 class MainActivity : AppCompatActivity() {
 
@@ -12,7 +12,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Log.d(TAG, "onCreate(): savedInstanceState = $savedInstanceState")
+        L.d("onCreate(): savedInstanceState = $savedInstanceState")
 
         val rootFragment = RootFragment.newInstance()
         val fragmentTransaction = supportFragmentManager.beginTransaction()
@@ -42,10 +42,6 @@ class MainActivity : AppCompatActivity() {
 
     interface OnBackPressedListener {
         fun onHandleBackPress(): Boolean
-    }
-
-    companion object {
-        private const val TAG = "MainActivity"
     }
 }
 
