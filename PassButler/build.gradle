@@ -5,6 +5,12 @@ apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
+    compileOptions {
+        // Compile with pinned Java 7 (avoid changing `misc.xml` when cold-start Android Studio)
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+
     dataBinding {
         enabled = true
     }
@@ -51,6 +57,10 @@ dependencies {
     // Android Lifecycle and ViewModel components
     implementation "android.arch.lifecycle:extensions:$rootProject.ext.androidLifecycleVersion"
     annotationProcessor "android.arch.lifecycle:compiler:$rootProject.ext.androidLifecycleVersion"
+
+    // Android Room components
+    implementation "android.arch.persistence.room:runtime:$rootProject.ext.androidRoomVersion"
+    annotationProcessor "android.arch.persistence.room:compiler:$rootProject.ext.androidRoomVersion"
 
     // Kotlin Coroutines for Android
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.ext.kotlinCoroutinesVersion"
