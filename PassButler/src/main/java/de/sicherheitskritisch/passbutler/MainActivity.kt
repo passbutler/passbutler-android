@@ -32,13 +32,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun addOnBackPressedListener(listener: OnBackPressedListener) {
-        onBackPressedListener.add(listener)
-    }
-
-    fun removeOnBackPressedListener(listener: OnBackPressedListener) {
-        onBackPressedListener.remove(listener)
-    }
+    fun addOnBackPressedListener(listener: OnBackPressedListener) = onBackPressedListener.add(listener)
+    fun removeOnBackPressedListener(listener: OnBackPressedListener) = onBackPressedListener.remove(listener)
 
     interface OnBackPressedListener {
         fun onHandleBackPress(): Boolean
