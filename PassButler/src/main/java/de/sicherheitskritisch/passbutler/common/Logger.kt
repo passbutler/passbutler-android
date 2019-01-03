@@ -6,10 +6,20 @@ typealias L = Logger
 
 class Logger {
     companion object {
-        fun d(message: String) {
-            buildLogInformation()?.let {
-                Log.d("${it.fileName}:${it.lineNumber}", "[${it.threadName}]: $message")
-            }
+        fun v(message: String) = buildLogInformation()?.let {
+            Log.v(it.buildLogTag(), it.buildLogString(message))
+        }
+
+        fun d(message: String) = buildLogInformation()?.let {
+            Log.d(it.buildLogTag(), it.buildLogString(message))
+        }
+
+        fun i(message: String) = buildLogInformation()?.let {
+            Log.i(it.buildLogTag(), it.buildLogString(message))
+        }
+
+        fun w(message: String) = buildLogInformation()?.let {
+            Log.w(it.buildLogTag(), it.buildLogString(message))
         }
     }
 }
@@ -27,3 +37,11 @@ private fun buildLogInformation(): LogMetaInformation? {
 }
 
 data class LogMetaInformation(val fileName: String, val lineNumber: Int, val threadName: String)
+
+private fun LogMetaInformation.buildLogTag(): String {
+    return "$fileName:$lineNumber"
+}
+
+private fun LogMetaInformation.buildLogString(message: String): String {
+    return "[$threadName]: $message"
+}
