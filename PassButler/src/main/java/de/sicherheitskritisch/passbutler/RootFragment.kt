@@ -13,14 +13,11 @@ import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
 
 class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        viewModel = ViewModelProviders.of(this).get(RootViewModel::class.java)
-    }
-
     override fun onAttach(context: Context?) {
         super.onAttach(context)
+
+        // TODO: Should be done in `onActivityCreated`
+        viewModel = ViewModelProviders.of(this).get(RootViewModel::class.java)
 
         activity?.let {
             val contentContainerResourceId = R.id.frameLayout_fragment_root_content_container
