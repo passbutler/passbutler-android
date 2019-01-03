@@ -10,7 +10,7 @@ sealed class AsyncCallbackResult<ResultType, ErrorType> {
     class Failure<ResultType, ErrorType>(val error: ErrorType) : AsyncCallbackResult<ResultType, ErrorType>()
 }
 
-fun <ResultType, ErrorType> asyncCallback(resultHandler: (AsyncCallbackResult<ResultType, ErrorType>) -> Unit): AsyncCallback<ResultType, ErrorType> {
+inline fun <ResultType, ErrorType> asyncCallback(crossinline resultHandler: (AsyncCallbackResult<ResultType, ErrorType>) -> Unit): AsyncCallback<ResultType, ErrorType> {
     return object : AsyncCallback<ResultType, ErrorType>() {
         override fun onSuccess(result: ResultType?) {
             resultHandler(AsyncCallbackResult.Success(result))

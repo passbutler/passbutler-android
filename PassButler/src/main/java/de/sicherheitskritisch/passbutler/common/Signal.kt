@@ -4,14 +4,13 @@ interface Signal {
     fun emitted()
 }
 
-fun signal(emitted: (() -> Unit)) = object : Signal {
+inline fun signal(crossinline emitted: (() -> Unit)) = object : Signal {
     override fun emitted() {
         emitted.invoke()
     }
 }
 
 class SignalEmitter {
-
     private val signalObservers = mutableListOf<Signal>()
 
     fun emit() {

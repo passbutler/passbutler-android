@@ -21,23 +21,28 @@ fun View.showFadeAnimation(shouldShow: Boolean) {
         animate()
             .setDuration(FADE_ANIMATION_DURATION_MILLISECONDS)
             .alpha(endAlpha)
-            .setListener(animatorListenerAdapter(onAnimationEnd = {
-                // Only set viability to gone if necessary
-                if (!shouldShow) {
-                    visibility = View.GONE
+            .setListener(animatorListenerAdapter(
+                onAnimationStart = {
+                    // Not needed
+                },
+                onAnimationEnd = {
+                    // Only set viability to gone if necessary
+                    if (!shouldShow) {
+                        visibility = View.GONE
+                    }
                 }
-            }))
+            ))
     }
 }
 
-fun animatorListenerAdapter(onAnimationEnd: (() -> Unit)? = null, onAnimationStart: (() -> Unit)? = null): AnimatorListenerAdapter {
+inline fun animatorListenerAdapter(crossinline onAnimationEnd: () -> Unit, crossinline onAnimationStart: () -> Unit): AnimatorListenerAdapter {
     return object : AnimatorListenerAdapter() {
         override fun onAnimationStart(animation: Animator) {
-            onAnimationStart?.invoke()
+            onAnimationStart.invoke()
         }
 
         override fun onAnimationEnd(animation: Animator) {
-            onAnimationEnd?.invoke()
+            onAnimationEnd.invoke()
         }
     }
 }
