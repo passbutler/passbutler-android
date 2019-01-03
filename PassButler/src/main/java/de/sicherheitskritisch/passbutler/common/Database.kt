@@ -1,12 +1,15 @@
 package de.sicherheitskritisch.passbutler.common
 
+import android.app.Application
 import android.arch.lifecycle.LiveData
 import android.arch.persistence.room.Dao
+import android.arch.persistence.room.Database
 import android.arch.persistence.room.Entity
 import android.arch.persistence.room.ForeignKey
 import android.arch.persistence.room.Insert
 import android.arch.persistence.room.PrimaryKey
 import android.arch.persistence.room.Query
+import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.Update
 import java.util.*
 
@@ -52,6 +55,15 @@ interface ItemDao {
     @Query("SELECT * FROM items WHERE id = :id")
     fun findById(id: Int): LiveData<Item>
 
+    /*
+    @Query(
+        "SELECT * FROM items " +
+                "INNER JOIN item_keys ON item_keys.itemId = item.id AND item_keys.userId = users.id" +
+                "WHERE users.username LIKE :username"
+    )
+    fun findAccessableForUser(username: String): LiveData<Item>
+    */
+
     @Insert
     fun insert(user: Item)
 
@@ -63,7 +75,7 @@ interface ItemDao {
 }
 
 @Entity(tableName = "item_keys")
-class ItemKeys(
+class ItemKey(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
     @ForeignKey(entity = Item::class, parentColumns = ["id"], childColumns = ["itemId"], onDelete = ForeignKey.CASCADE)
@@ -75,3 +87,29 @@ class ItemKeys(
     val lastModified: Date,
     val created: Date
 )
+
+@Dao
+interface ItemKeyDao {
+    @Query("SELECT * FROM item_keys WHERE id = :id")
+    fun findById(id: Int): LiveData<ItemKey>
+
+    @Insert
+    fun insert(user: ItemKey)
+
+    @Update
+    fun update(vararg itemKeys: ItemKey)
+
+    @Query("DELETE FROM item_keys WHERE id = :id")
+    fun delete(id: Int)
+}
+
+@Database(entities = [User::class, Item::class, ItemKey::class], version = 1, exportSchema = true)
+abstract class PassDatabase : RoomDatabase() {
+    abstract fun userDao(): UserDao
+    abstract fun itemDao(): ItemDao
+    abstract fun itemKeysDao(): ItemKeyDao
+}
+
+class PassRepository(application: Application) {
+
+}

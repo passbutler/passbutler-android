@@ -25,6 +25,12 @@ android {
 
         // Added custom build field to get compile time
         buildConfigField "java.util.Date", "BUILD_TIME", "new java.util.Date(" + System.currentTimeMillis() + "L)"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation": "$projectDir/room_schemas".toString()]
+            }
+        }
     }
 
     buildTypes {
