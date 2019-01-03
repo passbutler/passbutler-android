@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import de.sicherheitskritisch.passbutler.common.observe
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
+import java.lang.ref.WeakReference
 
 class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
@@ -21,7 +22,11 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
         activity?.let {
             val contentContainerResourceId = R.id.frameLayout_fragment_root_content_container
-            fragmentPresentingDelegate = FragmentPresentingDelegate(it, this, contentContainerResourceId)
+            fragmentPresentingDelegate = FragmentPresentingDelegate(
+                WeakReference(it),
+                WeakReference(this),
+                contentContainerResourceId
+            )
         }
     }
 

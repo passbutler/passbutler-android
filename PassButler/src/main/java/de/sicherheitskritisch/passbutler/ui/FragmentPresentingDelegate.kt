@@ -6,59 +6,66 @@ import android.support.transition.Transition
 import android.support.transition.TransitionSet
 import android.support.v4.app.Fragment
 import android.support.v4.view.animation.FastOutSlowInInterpolator
-import android.util.Log
 import android.view.Gravity
+import de.sicherheitskritisch.passbutler.common.L
+import java.lang.ref.WeakReference
 
 /**
  * Provides implementation of fragment management used by the one-activity app concept.
  * This delegate is delegated in `BaseFragment` and provided in the root fragment.
  */
 class FragmentPresentingDelegate(
-    private val activity: Activity,
-    private val rootFragment: Fragment,
+    private val activityWeakReference: WeakReference<Activity>,
+    private val rootFragmentWeakReference: WeakReference<Fragment>,
     private val rootFragmentContainerResourceId: Int
 ) : FragmentPresenting {
+
+    private val activity
+        get() = activityWeakReference.get()
+
+    private val rootFragment
+        get() = rootFragmentWeakReference.get()
 
     /**
      * The fragment manager is used to provide fragment handling for the one-activity app concept
      */
     private val rootFragmentManager
-        get() = rootFragment.childFragmentManager
+        get() = rootFragment?.childFragmentManager
 
     override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean) {
-        if (!activity.isFinishing) {
+        if (activity.isNotFinished) {
+            rootFragmentManager?.beginTransaction()?.let { fragmentTransaction ->
+                // Add fragment transitions to look transaction beautiful
+                addTransitionToAnimatedFragment(fragment)
 
-            addTransitionToAnimatedFragment(fragment)
+                // TODO: debouncing
 
-            val fragmentTransaction = rootFragmentManager.beginTransaction()
-
-            // TODO: debouncing
-
-            if (fragment.isHidden) {
-                fragmentTransaction.show(fragment)
-            } else {
-                if (fragment is BaseFragment) {
-                    fragment.fragmentPresentingDelegate = this
-                }
-
-                val fragmentTag = getFragmentTag(fragment)
-
-                if (replaceFragment) {
-                    fragmentTransaction.replace(rootFragmentContainerResourceId, fragment, fragmentTag)
+                if (fragment.isHidden) {
+                    fragmentTransaction.show(fragment)
                 } else {
-                    fragmentTransaction.add(rootFragmentContainerResourceId, fragment, fragmentTag)
+                    if (fragment is BaseFragment) {
+                        fragment.fragmentPresentingDelegate = this
+                    }
+
+                    val fragmentTag = getFragmentTag(fragment)
+
+                    if (replaceFragment) {
+                        fragmentTransaction.replace(rootFragmentContainerResourceId, fragment, fragmentTag)
+                    } else {
+                        fragmentTransaction.add(rootFragmentContainerResourceId, fragment, fragmentTag)
+                    }
+
+                    if (addToBackstack) {
+                        fragmentTransaction.addToBackStack(fragmentTag)
+                    }
                 }
 
-                if (addToBackstack) {
-                    fragmentTransaction.addToBackStack(fragmentTag)
+                if (rootFragment.isStateNotSaved) {
+                    fragmentTransaction.commit()
+                } else {
+                    L.w("showFragment(): The fragment transaction was done after state of root fragment was saved!")
+                    fragmentTransaction.commitAllowingStateLoss()
                 }
-            }
-
-            if (!rootFragment.isStateSaved) {
-                fragmentTransaction.commit()
-            } else {
-                Log.w(TAG, "showFragment(): The fragment transaction was done after state of root fragment was saved!")
-                fragmentTransaction.commitAllowingStateLoss()
             }
         }
     }
@@ -113,21 +120,24 @@ class FragmentPresentingDelegate(
     }
 
     override fun popBackstack() {
-        if (!activity.isFinishing && !rootFragment.isStateSaved) {
-            rootFragmentManager.popBackStack()
+        if (activity.isNotFinished && rootFragment.isStateNotSaved) {
+            rootFragmentManager?.popBackStack()
         }
     }
 
     override fun backstackCount(): Int {
-        return rootFragmentManager.backStackEntryCount
+        return rootFragmentManager?.backStackEntryCount ?: 0
     }
 
     companion object {
-        private const val TAG = "FragmentPresentingDelegate"
-
         fun getFragmentTag(fragment: Fragment): String {
-            val fragmentClassnameWithPath = fragment.javaClass.canonicalName ?: fragment.javaClass.toString()
-            return fragmentClassnameWithPath
+            return fragment.javaClass.canonicalName ?: fragment.javaClass.toString()
         }
     }
 }
+
+private val Activity?.isNotFinished
+    get() = this?.isFinishing != true
+
+private val Fragment?.isStateNotSaved
+    get() = this?.isStateSaved != true

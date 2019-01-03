@@ -17,6 +17,7 @@ import de.sicherheitskritisch.passbutler.common.validateForm
 import de.sicherheitskritisch.passbutler.databinding.FragmentLoginBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
+import java.lang.ref.WeakReference
 
 class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment {
 
@@ -28,13 +29,13 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        loginRequestSendingViewHandler = LoginRequestSendingViewHandler(viewModel).apply {
+        loginRequestSendingViewHandler = LoginRequestSendingViewHandler(viewModel, WeakReference(this)).apply {
             registerObservers()
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        this.binding = DataBindingUtil.inflate<FragmentLoginBinding>(inflater, R.layout.fragment_login, container, false).also { binding ->
+        binding = DataBindingUtil.inflate<FragmentLoginBinding>(inflater, R.layout.fragment_login, container, false).also { binding ->
             binding.setLifecycleOwner(this)
             binding.viewModel = viewModel
 
@@ -113,15 +114,26 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         super.onDestroy()
     }
 
-    private inner class LoginRequestSendingViewHandler(requestSendingViewModel: RequestSendingViewModel) : RequestSendingViewHandler(requestSendingViewModel) {
+    private class LoginRequestSendingViewHandler(
+        requestSendingViewModel: RequestSendingViewModel,
+        private val fragmentWeakReference: WeakReference<LoginFragment>
+    ) : RequestSendingViewHandler(requestSendingViewModel) {
+
+        private val binding
+            get() = fragmentWeakReference.get()?.binding
+
+        private val resources
+            get() = fragmentWeakReference.get()?.resources
+
         override fun onIsLoadingChanged(isLoading: Boolean) {
             binding?.frameLayoutProgressContainer?.showFadeAnimation(isLoading)
         }
 
         override fun onRequestErrorChanged(requestError: Exception) {
             binding?.constraintLayoutLoginScreenContainer?.let {
-                val snackbarMessage = getString(R.string.login_failed_title)
-                Snackbar.make(it, snackbarMessage, Snackbar.LENGTH_SHORT).show()
+                resources?.getString(R.string.login_failed_title)?.let { snackbarMessage ->
+                    Snackbar.make(it, snackbarMessage, Snackbar.LENGTH_SHORT).show()
+                }
             }
         }
     }
