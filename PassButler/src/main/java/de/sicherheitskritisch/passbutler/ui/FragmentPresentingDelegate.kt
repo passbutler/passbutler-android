@@ -63,7 +63,7 @@ class FragmentPresentingDelegate(
                 if (rootFragment.isStateNotSaved) {
                     fragmentTransaction.commit()
                 } else {
-                    L.w("showFragment(): The fragment transaction was done after state of root fragment was saved!")
+                    L.w("FragmentPresentingDelegate", "showFragment(): The fragment transaction was done after state of root fragment was saved!")
                     fragmentTransaction.commitAllowingStateLoss()
                 }
             }

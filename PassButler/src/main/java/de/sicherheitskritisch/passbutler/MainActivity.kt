@@ -12,7 +12,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        L.d("onCreate(): savedInstanceState = $savedInstanceState")
+        L.d("MainActivity", "onCreate(): savedInstanceState = $savedInstanceState")
 
         val rootFragment = RootFragment.newInstance()
         val fragmentTransaction = supportFragmentManager.beginTransaction()

@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.observe
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
@@ -44,6 +45,7 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
     private fun updateRootScreen() {
         val rootScreenState = viewModel.rootScreenState.value
+        L.d("RootFragment", "updateRootScreen() was called rootScreenState = $rootScreenState")
 
         when (rootScreenState) {
             is RootViewModel.RootScreenState.LoggedIn -> {
