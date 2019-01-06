@@ -1,7 +1,7 @@
 package de.sicherheitskritisch.passbutler
 
+import android.arch.lifecycle.MediatorLiveData
 import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModel
 import android.support.annotation.MainThread
 import de.sicherheitskritisch.passbutler.common.AsyncCallback
@@ -9,28 +9,20 @@ import java.util.*
 
 class RootViewModel : ViewModel() {
 
-    val rootScreenState = MutableLiveData<RootScreenState>()
-
-    val userAccountViewModel = MutableLiveData<UserAccountViewModel>()
-
-    private val userAccountViewModelObserver = Observer<UserAccountViewModel> {
-        val isLoggedIn = (userAccountViewModel.value != null)
-
-        rootScreenState.value = when {
-            isLoggedIn -> RootScreenState.LoggedIn(isUnlocked = true)
-            else -> RootScreenState.LoggedOut()
-        }
-    }
+    val rootScreenState = MediatorLiveData<RootScreenState>()
+    val userAccountViewModel = MutableLiveData<UserAccountViewModel?>()
 
     init {
-        userAccountViewModel.observeForever(userAccountViewModelObserver)
+        rootScreenState.addSource(userAccountViewModel) {
+            val isLoggedIn = (userAccountViewModel.value != null)
+            rootScreenState.value = when (isLoggedIn) {
+                true -> RootScreenState.LoggedIn(isUnlocked = true)
+                false -> RootScreenState.LoggedOut
+            }
+        }
 
         // TODO: try to build UserAccountViewModel from storage
         userAccountViewModel.value = null
-    }
-
-    override fun onCleared() {
-        userAccountViewModel.removeObserver(userAccountViewModelObserver)
     }
 
     @MainThread
@@ -62,6 +54,6 @@ class RootViewModel : ViewModel() {
 
     sealed class RootScreenState {
         class LoggedIn(val isUnlocked: Boolean) : RootScreenState()
-        class LoggedOut : RootScreenState()
+        object LoggedOut : RootScreenState()
     }
 }

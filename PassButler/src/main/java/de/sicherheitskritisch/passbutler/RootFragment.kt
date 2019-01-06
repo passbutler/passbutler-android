@@ -45,7 +45,7 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
     private fun updateRootScreen() {
         val rootScreenState = viewModel.rootScreenState.value
-        L.d("RootFragment", "updateRootScreen() was called rootScreenState = $rootScreenState")
+        L.d("RootFragment", "updateRootScreen(): was called rootScreenState = $rootScreenState")
 
         when (rootScreenState) {
             is RootViewModel.RootScreenState.LoggedIn -> {
@@ -56,7 +56,7 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
                 val overviewFragment = OverviewFragment.newInstance(overviewViewModel)
                 showFragmentAsFirstScreen(overviewFragment)
             }
-            else -> {
+            is RootViewModel.RootScreenState.LoggedOut -> {
                 val loginViewModel = LoginViewModel(viewModel)
                 val loginFragment = LoginFragment.newInstance(loginViewModel)
                 showFragmentAsFirstScreen(loginFragment)
