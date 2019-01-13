@@ -1,6 +1,8 @@
 package de.sicherheitskritisch.passbutler
 
 import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -31,6 +33,15 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     private var navigationHeaderView: View? = null
 
     private val navigationItemSelectedListener = NavigationItemSelectedListener()
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+
+        activity?.let {
+            val rootViewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
+            viewModel = ViewModelProviders.of(this, AppViewModelFactory(rootViewModel)).get(OverviewViewModel::class.java)
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_overview, container, false)
@@ -140,6 +151,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         private const val URL_HOMEPAGE = "https://sicherheitskritisch.de"
         private const val URL_GOOGLE_PLAY = "market://details?id=de.sicherheitskritisch.passbutler"
 
-        fun newInstance(viewModel: OverviewViewModel) = OverviewFragment().also { it.viewModel = viewModel }
+        fun newInstance() = OverviewFragment()
     }
 }

@@ -1,5 +1,7 @@
 package de.sicherheitskritisch.passbutler
 
+import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.design.widget.Snackbar
@@ -25,6 +27,15 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
     private var binding: FragmentLoginBinding? = null
     private var loginRequestSendingViewHandler: LoginRequestSendingViewHandler? = null
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+
+        activity?.let {
+            val rootViewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
+            viewModel = ViewModelProviders.of(this, AppViewModelFactory(rootViewModel)).get(LoginViewModel::class.java)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -144,6 +155,6 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
     }
 
     companion object {
-        fun newInstance(viewModel: LoginViewModel) = LoginFragment().also { it.viewModel = viewModel }
+        fun newInstance() = LoginFragment()
     }
 }

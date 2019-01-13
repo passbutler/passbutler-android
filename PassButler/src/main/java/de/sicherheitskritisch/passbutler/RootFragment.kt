@@ -19,6 +19,8 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
         super.onAttach(context)
 
         activity?.let {
+            viewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
+
             val contentContainerResourceId = R.id.frameLayout_fragment_root_content_container
             fragmentPresentingDelegate = FragmentPresentingDelegate(
                 WeakReference(it),
@@ -32,10 +34,9 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
         return inflater.inflate(R.layout.fragment_root, container, false)
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        viewModel = ViewModelProviders.of(this).get(RootViewModel::class.java)
         viewModel.rootScreenState.observe(this, true, Observer {
             updateRootScreen()
         })
@@ -50,13 +51,11 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
                 // TODO: show lock screen if locked
                 // val isUnlocked = rootScreenState.isUnlocked
 
-                val overviewViewModel = OverviewViewModel(viewModel)
-                val overviewFragment = OverviewFragment.newInstance(overviewViewModel)
+                val overviewFragment = OverviewFragment.newInstance()
                 showFragmentAsFirstScreen(overviewFragment)
             }
             is RootViewModel.RootScreenState.LoggedOut -> {
-                val loginViewModel = LoginViewModel(viewModel)
-                val loginFragment = LoginFragment.newInstance(loginViewModel)
+                val loginFragment = LoginFragment.newInstance()
                 showFragmentAsFirstScreen(loginFragment)
             }
         }
