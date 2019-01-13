@@ -75,51 +75,6 @@ class FragmentPresentingDelegate(
         showFragment(fragment, replaceFragment = true, addToBackstack = false)
     }
 
-    private fun addTransitionToAnimatedFragment(fragment: Fragment) {
-        if (fragment is AnimatedFragment) {
-            when (fragment.transitionType) {
-                AnimatedFragment.TransitionType.SLIDE_HORIZONTAL -> {
-                    fragment.enterTransition = createHorizontalSlideInTransition()
-                    fragment.exitTransition = createHorizontalSlideOutTransition()
-                }
-                AnimatedFragment.TransitionType.SLIDE_VERTICAL -> {
-                    fragment.enterTransition = createVerticalSlideInTransition()
-                    fragment.exitTransition = createVerticalSlideOutTransition()
-                }
-            }
-        }
-    }
-
-    private fun createHorizontalSlideInTransition(): Transition {
-        val transitionSet = createTransitionSetWithDefaultInterpolator()
-        transitionSet.addTransition(Slide(Gravity.END))
-        return transitionSet
-    }
-
-    private fun createHorizontalSlideOutTransition(): Transition {
-        val transitionSet = createTransitionSetWithDefaultInterpolator()
-        transitionSet.addTransition(Slide(Gravity.START))
-        return transitionSet
-    }
-
-    private fun createVerticalSlideInTransition(): Transition {
-        val transitionSet = createTransitionSetWithDefaultInterpolator()
-        transitionSet.addTransition(Slide(Gravity.BOTTOM))
-        return transitionSet
-    }
-
-    private fun createVerticalSlideOutTransition(): Transition {
-        val transitionSet = createTransitionSetWithDefaultInterpolator()
-        transitionSet.addTransition(Slide(Gravity.TOP))
-        return transitionSet
-    }
-
-    private fun createTransitionSetWithDefaultInterpolator(): TransitionSet {
-        val transitionSet = TransitionSet()
-        transitionSet.interpolator = FastOutSlowInInterpolator()
-        return transitionSet
-    }
-
     override fun <T : Fragment> isFragmentShown(fragmentClass: Class<T>): Boolean {
         return if (activity.isNotFinished && rootFragment.isStateNotSaved) {
             val fragmentTag = getFragmentTag(fragmentClass)
@@ -146,6 +101,51 @@ class FragmentPresentingDelegate(
 
         fun <T : Fragment> getFragmentTag(fragmentClass: Class<T>): String {
             return fragmentClass.canonicalName ?: fragmentClass.toString()
+        }
+
+        fun addTransitionToAnimatedFragment(fragment: Fragment) {
+            if (fragment is AnimatedFragment) {
+                when (fragment.transitionType) {
+                    AnimatedFragment.TransitionType.SLIDE_HORIZONTAL -> {
+                        fragment.enterTransition = createHorizontalSlideInTransition()
+                        fragment.exitTransition = createHorizontalSlideOutTransition()
+                    }
+                    AnimatedFragment.TransitionType.SLIDE_VERTICAL -> {
+                        fragment.enterTransition = createVerticalSlideInTransition()
+                        fragment.exitTransition = createVerticalSlideOutTransition()
+                    }
+                }
+            }
+        }
+
+        private fun createHorizontalSlideInTransition(): Transition {
+            val transitionSet = createTransitionSetWithDefaultInterpolator()
+            transitionSet.addTransition(Slide(Gravity.END))
+            return transitionSet
+        }
+
+        private fun createHorizontalSlideOutTransition(): Transition {
+            val transitionSet = createTransitionSetWithDefaultInterpolator()
+            transitionSet.addTransition(Slide(Gravity.START))
+            return transitionSet
+        }
+
+        private fun createVerticalSlideInTransition(): Transition {
+            val transitionSet = createTransitionSetWithDefaultInterpolator()
+            transitionSet.addTransition(Slide(Gravity.BOTTOM))
+            return transitionSet
+        }
+
+        private fun createVerticalSlideOutTransition(): Transition {
+            val transitionSet = createTransitionSetWithDefaultInterpolator()
+            transitionSet.addTransition(Slide(Gravity.TOP))
+            return transitionSet
+        }
+
+        private fun createTransitionSetWithDefaultInterpolator(): TransitionSet {
+            val transitionSet = TransitionSet()
+            transitionSet.interpolator = FastOutSlowInInterpolator()
+            return transitionSet
         }
     }
 }

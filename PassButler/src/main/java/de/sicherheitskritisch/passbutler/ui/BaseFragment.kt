@@ -1,8 +1,10 @@
 package de.sicherheitskritisch.passbutler.ui
 
 import android.content.Context
+import android.os.Bundle
 import android.support.v4.app.Fragment
 import de.sicherheitskritisch.passbutler.MainActivity
+import de.sicherheitskritisch.passbutler.RootFragment
 
 open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPressedListener {
 
@@ -16,6 +18,22 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
     override fun onDetach() {
         (activity as? MainActivity)?.removeOnBackPressedListener(this)
         super.onDetach()
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        if (savedInstanceState != null) {
+            if (this !is RootFragment) {
+                // Restore fragment presenting delegate from `RootFragment` on configuration changes
+                (activity as? MainActivity)?.rootFragment?.fragmentPresentingDelegate?.let {
+                    fragmentPresentingDelegate = it
+                }
+            }
+
+            // Re-apply fragment transition after configuration change
+            FragmentPresentingDelegate.addTransitionToAnimatedFragment(this)
+        }
     }
 
     override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean) {
