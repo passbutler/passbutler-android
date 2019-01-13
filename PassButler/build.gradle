@@ -71,5 +71,9 @@ dependencies {
     // Kotlin Coroutines for Android
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.ext.kotlinCoroutinesVersion"
 
+    // LeakCanary
+    debugImplementation "com.squareup.leakcanary:leakcanary-android:$rootProject.ext.leakCanaryVersion"
+    debugImplementation "com.squareup.leakcanary:leakcanary-support-fragment:$rootProject.ext.leakCanaryVersion"
+
     testImplementation 'junit:junit:4.12'
 }

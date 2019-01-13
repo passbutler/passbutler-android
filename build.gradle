@@ -33,4 +33,5 @@ ext {
     androidLifecycleVersion = '1.1.1'
     androidRoomVersion = '1.1.1'
     kotlinCoroutinesVersion = '1.1.0'
+    leakCanaryVersion = '1.6.3'
 }
