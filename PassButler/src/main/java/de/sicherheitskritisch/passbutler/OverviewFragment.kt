@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.support.design.widget.NavigationView
-import android.support.v4.content.ContextCompat.startActivity
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
@@ -19,7 +18,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
-import java.lang.ref.WeakReference
 
 class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment {
 
@@ -30,7 +28,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     private var navigationView: NavigationView? = null
     private var navigationHeaderView: View? = null
 
-    private var navigationItemSelectedListener: NavigationItemSelectedListener? = null
+    private val navigationItemSelectedListener = NavigationItemSelectedListener()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_overview, container, false)
@@ -59,8 +57,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             toggle.syncState()
         }
 
-        navigationItemSelectedListener = NavigationItemSelectedListener(WeakReference(this))
-
         navigationView = rootView.findViewById<NavigationView>(R.id.navigationView).apply {
             setNavigationItemSelectedListener(navigationItemSelectedListener)
         }
@@ -82,12 +78,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         }
     }
 
-    private class NavigationItemSelectedListener(
-        private val fragmentWeakReference: WeakReference<OverviewFragment>
-    ) : NavigationView.OnNavigationItemSelectedListener {
-
-        private val fragment
-            get() = fragmentWeakReference.get()
+    private inner class NavigationItemSelectedListener : NavigationView.OnNavigationItemSelectedListener {
 
         private val mainThreadHandler = Handler(Looper.getMainLooper())
 
@@ -98,15 +89,15 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
                     true
                 }
                 R.id.drawer_menu_item_settings -> {
-                    fragment?.showFragment(SettingsFragment.newInstance())
+                    showFragment(SettingsFragment.newInstance())
                     true
                 }
                 R.id.drawer_menu_item_about -> {
-                    fragment?.showFragment(AboutFragment.newInstance())
+                    showFragment(AboutFragment.newInstance())
                     true
                 }
                 R.id.drawer_menu_item_logout -> {
-                    fragment?.viewModel?.logoutUser()
+                    viewModel.logoutUser()
                     true
                 }
                 R.id.drawer_menu_item_homepage -> {
@@ -132,7 +123,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
          */
         private fun closeDrawerDelayed() {
             mainThreadHandler.postDelayed({
-                fragment?.drawerLayout?.closeDrawer(GravityCompat.START)
+                drawerLayout?.closeDrawer(GravityCompat.START)
             }, 100)
         }
 
@@ -140,7 +131,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             val intent = Intent(Intent.ACTION_VIEW)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             intent.data = Uri.parse(uriString)
-            fragment?.startActivity(intent)
+            startActivity(intent)
         }
     }
 
