@@ -18,9 +18,6 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
     override fun onAttach(context: Context?) {
         super.onAttach(context)
 
-        // TODO: Should be done in `onActivityCreated`
-        viewModel = ViewModelProviders.of(this).get(RootViewModel::class.java)
-
         activity?.let {
             val contentContainerResourceId = R.id.frameLayout_fragment_root_content_container
             fragmentPresentingDelegate = FragmentPresentingDelegate(
@@ -35,9 +32,10 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
         return inflater.inflate(R.layout.fragment_root, container, false)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
 
+        viewModel = ViewModelProviders.of(this).get(RootViewModel::class.java)
         viewModel.rootScreenState.observe(this, true, Observer {
             updateRootScreen()
         })
@@ -65,7 +63,6 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
     }
 
     companion object {
-        // No `viewModel` argument supplied because it is retrieved from `ViewModelProviders`
         fun newInstance() = RootFragment()
     }
 }
