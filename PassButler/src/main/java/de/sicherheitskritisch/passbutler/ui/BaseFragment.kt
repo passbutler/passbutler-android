@@ -6,7 +6,7 @@ import de.sicherheitskritisch.passbutler.MainActivity
 
 open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPressedListener {
 
-    var fragmentPresentingDelegate: FragmentPresentingDelegate? = null
+    lateinit var fragmentPresentingDelegate: FragmentPresentingDelegate
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -19,23 +19,23 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
     }
 
     override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean) {
-        fragmentPresentingDelegate?.showFragment(fragment, replaceFragment, addToBackstack)
+        fragmentPresentingDelegate.showFragment(fragment, replaceFragment, addToBackstack)
     }
 
     override fun showFragmentAsFirstScreen(fragment: Fragment) {
-        fragmentPresentingDelegate?.showFragmentAsFirstScreen(fragment)
+        fragmentPresentingDelegate.showFragmentAsFirstScreen(fragment)
     }
 
     override fun <T : Fragment> isFragmentShown(fragmentClass: Class<T>): Boolean {
-        return fragmentPresentingDelegate?.isFragmentShown(fragmentClass) ?: false
+        return fragmentPresentingDelegate.isFragmentShown(fragmentClass)
     }
 
     override fun popBackstack() {
-        fragmentPresentingDelegate?.popBackstack()
+        fragmentPresentingDelegate.popBackstack()
     }
 
     override fun backstackCount(): Int {
-        return fragmentPresentingDelegate?.backstackCount() ?: 0
+        return fragmentPresentingDelegate.backstackCount()
     }
 
     /**
