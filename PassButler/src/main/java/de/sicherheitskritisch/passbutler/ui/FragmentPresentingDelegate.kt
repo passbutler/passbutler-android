@@ -7,6 +7,7 @@ import android.support.transition.TransitionSet
 import android.support.v4.app.Fragment
 import android.support.v4.view.animation.FastOutSlowInInterpolator
 import android.view.Gravity
+import de.sicherheitskritisch.passbutler.RootFragment
 import de.sicherheitskritisch.passbutler.common.L
 import java.lang.ref.WeakReference
 
@@ -16,7 +17,7 @@ import java.lang.ref.WeakReference
  */
 class FragmentPresentingDelegate(
     private val activityWeakReference: WeakReference<Activity>,
-    private val rootFragmentWeakReference: WeakReference<Fragment>,
+    private val rootFragmentWeakReference: WeakReference<RootFragment>,
     private val rootFragmentContainerResourceId: Int
 ) : FragmentPresenting {
 
