@@ -12,7 +12,7 @@ import de.sicherheitskritisch.passbutler.common.FormFieldValidator
 import de.sicherheitskritisch.passbutler.common.FormValidationResult
 import de.sicherheitskritisch.passbutler.common.RequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.common.RequestSendingViewModel
-import de.sicherheitskritisch.passbutler.common.showFadeAnimation
+import de.sicherheitskritisch.passbutler.common.showFadeInAnimation
 import de.sicherheitskritisch.passbutler.common.validateForm
 import de.sicherheitskritisch.passbutler.databinding.FragmentLoginBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
@@ -126,7 +126,12 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
             get() = fragmentWeakReference.get()?.resources
 
         override fun onIsLoadingChanged(isLoading: Boolean) {
-            binding?.frameLayoutProgressContainer?.showFadeAnimation(isLoading)
+            /*
+             * Use fade-in animation only because when the `LoginFragment` is replaced by the `RootFragment`,
+             * the animation state of the progress view is reset while fragment transition is running,
+             * which causes a ugly progress bar restart.
+             */
+            binding?.frameLayoutProgressContainer?.showFadeInAnimation(isLoading)
         }
 
         override fun onRequestErrorChanged(requestError: Exception) {

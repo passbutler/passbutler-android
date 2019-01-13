@@ -6,7 +6,31 @@ import android.view.View
 
 const val FADE_ANIMATION_DURATION_MILLISECONDS = 350L
 
-fun View.showFadeAnimation(shouldShow: Boolean) {
+/**
+ * Animates view with fade-in only.
+ */
+fun View.showFadeInAnimation(shouldShow: Boolean) {
+    val shouldShowVisibilityEquivalent = if (shouldShow) View.VISIBLE else View.GONE
+
+    // Only animate if necessary
+    if (visibility != shouldShowVisibilityEquivalent) {
+
+        if (shouldShow) {
+            visibility = View.VISIBLE
+
+            animate()
+                .setDuration(FADE_ANIMATION_DURATION_MILLISECONDS)
+                .alpha(1.0f)
+        } else {
+            visibility = View.GONE
+        }
+    }
+}
+
+/**
+ * Animates view with fade-in and fade-out.
+ */
+fun View.showFadeInOutAnimation(shouldShow: Boolean) {
     val shouldShowVisibilityEquivalent = if (shouldShow) View.VISIBLE else View.GONE
 
     // Only animate if necessary
