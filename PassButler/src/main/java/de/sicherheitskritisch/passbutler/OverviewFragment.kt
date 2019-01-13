@@ -4,8 +4,6 @@ import android.arch.lifecycle.Observer
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
@@ -18,6 +16,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment {
 
@@ -80,8 +82,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
     private inner class NavigationItemSelectedListener : NavigationView.OnNavigationItemSelectedListener {
 
-        private val mainThreadHandler = Handler(Looper.getMainLooper())
-
         override fun onNavigationItemSelected(item: MenuItem): Boolean {
             val shouldCloseDrawer = when (item.itemId) {
                 R.id.drawer_menu_item_overview -> {
@@ -122,9 +122,10 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
          * Closes drawer a little delayed to make show new fragment transaction more pretty.
          */
         private fun closeDrawerDelayed() {
-            mainThreadHandler.postDelayed({
+            GlobalScope.launch(Dispatchers.Main) {
+                delay(100)
                 drawerLayout?.closeDrawer(GravityCompat.START)
-            }, 100)
+            }
         }
 
         private fun startExternalUriIntent(uriString: String) {
