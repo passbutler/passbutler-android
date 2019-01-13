@@ -76,7 +76,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             drawerLayout?.closeDrawer(GravityCompat.START)
             true
         } else {
-            false
+            super.onHandleBackPress()
         }
     }
 
