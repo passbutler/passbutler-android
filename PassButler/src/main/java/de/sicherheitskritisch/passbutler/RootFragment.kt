@@ -37,7 +37,12 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.rootScreenState.observe(this, true, Observer {
+        L.d("RootFragment", "onViewCreated(): savedInstanceState = $savedInstanceState")
+
+        // Do not notify on register on configuration changes because shown fragment will be restored automatically
+        val notifyOnRegister = (savedInstanceState == null)
+
+        viewModel.rootScreenState.observe(this, notifyOnRegister, Observer {
             updateRootScreen()
         })
     }
@@ -51,12 +56,16 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
                 // TODO: show lock screen if locked
                 // val isUnlocked = rootScreenState.isUnlocked
 
-                val overviewFragment = OverviewFragment.newInstance()
-                showFragmentAsFirstScreen(overviewFragment)
+                if (!isFragmentShown(OverviewFragment::class.java)) {
+                    val overviewFragment = OverviewFragment.newInstance()
+                    showFragmentAsFirstScreen(overviewFragment)
+                }
             }
             is RootViewModel.RootScreenState.LoggedOut -> {
-                val loginFragment = LoginFragment.newInstance()
-                showFragmentAsFirstScreen(loginFragment)
+                if (!isFragmentShown(LoginFragment::class.java)) {
+                    val loginFragment = LoginFragment.newInstance()
+                    showFragmentAsFirstScreen(loginFragment)
+                }
             }
         }
     }

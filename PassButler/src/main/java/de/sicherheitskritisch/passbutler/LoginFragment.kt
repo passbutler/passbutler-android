@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.webkit.URLUtil
 import de.sicherheitskritisch.passbutler.common.FormFieldValidator
 import de.sicherheitskritisch.passbutler.common.FormValidationResult
+import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.RequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.common.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.common.showFadeInAnimation
@@ -40,6 +41,8 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        L.d("LoginFragment", "onCreate(): savedInstanceState = $savedInstanceState")
+
         loginRequestSendingViewHandler = LoginRequestSendingViewHandler(viewModel, WeakReference(this)).apply {
             registerObservers()
         }
@@ -58,6 +61,10 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
             binding.buttonLogin.setOnClickListener {
                 loginClicked(binding)
             }
+
+            savedInstanceState?.getString(FORM_FIELD_SERVERURL)?.let { binding.editTextServerurl.setText(it) }
+            savedInstanceState?.getString(FORM_FIELD_USERNAME)?.let { binding.editTextUsername.setText(it) }
+            savedInstanceState?.getString(FORM_FIELD_PASSWORD)?.let { binding.editTextPassword.setText(it) }
         }
 
         return binding?.root
@@ -120,6 +127,16 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         binding?.constraintLayoutLoginScreenContainer?.requestFocus()
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        binding?.let {
+            outState.putString(FORM_FIELD_SERVERURL, it.editTextServerurl.text.toString())
+            outState.putString(FORM_FIELD_USERNAME, it.editTextUsername.text.toString())
+            outState.putString(FORM_FIELD_PASSWORD, it.editTextPassword.text.toString())
+        }
+    }
+
     override fun onDestroy() {
         loginRequestSendingViewHandler?.unregisterObservers()
         super.onDestroy()
@@ -155,6 +172,10 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
     }
 
     companion object {
+        private const val FORM_FIELD_SERVERURL = "FORM_FIELD_SERVERURL"
+        private const val FORM_FIELD_USERNAME = "FORM_FIELD_USERNAME"
+        private const val FORM_FIELD_PASSWORD = "FORM_FIELD_PASSWORD"
+
         fun newInstance() = LoginFragment()
     }
 }

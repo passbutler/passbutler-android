@@ -14,10 +14,13 @@ class MainActivity : AppCompatActivity() {
 
         L.d("MainActivity", "onCreate(): savedInstanceState = $savedInstanceState")
 
-        val rootFragment = RootFragment.newInstance()
-        val fragmentTransaction = supportFragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.frameLayout_main_activity_content_container, rootFragment, rootFragment.tag)
-        fragmentTransaction.commit()
+        // Add `RootFragment` not on configuration changes because shown fragment will be restored automatically
+        if (savedInstanceState == null) {
+            val rootFragment = RootFragment.newInstance()
+            val fragmentTransaction = supportFragmentManager.beginTransaction()
+            fragmentTransaction.replace(R.id.frameLayout_main_activity_content_container, rootFragment, rootFragment.tag)
+            fragmentTransaction.commit()
+        }
     }
 
     override fun onBackPressed() {

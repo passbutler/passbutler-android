@@ -120,6 +120,15 @@ class FragmentPresentingDelegate(
         return transitionSet
     }
 
+    override fun <T : Fragment> isFragmentShown(fragmentClass: Class<T>): Boolean {
+        return if (activity.isNotFinished && rootFragment.isStateNotSaved) {
+            val fragmentTag = getFragmentTag(fragmentClass)
+            rootFragmentManager?.findFragmentByTag(fragmentTag) != null
+        } else {
+            false
+        }
+    }
+
     override fun popBackstack() {
         if (activity.isNotFinished && rootFragment.isStateNotSaved) {
             rootFragmentManager?.popBackStack()
@@ -133,6 +142,10 @@ class FragmentPresentingDelegate(
     companion object {
         fun getFragmentTag(fragment: Fragment): String {
             return fragment.javaClass.canonicalName ?: fragment.javaClass.toString()
+        }
+
+        fun <T : Fragment> getFragmentTag(fragmentClass: Class<T>): String {
+            return fragmentClass.canonicalName ?: fragmentClass.toString()
         }
     }
 }
