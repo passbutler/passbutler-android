@@ -5,9 +5,10 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import android.support.annotation.MainThread
 import de.sicherheitskritisch.passbutler.common.AsyncCallback
+import de.sicherheitskritisch.passbutler.common.PersistenceDelegate
 import java.util.*
 
-class RootViewModel : ViewModel() {
+class RootViewModel : ViewModel(), PersistenceDelegate {
 
     val rootScreenState = MediatorLiveData<RootScreenState>()
     val userAccountViewModel = MutableLiveData<UserAccountViewModel?>()
@@ -23,6 +24,10 @@ class RootViewModel : ViewModel() {
 
         // TODO: try to build UserAccountViewModel from storage
         userAccountViewModel.value = null
+    }
+
+    override fun persist() {
+        // TODO: persist Useraccountvm to storage
     }
 
     @MainThread

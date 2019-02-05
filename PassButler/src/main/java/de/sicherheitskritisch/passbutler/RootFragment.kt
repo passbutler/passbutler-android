@@ -2,16 +2,23 @@ package de.sicherheitskritisch.passbutler
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.arch.persistence.room.Room
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import de.sicherheitskritisch.passbutler.common.L
+import de.sicherheitskritisch.passbutler.common.PassDatabase
+import de.sicherheitskritisch.passbutler.common.User
 import de.sicherheitskritisch.passbutler.common.observe
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
+import java.time.Instant
+import java.util.*
 
 class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
@@ -45,6 +52,26 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
         viewModel.rootScreenState.observe(this, notifyOnRegister, Observer {
             updateRootScreen()
         })
+
+
+        val database = Room.databaseBuilder(activity?.applicationContext!!, PassDatabase::class.java, "passDatabase")
+            .allowMainThreadQueries ()
+            .fallbackToDestructiveMigration()
+            .build()
+
+        GlobalScope.launch {
+
+            val now = Date.from(Instant.now())
+            database.userDao().insert(User("testuser1", now, now))
+
+            val testuser1 = database.userDao().findByUsername("testuser1")
+            val testuser2 = database.userDao().findByUsername("testuser2")
+
+            L.d("RootFragment", "onViewCreated(): testuser1 = ${testuser1}, testuser2 = ${testuser2}")
+
+        }
+
+
     }
 
     private fun updateRootScreen() {

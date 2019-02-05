@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -62,11 +63,11 @@ dependencies {
 
     // Android Lifecycle and ViewModel components
     implementation "android.arch.lifecycle:extensions:$rootProject.ext.androidLifecycleVersion"
-    annotationProcessor "android.arch.lifecycle:compiler:$rootProject.ext.androidLifecycleVersion"
+    kapt "android.arch.lifecycle:compiler:$rootProject.ext.androidLifecycleVersion"
 
     // Android Room components
     implementation "android.arch.persistence.room:runtime:$rootProject.ext.androidRoomVersion"
-    annotationProcessor "android.arch.persistence.room:compiler:$rootProject.ext.androidRoomVersion"
+    kapt "android.arch.persistence.room:compiler:$rootProject.ext.androidRoomVersion"
 
     // Kotlin Coroutines for Android
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.ext.kotlinCoroutinesVersion"
