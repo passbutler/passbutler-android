@@ -33,8 +33,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         super.onAttach(context)
 
         activity?.let {
-            val rootViewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
-            viewModel = ViewModelProviders.of(this, AppViewModelFactory(rootViewModel)).get(LoginViewModel::class.java)
+            viewModel = ViewModelProviders.of(it).get(LoginViewModel::class.java)
         }
     }
 

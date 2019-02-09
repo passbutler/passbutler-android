@@ -38,8 +38,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         super.onAttach(context)
 
         activity?.let {
-            val rootViewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
-            viewModel = ViewModelProviders.of(this, AppViewModelFactory(rootViewModel)).get(OverviewViewModel::class.java)
+            viewModel = ViewModelProviders.of(it).get(OverviewViewModel::class.java)
         }
     }
 
@@ -75,9 +74,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         }
         navigationHeaderView = navigationView?.inflateHeaderView(R.layout.main_drawer_header)
 
-        viewModel.userAccountViewModel.observe(this, Observer {
+        viewModel.storedUser.observe(this, Observer {
             navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_subtitle)?.also { subtitleView ->
-                subtitleView.text = viewModel.userAccountViewModel.value?.username
+                subtitleView.text = viewModel.storedUser.value?.username
             }
         })
     }

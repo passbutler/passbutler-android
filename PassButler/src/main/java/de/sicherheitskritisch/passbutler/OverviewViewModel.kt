@@ -2,12 +2,12 @@ package de.sicherheitskritisch.passbutler
 
 import android.arch.lifecycle.ViewModel
 
-class OverviewViewModel(private val rootViewModel: RootViewModel) : ViewModel() {
+class OverviewViewModel() : ViewModel() {
 
-    internal val userAccountViewModel
-        get() = rootViewModel.userAccountViewModel
+    internal val storedUser
+        get() = UserManager.storedUser
 
     internal fun logoutUser() {
-        rootViewModel.logoutUser()
+        UserManager.logoutUser()
     }
 }

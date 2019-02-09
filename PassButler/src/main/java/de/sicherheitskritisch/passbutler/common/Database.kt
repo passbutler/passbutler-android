@@ -2,6 +2,7 @@ package de.sicherheitskritisch.passbutler.common
 
 import android.arch.persistence.room.Dao
 import android.arch.persistence.room.Database
+import android.arch.persistence.room.Delete
 import android.arch.persistence.room.Entity
 import android.arch.persistence.room.Insert
 import android.arch.persistence.room.OnConflictStrategy.REPLACE
@@ -33,8 +34,8 @@ interface UserDao {
     @Update
     fun update(vararg users: User)
 
-    @Query("DELETE FROM users WHERE username = :username")
-    fun delete(username: String)
+    @Delete
+    fun delete(user: User)
 }
 
 @Database(entities = [User::class], version = 2, exportSchema = true)

@@ -4,12 +4,12 @@ import de.sicherheitskritisch.passbutler.common.AsyncCallbackResult
 import de.sicherheitskritisch.passbutler.common.DefaultRequestSendingViewModel
 import de.sicherheitskritisch.passbutler.common.asyncCallback
 
-class LoginViewModel(private val rootViewModel: RootViewModel) : DefaultRequestSendingViewModel() {
+class LoginViewModel : DefaultRequestSendingViewModel() {
 
     internal fun loginUser(serverUrl: String, username: String, password: String) {
         isLoading.value = true
 
-        rootViewModel.loginUser(serverUrl, username, password, asyncCallback { result ->
+        UserManager.loginUser(serverUrl, username, password, asyncCallback { result ->
             isLoading.postValue(false)
 
             when (result) {
@@ -22,7 +22,7 @@ class LoginViewModel(private val rootViewModel: RootViewModel) : DefaultRequestS
     internal fun loginDemoUser() {
         isLoading.value = true
 
-        rootViewModel.loginDemoUser(asyncCallback { result ->
+        UserManager.loginDemoUser(asyncCallback { result ->
             isLoading.postValue(false)
 
             when (result) {
