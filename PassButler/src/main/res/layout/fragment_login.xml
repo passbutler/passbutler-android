@@ -156,7 +156,7 @@
 
         </ScrollView>
 
-        <!-- Progress screen (clickable to avoid touch-through overlay) -->
+        <!-- Progress screen is clickable to avoid touch-through overlay -->
         <FrameLayout
             android:id="@+id/frameLayout_progress_container"
             android:layout_width="match_parent"
@@ -165,13 +165,8 @@
             android:clickable="true"
             android:visibility="gone">
 
-            <ProgressBar
-                android:id="@+id/login_progress"
-                style="?android:attr/progressBarStyleLarge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                />
+            <include
+                layout="@layout/layout_progress_screen" />
 
         </FrameLayout>
 
