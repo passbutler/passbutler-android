@@ -1,9 +1,8 @@
 package de.sicherheitskritisch.passbutler
 
-import android.app.Application
 import com.squareup.leakcanary.LeakCanary
 
-class AppApplication : Application() {
+class PassButlerApplication : AbstractPassButlerApplication() {
     override fun onCreate() {
         super.onCreate()
 
