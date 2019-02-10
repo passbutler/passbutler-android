@@ -8,7 +8,7 @@ import de.sicherheitskritisch.passbutler.common.observeForever
 
 class RootViewModel : ViewModel() {
 
-    val rootScreenState = MediatorLiveData<RootScreenState>()
+    internal val rootScreenState = MediatorLiveData<RootScreenState>()
 
     private val storedUser
         get() = UserManager.storedUser
