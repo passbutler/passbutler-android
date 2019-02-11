@@ -17,7 +17,6 @@
 
     <string name="login_failed_title">Anmeldung hat leider nicht geklappt</string>
 
-
     <!-- Drawer -->
 
     <string name="drawer_header_title">Pass Butler</string>
@@ -46,5 +45,10 @@
     <!-- Settings -->
 
     <string name="settings_title">Einstellungen</string>
+
+    <!-- Locked screen -->
+
+    <string name="locked_screen_header">PassButler ist gesperrt</string>
+    <string name="locked_screen_description">Bitte entsperren Sie mit Passwort oder Fingerabdruck</string>
 
 </resources>

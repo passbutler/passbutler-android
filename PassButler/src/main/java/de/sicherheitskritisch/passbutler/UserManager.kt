@@ -8,15 +8,27 @@ import de.sicherheitskritisch.passbutler.common.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import java.time.Instant
-import java.util.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 import kotlin.coroutines.CoroutineContext
 
-private const val DEMOMODE_USERNAME = "demouser@sicherheitskritisch.de"
+// TODO: Put to assets
+private const val DEMOMODE_USERS_RESPONSE = """
+[
+    {
+        "username": "demouser@sicherheitskritisch.de",
+        "lockTimeout": 2,
+        "lastModified": 123,
+        "created": 123
+    }
+]
+"""
 
 object UserManager : CoroutineScope {
 
-    val storedUser = MutableLiveData<User?>()
+    internal val loggedInUser = MutableLiveData<User?>()
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + coroutineJob
@@ -33,47 +45,62 @@ object UserManager : CoroutineScope {
             .build()
     }
 
-    fun restoreUser(): User? {
-        return roomDatabase.userDao().findByUsername(DEMOMODE_USERNAME)
-    }
-
-    fun persistUser(user: User) {
-        roomDatabase.userDao().insert(user)
-    }
-
-    fun removeUser(user: User) {
-        roomDatabase.userDao().delete(user)
+    fun restoreLoggedInUser() {
+        val restoredLoggedInUser = roomDatabase.userDao().findLoggedInUser()
+        loggedInUser.value = restoredLoggedInUser
     }
 
     fun loginUser(userName: String, password: String, serverUrl: String, asyncCallback: AsyncCallback<Unit, Exception>) {
-        // TODO: Use coroutines
-        Timer().schedule(object : TimerTask() {
-            override fun run() {
-                val now = Date.from(Instant.now())
-                persistUser(User(DEMOMODE_USERNAME, now, now))
+        launch {
+            // TODO: Connect to server
+            // TODO: Authenticate with given credentials
+            // TODO: If successful, store server url and credentials
+            // TODO: Load users list and find user
+
+            val userJsonObject = JSONObject()
+
+            User.deserialize(userJsonObject)?.let { realUser ->
+                // Mark user model as logged-in user and persist it
+                realUser.isLoggedIn = true
+                persistUser(realUser)
 
                 asyncCallback.onSuccess()
+            } ?: run {
+                asyncCallback.onFailure(LoginFailedException())
             }
-        }, 1000)
+        }
     }
 
     fun loginDemoUser(asyncCallback: AsyncCallback<Unit, Exception>) {
-        // TODO: Use coroutines
-        Timer().schedule(object : TimerTask() {
-            override fun run() {
-                val now = Date.from(Instant.now())
-                val newUser = User(DEMOMODE_USERNAME, now, now)
-                persistUser(newUser)
+        launch {
+            // Add an artificial delay for login progress simulation
+            delay(1000)
 
-                storedUser.postValue(newUser)
+            val demoModeUsers = JSONArray(DEMOMODE_USERS_RESPONSE)
+            val demoModeUserJsonObject = demoModeUsers.getJSONObject(0)
+
+            User.deserialize(demoModeUserJsonObject)?.let { demoUser ->
+                // Mark user model as logged-in user and persist it
+                demoUser.isLoggedIn = true
+                persistUser(demoUser)
 
                 asyncCallback.onSuccess()
+            } ?: run {
+                asyncCallback.onFailure(DemoModeLoginFailedException())
             }
-        }, 1000)
+        }
     }
 
     fun logoutUser() {
-        // TODO: Remove user
-        storedUser.postValue(null)
+        roomDatabase.clearAllTables()
+        loggedInUser.value = null
+    }
+
+    private fun persistUser(user: User) {
+        roomDatabase.userDao().insert(user)
+        loggedInUser.postValue(user)
     }
 }
+
+class LoginFailedException : Exception()
+class DemoModeLoginFailedException : Exception()

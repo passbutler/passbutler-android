@@ -12,21 +12,40 @@ import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.TypeConverter
 import android.arch.persistence.room.TypeConverters
 import android.arch.persistence.room.Update
+import org.json.JSONException
+import org.json.JSONObject
 import java.util.*
-
 
 @Entity(tableName = "users")
 class User(
     @PrimaryKey
     val username: String,
+    val lockTimeout: Int,
+    var isLoggedIn: Boolean = false,
     val lastModified: Date,
     val created: Date
-)
+) {
+    companion object {
+        fun deserialize(jsonObject: JSONObject): User? {
+            return try {
+                User(
+                    username = jsonObject.getString("username"),
+                    lockTimeout = jsonObject.getInt("lockTimeout"),
+                    lastModified = Date(jsonObject.getLong("lastModified")),
+                    created = Date(jsonObject.getLong("created"))
+                )
+            } catch (e: JSONException) {
+                L.w("User", "The user could not be deserialized using the following JSON: $jsonObject", e)
+                null
+            }
+        }
+    }
+}
 
 @Dao
 interface UserDao {
-    @Query("SELECT * FROM users WHERE username = :username")
-    fun findByUsername(username: String): User
+    @Query("SELECT * FROM users WHERE isLoggedIn = 1")
+    fun findLoggedInUser(): User?
 
     @Insert(onConflict = REPLACE)
     fun insert(user: User)
@@ -38,7 +57,7 @@ interface UserDao {
     fun delete(user: User)
 }
 
-@Database(entities = [User::class], version = 2, exportSchema = true)
+@Database(entities = [User::class], version = 1, exportSchema = false)
 @TypeConverters(DatabaseConverters::class)
 abstract class PassDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -46,12 +65,14 @@ abstract class PassDatabase : RoomDatabase() {
 
 class DatabaseConverters {
     @TypeConverter
-    fun toDate(timestamp: Long?): Date? {
-        return timestamp?.let { Date(it) }
-    }
+    fun longToDate(long: Long?) = long?.let { Date(it) }
 
     @TypeConverter
-    fun toTimestamp(date: Date?): Long? {
-        return date?.time
-    }
+    fun dateToLong(date: Date?) = date?.time
+
+    @TypeConverter
+    fun booleanToInt(boolean: Boolean?) = boolean?.let { if (it) 1 else 0 }
+
+    @TypeConverter
+    fun intToBoolean(int: Int?) = int?.let { it == 1 }
 }

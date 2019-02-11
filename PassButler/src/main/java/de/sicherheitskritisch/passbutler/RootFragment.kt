@@ -49,12 +49,19 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
         when (rootScreenState) {
             is RootViewModel.RootScreenState.LoggedIn -> {
-                // TODO: show lock screen if locked
-                 val isUnlocked = rootScreenState.isUnlocked
-
-                if (!isFragmentShown(OverviewFragment::class.java)) {
-                    val overviewFragment = OverviewFragment.newInstance()
-                    showFragmentAsFirstScreen(overviewFragment)
+                when (rootScreenState.isUnlocked) {
+                    true -> {
+                        if (!isFragmentShown(OverviewFragment::class.java)) {
+                            val overviewFragment = OverviewFragment.newInstance()
+                            showFragmentAsFirstScreen(overviewFragment)
+                        }
+                    }
+                    false -> {
+                        if (!isFragmentShown(LockedScreenFragment::class.java)) {
+                            val overviewFragment = LockedScreenFragment.newInstance()
+                            showFragmentAsFirstScreen(overviewFragment)
+                        }
+                    }
                 }
             }
             is RootViewModel.RootScreenState.LoggedOut -> {
@@ -64,6 +71,16 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.applicationWasResumed()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.applicationWasPaused()
     }
 
     companion object {

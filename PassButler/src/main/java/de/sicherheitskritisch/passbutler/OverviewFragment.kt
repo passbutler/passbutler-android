@@ -39,6 +39,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
         activity?.let {
             viewModel = ViewModelProviders.of(it).get(OverviewViewModel::class.java)
+
+            val rootViewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
+            viewModel.rootViewModel = rootViewModel
         }
     }
 
@@ -74,9 +77,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         }
         navigationHeaderView = navigationView?.inflateHeaderView(R.layout.main_drawer_header)
 
-        viewModel.storedUser.observe(this, Observer {
+        viewModel.userViewModel?.username?.observe(this, Observer {
             navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_subtitle)?.also { subtitleView ->
-                subtitleView.text = viewModel.storedUser.value?.username
+                subtitleView.text = viewModel.userViewModel?.username?.value
             }
         })
     }
@@ -129,7 +132,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         }
 
         /**
-         * Closes drawer a little delayed to make show new fragment transaction more pretty.
+         * Closes drawer a little delayed to make show new fragment transaction more pretty
          */
         private fun closeDrawerDelayed() {
             GlobalScope.launch(Dispatchers.Main) {
