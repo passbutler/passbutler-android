@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="viewModel"
+            type="de.sicherheitskritisch.passbutler.RootViewModel" />
+
+    </data>
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/constraintLayout_login_screen_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <TextView
+            android:id="@+id/textView_headline"
+            style="@style/Headline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/default_margin_horizontal"
+            android:layout_marginStart="@dimen/default_margin_horizontal"
+            android:layout_marginTop="@dimen/default_margin_vertical"
+            android:text="@string/locked_screen_header"
+            app:layout_constraintBottom_toTopOf="@+id/textView_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed" />
+
+        <TextView
+            android:id="@+id/textView_description"
+            style="@style/TextPassage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/default_margin_horizontal"
+            android:layout_marginStart="@dimen/default_margin_horizontal"
+            android:layout_marginTop="@dimen/default_margin_vertical"
+            android:text="@string/locked_screen_description"
+            app:layout_constraintBottom_toTopOf="@+id/imageView_fingerprint_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView_headline" />
+
+        <ImageView
+            android:id="@+id/imageView_fingerprint_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="@dimen/default_margin_vertical"
+            android:layout_marginEnd="@dimen/default_margin_horizontal"
+            android:layout_marginStart="@dimen/default_margin_horizontal"
+            android:layout_marginTop="@dimen/default_margin_vertical"
+            android:src="@drawable/icon_fingerprint_24dp"
+            android:tint="@color/black"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView_description"
+            app:layout_constraintVertical_bias="0.0" />
+
+    </android.support.constraint.ConstraintLayout>
+</layout>
