@@ -9,6 +9,7 @@ object Logger {
     fun d(tag: String, message: String) = Log.d(tag, buildLogString(message))
     fun i(tag: String, message: String) = Log.i(tag, buildLogString(message))
     fun w(tag: String, message: String) = Log.w(tag, buildLogString(message))
+    fun w(tag: String, message: String, throwable: Throwable) = Log.w(tag, buildLogString(message), throwable)
 }
 
 private fun buildLogString(message: String): String {
