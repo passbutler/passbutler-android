@@ -10,7 +10,7 @@ fun <T> LiveData<T>.observe(owner: LifecycleOwner, notifyOnRegister: Boolean, ob
     observe(owner, observer)
 
     if (notifyOnRegister) {
-        observer.onChanged(null)
+        observer.onChanged(value)
     }
 }
 
@@ -19,6 +19,6 @@ fun <T> LiveData<T>.observeForever(notifyOnRegister: Boolean, observer: Observer
     observeForever(observer)
 
     if (notifyOnRegister) {
-        observer.onChanged(null)
+        observer.onChanged(value)
     }
 }
