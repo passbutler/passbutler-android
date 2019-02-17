@@ -46,6 +46,10 @@
 
     <string name="settings_title">Einstellungen</string>
 
+    <string name="settings_header">Einstellungen</string>
+    <string name="settings_setting_locktimeout_label">Automatische Sperre</string>
+
+
     <!-- Locked screen -->
 
     <string name="locked_screen_header">PassButler ist gesperrt</string>

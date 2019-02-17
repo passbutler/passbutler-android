@@ -16,13 +16,15 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
 
+// TODO: Store "is user the logged in user" elsewhere
+
 @Entity(tableName = "users")
 class User(
     @PrimaryKey
     val username: String,
-    val lockTimeout: Int,
+    var lockTimeout: Int,
     var isLoggedIn: Boolean = false,
-    val lastModified: Date,
+    var lastModified: Date,
     val created: Date
 ) {
     companion object {
@@ -50,7 +52,7 @@ interface UserDao {
     @Insert(onConflict = REPLACE)
     fun insert(user: User)
 
-    @Update
+    @Update(onConflict = REPLACE)
     fun update(vararg users: User)
 
     @Delete

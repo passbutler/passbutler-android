@@ -20,9 +20,6 @@ class RootViewModel : ViewModel() {
 
     private var lockScreenCoroutineJob: Job? = null
 
-    private val loggedInUser
-        get() = UserManager.loggedInUser
-
     private val loggedInUserObserver = Observer<User?> { newUser ->
         if (newUser != null) {
             loggedInUserViewModel = UserViewModel(newUser)
@@ -34,7 +31,7 @@ class RootViewModel : ViewModel() {
     }
 
     init {
-        loggedInUser.observeForever(loggedInUserObserver)
+        UserManager.loggedInUser.observeForever(loggedInUserObserver)
 
         // Try to restore logged-in user after the observer was added
         UserManager.restoreLoggedInUser()
@@ -42,6 +39,8 @@ class RootViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
+
+        UserManager.loggedInUser.removeObserver(loggedInUserObserver)
         cancelLockScreenTimer()
     }
 
@@ -55,11 +54,11 @@ class RootViewModel : ViewModel() {
 
     private fun startLockScreenTimer() {
         // Only if user is logged in, start delayed lock screen timer
-        loggedInUser.value?.let { loggedInUser ->
+        loggedInUserViewModel?.lockTimeout?.value?.let { lockTimeout ->
             // TODO: This should be more elegant
             lockScreenCoroutineJob?.cancel()
             lockScreenCoroutineJob = GlobalScope.launch(Dispatchers.Main) {
-                val userLockTimeoutMilliseconds = loggedInUser.lockTimeout * DateUtils.SECOND_IN_MILLIS
+                val userLockTimeoutMilliseconds = lockTimeout * DateUtils.SECOND_IN_MILLIS
                 delay(userLockTimeoutMilliseconds)
 
                 lockScreen()

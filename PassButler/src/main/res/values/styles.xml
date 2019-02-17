@@ -31,6 +31,18 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <style name="HeadlineSmall"
+           parent="TextAppearance.AppCompat.Headline">
+        <item name="android:textSize">15sp</item>
+        <item name="android:lineSpacingExtra">6sp</item>
+        <item name="android:textColorHint">@color/colorHeadline</item>
+        <item name="android:textColor">@color/colorHeadline</item>
+        <item name="android:textColorHighlight">@color/colorHeadline</item>
+        <item name="android:textColorLink">@color/colorHeadline</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
     <style name="TextPassage"
            parent="TextAppearance.AppCompat.Medium">
         <item name="android:textSize">15sp</item>
@@ -65,6 +77,14 @@
         <!-- Manually set hint color to avoid on-click color change caused by clickability of parent layout: -->
         <item name="android:textColorHint">@color/colorTextEditTextHint</item>
     </style>
+
+    <style name="SeekBarDiscrete"
+           parent="Widget.AppCompat.SeekBar.Discrete">
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+    </style>
+
+    <!--Widget.AppCompat.SeekBar.Discrete-->
 
     <!-- Special styles -->
 

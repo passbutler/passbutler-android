@@ -62,7 +62,7 @@ object UserManager : CoroutineScope {
             User.deserialize(userJsonObject)?.let { realUser ->
                 // Mark user model as logged-in user and persist it
                 realUser.isLoggedIn = true
-                persistUser(realUser)
+                storeUser(realUser)
 
                 asyncCallback.onSuccess()
             } ?: run {
@@ -82,7 +82,7 @@ object UserManager : CoroutineScope {
             User.deserialize(demoModeUserJsonObject)?.let { demoUser ->
                 // Mark user model as logged-in user and persist it
                 demoUser.isLoggedIn = true
-                persistUser(demoUser)
+                storeUser(demoUser)
 
                 asyncCallback.onSuccess()
             } ?: run {
@@ -91,12 +91,16 @@ object UserManager : CoroutineScope {
         }
     }
 
+    fun updateUser(user: User) {
+        roomDatabase.userDao().update(user)
+    }
+
     fun logoutUser() {
         roomDatabase.clearAllTables()
         loggedInUser.value = null
     }
 
-    private fun persistUser(user: User) {
+    private fun storeUser(user: User) {
         roomDatabase.userDao().insert(user)
         loggedInUser.postValue(user)
     }
