@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply plugin: "de.mannodermaus.android-junit5"
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -76,5 +77,11 @@ dependencies {
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$rootProject.ext.leakCanaryVersion"
     debugImplementation "com.squareup.leakcanary:leakcanary-support-fragment:$rootProject.ext.leakCanaryVersion"
 
-    testImplementation 'junit:junit:4.12'
+    // JUnit 5
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$rootProject.ext.jUnitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$rootProject.ext.jUnitVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:$rootProject.ext.jUnitVersion"
+
+    // Mockk.io
+    testImplementation "io.mockk:mockk:$rootProject.ext.mockkioVersion"
 }
