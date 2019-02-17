@@ -17,10 +17,12 @@ private fun buildLogString(message: String, throwable: Throwable? = null): Strin
 
     // The logger swallows `UnknownHostException` exception, so we can't use `Log.x(String, String, Throwable)`
     val throwableStackTrace = throwable?.let {
-        val throwableMessage = it.message
+        // The `message` field not always contains the full message (e.g. for `FileNotFoundException`)
+        val throwableMessage = it.toString()
+
         val stacktraceString = it.stackTrace?.joinToString("\n")
         "\n$throwableMessage\n$stacktraceString"
-    }
+    } ?: ""
 
     return "[$threadName]: $message$throwableStackTrace"
 }
