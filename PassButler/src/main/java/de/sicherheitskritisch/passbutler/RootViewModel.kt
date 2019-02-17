@@ -1,6 +1,6 @@
 package de.sicherheitskritisch.passbutler
 
-import android.arch.lifecycle.MediatorLiveData
+import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModel
 import android.text.format.DateUtils
@@ -13,8 +13,8 @@ import kotlinx.coroutines.launch
 
 class RootViewModel : ViewModel() {
 
-    internal val rootScreenState = MediatorLiveData<RootScreenState>()
-    internal val unlockScreenMethod = MediatorLiveData<UnlockScreenMethod>()
+    internal val rootScreenState = MutableLiveData<RootScreenState>()
+    internal val unlockScreenMethod = MutableLiveData<UnlockScreenMethod>()
 
     internal var loggedInUserViewModel: UserViewModel? = null
 
