@@ -3,6 +3,7 @@ package de.sicherheitskritisch.passbutler
 import android.arch.lifecycle.MutableLiveData
 import android.arch.persistence.room.Room
 import de.sicherheitskritisch.passbutler.common.AsyncCallback
+import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.PassDatabase
 import de.sicherheitskritisch.passbutler.common.User
 import kotlinx.coroutines.CoroutineScope
@@ -12,19 +13,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
 import kotlin.coroutines.CoroutineContext
-
-// TODO: Put to assets
-private const val DEMOMODE_USERS_RESPONSE = """
-[
-    {
-        "username": "demouser@sicherheitskritisch.de",
-        "lockTimeout": 2,
-        "lastModified": 123,
-        "created": 123
-    }
-]
-"""
 
 object UserManager : CoroutineScope {
 
@@ -76,16 +68,25 @@ object UserManager : CoroutineScope {
             // Add an artificial delay for login progress simulation
             delay(1000)
 
-            val demoModeUsers = JSONArray(DEMOMODE_USERS_RESPONSE)
-            val demoModeUserJsonObject = demoModeUsers.getJSONObject(0)
+            try {
+                val assetsDirectory = AbstractPassButlerApplication.applicationContext.assets
+                BufferedReader(InputStreamReader(assetsDirectory.open("demomode_users.json"))).use { responseReader ->
+                    val demoModeUsersFileContents = responseReader.readLines().joinToString("\n")
+                    val demoModeUsers = JSONArray(demoModeUsersFileContents)
+                    val demoModeUserJsonObject = demoModeUsers.getJSONObject(0)
 
-            User.deserialize(demoModeUserJsonObject)?.let { demoUser ->
-                // Mark user model as logged-in user and persist it
-                demoUser.isLoggedIn = true
-                storeUser(demoUser)
+                    User.deserialize(demoModeUserJsonObject)?.let { demoUser ->
+                        // Mark user model as logged-in user and persist it
+                        demoUser.isLoggedIn = true
+                        storeUser(demoUser)
 
-                asyncCallback.onSuccess()
-            } ?: run {
+                        asyncCallback.onSuccess()
+                    } ?: run {
+                        asyncCallback.onFailure(DemoModeLoginFailedException())
+                    }
+                }
+            } catch (e: IOException) {
+                L.w("UserManager", "loginDemoUser(): The demo mode users file could not be read!", e)
                 asyncCallback.onFailure(DemoModeLoginFailedException())
             }
         }

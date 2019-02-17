@@ -19,11 +19,12 @@ import java.util.*
 // TODO: Store "is user the logged in user" elsewhere
 
 @Entity(tableName = "users")
-class User(
+data class User(
     @PrimaryKey
     val username: String,
     var lockTimeout: Int,
     var isLoggedIn: Boolean = false,
+    var deleted: Boolean,
     var lastModified: Date,
     val created: Date
 ) {
@@ -33,6 +34,7 @@ class User(
                 User(
                     username = jsonObject.getString("username"),
                     lockTimeout = jsonObject.getInt("lockTimeout"),
+                    deleted = jsonObject.getInt("deleted") == 1,
                     lastModified = Date(jsonObject.getLong("lastModified")),
                     created = Date(jsonObject.getLong("created"))
                 )
