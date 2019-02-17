@@ -49,7 +49,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate<FragmentLoginBinding>(inflater, R.layout.fragment_login, container, false).also { binding ->
-            binding.setLifecycleOwner(this)
+            binding.lifecycleOwner = this
             binding.viewModel = viewModel
 
             binding.imageViewLogo.setOnLongClickListener {

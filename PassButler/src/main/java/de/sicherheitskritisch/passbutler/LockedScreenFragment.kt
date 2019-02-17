@@ -22,7 +22,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = DataBindingUtil.inflate<FragmentLockedScreenBinding>(inflater, R.layout.fragment_locked_screen, container, false).also { binding ->
-            binding.setLifecycleOwner(this)
+            binding.lifecycleOwner = this
             binding.viewModel = viewModel
 
             binding.imageViewFingerprintIcon.setOnClickListener {
