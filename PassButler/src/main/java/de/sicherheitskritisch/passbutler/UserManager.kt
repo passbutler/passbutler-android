@@ -51,10 +51,10 @@ object UserManager : CoroutineScope {
 
             val userJsonObject = JSONObject()
 
-            User.deserialize(userJsonObject)?.let { realUser ->
+            User.deserialize(userJsonObject)?.let { deserializedUser ->
                 // Mark user model as logged-in user and persist it
-                realUser.isLoggedIn = true
-                storeUser(realUser)
+                deserializedUser.isLoggedIn = true
+                storeUser(deserializedUser)
 
                 asyncCallback.onSuccess()
             } ?: run {
@@ -75,10 +75,10 @@ object UserManager : CoroutineScope {
                     val demoModeUsers = JSONArray(demoModeUsersFileContents)
                     val demoModeUserJsonObject = demoModeUsers.getJSONObject(0)
 
-                    User.deserialize(demoModeUserJsonObject)?.let { demoUser ->
+                    User.deserialize(demoModeUserJsonObject)?.let { deserializedUser ->
                         // Mark user model as logged-in user and persist it
-                        demoUser.isLoggedIn = true
-                        storeUser(demoUser)
+                        deserializedUser.isLoggedIn = true
+                        storeUser(deserializedUser)
 
                         asyncCallback.onSuccess()
                     } ?: run {
