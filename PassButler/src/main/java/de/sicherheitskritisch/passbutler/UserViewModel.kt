@@ -3,7 +3,7 @@ package de.sicherheitskritisch.passbutler
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModel
-import de.sicherheitskritisch.passbutler.common.User
+import de.sicherheitskritisch.passbutler.models.User
 
 class UserViewModel(private val user: User) : ViewModel() {
 

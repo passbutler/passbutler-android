@@ -1,6 +1,7 @@
 package de.sicherheitskritisch.passbutler.common
 
 import de.sicherheitskritisch.passbutler.io.requestTextResource
+import de.sicherheitskritisch.passbutler.models.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray

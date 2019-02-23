@@ -5,7 +5,7 @@ import android.arch.persistence.room.Room
 import de.sicherheitskritisch.passbutler.common.AsyncCallback
 import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.PassDatabase
-import de.sicherheitskritisch.passbutler.common.User
+import de.sicherheitskritisch.passbutler.models.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
