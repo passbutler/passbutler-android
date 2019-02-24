@@ -30,11 +30,7 @@ object UserManager : CoroutineScope {
     private val coroutineJob = Job()
 
     private val roomDatabase by lazy {
-        // TODO: Remove `fallbackToDestructiveMigration()` for production
-        Room.databaseBuilder(applicationContext, PassDatabase::class.java, "PassButlerDatabase")
-            .allowMainThreadQueries()
-            .fallbackToDestructiveMigration()
-            .build()
+        Room.databaseBuilder(applicationContext, PassDatabase::class.java, "PassButlerDatabase").build()
     }
 
     private val sharedPreferences by lazy {
@@ -49,10 +45,12 @@ object UserManager : CoroutineScope {
     }
 
     fun restoreLoggedInUser() {
-        val restoredLoggedInUser = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, null)?.let { loggedInUsername ->
-            roomDatabase.userDao().findUser(loggedInUsername)
+        launch(context = Dispatchers.IO) {
+            val restoredLoggedInUser = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, null)?.let { loggedInUsername ->
+                roomDatabase.userDao().findUser(loggedInUsername)
+            }
+            loggedInUser.postValue(restoredLoggedInUser)
         }
-        loggedInUser.value = restoredLoggedInUser
     }
 
     fun loginUser(userName: String, password: String, serverUrl: String, asyncCallback: AsyncCallback<Unit, Exception>) {
@@ -100,19 +98,25 @@ object UserManager : CoroutineScope {
     }
 
     fun updateUser(user: User) {
-        roomDatabase.userDao().update(user)
+        launch(context = Dispatchers.IO) {
+            roomDatabase.userDao().update(user)
+        }
     }
 
     fun logoutUser() {
-        roomDatabase.clearAllTables()
-        sharedPreferences.edit().clear().apply()
-        loggedInUser.value = null
+        launch(context = Dispatchers.IO) {
+            roomDatabase.clearAllTables()
+            sharedPreferences.edit().clear().apply()
+            loggedInUser.postValue(null)
+        }
     }
 
     private fun storeUser(user: User) {
-        roomDatabase.userDao().insert(user)
-        sharedPreferences.edit().putString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, user.username).apply()
-        loggedInUser.postValue(user)
+        launch(context = Dispatchers.IO) {
+            roomDatabase.userDao().insert(user)
+            sharedPreferences.edit().putString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, user.username).apply()
+            loggedInUser.postValue(user)
+        }
     }
 }
 

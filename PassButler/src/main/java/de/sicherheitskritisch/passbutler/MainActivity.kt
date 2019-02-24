@@ -49,15 +49,12 @@ class MainActivity : AppCompatActivity() {
 
             L.d("MainActivity", "onCreate(): newLocalUserItemList = $newLocalUserItemList, newRemoteUserItemList = $newRemoteUserItemList")
 
-
-
             val retrofit = Retrofit.Builder()
                 .baseUrl("http://10.0.0.20:5000")
                 .addConverterFactory(ResponseUserConverterFactory())
                 .build()
 
             val userWebservice = retrofit.create(UserWebservice::class.java)
-
 
             userWebservice.getUser("a@sicherheitskritisch.de").enqueue(object : Callback<User> {
                 override fun onResponse(call: Call<User>, response: Response<User>) {
