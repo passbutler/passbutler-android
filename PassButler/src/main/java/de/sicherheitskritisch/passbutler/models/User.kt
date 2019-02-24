@@ -9,14 +9,19 @@ import android.arch.persistence.room.PrimaryKey
 import android.arch.persistence.room.Query
 import android.arch.persistence.room.Update
 import de.sicherheitskritisch.passbutler.common.L
+import de.sicherheitskritisch.passbutler.common.asJSONObjectSequence
+import kotlinx.coroutines.Deferred
 import okhttp3.ResponseBody
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Converter
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.http.GET
 import retrofit2.http.Path
+import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.util.*
 
@@ -66,6 +71,9 @@ interface UserDao {
 }
 
 interface UserWebservice {
+    @GET("/user")
+    fun getUsers(): Deferred<Response<List<User>>>
+
     @GET("/user/{username}")
     fun getUser(@Path("username") username: String): Call<User>
 }
@@ -76,8 +84,25 @@ class ResponseUserConverter : Converter<ResponseBody, User?> {
     }
 }
 
+class ResponseUserListConverter : Converter<ResponseBody, List<User>> {
+    override fun convert(responseBody: ResponseBody): List<User> {
+        return JSONArray(responseBody.string()).asJSONObjectSequence().mapNotNull { userJSONObject ->
+            User.deserialize(userJSONObject)
+        }.toList()
+    }
+}
+
 class ResponseUserConverterFactory : Converter.Factory() {
-    override fun responseBodyConverter(type: Type, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *> {
-        return ResponseUserConverter()
+    override fun responseBodyConverter(type: Type, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
+        return when (type) {
+            User::class.java -> ResponseUserConverter()
+            is ParameterizedType -> {
+                when {
+                    type.rawType == List::class.java && type.actualTypeArguments.firstOrNull() == User::class.java -> ResponseUserListConverter()
+                    else -> null
+                }
+            }
+            else -> null
+        }
     }
 }

@@ -73,8 +73,9 @@ dependencies {
     // Kotlin Coroutines for Android
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.ext.kotlinCoroutinesVersion"
 
-    // RetroFit 2
+    // RetroFit 2 + Kotlin Coroutine Adapter
     implementation "com.squareup.retrofit2:retrofit:$rootProject.ext.retrofitVersion"
+    implementation "com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:$rootProject.ext.retrofitKotlinCoroutineAdapterVersion"
 
     // LeakCanary
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$rootProject.ext.leakCanaryVersion"

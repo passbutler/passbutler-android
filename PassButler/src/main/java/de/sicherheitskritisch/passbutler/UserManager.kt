@@ -3,11 +3,14 @@ package de.sicherheitskritisch.passbutler
 import android.arch.lifecycle.MutableLiveData
 import android.arch.persistence.room.Room
 import android.content.Context.MODE_PRIVATE
+import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import de.sicherheitskritisch.passbutler.common.AsyncCallback
 import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.PassDatabase
 import de.sicherheitskritisch.passbutler.common.readTextFileContents
+import de.sicherheitskritisch.passbutler.models.ResponseUserConverterFactory
 import de.sicherheitskritisch.passbutler.models.User
+import de.sicherheitskritisch.passbutler.models.UserWebservice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -15,6 +18,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import retrofit2.Retrofit
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -29,8 +33,19 @@ object UserManager : CoroutineScope {
 
     private val coroutineJob = Job()
 
-    private val roomDatabase by lazy {
+    private val localDatabase by lazy {
         Room.databaseBuilder(applicationContext, PassDatabase::class.java, "PassButlerDatabase").build()
+    }
+
+    val remoteWebservice: UserWebservice by lazy {
+        // TODO: Use server url given by user
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://10.0.0.20:5000")
+            .addConverterFactory(ResponseUserConverterFactory())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .build()
+
+        retrofit.create(UserWebservice::class.java)
     }
 
     private val sharedPreferences by lazy {
@@ -39,19 +54,6 @@ object UserManager : CoroutineScope {
 
     private val applicationContext
         get() = AbstractPassButlerApplication.applicationContext
-
-    fun userList(): List<User> {
-        return roomDatabase.userDao().findAll()
-    }
-
-    fun restoreLoggedInUser() {
-        launch(context = Dispatchers.IO) {
-            val restoredLoggedInUser = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, null)?.let { loggedInUsername ->
-                roomDatabase.userDao().findUser(loggedInUsername)
-            }
-            loggedInUser.postValue(restoredLoggedInUser)
-        }
-    }
 
     fun loginUser(userName: String, password: String, serverUrl: String, asyncCallback: AsyncCallback<Unit, Exception>) {
         launch(context = Dispatchers.IO) {
@@ -97,15 +99,28 @@ object UserManager : CoroutineScope {
         }
     }
 
+    fun restoreLoggedInUser() {
+        launch(context = Dispatchers.IO) {
+            val restoredLoggedInUser = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, null)?.let { loggedInUsername ->
+                localDatabase.userDao().findUser(loggedInUsername)
+            }
+            loggedInUser.postValue(restoredLoggedInUser)
+        }
+    }
+
+    fun userList(): List<User> {
+        return localDatabase.userDao().findAll()
+    }
+
     fun updateUser(user: User) {
         launch(context = Dispatchers.IO) {
-            roomDatabase.userDao().update(user)
+            localDatabase.userDao().update(user)
         }
     }
 
     fun logoutUser() {
         launch(context = Dispatchers.IO) {
-            roomDatabase.clearAllTables()
+            localDatabase.clearAllTables()
             sharedPreferences.edit().clear().apply()
             loggedInUser.postValue(null)
         }
@@ -113,7 +128,7 @@ object UserManager : CoroutineScope {
 
     private fun storeUser(user: User) {
         launch(context = Dispatchers.IO) {
-            roomDatabase.userDao().insert(user)
+            localDatabase.userDao().insert(user)
             sharedPreferences.edit().putString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, user.username).apply()
             loggedInUser.postValue(user)
         }
