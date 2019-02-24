@@ -15,7 +15,7 @@ import de.sicherheitskritisch.passbutler.common.FormValidationResult
 import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.RequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.common.RequestSendingViewModel
-import de.sicherheitskritisch.passbutler.common.showFadeInAnimation
+import de.sicherheitskritisch.passbutler.ui.showFadeInAnimation
 import de.sicherheitskritisch.passbutler.common.validateForm
 import de.sicherheitskritisch.passbutler.databinding.FragmentLoginBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment

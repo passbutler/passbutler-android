@@ -7,7 +7,7 @@ data class FormFieldValidator(val formField: EditText, val validationRules: List
 }
 
 sealed class FormValidationResult {
-    class Valid : FormValidationResult()
+    object Valid : FormValidationResult()
     class Invalid(val firstInvalidFormField: EditText) : FormValidationResult()
 }
 
@@ -44,6 +44,6 @@ fun validateForm(formFieldValidators: List<FormFieldValidator>): FormValidationR
     return firstInvalidFormField?.let {
         FormValidationResult.Invalid(it)
     } ?: run {
-        FormValidationResult.Valid()
+        FormValidationResult.Valid
     }
 }

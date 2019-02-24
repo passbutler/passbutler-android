@@ -1,6 +1,5 @@
-package de.sicherheitskritisch.passbutler.io
+package de.sicherheitskritisch.passbutler.common
 
-import de.sicherheitskritisch.passbutler.common.L
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedInputStream
@@ -35,7 +34,7 @@ suspend fun requestTextResource(urlString: String): String? {
                 }
             }
         } catch (e: IOException) {
-            L.w("WebRequest", "requestTextResource(): Can't fetch request '$urlString'!", e)
+             Logger.w("WebRequest", "requestTextResource(): Can't fetch request '$urlString'!", e)
             null
         }
     }

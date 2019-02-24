@@ -1,4 +1,4 @@
-package de.sicherheitskritisch.passbutler.common
+package de.sicherheitskritisch.passbutler.ui
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
