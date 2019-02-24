@@ -5,6 +5,7 @@ interface AnimatedFragment  {
 
     enum class TransitionType {
         SLIDE_VERTICAL,
-        SLIDE_HORIZONTAL
+        SLIDE_HORIZONTAL,
+        FADE
     }
 }

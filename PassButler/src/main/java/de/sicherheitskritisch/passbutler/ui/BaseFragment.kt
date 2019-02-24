@@ -32,7 +32,7 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
             }
 
             // Re-apply fragment transition after configuration change
-            FragmentPresentingDelegate.addTransitionToAnimatedFragment(this)
+            FragmentPresentingDelegate.applyTransitionToAnimatedFragment(this)
         }
     }
 

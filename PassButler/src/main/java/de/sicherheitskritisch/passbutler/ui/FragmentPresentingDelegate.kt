@@ -1,6 +1,7 @@
 package de.sicherheitskritisch.passbutler.ui
 
 import android.app.Activity
+import android.support.transition.Fade
 import android.support.transition.Slide
 import android.support.transition.Transition
 import android.support.transition.TransitionSet
@@ -37,7 +38,7 @@ class FragmentPresentingDelegate(
         if (activity.isNotFinished) {
             rootFragmentManager?.beginTransaction()?.let { fragmentTransaction ->
                 // Add fragment transitions to look transaction beautiful
-                addTransitionToAnimatedFragment(fragment)
+                applyTransitionToAnimatedFragment(fragment)
 
                 // TODO: debouncing
 
@@ -103,7 +104,7 @@ class FragmentPresentingDelegate(
             return fragmentClass.canonicalName ?: fragmentClass.toString()
         }
 
-        fun addTransitionToAnimatedFragment(fragment: Fragment) {
+        fun applyTransitionToAnimatedFragment(fragment: Fragment) {
             if (fragment is AnimatedFragment) {
                 when (fragment.transitionType) {
                     AnimatedFragment.TransitionType.SLIDE_HORIZONTAL -> {
@@ -113,6 +114,10 @@ class FragmentPresentingDelegate(
                     AnimatedFragment.TransitionType.SLIDE_VERTICAL -> {
                         fragment.enterTransition = createVerticalSlideInTransition()
                         fragment.exitTransition = createVerticalSlideOutTransition()
+                    }
+                    AnimatedFragment.TransitionType.FADE -> {
+                        fragment.enterTransition = createFadeInOutTransition()
+                        fragment.exitTransition = createFadeInOutTransition()
                     }
                 }
             }
@@ -139,6 +144,13 @@ class FragmentPresentingDelegate(
         private fun createVerticalSlideOutTransition(): Transition {
             val transitionSet = createTransitionSetWithDefaultInterpolator()
             transitionSet.addTransition(Slide(Gravity.TOP))
+            return transitionSet
+        }
+
+        private fun createFadeInOutTransition(): Transition {
+            val transitionSet = createTransitionSetWithDefaultInterpolator()
+            transitionSet.addTransition(Fade(Fade.IN))
+            transitionSet.addTransition(Fade(Fade.OUT))
             return transitionSet
         }
 

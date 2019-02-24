@@ -8,9 +8,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import de.sicherheitskritisch.passbutler.databinding.FragmentLockedScreenBinding
+import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 
-class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
+class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFragment {
+
+    override val transitionType = AnimatedFragment.TransitionType.FADE
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -31,6 +34,11 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
         }
 
         return binding?.root
+    }
+
+    override fun onHandleBackPress(): Boolean {
+        // Do not allow pop fragment via backpress
+        return true
     }
 
     companion object {
