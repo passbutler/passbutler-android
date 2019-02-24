@@ -6,6 +6,7 @@ import android.content.Context.MODE_PRIVATE
 import de.sicherheitskritisch.passbutler.common.AsyncCallback
 import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.PassDatabase
+import de.sicherheitskritisch.passbutler.common.readTextFileContents
 import de.sicherheitskritisch.passbutler.models.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -80,7 +81,7 @@ object UserManager : CoroutineScope {
             try {
                 val assetsDirectory = AbstractPassButlerApplication.applicationContext.assets
                 BufferedReader(InputStreamReader(assetsDirectory.open("demomode_users.json"))).use { responseReader ->
-                    val demoModeUsersFileContents = responseReader.readLines().joinToString("\n")
+                    val demoModeUsersFileContents = responseReader.readTextFileContents()
                     val demoModeUsers = JSONArray(demoModeUsersFileContents)
                     val demoModeUserJsonObject = demoModeUsers.getJSONObject(0)
 

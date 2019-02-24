@@ -6,6 +6,7 @@ import java.io.BufferedInputStream
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
+import java.io.Reader
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 
@@ -26,16 +27,19 @@ suspend fun requestTextResource(urlString: String): String? {
         urlConnection.connectTimeout = REQUEST_TIMEOUT_MILLISECONDS
         urlConnection.readTimeout = REQUEST_TIMEOUT_MILLISECONDS
 
-         try {
+        try {
             BufferedInputStream(urlConnection.inputStream).use { inputStream ->
                 BufferedReader(InputStreamReader(inputStream)).use { responseReader ->
-                    val readResponse = responseReader.readLines().joinToString("\n")
-                    readResponse
+                    responseReader.readTextFileContents()
                 }
             }
         } catch (e: IOException) {
-             Logger.w("WebRequest", "requestTextResource(): Can't fetch request '$urlString'!", e)
+            Logger.w("WebRequest", "requestTextResource(): Can't fetch request '$urlString'!", e)
             null
         }
     }
+}
+
+fun Reader.readTextFileContents(): String {
+    return readLines().joinToString("\n")
 }
