@@ -2,6 +2,7 @@ package de.sicherheitskritisch.passbutler
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.persistence.room.Room
+import android.content.Context.MODE_PRIVATE
 import de.sicherheitskritisch.passbutler.common.AsyncCallback
 import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.PassDatabase
@@ -28,8 +29,6 @@ object UserManager : CoroutineScope {
     private val coroutineJob = Job()
 
     private val roomDatabase by lazy {
-        val applicationContext = AbstractPassButlerApplication.applicationContext
-
         // TODO: Remove `fallbackToDestructiveMigration()` for production
         Room.databaseBuilder(applicationContext, PassDatabase::class.java, "PassButlerDatabase")
             .allowMainThreadQueries()
@@ -37,12 +36,21 @@ object UserManager : CoroutineScope {
             .build()
     }
 
+    private val sharedPreferences by lazy {
+        applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
+    }
+
+    private val applicationContext
+        get() = AbstractPassButlerApplication.applicationContext
+
     fun userList(): List<User> {
         return roomDatabase.userDao().findAll()
     }
 
     fun restoreLoggedInUser() {
-        val restoredLoggedInUser = roomDatabase.userDao().findLoggedInUser()
+        val restoredLoggedInUser = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, null)?.let { loggedInUsername ->
+            roomDatabase.userDao().findUser(loggedInUsername)
+        }
         loggedInUser.value = restoredLoggedInUser
     }
 
@@ -56,10 +64,7 @@ object UserManager : CoroutineScope {
             val userJsonObject = JSONObject()
 
             User.deserialize(userJsonObject)?.let { deserializedUser ->
-                // Mark user model as logged-in user and persist it
-                deserializedUser.isLoggedIn = true
                 storeUser(deserializedUser)
-
                 asyncCallback.onSuccess()
             } ?: run {
                 asyncCallback.onFailure(LoginFailedException())
@@ -80,10 +85,7 @@ object UserManager : CoroutineScope {
                     val demoModeUserJsonObject = demoModeUsers.getJSONObject(0)
 
                     User.deserialize(demoModeUserJsonObject)?.let { deserializedUser ->
-                        // Mark user model as logged-in user and persist it
-                        deserializedUser.isLoggedIn = true
                         storeUser(deserializedUser)
-
                         asyncCallback.onSuccess()
                     } ?: run {
                         asyncCallback.onFailure(DemoModeLoginFailedException())
@@ -102,14 +104,18 @@ object UserManager : CoroutineScope {
 
     fun logoutUser() {
         roomDatabase.clearAllTables()
+        sharedPreferences.edit().clear().apply()
         loggedInUser.value = null
     }
 
     private fun storeUser(user: User) {
         roomDatabase.userDao().insert(user)
+        sharedPreferences.edit().putString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, user.username).apply()
         loggedInUser.postValue(user)
     }
 }
+
+private const val SERIALIZATION_KEY_LOGGED_IN_USERNAME = "loggedInUsername"
 
 class LoginFailedException : Exception()
 class DemoModeLoginFailedException : Exception()

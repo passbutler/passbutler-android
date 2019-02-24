@@ -13,14 +13,11 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
 
-// TODO: Store "is user the logged in user" elsewhere
-
 @Entity(tableName = "users")
 data class User(
     @PrimaryKey
     val username: String,
     var lockTimeout: Int,
-    var isLoggedIn: Boolean = false,
     var deleted: Boolean,
     var lastModified: Date,
     val created: Date
@@ -48,8 +45,8 @@ interface UserDao {
     @Query("SELECT * FROM users")
     fun findAll(): List<User>
 
-    @Query("SELECT * FROM users WHERE isLoggedIn = 1")
-    fun findLoggedInUser(): User?
+    @Query("SELECT * FROM users WHERE username = :username")
+    fun findUser(username: String): User?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(user: User)
