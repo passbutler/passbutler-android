@@ -37,13 +37,17 @@ object UserManager : CoroutineScope {
             .build()
     }
 
+    fun userList(): List<User> {
+        return roomDatabase.userDao().findAll()
+    }
+
     fun restoreLoggedInUser() {
         val restoredLoggedInUser = roomDatabase.userDao().findLoggedInUser()
         loggedInUser.value = restoredLoggedInUser
     }
 
     fun loginUser(userName: String, password: String, serverUrl: String, asyncCallback: AsyncCallback<Unit, Exception>) {
-        launch {
+        launch(context = Dispatchers.IO) {
             // TODO: Connect to server
             // TODO: Authenticate with given credentials
             // TODO: If successful, store server url and credentials
@@ -64,7 +68,7 @@ object UserManager : CoroutineScope {
     }
 
     fun loginDemoUser(asyncCallback: AsyncCallback<Unit, Exception>) {
-        launch {
+        launch(context = Dispatchers.IO) {
             // Add an artificial delay for login progress simulation
             delay(1000)
 

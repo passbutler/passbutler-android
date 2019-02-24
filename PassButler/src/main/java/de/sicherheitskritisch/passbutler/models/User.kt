@@ -45,6 +45,9 @@ data class User(
 
 @Dao
 interface UserDao {
+    @Query("SELECT * FROM users")
+    fun findAll(): List<User>
+
     @Query("SELECT * FROM users WHERE isLoggedIn = 1")
     fun findLoggedInUser(): User?
 

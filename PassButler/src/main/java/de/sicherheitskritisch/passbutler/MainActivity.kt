@@ -3,7 +3,11 @@ package de.sicherheitskritisch.passbutler
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import de.sicherheitskritisch.passbutler.common.L
+import de.sicherheitskritisch.passbutler.common.Synchronization
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,6 +31,16 @@ class MainActivity : AppCompatActivity() {
                 fragmentTransaction.replace(R.id.frameLayout_main_activity_content_container, it, rootFragmentTag)
                 fragmentTransaction.commit()
             }
+        }
+
+        GlobalScope.launch {
+            val localUserList = UserManager.userList()
+            val remoteUserList = Synchronization.fetchRemoteUsers("https://sicherheitskritisch.de/users.json")
+
+            val newLocalUserItemList = Synchronization.collectNewUserItems(localUserList, remoteUserList)
+            val newRemoteUserItemList = Synchronization.collectNewUserItems(remoteUserList, localUserList)
+
+            L.d("MainActivity", "onCreate(): newLocalUserItemList = $newLocalUserItemList, newRemoteUserItemList = $newRemoteUserItemList")
         }
     }
 
