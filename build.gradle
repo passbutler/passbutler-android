@@ -34,6 +34,7 @@ ext {
     androidLifecycleVersion = '1.1.1'
     androidRoomVersion = '1.1.1'
     kotlinCoroutinesVersion = '1.1.0'
+    retrofitVersion = '2.5.0'
     leakCanaryVersion = '1.6.3'
     mockkioVersion = '1.9.1'
     jUnitVersion = '5.3.2'

@@ -9,8 +9,15 @@ import android.arch.persistence.room.PrimaryKey
 import android.arch.persistence.room.Query
 import android.arch.persistence.room.Update
 import de.sicherheitskritisch.passbutler.common.L
+import okhttp3.ResponseBody
 import org.json.JSONException
 import org.json.JSONObject
+import retrofit2.Call
+import retrofit2.Converter
+import retrofit2.Retrofit
+import retrofit2.http.GET
+import retrofit2.http.Path
+import java.lang.reflect.Type
 import java.util.*
 
 @Entity(tableName = "users")
@@ -19,7 +26,7 @@ data class User(
     val username: String,
     var lockTimeout: Int,
     var deleted: Boolean,
-    var lastModified: Date,
+    var modified: Date,
     val created: Date
 ) {
     companion object {
@@ -29,7 +36,7 @@ data class User(
                     username = jsonObject.getString("username"),
                     lockTimeout = jsonObject.getInt("lockTimeout"),
                     deleted = jsonObject.getInt("deleted") == 1,
-                    lastModified = Date(jsonObject.getLong("lastModified")),
+                    modified = Date(jsonObject.getLong("modified")),
                     created = Date(jsonObject.getLong("created"))
                 )
             } catch (e: JSONException) {
@@ -56,4 +63,21 @@ interface UserDao {
 
     @Delete
     fun delete(user: User)
+}
+
+interface UserWebservice {
+    @GET("/user/{username}")
+    fun getUser(@Path("username") username: String): Call<User>
+}
+
+class ResponseUserConverter : Converter<ResponseBody, User?> {
+    override fun convert(responseBody: ResponseBody): User? {
+        return User.deserialize(JSONObject(responseBody.string()))
+    }
+}
+
+class ResponseUserConverterFactory : Converter.Factory() {
+    override fun responseBodyConverter(type: Type, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *> {
+        return ResponseUserConverter()
+    }
 }

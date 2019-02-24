@@ -3,7 +3,7 @@
         "username": "demouser@sicherheitskritisch.de",
         "lockTimeout": 2,
         "deleted": 0,
-        "lastModified": 123,
+        "modified": 123,
         "created": 123
     }
 ]

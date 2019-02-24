@@ -4,9 +4,16 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.Synchronization
+import de.sicherheitskritisch.passbutler.models.ResponseUserConverterFactory
+import de.sicherheitskritisch.passbutler.models.User
+import de.sicherheitskritisch.passbutler.models.UserWebservice
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
 
 
 class MainActivity : AppCompatActivity() {
@@ -41,6 +48,28 @@ class MainActivity : AppCompatActivity() {
             val newRemoteUserItemList = Synchronization.collectNewUserItems(remoteUserList, localUserList)
 
             L.d("MainActivity", "onCreate(): newLocalUserItemList = $newLocalUserItemList, newRemoteUserItemList = $newRemoteUserItemList")
+
+
+
+            val retrofit = Retrofit.Builder()
+                .baseUrl("http://10.0.0.20:5000")
+                .addConverterFactory(ResponseUserConverterFactory())
+                .build()
+
+            val userWebservice = retrofit.create(UserWebservice::class.java)
+
+
+            userWebservice.getUser("a@sicherheitskritisch.de").enqueue(object : Callback<User> {
+                override fun onResponse(call: Call<User>, response: Response<User>) {
+                    val r = response.body()
+                    L.d("MainActivity", "onResponse(): r = $r")
+                }
+
+                override fun onFailure(call: Call<User>, t: Throwable) {
+                    L.d("MainActivity", "onFailure(): r = $t")
+                }
+            })
+
         }
     }
 
