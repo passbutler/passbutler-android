@@ -1,5 +1,6 @@
 package de.sicherheitskritisch.passbutler
 
+import android.os.StrictMode
 import com.squareup.leakcanary.LeakCanary
 
 class PassButlerApplication : AbstractPassButlerApplication() {
@@ -12,5 +13,26 @@ class PassButlerApplication : AbstractPassButlerApplication() {
         }
 
         LeakCanary.install(this)
+
+        setupStrictMode()
+    }
+
+    private fun setupStrictMode() {
+        val threadPolicy = StrictMode.ThreadPolicy.Builder()
+            .detectAll()
+            .penaltyLog()
+            .build()
+
+        val vmPolicy = StrictMode.VmPolicy.Builder()
+            .detectActivityLeaks()
+            .detectLeakedClosableObjects()
+            .detectLeakedSqlLiteObjects()
+            .detectLeakedRegistrationObjects()
+            .detectFileUriExposure()
+            .penaltyLog()
+            .build()
+
+        StrictMode.setThreadPolicy(threadPolicy)
+        StrictMode.setVmPolicy(vmPolicy)
     }
 }
