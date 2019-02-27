@@ -4,6 +4,9 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.NavigationView
@@ -22,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
 
 class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment {
 
@@ -55,8 +59,32 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     }
 
     private fun setupToolBar(rootView: View) {
-        toolBar = rootView.findViewById(R.id.toolbar)
-        toolBar?.title = getString(R.string.app_name)
+        toolBar = rootView.findViewById<Toolbar>(R.id.toolbar).apply {
+            title = getString(R.string.app_name)
+            setupToolbarMenu(this)
+        }
+    }
+
+    private fun setupToolbarMenu(toolbar: Toolbar) {
+        toolbar.inflateMenu(R.menu.overview_menu)
+
+        val menuIconColor = resources.getColor(R.color.white, null)
+
+        val menuSyncItem = toolbar.menu.findItem(R.id.overview_menu_item_sync).icon
+        applyTint(menuSyncItem, menuIconColor)
+
+        toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.overview_menu_item_sync -> {
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun applyTint(icon: Drawable, color: Int) {
+        icon.colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
     }
 
     private fun setupDrawerLayout(rootView: View) {

@@ -34,6 +34,10 @@
     <string name="drawer_menu_item_homepage">Sicherheitskritisch.de</string>
     <string name="drawer_menu_item_googleplay">Bewerten auf Google Play</string>
 
+    <!-- Overview -->
+
+    <string name="overview_menu_sync_item_title">Synchronisieren</string>
+
     <!-- About -->
 
     <string name="about_title">Über / Lizenz</string>

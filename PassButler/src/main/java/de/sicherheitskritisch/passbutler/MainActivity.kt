@@ -3,14 +3,7 @@ package de.sicherheitskritisch.passbutler
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import de.sicherheitskritisch.passbutler.common.L
-import de.sicherheitskritisch.passbutler.models.User
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -34,37 +27,6 @@ class MainActivity : AppCompatActivity() {
                 fragmentTransaction.replace(R.id.frameLayout_main_activity_content_container, it, rootFragmentTag)
                 fragmentTransaction.commit()
             }
-        }
-
-        GlobalScope.launch {
-//            val localUserList = UserManager.userList()
-//            val remoteUserList = Synchronization.fetchRemoteUsers("https://sicherheitskritisch.de/users.json")
-//
-//            val newLocalUserItemList = Synchronization.collectNewUserItems(localUserList, remoteUserList)
-//            val newRemoteUserItemList = Synchronization.collectNewUserItems(remoteUserList, localUserList)
-//
-//            L.d("MainActivity", "onCreate(): newLocalUserItemList = $newLocalUserItemList, newRemoteUserItemList = $newRemoteUserItemList")
-
-            val remoteUsersListRequest = UserManager.remoteWebservice.getUsers()
-
-            try {
-                val response = remoteUsersListRequest.await()
-                val r = response.body()
-                L.d("MainActivity", "onResponse1(): r = $r")
-            } catch (e: Exception) {
-                L.d("MainActivity", "onFailure1(): r = $e")
-            }
-
-            UserManager.remoteWebservice.getUser("a@sicherheitskritisch.de").enqueue(object : Callback<User> {
-                override fun onResponse(call: Call<User>, response: Response<User>) {
-                    val r = response.body()
-                    L.d("MainActivity", "onResponse2(): r = $r")
-                }
-
-                override fun onFailure(call: Call<User>, t: Throwable) {
-                    L.d("MainActivity", "onFailure2(): r = $t")
-                }
-            })
         }
     }
 
