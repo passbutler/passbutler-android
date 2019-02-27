@@ -21,15 +21,20 @@ import android.view.ViewGroup
 import android.widget.TextView
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 
-
-class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment {
-
+class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment, CoroutineScope {
     override val transitionType = AnimatedFragment.TransitionType.SLIDE_HORIZONTAL
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + coroutineJob
+
+    private val coroutineJob = Job()
 
     private var toolBar: Toolbar? = null
     private var drawerLayout: DrawerLayout? = null
@@ -76,6 +81,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.overview_menu_item_sync -> {
+                    UserManager.synchronizeUsers()
                     true
                 }
                 else -> false
@@ -121,6 +127,11 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         }
     }
 
+    override fun onDestroy() {
+        coroutineJob.cancel()
+        super.onDestroy()
+    }
+
     private inner class NavigationItemSelectedListener : NavigationView.OnNavigationItemSelectedListener {
 
         override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -163,7 +174,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
          * Closes drawer a little delayed to make show new fragment transaction more pretty
          */
         private fun closeDrawerDelayed() {
-            GlobalScope.launch(Dispatchers.Main) {
+            launch(context = Dispatchers.Main) {
                 delay(100)
                 drawerLayout?.closeDrawer(GravityCompat.START)
             }
