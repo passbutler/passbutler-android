@@ -37,6 +37,9 @@ ext {
     retrofitVersion = '2.5.0'
     retrofitKotlinCoroutineAdapterVersion = '0.9.2'
     leakCanaryVersion = '1.6.3'
+
+    // For testing
     mockkioVersion = '1.9.1'
     jUnitVersion = '5.3.2'
+    jsonVersion = '20180813'
 }

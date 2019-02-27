@@ -1,5 +1,7 @@
 package de.sicherheitskritisch.passbutler.common
 
+import de.sicherheitskritisch.passbutler.common.Synchronization.collectNewUserItems
+import de.sicherheitskritisch.passbutler.models.User
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.Instant
@@ -99,7 +101,7 @@ private fun createUser(userName: String, lockTimeout: Int = 1): User {
         username = userName,
         lockTimeout = lockTimeout,
         deleted = false,
-        lastModified = currentDate,
+        modified = currentDate,
         created = currentDate
     )
 }

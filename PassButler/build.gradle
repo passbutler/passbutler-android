@@ -88,4 +88,7 @@ dependencies {
 
     // Mockk.io
     testImplementation "io.mockk:mockk:$rootProject.ext.mockkioVersion"
+
+    // JSON implementations for unit testing
+    testImplementation "org.json:json:$rootProject.ext.jsonVersion"
 }

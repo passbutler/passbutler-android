@@ -8,6 +8,7 @@ import android.arch.persistence.room.OnConflictStrategy
 import android.arch.persistence.room.PrimaryKey
 import android.arch.persistence.room.Query
 import android.arch.persistence.room.Update
+import de.sicherheitskritisch.passbutler.common.JSONSerializable
 import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.asJSONObjectSequence
 import kotlinx.coroutines.Deferred
@@ -33,22 +34,39 @@ data class User(
     var deleted: Boolean,
     var modified: Date,
     val created: Date
-) {
+): JSONSerializable {
+
+    override fun serialize(): JSONObject {
+        return JSONObject().apply {
+            put(SERIALIZATION_KEY_USERNAME, username)
+            put(SERIALIZATION_KEY_LOCK_TIMEOUT, lockTimeout)
+            put(SERIALIZATION_KEY_DELETED, deleted)
+            put(SERIALIZATION_KEY_MODIFIED, modified.time)
+            put(SERIALIZATION_KEY_CREATED, created.time)
+        }
+    }
+
     companion object {
         fun deserialize(jsonObject: JSONObject): User? {
             return try {
                 User(
-                    username = jsonObject.getString("username"),
-                    lockTimeout = jsonObject.getInt("lockTimeout"),
-                    deleted = jsonObject.getInt("deleted") == 1,
-                    modified = Date(jsonObject.getLong("modified")),
-                    created = Date(jsonObject.getLong("created"))
+                    username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
+                    lockTimeout = jsonObject.getInt(SERIALIZATION_KEY_LOCK_TIMEOUT),
+                    deleted = jsonObject.getBoolean(SERIALIZATION_KEY_DELETED),
+                    modified = Date(jsonObject.getLong(SERIALIZATION_KEY_MODIFIED)),
+                    created = Date(jsonObject.getLong(SERIALIZATION_KEY_CREATED))
                 )
             } catch (e: JSONException) {
                 L.w("User", "The user could not be deserialized using the following JSON: $jsonObject", e)
                 null
             }
         }
+
+        private const val SERIALIZATION_KEY_USERNAME = "username"
+        private const val SERIALIZATION_KEY_LOCK_TIMEOUT = "lockTimeout"
+        private const val SERIALIZATION_KEY_DELETED = "deleted"
+        private const val SERIALIZATION_KEY_MODIFIED = "modified"
+        private const val SERIALIZATION_KEY_CREATED = "created"
     }
 }
 
