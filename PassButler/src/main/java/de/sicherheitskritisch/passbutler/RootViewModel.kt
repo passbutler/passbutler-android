@@ -68,20 +68,26 @@ class RootViewModel : CoroutineScopeViewModel() {
     }
 
     private fun lockScreen() {
-        // Only alter the "logged in" screen state if the user is still in this state after the delay
-        if (rootScreenState.value is RootScreenState.LoggedIn) {
-            rootScreenState.postValue(RootScreenState.LoggedIn(false))
+        // Always dispatch on background thread because of resource cleanup happen her
+        launch {
+            // Only alter the "logged in" screen state if the user is still in this state after the delay
+            if (rootScreenState.value is RootScreenState.LoggedIn) {
+                rootScreenState.postValue(RootScreenState.LoggedIn(false))
 
-            // TODO: Free crypto memory and resources
+                // TODO: Free crypto memory and resources
+            }
         }
     }
 
     internal fun unlockScreen() {
-        // Only alter the "logged in" screen state if the user is still in this state after the delay
-        if (rootScreenState.value is RootScreenState.LoggedIn) {
-            rootScreenState.postValue(RootScreenState.LoggedIn(true))
+        // Always dispatch on background thread because of resource creation happen her
+        launch {
+            // Only alter the "logged in" screen state if the user is still in this state after the delay
+            if (rootScreenState.value is RootScreenState.LoggedIn) {
+                rootScreenState.postValue(RootScreenState.LoggedIn(true))
 
-            // TODO: Decrypt data and recreate resources
+                // TODO: Decrypt data and recreate resources
+            }
         }
     }
 
