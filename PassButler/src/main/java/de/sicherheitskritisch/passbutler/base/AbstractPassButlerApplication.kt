@@ -1,4 +1,4 @@
-package de.sicherheitskritisch.passbutler
+package de.sicherheitskritisch.passbutler.base
 
 import android.app.Application
 import android.content.Context
@@ -7,7 +7,7 @@ abstract class AbstractPassButlerApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        AbstractPassButlerApplication.applicationContext = applicationContext
+        Companion.applicationContext = applicationContext
     }
 
     companion object {

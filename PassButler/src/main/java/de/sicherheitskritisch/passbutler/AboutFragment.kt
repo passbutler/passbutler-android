@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
-import de.sicherheitskritisch.passbutler.ui.EmptyViewModel
+import de.sicherheitskritisch.passbutler.base.viewmodels.EmptyViewModel
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
 import java.text.SimpleDateFormat
 import java.util.*

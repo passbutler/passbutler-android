@@ -1,4 +1,4 @@
-package de.sicherheitskritisch.passbutler.common
+package de.sicherheitskritisch.passbutler.database
 
 import android.arch.persistence.room.Database
 import android.arch.persistence.room.RoomDatabase
@@ -10,7 +10,7 @@ import java.util.*
 
 @Database(entities = [User::class], version = 1, exportSchema = false)
 @TypeConverters(DatabaseConverters::class)
-abstract class PassDatabase : RoomDatabase() {
+abstract class PassButlerDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
 }
 

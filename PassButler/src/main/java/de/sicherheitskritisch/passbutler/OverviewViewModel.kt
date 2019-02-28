@@ -1,6 +1,6 @@
 package de.sicherheitskritisch.passbutler
 
-import de.sicherheitskritisch.passbutler.common.CoroutineScopeViewModel
+import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeViewModel
 import de.sicherheitskritisch.passbutler.common.DefaultRequestSendingViewModel
 import de.sicherheitskritisch.passbutler.common.L
 import kotlinx.coroutines.Job
@@ -20,6 +20,8 @@ class OverviewViewModel(internal var rootViewModel: RootViewModel? = null) : Cor
         synchronizeDataJob?.cancel()
         synchronizeDataJob = launch {
             synchronizeDataRequestSendingViewModel.isLoading.postValue(true)
+
+            L.d("OverviewViewModel", "synchronizeData(): CR")
 
             try {
                 UserManager.synchronizeUsers()

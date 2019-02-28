@@ -1,4 +1,4 @@
-package de.sicherheitskritisch.passbutler.common
+package de.sicherheitskritisch.passbutler.base.viewmodels
 
 import android.arch.lifecycle.ViewModel
 import android.support.annotation.CallSuper

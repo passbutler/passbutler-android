@@ -4,11 +4,12 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.persistence.room.Room
 import android.content.Context.MODE_PRIVATE
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
+import de.sicherheitskritisch.passbutler.base.application.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.common.AsyncCallback
 import de.sicherheitskritisch.passbutler.common.L
-import de.sicherheitskritisch.passbutler.common.PassDatabase
 import de.sicherheitskritisch.passbutler.common.Synchronization
 import de.sicherheitskritisch.passbutler.common.readTextFileContents
+import de.sicherheitskritisch.passbutler.database.PassButlerDatabase
 import de.sicherheitskritisch.passbutler.models.User
 import de.sicherheitskritisch.passbutler.models.UserConverterFactory
 import de.sicherheitskritisch.passbutler.models.UserWebservice
@@ -39,7 +40,7 @@ object UserManager : CoroutineScope {
     private val coroutineJob = SupervisorJob()
 
     private val localDatabase by lazy {
-        Room.databaseBuilder(applicationContext, PassDatabase::class.java, "PassButlerDatabase").build()
+        Room.databaseBuilder(applicationContext, PassButlerDatabase::class.java, "PassButlerDatabase").build()
     }
 
     private val remoteWebservice: UserWebservice by lazy {

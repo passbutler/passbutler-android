@@ -3,7 +3,7 @@ package de.sicherheitskritisch.passbutler
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
 import android.text.format.DateUtils
-import de.sicherheitskritisch.passbutler.common.CoroutineScopeViewModel
+import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeViewModel
 import de.sicherheitskritisch.passbutler.models.User
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
