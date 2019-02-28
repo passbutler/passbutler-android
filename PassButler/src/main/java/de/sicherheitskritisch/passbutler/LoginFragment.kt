@@ -15,11 +15,11 @@ import de.sicherheitskritisch.passbutler.common.FormValidationResult
 import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.RequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.common.RequestSendingViewModel
-import de.sicherheitskritisch.passbutler.ui.showFadeInAnimation
 import de.sicherheitskritisch.passbutler.common.validateForm
 import de.sicherheitskritisch.passbutler.databinding.FragmentLoginBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
+import de.sicherheitskritisch.passbutler.ui.showFadeInAnimation
 import java.lang.ref.WeakReference
 
 class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment {
@@ -161,7 +161,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
             binding?.frameLayoutProgressContainer?.showFadeInAnimation(isLoading)
         }
 
-        override fun onRequestErrorChanged(requestError: Exception) {
+        override fun onRequestErrorChanged(requestError: Throwable) {
             binding?.constraintLayoutLoginScreenContainer?.let {
                 resources?.getString(R.string.login_failed_title)?.let { snackbarMessage ->
                     Snackbar.make(it, snackbarMessage, Snackbar.LENGTH_SHORT).show()

@@ -155,7 +155,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
         }
 
-        override fun onRequestErrorChanged(requestError: Exception) {
+        override fun onRequestErrorChanged(requestError: Throwable) {
             // TODO
         }
     }
