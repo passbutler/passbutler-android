@@ -27,19 +27,20 @@ import de.sicherheitskritisch.passbutler.ui.applyTint
 import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import kotlin.coroutines.CoroutineContext
 
 class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment, CoroutineScope {
+
     override val transitionType = AnimatedFragment.TransitionType.SLIDE_HORIZONTAL
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + coroutineJob
 
-    private val coroutineJob = Job()
+    private val coroutineJob = SupervisorJob()
 
     private var synchronizeDataRequestSendingViewHandler: SynchronizeDataRequestSendingViewHandler? = null
 
@@ -230,7 +231,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
          * Closes drawer a little delayed to make show new fragment transaction more pretty
          */
         private fun closeDrawerDelayed() {
-            launch(context = Dispatchers.Main) {
+            launch {
                 delay(100)
                 binding?.drawerLayout?.closeDrawer(GravityCompat.START)
             }
