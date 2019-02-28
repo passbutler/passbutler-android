@@ -21,6 +21,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
+import de.sicherheitskritisch.passbutler.ui.applyTint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -74,9 +75,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         toolbar.inflateMenu(R.menu.overview_menu)
 
         val menuIconColor = resources.getColor(R.color.white, null)
-
         val menuSyncItem = toolbar.menu.findItem(R.id.overview_menu_item_sync).icon
-        applyTint(menuSyncItem, menuIconColor)
+        menuSyncItem.applyTint(menuIconColor)
 
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
