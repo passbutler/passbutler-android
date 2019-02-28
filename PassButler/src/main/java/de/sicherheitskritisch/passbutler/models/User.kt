@@ -96,9 +96,8 @@ interface UserWebservice {
     @GET("/users")
     fun getUsersAsync(): Deferred<Response<List<User>>>
 
-    // TODO: Fix response converter issue
     @POST("/users")
-    fun addUsersAsync(@Body newUsers: List<User>): Deferred<Call<List<User>>>
+    fun addUsersAsync(@Body newUsers: List<User>): Deferred<Response<List<User>>>
 
     @GET("/user/{username}")
     fun getUser(@Path("username") username: String): Call<User>
