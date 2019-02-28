@@ -8,6 +8,7 @@ import android.databinding.DataBindingUtil
 import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.NavigationView
+import android.support.design.widget.Snackbar
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.widget.Toolbar
@@ -171,7 +172,19 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         }
 
         override fun onRequestErrorChanged(requestError: Throwable) {
-            // TODO
+            binding?.layoutOverviewContent?.let {
+                resources?.getString(R.string.overview_sync_failed_message)?.let { snackbarMessage ->
+                    Snackbar.make(it.root, snackbarMessage, Snackbar.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        override fun onRequestFinishedSuccessfully() {
+            binding?.layoutOverviewContent?.let {
+                resources?.getString(R.string.overview_sync_successful_message)?.let { snackbarMessage ->
+                    Snackbar.make(it.root, snackbarMessage, Snackbar.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 

@@ -38,6 +38,10 @@
 
     <string name="overview_menu_sync_item_title">Synchronisieren</string>
 
+    <string name="overview_sync_successful_message">Synchronisation war erfolgreich</string>
+    <string name="overview_sync_failed_message">Synchronisation hat leider nicht geklappt</string>
+
+
     <!-- About -->
 
     <string name="about_title">Über / Lizenz</string>
