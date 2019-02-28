@@ -4,14 +4,11 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
-import android.graphics.drawable.Drawable
+import android.databinding.DataBindingUtil
 import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
-import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.widget.Toolbar
 import android.view.LayoutInflater
@@ -19,14 +16,20 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import de.sicherheitskritisch.passbutler.common.RequestSendingViewHandler
+import de.sicherheitskritisch.passbutler.common.RequestSendingViewModel
+import de.sicherheitskritisch.passbutler.databinding.FragmentOverviewBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
+import de.sicherheitskritisch.passbutler.ui.VisibilityHideMode
 import de.sicherheitskritisch.passbutler.ui.applyTint
+import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.lang.ref.WeakReference
 import kotlin.coroutines.CoroutineContext
 
 class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment, CoroutineScope {
@@ -37,11 +40,10 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
     private val coroutineJob = Job()
 
-    private var toolBar: Toolbar? = null
-    private var drawerLayout: DrawerLayout? = null
-    private var navigationView: NavigationView? = null
-    private var navigationHeaderView: View? = null
+    private var synchronizeDataRequestSendingViewHandler: SynchronizeDataRequestSendingViewHandler? = null
 
+    private var binding: FragmentOverviewBinding? = null
+    private var navigationHeaderView: View? = null
     private val navigationItemSelectedListener = NavigationItemSelectedListener()
 
     override fun onAttach(context: Context?) {
@@ -55,17 +57,28 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val rootView = inflater.inflate(R.layout.fragment_overview, container, false)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-        setupToolBar(rootView)
-        setupDrawerLayout(rootView)
-
-        return rootView
+        synchronizeDataRequestSendingViewHandler = SynchronizeDataRequestSendingViewHandler(viewModel.synchronizeDataRequestSendingViewModel, WeakReference(this)).apply {
+            registerObservers()
+        }
     }
 
-    private fun setupToolBar(rootView: View) {
-        toolBar = rootView.findViewById<Toolbar>(R.id.toolbar).apply {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        binding = DataBindingUtil.inflate<FragmentOverviewBinding>(inflater, R.layout.fragment_overview, container, false).also { binding ->
+            binding.lifecycleOwner = this
+            binding.requestSendingViewModel = viewModel.synchronizeDataRequestSendingViewModel
+
+            setupToolBar(binding)
+            setupDrawerLayout(binding)
+        }
+
+        return binding?.root
+    }
+
+    private fun setupToolBar(binding: FragmentOverviewBinding) {
+        binding.toolbar.apply {
             title = getString(R.string.app_name)
             setupToolbarMenu(this)
         }
@@ -81,7 +94,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.overview_menu_item_sync -> {
-                    UserManager.synchronizeUsers()
+                    viewModel.synchronizeData()
                     true
                 }
                 else -> false
@@ -89,16 +102,12 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         }
     }
 
-    private fun applyTint(icon: Drawable, color: Int) {
-        icon.colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
-    }
-
-    private fun setupDrawerLayout(rootView: View) {
-        drawerLayout = rootView.findViewById<DrawerLayout>(R.id.drawer_layout).apply {
+    private fun setupDrawerLayout(binding: FragmentOverviewBinding) {
+        binding.drawerLayout.apply {
             val toggle = ActionBarDrawerToggle(
                 activity,
                 this,
-                toolBar,
+                binding.toolbar,
                 R.string.drawer_open_description,
                 R.string.drawer_close_description
             )
@@ -106,10 +115,11 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             toggle.syncState()
         }
 
-        navigationView = rootView.findViewById<NavigationView>(R.id.navigationView).apply {
+        binding.navigationView.apply {
             setNavigationItemSelectedListener(navigationItemSelectedListener)
         }
-        navigationHeaderView = navigationView?.inflateHeaderView(R.layout.main_drawer_header)
+
+        navigationHeaderView = binding.navigationView.inflateHeaderView(R.layout.main_drawer_header)
 
         viewModel.userViewModel?.username?.observe(this, Observer {
             navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_subtitle)?.also { subtitleView ->
@@ -119,8 +129,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     }
 
     override fun onHandleBackPress(): Boolean {
-        return if (drawerLayout?.isDrawerOpen(GravityCompat.START) == true) {
-            drawerLayout?.closeDrawer(GravityCompat.START)
+        return if (binding?.drawerLayout?.isDrawerOpen(GravityCompat.START) == true) {
+            binding?.drawerLayout?.closeDrawer(GravityCompat.START)
             true
         } else {
             super.onHandleBackPress()
@@ -128,8 +138,26 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     }
 
     override fun onDestroy() {
+        synchronizeDataRequestSendingViewHandler?.unregisterObservers()
         coroutineJob.cancel()
         super.onDestroy()
+    }
+
+    private class SynchronizeDataRequestSendingViewHandler(
+        requestSendingViewModel: RequestSendingViewModel,
+        private val fragmentWeakReference: WeakReference<OverviewFragment>
+    ) : RequestSendingViewHandler(requestSendingViewModel) {
+
+        private val binding
+            get() = fragmentWeakReference.get()?.binding
+
+        override fun onIsLoadingChanged(isLoading: Boolean) {
+            binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
+        }
+
+        override fun onRequestErrorChanged(requestError: Exception) {
+            // TODO
+        }
     }
 
     private inner class NavigationItemSelectedListener : NavigationView.OnNavigationItemSelectedListener {
@@ -176,7 +204,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         private fun closeDrawerDelayed() {
             launch(context = Dispatchers.Main) {
                 delay(100)
-                drawerLayout?.closeDrawer(GravityCompat.START)
+                binding?.drawerLayout?.closeDrawer(GravityCompat.START)
             }
         }
 

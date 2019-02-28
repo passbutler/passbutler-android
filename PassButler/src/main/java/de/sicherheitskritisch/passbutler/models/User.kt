@@ -12,6 +12,8 @@ import de.sicherheitskritisch.passbutler.common.JSONSerializable
 import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.asJSONObjectSequence
 import kotlinx.coroutines.Deferred
+import okhttp3.MediaType
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import org.json.JSONArray
 import org.json.JSONException
@@ -20,7 +22,9 @@ import retrofit2.Call
 import retrofit2.Converter
 import retrofit2.Response
 import retrofit2.Retrofit
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Path
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -34,7 +38,7 @@ data class User(
     var deleted: Boolean,
     var modified: Date,
     val created: Date
-): JSONSerializable {
+) : JSONSerializable {
 
     override fun serialize(): JSONObject {
         return JSONObject().apply {
@@ -79,7 +83,7 @@ interface UserDao {
     fun findUser(username: String): User?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(user: User)
+    fun insert(vararg users: User)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun update(vararg users: User)
@@ -89,28 +93,30 @@ interface UserDao {
 }
 
 interface UserWebservice {
-    @GET("/user")
-    fun getUsers(): Deferred<Response<List<User>>>
+    @GET("/users")
+    fun getUsersAsync(): Deferred<Response<List<User>>>
+
+    // TODO: Fix response converter issue
+    @POST("/users")
+    fun addUsersAsync(@Body newUsers: List<User>): Deferred<Call<List<User>>>
 
     @GET("/user/{username}")
     fun getUser(@Path("username") username: String): Call<User>
 }
 
-class ResponseUserConverter : Converter<ResponseBody, User?> {
-    override fun convert(responseBody: ResponseBody): User? {
-        return User.deserialize(JSONObject(responseBody.string()))
+class UserConverterFactory : Converter.Factory() {
+    override fun requestBodyConverter(type: Type, parameterAnnotations: Array<Annotation>, methodAnnotations: Array<Annotation>, retrofit: Retrofit): Converter<*, RequestBody>? {
+        return when (type) {
+            is ParameterizedType -> {
+                when {
+                    type.rawType == List::class.java && type.actualTypeArguments.firstOrNull() == User::class.java -> RequestUserListConverter()
+                    else -> null
+                }
+            }
+            else -> null
+        }
     }
-}
 
-class ResponseUserListConverter : Converter<ResponseBody, List<User>> {
-    override fun convert(responseBody: ResponseBody): List<User> {
-        return JSONArray(responseBody.string()).asJSONObjectSequence().mapNotNull { userJSONObject ->
-            User.deserialize(userJSONObject)
-        }.toList()
-    }
-}
-
-class ResponseUserConverterFactory : Converter.Factory() {
     override fun responseBodyConverter(type: Type, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
         return when (type) {
             User::class.java -> ResponseUserConverter()
@@ -122,5 +128,29 @@ class ResponseUserConverterFactory : Converter.Factory() {
             }
             else -> null
         }
+    }
+}
+
+private class RequestUserListConverter : Converter<List<User>, RequestBody> {
+    override fun convert(userList: List<User>): RequestBody {
+        return RequestBody.create(MediaType.get("application/json"), JSONArray().also { jsonArray ->
+            userList.forEach {
+                jsonArray.put(it.serialize())
+            }
+        }.toString())
+    }
+}
+
+private class ResponseUserConverter : Converter<ResponseBody, User?> {
+    override fun convert(responseBody: ResponseBody): User? {
+        return User.deserialize(JSONObject(responseBody.string()))
+    }
+}
+
+private class ResponseUserListConverter : Converter<ResponseBody, List<User>> {
+    override fun convert(responseBody: ResponseBody): List<User> {
+        return JSONArray(responseBody.string()).asJSONObjectSequence().mapNotNull { userJSONObject ->
+            User.deserialize(userJSONObject)
+        }.toList()
     }
 }

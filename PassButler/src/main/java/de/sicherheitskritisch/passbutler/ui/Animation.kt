@@ -4,17 +4,16 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.view.View
 
-const val FADE_ANIMATION_DURATION_MILLISECONDS = 350L
+private const val FADE_ANIMATION_DURATION_MILLISECONDS = 350L
 
 /**
  * Animates view with fade-in only.
  */
-fun View.showFadeInAnimation(shouldShow: Boolean) {
+fun View.showFadeInAnimation(shouldShow: Boolean, visibilityHideMode: VisibilityHideMode = VisibilityHideMode.GONE) {
     val shouldShowVisibilityEquivalent = if (shouldShow) View.VISIBLE else View.GONE
 
     // Only animate if necessary
     if (visibility != shouldShowVisibilityEquivalent) {
-
         if (shouldShow) {
             visibility = View.VISIBLE
 
@@ -22,7 +21,7 @@ fun View.showFadeInAnimation(shouldShow: Boolean) {
                 .setDuration(FADE_ANIMATION_DURATION_MILLISECONDS)
                 .alpha(1.0f)
         } else {
-            visibility = View.GONE
+            visibility = visibilityHideMode.viewConstant
         }
     }
 }
@@ -30,7 +29,7 @@ fun View.showFadeInAnimation(shouldShow: Boolean) {
 /**
  * Animates view with fade-in and fade-out.
  */
-fun View.showFadeInOutAnimation(shouldShow: Boolean) {
+fun View.showFadeInOutAnimation(shouldShow: Boolean, visibilityHideMode: VisibilityHideMode = VisibilityHideMode.GONE) {
     val shouldShowVisibilityEquivalent = if (shouldShow) View.VISIBLE else View.GONE
 
     // Only animate if necessary
@@ -52,11 +51,22 @@ fun View.showFadeInOutAnimation(shouldShow: Boolean) {
                 onAnimationEnd = {
                     // Only set viability to gone if necessary
                     if (!shouldShow) {
-                        visibility = View.GONE
+                        visibility = visibilityHideMode.viewConstant
                     }
                 }
             ))
     }
+}
+
+enum class VisibilityHideMode {
+    INVISIBLE,
+    GONE;
+
+    val viewConstant: Int
+        get() = when (this) {
+            VisibilityHideMode.INVISIBLE -> View.INVISIBLE
+            VisibilityHideMode.GONE -> View.GONE
+        }
 }
 
 inline fun animatorListenerAdapter(crossinline onAnimationEnd: () -> Unit, crossinline onAnimationStart: () -> Unit): AnimatorListenerAdapter {
