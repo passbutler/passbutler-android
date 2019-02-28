@@ -151,7 +151,22 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         private val binding
             get() = fragmentWeakReference.get()?.binding
 
+        private val resources
+            get() = fragmentWeakReference.get()?.resources
+
         override fun onIsLoadingChanged(isLoading: Boolean) {
+            binding?.toolbar?.menu?.findItem(R.id.overview_menu_item_sync)?.apply {
+                isEnabled = !isLoading
+
+                val menuIconTintColor = when (isLoading) {
+                    true -> resources?.getColor(R.color.whiteDisabled, null)
+                    false -> resources?.getColor(R.color.white, null)
+                }
+                menuIconTintColor?.let {
+                    icon?.applyTint(it)
+                }
+            }
+
             binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
         }
 
