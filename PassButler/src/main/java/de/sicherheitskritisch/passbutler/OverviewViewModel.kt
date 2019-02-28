@@ -1,37 +1,44 @@
 package de.sicherheitskritisch.passbutler
 
-import android.arch.lifecycle.ViewModel
+import de.sicherheitskritisch.passbutler.common.CoroutineScopeViewModel
 import de.sicherheitskritisch.passbutler.common.DefaultRequestSendingViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import de.sicherheitskritisch.passbutler.common.L
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlin.coroutines.CoroutineContext
 
-class OverviewViewModel(internal var rootViewModel: RootViewModel? = null) : ViewModel(), CoroutineScope {
+class OverviewViewModel(internal var rootViewModel: RootViewModel? = null) : CoroutineScopeViewModel() {
 
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Default + coroutineJob
-
-    private val coroutineJob = Job()
-
-    internal val userViewModel
+    val userViewModel
         get() = rootViewModel?.loggedInUserViewModel
 
-    internal val synchronizeDataRequestSendingViewModel = DefaultRequestSendingViewModel()
+    val synchronizeDataRequestSendingViewModel = DefaultRequestSendingViewModel()
 
-    internal fun synchronizeData() {
-        synchronizeDataRequestSendingViewModel.isLoading.value = true
+    private var synchronizeDataJob: Job? = null
 
-        launch(context = Dispatchers.Default) {
-            UserManager.synchronizeUsers()
-            synchronizeDataRequestSendingViewModel.isLoading.postValue(false)
+    fun synchronizeData() {
+        // Cancels previous job, until the new job is started
+        synchronizeDataJob?.cancel()
+        synchronizeDataJob = launch {
+            synchronizeDataRequestSendingViewModel.isLoading.postValue(true)
 
-            // TODO: Set error
+            try {
+                UserManager.synchronizeUsers()
+                synchronizeDataRequestSendingViewModel.requestFinishedSuccessfully.emit()
+            } catch (exception: Exception) {
+                L.w("UserManager", "synchronizeData(): The synchronization failed with exception!", exception)
+                synchronizeDataRequestSendingViewModel.requestError.postValue(exception)
+            } finally {
+                synchronizeDataRequestSendingViewModel.isLoading.postValue(false)
+            }
         }
     }
 
-    internal fun logoutUser() {
+    fun logoutUser() {
         UserManager.logoutUser()
+    }
+
+    // TODO: This is not called on fragment destruction
+    override fun onCleared() {
+        super.onCleared()
     }
 }

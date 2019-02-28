@@ -14,7 +14,7 @@ import de.sicherheitskritisch.passbutler.models.UserConverterFactory
 import de.sicherheitskritisch.passbutler.models.UserWebservice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -36,7 +36,7 @@ object UserManager : CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + coroutineJob
 
-    private val coroutineJob = Job()
+    private val coroutineJob = SupervisorJob()
 
     private val localDatabase by lazy {
         Room.databaseBuilder(applicationContext, PassDatabase::class.java, "PassButlerDatabase").build()
@@ -60,8 +60,9 @@ object UserManager : CoroutineScope {
     private val applicationContext
         get() = AbstractPassButlerApplication.applicationContext
 
+    // TODO: Remove async callback
     fun loginUser(userName: String, password: String, serverUrl: String, asyncCallback: AsyncCallback<Unit, Exception>) {
-        launch(context = Dispatchers.IO) {
+        launch {
             // TODO: Connect to server
             // TODO: Authenticate with given credentials
             // TODO: If successful, store server url and credentials
@@ -78,8 +79,9 @@ object UserManager : CoroutineScope {
         }
     }
 
+    // TODO: Remove async callback
     fun loginDemoUser(asyncCallback: AsyncCallback<Unit, Exception>) {
-        launch(context = Dispatchers.IO) {
+        launch {
             // Add an artificial delay for login progress simulation
             delay(1000)
 
@@ -105,7 +107,7 @@ object UserManager : CoroutineScope {
     }
 
     fun logoutUser() {
-        launch(context = Dispatchers.IO) {
+        launch {
             localDatabase.clearAllTables()
             sharedPreferences.edit().clear().apply()
             loggedInUser.postValue(null)
@@ -113,7 +115,7 @@ object UserManager : CoroutineScope {
     }
 
     fun restoreLoggedInUser() {
-        launch(context = Dispatchers.IO) {
+        launch {
             val restoredLoggedInUser = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, null)?.let { loggedInUsername ->
                 localDatabase.userDao().findUser(loggedInUsername)
             }
@@ -122,74 +124,55 @@ object UserManager : CoroutineScope {
     }
 
     fun updateUser(user: User) {
-        launch(context = Dispatchers.IO) {
+        launch {
             localDatabase.userDao().update(user)
         }
     }
 
     suspend fun synchronizeUsers() {
-        withContext(Dispatchers.IO) {
+        // TODO: Remove artificial delay:
+        delay(1000)
 
-            // TODO: remove
-            delay(1000)
+        val localUserList = fetchLocalUserList()
+        val remoteUserList = fetchRemoteUserList()
 
-            try {
-                val remoteUserList = fetchRemoteUserList() ?: throw UserSynchronizationException("The remote user list is null - can't process with synchronization!")
-                val localUserList = localDatabase.userDao().findAll()
+        val newLocalUserItemList = Synchronization.collectNewUserItems(localUserList, remoteUserList)
+        L.d("UserManager", "synchronizeUsers(): New user items for local database: $newLocalUserItemList")
+        addNewUsersToLocalDatabase(newLocalUserItemList)
 
-                val newLocalUserItemList = Synchronization.collectNewUserItems(localUserList, remoteUserList)
-                L.d("UserManager", "synchronizeUsers(): The following new users will be added to local database: $newLocalUserItemList")
+        val newRemoteUserItemList = Synchronization.collectNewUserItems(remoteUserList, localUserList)
+        L.d("UserManager", "synchronizeUsers(): New user items for remote database: $newRemoteUserItemList")
+        addNewUsersToRemoteDatabase(newRemoteUserItemList)
 
-                if (!addNewUsersToLocalDatabase(newLocalUserItemList)) {
-                    throw UserSynchronizationException("The new users item could not be added to local database - can't process with synchronization!")
-                }
+        L.d("UserManager", "synchronizeUsers(): Finished")
+    }
 
-                val newRemoteUserItemList = Synchronization.collectNewUserItems(remoteUserList, localUserList)
-                L.d("UserManager", "synchronizeUsers(): The following new users will be added to remote database: $newRemoteUserItemList")
-
-                if (!addNewUsersToRemoteDatabase(newRemoteUserItemList)) {
-                    throw UserSynchronizationException("The new users item could not be added to remote database - can't process with synchronization!")
-                }
-
-                L.d("UserManager", "synchronizeUsers(): Finished")
-
-            } catch (e: UserSynchronizationException) {
-                L.d("UserManager", "synchronizeUsers(): ${e.message}")
-            }
+    private suspend fun fetchLocalUserList(): List<User> {
+        return withContext(context = coroutineContext) {
+            val localUsersList = localDatabase.userDao().findAll().takeIf { it.isNotEmpty() }
+            localUsersList ?: throw UserSynchronizationException("The local user list is null - can't process with synchronization!")
         }
     }
 
-    private suspend fun fetchRemoteUserList(): List<User>? {
-        return try {
-            val remoteUsersListRequest = remoteWebservice.getUsersAsync()
-            val response = remoteUsersListRequest.await()
-            response.body()
-        } catch (e: Exception) {
-            L.w("UserManager", "fetchRemoteUserList(): The remote user list could not be fetched!", e)
-            null
-        }
+    private suspend fun fetchRemoteUserList(): List<User> {
+        val remoteUsersListRequest = remoteWebservice.getUsersAsync()
+        val response = remoteUsersListRequest.await()
+        return response.body() ?: throw UserSynchronizationException("The remote user list is null - can't process with synchronization!")
     }
 
-    private suspend fun addNewUsersToLocalDatabase(newLocalUserItemList: List<User>): Boolean {
-        withContext(Dispatchers.IO) {
+    private suspend fun addNewUsersToLocalDatabase(newLocalUserItemList: List<User>) {
+        withContext(context = coroutineContext) {
             localDatabase.userDao().insert(*newLocalUserItemList.toTypedArray())
         }
-        return true
     }
 
-    private suspend fun addNewUsersToRemoteDatabase(newRemoteUserItemList: List<User>): Boolean {
-        return try {
-            val remoteUsersListRequest = remoteWebservice.addUsersAsync(newRemoteUserItemList)
-            remoteUsersListRequest.await()
-            true
-        } catch (e: Exception) {
-            L.w("UserManager", "addNewUsersToRemoteDatabase(): The new remote user items could not be added!", e)
-            false
-        }
+    private suspend fun addNewUsersToRemoteDatabase(newRemoteUserItemList: List<User>) {
+        val remoteUsersListRequest = remoteWebservice.addUsersAsync(newRemoteUserItemList)
+        remoteUsersListRequest.await()
     }
 
     private fun storeUser(user: User, isDemoMode: Boolean) {
-        launch(context = Dispatchers.IO) {
+        launch {
             localDatabase.userDao().insert(user)
 
             sharedPreferences.edit().also {
