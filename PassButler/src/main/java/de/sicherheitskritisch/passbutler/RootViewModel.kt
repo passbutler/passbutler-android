@@ -2,21 +2,20 @@ package de.sicherheitskritisch.passbutler
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModel
 import android.text.format.DateUtils
+import de.sicherheitskritisch.passbutler.common.CoroutineScopeViewModel
 import de.sicherheitskritisch.passbutler.models.User
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class RootViewModel : ViewModel() {
+class RootViewModel : CoroutineScopeViewModel() {
 
-    internal val rootScreenState = MutableLiveData<RootScreenState>()
-    internal val unlockScreenMethod = MutableLiveData<UnlockScreenMethod>()
+    val rootScreenState = MutableLiveData<RootScreenState>()
+    val unlockScreenMethod = MutableLiveData<UnlockScreenMethod>()
 
-    internal var loggedInUserViewModel: UserViewModel? = null
+    var loggedInUserViewModel: UserViewModel? = null
 
     private var lockScreenCoroutineJob: Job? = null
 
@@ -38,30 +37,28 @@ class RootViewModel : ViewModel() {
     }
 
     override fun onCleared() {
-        super.onCleared()
-
         UserManager.loggedInUser.removeObserver(loggedInUserObserver)
-        cancelLockScreenTimer()
+        super.onCleared()
     }
 
-    internal fun applicationWasResumed() {
-        cancelLockScreenTimer()
-    }
-
-    internal fun applicationWasPaused() {
+    fun applicationWasPaused() {
         startLockScreenTimer()
+    }
+
+    fun applicationWasResumed() {
+        cancelLockScreenTimer()
     }
 
     private fun startLockScreenTimer() {
         // Only if user is logged in, start delayed lock screen timer
         loggedInUserViewModel?.lockTimeout?.value?.let { lockTimeout ->
-            // TODO: This should be more elegant
-            lockScreenCoroutineJob?.cancel()
-            lockScreenCoroutineJob = GlobalScope.launch(Dispatchers.Main) {
-                val userLockTimeoutMilliseconds = lockTimeout * DateUtils.SECOND_IN_MILLIS
-                delay(userLockTimeoutMilliseconds)
-
-                lockScreen()
+            launch {
+                // Cancel previous `lockScreenCoroutineJob` and wait it finished, until the new job is started
+                lockScreenCoroutineJob?.cancelAndJoin()
+                lockScreenCoroutineJob = launch {
+                    delay(lockTimeout * DateUtils.SECOND_IN_MILLIS)
+                    lockScreen()
+                }
             }
         }
     }
@@ -73,7 +70,7 @@ class RootViewModel : ViewModel() {
     private fun lockScreen() {
         // Only alter the "logged in" screen state if the user is still in this state after the delay
         if (rootScreenState.value is RootScreenState.LoggedIn) {
-            rootScreenState.value = RootScreenState.LoggedIn(false)
+            rootScreenState.postValue(RootScreenState.LoggedIn(false))
 
             // TODO: Free crypto memory and resources
         }
@@ -82,7 +79,7 @@ class RootViewModel : ViewModel() {
     internal fun unlockScreen() {
         // Only alter the "logged in" screen state if the user is still in this state after the delay
         if (rootScreenState.value is RootScreenState.LoggedIn) {
-            rootScreenState.value = RootScreenState.LoggedIn(true)
+            rootScreenState.postValue(RootScreenState.LoggedIn(true))
 
             // TODO: Decrypt data and recreate resources
         }
