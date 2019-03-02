@@ -40,6 +40,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + coroutineJob
 
+    private var loggedInUserViewModel: UserViewModel? = null
+
     private val coroutineJob = SupervisorJob()
 
     private var synchronizeDataRequestSendingViewHandler: SynchronizeDataRequestSendingViewHandler? = null
@@ -55,7 +57,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             viewModel = ViewModelProviders.of(it).get(OverviewViewModel::class.java)
 
             val rootViewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
-            viewModel.rootViewModel = rootViewModel
+            loggedInUserViewModel = rootViewModel.loggedInUserViewModel
         }
     }
 
@@ -123,9 +125,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
         navigationHeaderView = binding.navigationView.inflateHeaderView(R.layout.main_drawer_header)
 
-        viewModel.userViewModel?.username?.observe(this, Observer {
+        loggedInUserViewModel?.username?.observe(this, Observer {
             navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_subtitle)?.also { subtitleView ->
-                subtitleView.text = viewModel.userViewModel?.username?.value
+                subtitleView.text = loggedInUserViewModel?.username?.value
             }
         })
     }

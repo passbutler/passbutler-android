@@ -7,7 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-class OverviewViewModel(internal var rootViewModel: RootViewModel? = null) : CoroutineScopeViewModel() {
+class OverviewViewModel : CoroutineScopeViewModel() {
 
     override val coroutineDispatcher = Dispatchers.IO
 

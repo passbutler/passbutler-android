@@ -18,6 +18,8 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
     override val transitionType = AnimatedFragment.TransitionType.SLIDE_VERTICAL
 
+    private var loggedInUserViewModel: UserViewModel? = null
+
     override fun getToolBarTitle() = getString(R.string.settings_title)
 
     override fun onAttach(context: Context?) {
@@ -27,17 +29,17 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             viewModel = ViewModelProviders.of(it).get(SettingsViewModel::class.java)
 
             val rootViewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
-            viewModel.rootViewModel = rootViewModel
+            loggedInUserViewModel = rootViewModel.loggedInUserViewModel
         }
     }
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = DataBindingUtil.inflate<FragmentSettingsBinding>(inflater, R.layout.fragment_settings, container, false)
-        binding.userViewModel = viewModel.userViewModel
+        binding.userViewModel = loggedInUserViewModel
 
         binding.seekBarSettingLocktimeout.apply {
             max = 5
-            progress = viewModel.userViewModel?.lockTimeout?.value ?: 0
+            progress = loggedInUserViewModel?.lockTimeout?.value ?: 0
 
             setOnSeekBarChangeListener(object : SimpleOnSeekBarChangeListener() {
                 override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -47,7 +49,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {
                     seekBar?.progress?.let { newProgress ->
                         L.d("SettingsFragment", "onStopTrackingTouch(): progress = $newProgress")
-                        viewModel.userViewModel?.lockTimeout?.value = newProgress
+                        loggedInUserViewModel?.lockTimeout?.value = newProgress
                     }
                 }
             })
