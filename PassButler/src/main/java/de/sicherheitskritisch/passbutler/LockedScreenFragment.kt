@@ -37,7 +37,6 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     }
 
     override fun onHandleBackPress(): Boolean {
-        // TODO: Allow the user to exit the app via backpress nevertheless
         // Do not allow pop fragment via backpress
         return true
     }
