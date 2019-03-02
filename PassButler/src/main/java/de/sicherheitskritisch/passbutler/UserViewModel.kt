@@ -5,7 +5,7 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.models.User
 
-class UserViewModel(private val user: User) : ViewModel() {
+class UserViewModel(private val userManager: UserManager, private val user: User) : ViewModel() {
 
     val username = MutableLiveData<String>()
     val lockTimeout = MutableLiveData<Int>()
@@ -13,7 +13,7 @@ class UserViewModel(private val user: User) : ViewModel() {
     private val lockTimeoutObserver = Observer<Int> {
         if (it != null) {
             user.lockTimeout = it
-            UserManager.updateUser(user)
+            userManager.updateUser(user)
         }
     }
 

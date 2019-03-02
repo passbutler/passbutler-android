@@ -1,13 +1,14 @@
 package de.sicherheitskritisch.passbutler.base.viewmodels
 
-import android.arch.lifecycle.ViewModel
+import android.app.Application
+import android.arch.lifecycle.AndroidViewModel
 import android.support.annotation.CallSuper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlin.coroutines.CoroutineContext
 
-open class CoroutineScopeViewModel : ViewModel(), CoroutineScope {
+open class CoroutineScopeAndroidViewModel(application: Application) : AndroidViewModel(application), CoroutineScope {
 
     protected open val coroutineDispatcher = Dispatchers.Default
 

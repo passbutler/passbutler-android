@@ -1,6 +1,7 @@
 package de.sicherheitskritisch.passbutler
 
 import android.arch.lifecycle.MutableLiveData
+import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
@@ -23,7 +24,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import kotlin.coroutines.CoroutineContext
 
-object UserManager : CoroutineScope {
+class UserManager(applicationContext: Context, private val localRepository: PassButlerRepository) : CoroutineScope {
 
     internal val loggedInUser = MutableLiveData<User?>()
 
@@ -34,11 +35,6 @@ object UserManager : CoroutineScope {
         get() = Dispatchers.IO + coroutineJob
 
     private val coroutineJob = SupervisorJob()
-
-    private val localRepository by lazy {
-        // TODO: Do not hold it here, it handles not only users
-        PassButlerRepository(applicationContext)
-    }
 
     private val remoteWebservice: UserWebservice by lazy {
         // TODO: Use server url given by user
@@ -54,9 +50,6 @@ object UserManager : CoroutineScope {
     private val sharedPreferences by lazy {
         applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
     }
-
-    private val applicationContext
-        get() = AbstractPassButlerApplication.applicationContext
 
     suspend fun loginUser(userName: String, password: String, serverUrl: String) {
         // TODO: Connect to server

@@ -1,19 +1,24 @@
 package de.sicherheitskritisch.passbutler
 
-import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeViewModel
+import android.app.Application
+import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
+import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.sicherheitskritisch.passbutler.common.DefaultRequestSendingViewModel
 import de.sicherheitskritisch.passbutler.common.L
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-class OverviewViewModel : CoroutineScopeViewModel() {
+class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
     override val coroutineDispatcher = Dispatchers.IO
 
     internal val synchronizeDataRequestSendingViewModel = DefaultRequestSendingViewModel()
 
     private var synchronizeDataJob: Job? = null
+
+    private val userManager
+        get() = getApplication<AbstractPassButlerApplication>().userManager
 
     internal fun synchronizeData() {
         // Cancels previous job, until the new job is started to prevent multiple refresh
@@ -22,7 +27,7 @@ class OverviewViewModel : CoroutineScopeViewModel() {
             synchronizeDataRequestSendingViewModel.isLoading.postValue(true)
 
             try {
-                UserManager.synchronizeUsers()
+                userManager.synchronizeUsers()
                 synchronizeDataRequestSendingViewModel.requestFinishedSuccessfully.emit()
             } catch (exception: Exception) {
                 L.w("UserManager", "synchronizeData(): The synchronization failed with exception!", exception)
@@ -36,7 +41,7 @@ class OverviewViewModel : CoroutineScopeViewModel() {
     internal fun logoutUser() {
         // We do not care for logout job, fire and forget here
         launch {
-            UserManager.logoutUser()
+            userManager.logoutUser()
         }
     }
 }

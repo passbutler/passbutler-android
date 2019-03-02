@@ -1,17 +1,22 @@
 package de.sicherheitskritisch.passbutler
 
-import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeViewModel
+import android.app.Application
+import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
+import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.sicherheitskritisch.passbutler.common.DefaultRequestSendingViewModel
 import de.sicherheitskritisch.passbutler.common.L
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-class LoginViewModel : CoroutineScopeViewModel() {
+class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
     override val coroutineDispatcher = Dispatchers.IO
 
     internal val loginRequestSendingViewModel = DefaultRequestSendingViewModel()
+
+    private val userManager
+        get() = getApplication<AbstractPassButlerApplication>().userManager
 
     private var loginJob: Job? = null
 
@@ -21,7 +26,7 @@ class LoginViewModel : CoroutineScopeViewModel() {
             loginRequestSendingViewModel.isLoading.postValue(true)
 
             try {
-                UserManager.loginUser(serverUrl, username, password)
+                userManager.loginUser(serverUrl, username, password)
                 loginRequestSendingViewModel.requestFinishedSuccessfully.emit()
             } catch (exception: LoginFailedException) {
                 L.w("UserManager", "loginUser(): The login failed with exception!", exception)
@@ -38,7 +43,7 @@ class LoginViewModel : CoroutineScopeViewModel() {
             loginRequestSendingViewModel.isLoading.postValue(true)
 
             try {
-                UserManager.loginDemoUser()
+                userManager.loginDemoUser()
                 loginRequestSendingViewModel.requestFinishedSuccessfully.emit()
             } catch (exception: LoginFailedException) {
                 L.w("UserManager", "loginDemoUser(): The demo login failed with exception!", exception)

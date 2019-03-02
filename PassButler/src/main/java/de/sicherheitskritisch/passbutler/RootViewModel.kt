@@ -1,16 +1,18 @@
 package de.sicherheitskritisch.passbutler
 
+import android.app.Application
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
 import android.text.format.DateUtils
-import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeViewModel
+import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
+import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.sicherheitskritisch.passbutler.models.User
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class RootViewModel : CoroutineScopeViewModel() {
+class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
     val rootScreenState = MutableLiveData<RootScreenState>()
     val unlockScreenMethod = MutableLiveData<UnlockScreenMethod>()
@@ -19,9 +21,12 @@ class RootViewModel : CoroutineScopeViewModel() {
 
     private var lockScreenCoroutineJob: Job? = null
 
+    private val userManager
+        get() = getApplication<AbstractPassButlerApplication>().userManager
+
     private val loggedInUserObserver = Observer<User?> { newUser ->
         if (newUser != null) {
-            loggedInUserViewModel = UserViewModel(newUser)
+            loggedInUserViewModel = UserViewModel(userManager, newUser)
             rootScreenState.value = RootScreenState.LoggedIn(true)
         } else {
             loggedInUserViewModel = null
@@ -30,14 +35,14 @@ class RootViewModel : CoroutineScopeViewModel() {
     }
 
     init {
-        UserManager.loggedInUser.observeForever(loggedInUserObserver)
+        userManager.loggedInUser.observeForever(loggedInUserObserver)
 
         // Try to restore logged-in user after the observer was added
-        UserManager.restoreLoggedInUser()
+        userManager.restoreLoggedInUser()
     }
 
     override fun onCleared() {
-        UserManager.loggedInUser.removeObserver(loggedInUserObserver)
+        userManager.loggedInUser.removeObserver(loggedInUserObserver)
         super.onCleared()
     }
 
