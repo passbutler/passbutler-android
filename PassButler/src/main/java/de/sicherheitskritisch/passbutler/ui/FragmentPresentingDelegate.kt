@@ -42,24 +42,20 @@ class FragmentPresentingDelegate(
 
                 // TODO: debouncing
 
-                if (fragment.isHidden) {
-                    fragmentTransaction.show(fragment)
+                if (fragment is BaseFragment) {
+                    fragment.fragmentPresentingDelegate = this
+                }
+
+                val fragmentTag = getFragmentTag(fragment)
+
+                if (replaceFragment) {
+                    fragmentTransaction.replace(rootFragmentContainerResourceId, fragment, fragmentTag)
                 } else {
-                    if (fragment is BaseFragment) {
-                        fragment.fragmentPresentingDelegate = this
-                    }
+                    fragmentTransaction.add(rootFragmentContainerResourceId, fragment, fragmentTag)
+                }
 
-                    val fragmentTag = getFragmentTag(fragment)
-
-                    if (replaceFragment) {
-                        fragmentTransaction.replace(rootFragmentContainerResourceId, fragment, fragmentTag)
-                    } else {
-                        fragmentTransaction.add(rootFragmentContainerResourceId, fragment, fragmentTag)
-                    }
-
-                    if (addToBackstack) {
-                        fragmentTransaction.addToBackStack(fragmentTag)
-                    }
+                if (addToBackstack) {
+                    fragmentTransaction.addToBackStack(fragmentTag)
                 }
 
                 if (rootFragment.isStateNotSaved) {
