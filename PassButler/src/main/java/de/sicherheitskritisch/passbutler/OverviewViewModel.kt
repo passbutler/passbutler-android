@@ -3,25 +3,23 @@ package de.sicherheitskritisch.passbutler
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeViewModel
 import de.sicherheitskritisch.passbutler.common.DefaultRequestSendingViewModel
 import de.sicherheitskritisch.passbutler.common.L
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class OverviewViewModel(internal var rootViewModel: RootViewModel? = null) : CoroutineScopeViewModel() {
 
-    val userViewModel
-        get() = rootViewModel?.loggedInUserViewModel
+    override val coroutineDispatcher = Dispatchers.IO
 
-    val synchronizeDataRequestSendingViewModel = DefaultRequestSendingViewModel()
+    internal val synchronizeDataRequestSendingViewModel = DefaultRequestSendingViewModel()
 
     private var synchronizeDataJob: Job? = null
 
-    fun synchronizeData() {
-        // Cancels previous job, until the new job is started
+    internal fun synchronizeData() {
+        // Cancels previous job, until the new job is started to prevent multiple refresh
         synchronizeDataJob?.cancel()
         synchronizeDataJob = launch {
             synchronizeDataRequestSendingViewModel.isLoading.postValue(true)
-
-            L.d("OverviewViewModel", "synchronizeData(): CR")
 
             try {
                 UserManager.synchronizeUsers()
@@ -35,12 +33,10 @@ class OverviewViewModel(internal var rootViewModel: RootViewModel? = null) : Cor
         }
     }
 
-    fun logoutUser() {
-        UserManager.logoutUser()
-    }
-
-    // TODO: This is not called on fragment destruction
-    override fun onCleared() {
-        super.onCleared()
+    internal fun logoutUser() {
+        // We do not care for logout job, fire and forget here
+        launch {
+            UserManager.logoutUser()
+        }
     }
 }

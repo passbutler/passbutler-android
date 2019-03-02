@@ -1,15 +1,13 @@
 package de.sicherheitskritisch.passbutler
 
 import android.arch.lifecycle.MutableLiveData
-import android.arch.persistence.room.Room
 import android.content.Context.MODE_PRIVATE
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
-import de.sicherheitskritisch.passbutler.base.application.AbstractPassButlerApplication
-import de.sicherheitskritisch.passbutler.common.AsyncCallback
+import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.Synchronization
 import de.sicherheitskritisch.passbutler.common.readTextFileContents
-import de.sicherheitskritisch.passbutler.database.PassButlerDatabase
+import de.sicherheitskritisch.passbutler.database.PassButlerRepository
 import de.sicherheitskritisch.passbutler.models.User
 import de.sicherheitskritisch.passbutler.models.UserConverterFactory
 import de.sicherheitskritisch.passbutler.models.UserWebservice
@@ -18,12 +16,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import retrofit2.Retrofit
 import java.io.BufferedReader
-import java.io.IOException
 import java.io.InputStreamReader
 import kotlin.coroutines.CoroutineContext
 
@@ -39,8 +35,9 @@ object UserManager : CoroutineScope {
 
     private val coroutineJob = SupervisorJob()
 
-    private val localDatabase by lazy {
-        Room.databaseBuilder(applicationContext, PassButlerDatabase::class.java, "PassButlerDatabase").build()
+    private val localRepository by lazy {
+        // TODO: Do not hold it here, it handles not only users
+        PassButlerRepository(applicationContext)
     }
 
     private val remoteWebservice: UserWebservice by lazy {
@@ -61,64 +58,57 @@ object UserManager : CoroutineScope {
     private val applicationContext
         get() = AbstractPassButlerApplication.applicationContext
 
-    // TODO: Remove async callback
-    fun loginUser(userName: String, password: String, serverUrl: String, asyncCallback: AsyncCallback<Unit, Exception>) {
-        launch {
-            // TODO: Connect to server
-            // TODO: Authenticate with given credentials
-            // TODO: If successful, store server url and credentials
-            // TODO: Load users list and find user
+    suspend fun loginUser(userName: String, password: String, serverUrl: String) {
+        // TODO: Connect to server
+        // TODO: Authenticate with given credentials
+        // TODO: If successful, store server url and credentials
+        // TODO: Load users list and find user
 
+        try {
             val userJsonObject = JSONObject()
 
             User.deserialize(userJsonObject)?.let { deserializedUser ->
                 storeUser(deserializedUser, false)
-                asyncCallback.onSuccess()
             } ?: run {
-                asyncCallback.onFailure(LoginFailedException())
+                throw LoginFailedException("The given user could not be deserialized!")
             }
+        } catch (exception: Exception) {
+            throw LoginFailedException("The login failed with an exception!", exception)
         }
     }
 
-    // TODO: Remove async callback
-    fun loginDemoUser(asyncCallback: AsyncCallback<Unit, Exception>) {
-        launch {
-            // Add an artificial delay for login progress simulation
-            delay(1000)
+    suspend fun loginDemoUser() {
+        // Add an artificial delay for login progress simulation
+        delay(1000)
 
-            try {
-                val assetsDirectory = AbstractPassButlerApplication.applicationContext.assets
-                BufferedReader(InputStreamReader(assetsDirectory.open("demomode_users.json"))).use { responseReader ->
-                    val demoModeUsersFileContents = responseReader.readTextFileContents()
-                    val demoModeUsers = JSONArray(demoModeUsersFileContents)
-                    val demoModeUserJsonObject = demoModeUsers.getJSONObject(0)
+        try {
+            val assetsDirectory = AbstractPassButlerApplication.applicationContext.assets
+            BufferedReader(InputStreamReader(assetsDirectory.open("demomode_users.json"))).use { responseReader ->
+                val demoModeUsersFileContents = responseReader.readTextFileContents()
+                val demoModeUsers = JSONArray(demoModeUsersFileContents)
+                val demoModeUserJsonObject = demoModeUsers.getJSONObject(0)
 
-                    User.deserialize(demoModeUserJsonObject)?.let { deserializedUser ->
-                        storeUser(deserializedUser, true)
-                        asyncCallback.onSuccess()
-                    } ?: run {
-                        asyncCallback.onFailure(DemoModeLoginFailedException())
-                    }
+                User.deserialize(demoModeUserJsonObject)?.let { deserializedUser ->
+                    storeUser(deserializedUser, true)
+                } ?: run {
+                    throw LoginFailedException("The demo mode users file could not be deserialized!")
                 }
-            } catch (e: IOException) {
-                L.w("UserManager", "loginDemoUser(): The demo mode users file could not be read!", e)
-                asyncCallback.onFailure(DemoModeLoginFailedException())
             }
+        } catch (exception: Exception) {
+            throw LoginFailedException("The demo mode users file could not be read!", exception)
         }
     }
 
-    fun logoutUser() {
-        launch {
-            localDatabase.clearAllTables()
-            sharedPreferences.edit().clear().apply()
-            loggedInUser.postValue(null)
-        }
+    suspend fun logoutUser() {
+        localRepository.reset()
+        sharedPreferences.edit().clear().apply()
+        loggedInUser.postValue(null)
     }
 
     fun restoreLoggedInUser() {
         launch {
             val restoredLoggedInUser = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, null)?.let { loggedInUsername ->
-                localDatabase.userDao().findUser(loggedInUsername)
+                localRepository.findUser(loggedInUsername)
             }
             loggedInUser.postValue(restoredLoggedInUser)
         }
@@ -126,7 +116,7 @@ object UserManager : CoroutineScope {
 
     fun updateUser(user: User) {
         launch {
-            localDatabase.userDao().update(user)
+            localRepository.updateUser(user)
         }
     }
 
@@ -134,6 +124,7 @@ object UserManager : CoroutineScope {
         // TODO: Remove artificial delay:
         delay(1000)
 
+        // TODO: Could be done async/independently parallel
         val localUserList = fetchLocalUserList()
         val remoteUserList = fetchRemoteUserList()
 
@@ -149,10 +140,8 @@ object UserManager : CoroutineScope {
     }
 
     private suspend fun fetchLocalUserList(): List<User> {
-        return withContext(context = coroutineContext) {
-            val localUsersList = localDatabase.userDao().findAll().takeIf { it.isNotEmpty() }
-            localUsersList ?: throw UserSynchronizationException("The local user list is null - can't process with synchronization!")
-        }
+        val localUsersList = localRepository.findAllUsers().takeIf { it.isNotEmpty() }
+        return localUsersList ?: throw UserSynchronizationException("The local user list is null - can't process with synchronization!")
     }
 
     private suspend fun fetchRemoteUserList(): List<User> {
@@ -162,9 +151,7 @@ object UserManager : CoroutineScope {
     }
 
     private suspend fun addNewUsersToLocalDatabase(newLocalUserItemList: List<User>) {
-        withContext(context = coroutineContext) {
-            localDatabase.userDao().insert(*newLocalUserItemList.toTypedArray())
-        }
+        localRepository.insertUser(*newLocalUserItemList.toTypedArray())
     }
 
     private suspend fun addNewUsersToRemoteDatabase(newRemoteUserItemList: List<User>) {
@@ -172,24 +159,20 @@ object UserManager : CoroutineScope {
         remoteUsersListRequest.await()
     }
 
-    private fun storeUser(user: User, isDemoMode: Boolean) {
-        launch {
-            localDatabase.userDao().insert(user)
+    private suspend fun storeUser(user: User, isDemoMode: Boolean) {
+        localRepository.insertUser(user)
 
-            sharedPreferences.edit().also {
-                it.putString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, user.username)
-                it.putBoolean(SERIALIZATION_KEY_DEMOMODE, isDemoMode)
-            }.apply()
+        sharedPreferences.edit().also {
+            it.putString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, user.username)
+            it.putBoolean(SERIALIZATION_KEY_DEMOMODE, isDemoMode)
+        }.apply()
 
-            loggedInUser.postValue(user)
-        }
+        loggedInUser.postValue(user)
     }
 }
 
 private const val SERIALIZATION_KEY_LOGGED_IN_USERNAME = "loggedInUsername"
 private const val SERIALIZATION_KEY_DEMOMODE = "isDemoMode"
 
-class LoginFailedException : Exception()
-class DemoModeLoginFailedException : Exception()
-
+class LoginFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
 class UserSynchronizationException(message: String) : Exception(message)

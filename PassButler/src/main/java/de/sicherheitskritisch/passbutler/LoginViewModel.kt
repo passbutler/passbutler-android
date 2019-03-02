@@ -1,34 +1,51 @@
 package de.sicherheitskritisch.passbutler
 
-import de.sicherheitskritisch.passbutler.common.AsyncCallbackResult
+import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeViewModel
 import de.sicherheitskritisch.passbutler.common.DefaultRequestSendingViewModel
-import de.sicherheitskritisch.passbutler.common.asyncCallback
+import de.sicherheitskritisch.passbutler.common.L
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
-class LoginViewModel : DefaultRequestSendingViewModel() {
+class LoginViewModel : CoroutineScopeViewModel() {
 
-    internal fun loginUser(serverUrl: String, username: String, password: String) {
-        isLoading.value = true
+    override val coroutineDispatcher = Dispatchers.IO
 
-        UserManager.loginUser(serverUrl, username, password, asyncCallback { result ->
-            isLoading.postValue(false)
+    internal val loginRequestSendingViewModel = DefaultRequestSendingViewModel()
 
-            when (result) {
-                is AsyncCallbackResult.Success -> requestFinishedSuccessfully.emit()
-                is AsyncCallbackResult.Failure -> requestError.postValue(result.error)
+    private var loginJob: Job? = null
+
+    fun loginUser(serverUrl: String, username: String, password: String) {
+        loginJob?.cancel()
+        loginJob = launch {
+            loginRequestSendingViewModel.isLoading.postValue(true)
+
+            try {
+                UserManager.loginUser(serverUrl, username, password)
+                loginRequestSendingViewModel.requestFinishedSuccessfully.emit()
+            } catch (exception: LoginFailedException) {
+                L.w("UserManager", "loginUser(): The login failed with exception!", exception)
+                loginRequestSendingViewModel.requestError.postValue(exception)
+            } finally {
+                loginRequestSendingViewModel.isLoading.postValue(false)
             }
-        })
+        }
     }
 
-    internal fun loginDemoUser() {
-        isLoading.value = true
+    fun loginDemoUser() {
+        loginJob?.cancel()
+        loginJob = launch {
+            loginRequestSendingViewModel.isLoading.postValue(true)
 
-        UserManager.loginDemoUser(asyncCallback { result ->
-            isLoading.postValue(false)
-
-            when (result) {
-                is AsyncCallbackResult.Success -> requestFinishedSuccessfully.emit()
-                is AsyncCallbackResult.Failure -> requestError.postValue(result.error)
+            try {
+                UserManager.loginDemoUser()
+                loginRequestSendingViewModel.requestFinishedSuccessfully.emit()
+            } catch (exception: LoginFailedException) {
+                L.w("UserManager", "loginDemoUser(): The demo login failed with exception!", exception)
+                loginRequestSendingViewModel.requestError.postValue(exception)
+            } finally {
+                loginRequestSendingViewModel.isLoading.postValue(false)
             }
-        })
+        }
     }
 }

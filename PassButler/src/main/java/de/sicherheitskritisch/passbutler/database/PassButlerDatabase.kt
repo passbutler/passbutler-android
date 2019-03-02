@@ -1,12 +1,19 @@
 package de.sicherheitskritisch.passbutler.database
 
 import android.arch.persistence.room.Database
+import android.arch.persistence.room.Room
 import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.TypeConverter
 import android.arch.persistence.room.TypeConverters
+import android.content.Context
 import de.sicherheitskritisch.passbutler.models.User
 import de.sicherheitskritisch.passbutler.models.UserDao
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.withContext
 import java.util.*
+import kotlin.coroutines.CoroutineContext
 
 @Database(entities = [User::class], version = 1, exportSchema = false)
 @TypeConverters(DatabaseConverters::class)
@@ -26,4 +33,46 @@ class DatabaseConverters {
 
     @TypeConverter
     fun intToBoolean(int: Int?) = int?.let { it == 1 }
+}
+
+class PassButlerRepository(applicationContext: Context) : CoroutineScope {
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO + coroutineJob
+
+    private val coroutineJob = SupervisorJob()
+
+    private val localDatabase by lazy {
+        Room.databaseBuilder(applicationContext, PassButlerDatabase::class.java, "PassButlerDatabase").build()
+    }
+
+    suspend fun findAllUsers(): List<User> {
+        return withContext(context = coroutineContext) {
+            localDatabase.userDao().findAll()
+        }
+    }
+
+    suspend fun findUser(username: String): User? {
+        return withContext(context = coroutineContext) {
+            localDatabase.userDao().findUser(username)
+        }
+    }
+
+    suspend fun insertUser(vararg user: User) {
+        withContext(context = coroutineContext) {
+            localDatabase.userDao().insert(*user)
+        }
+    }
+
+    suspend fun updateUser(vararg user: User) {
+        withContext(context = coroutineContext) {
+            localDatabase.userDao().update(*user)
+        }
+    }
+
+    suspend fun reset() {
+        withContext(context = coroutineContext) {
+            localDatabase.clearAllTables()
+        }
+    }
 }

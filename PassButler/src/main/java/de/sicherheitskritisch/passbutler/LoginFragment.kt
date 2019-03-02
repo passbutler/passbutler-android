@@ -42,7 +42,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
         L.d("LoginFragment", "onCreate(): savedInstanceState = $savedInstanceState")
 
-        loginRequestSendingViewHandler = LoginRequestSendingViewHandler(viewModel, WeakReference(this)).apply {
+        loginRequestSendingViewHandler = LoginRequestSendingViewHandler(viewModel.loginRequestSendingViewModel, WeakReference(this)).apply {
             registerObservers()
         }
     }
