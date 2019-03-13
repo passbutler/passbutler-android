@@ -7,8 +7,8 @@ import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterF
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.Synchronization
-import de.sicherheitskritisch.passbutler.common.readTextFileContents
 import de.sicherheitskritisch.passbutler.common.UnitConverterFactory
+import de.sicherheitskritisch.passbutler.common.readTextFileContents
 import de.sicherheitskritisch.passbutler.database.PassButlerRepository
 import de.sicherheitskritisch.passbutler.models.User
 import de.sicherheitskritisch.passbutler.models.UserConverterFactory
@@ -16,6 +16,8 @@ import de.sicherheitskritisch.passbutler.models.UserWebservice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONArray
@@ -120,10 +122,13 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         }
     }
 
-    suspend fun synchronizeUsers() {
-        // TODO: Could be done async/independently parallel
-        val localUserList = fetchLocalUserList()
-        val remoteUserList = fetchRemoteUserList()
+    suspend fun synchronizeUsers() = coroutineScope {
+        // Start both operations parallel because they are independent from each other
+        val localUserListDeferred = async { fetchLocalUserList() }
+        val remoteUserListDeferred = async { fetchRemoteUserList() }
+
+        val localUserList = localUserListDeferred.await()
+        val remoteUserList = remoteUserListDeferred.await()
 
         val newLocalUserItemList = Synchronization.collectNewUserItems(localUserList, remoteUserList)
         L.d("UserManager", "synchronizeUsers(): New user items for local database: ${newLocalUserItemList.buildShortUserList()}")
@@ -156,7 +161,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
             updateModifiedUsersToRemoteDatabase(modifiedRemoteUserItemList)
         }
 
-        L.d("UserManager", "synchronizeUsers(): Finished")
+        L.d("UserManager", "synchronizeUsers(): Finished successfully")
     }
 
     private suspend fun fetchLocalUserList(): List<User> {
