@@ -8,6 +8,7 @@ import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.Synchronization
 import de.sicherheitskritisch.passbutler.common.readTextFileContents
+import de.sicherheitskritisch.passbutler.common.UnitConverterFactory
 import de.sicherheitskritisch.passbutler.database.PassButlerRepository
 import de.sicherheitskritisch.passbutler.models.User
 import de.sicherheitskritisch.passbutler.models.UserConverterFactory
@@ -42,6 +43,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         // TODO: Use server url given by user
         val retrofit = Retrofit.Builder()
             .baseUrl("http://10.0.0.20:5000")
+            .addConverterFactory(UnitConverterFactory())
             .addConverterFactory(UserConverterFactory())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .build()
@@ -144,7 +146,6 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         L.d("UserManager", "synchronizeUsers(): Modified user items for local database: ${modifiedLocalUserItemList.buildShortUserList()}")
 
         if (modifiedLocalUserItemList.isNotEmpty()) {
-            // TODO: check if succeeded
             updateModifiedUsersToLocalDatabase(modifiedLocalUserItemList)
         }
 
@@ -152,7 +153,6 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         L.d("UserManager", "synchronizeUsers(): Modified user items for remote database: ${modifiedRemoteUserItemList.buildShortUserList()}")
 
         if (modifiedRemoteUserItemList.isNotEmpty()) {
-            // TODO: check if succeeded
             updateModifiedUsersToRemoteDatabase(modifiedRemoteUserItemList)
         }
 
@@ -176,7 +176,11 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
 
     private suspend fun addNewUsersToRemoteDatabase(newRemoteUserItemList: List<User>) {
         val remoteUsersListRequest = remoteWebservice.addUsersAsync(newRemoteUserItemList)
-        remoteUsersListRequest.await()
+        val requestDeferred = remoteUsersListRequest.await()
+
+        if (!requestDeferred.isSuccessful) {
+            throw UserSynchronizationException("The users could not be added to remote database (HTTP error code ${requestDeferred.code()})!")
+        }
     }
 
     private suspend fun updateModifiedUsersToLocalDatabase(modifiedLocalUserItemList: List<User>) {
@@ -185,7 +189,11 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
 
     private suspend fun updateModifiedUsersToRemoteDatabase(modifiedRemoteUserItemList: List<User>) {
         val remoteUsersListRequest = remoteWebservice.updateUsersAsync(modifiedRemoteUserItemList)
-        remoteUsersListRequest.await()
+        val requestDeferred = remoteUsersListRequest.await()
+
+        if (!requestDeferred.isSuccessful) {
+            throw UserSynchronizationException("The users could not be updated on remote database (HTTP error code ${requestDeferred.code()})!")
+        }
     }
 
     private suspend fun storeUser(user: User, isDemoMode: Boolean) {

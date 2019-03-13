@@ -98,10 +98,10 @@ interface UserWebservice {
     fun getUsersAsync(): Deferred<Response<List<User>>>
 
     @POST("/users")
-    fun addUsersAsync(@Body newUsers: List<User>): Deferred<Response<List<User>>>
+    fun addUsersAsync(@Body newUsers: List<User>): Deferred<Response<Unit>>
 
     @PUT("/users")
-    fun updateUsersAsync(@Body modifiedUsers: List<User>): Deferred<Response<List<User>>>
+    fun updateUsersAsync(@Body modifiedUsers: List<User>): Deferred<Response<Unit>>
 
     @GET("/user/{username}")
     fun getUser(@Path("username") username: String): Call<User>
@@ -120,6 +120,19 @@ class UserConverterFactory : Converter.Factory() {
         }
     }
 
+    /**
+     * Converts a list of `User` objects to serialized JSON string.
+     */
+    private class RequestUserListConverter : Converter<List<User>, RequestBody> {
+        override fun convert(userList: List<User>): RequestBody {
+            return RequestBody.create(MediaType.get("application/json"), JSONArray().also { jsonArray ->
+                userList.forEach {
+                    jsonArray.put(it.serialize())
+                }
+            }.toString())
+        }
+    }
+
     override fun responseBodyConverter(type: Type, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
         return when (type) {
             User::class.java -> ResponseUserConverter()
@@ -132,28 +145,24 @@ class UserConverterFactory : Converter.Factory() {
             else -> null
         }
     }
-}
 
-private class RequestUserListConverter : Converter<List<User>, RequestBody> {
-    override fun convert(userList: List<User>): RequestBody {
-        return RequestBody.create(MediaType.get("application/json"), JSONArray().also { jsonArray ->
-            userList.forEach {
-                jsonArray.put(it.serialize())
-            }
-        }.toString())
+    /**
+     * Converts a serialized JSON string response to a `User` object.
+     */
+    private class ResponseUserConverter : Converter<ResponseBody, User?> {
+        override fun convert(responseBody: ResponseBody): User? {
+            return User.deserialize(JSONObject(responseBody.string()))
+        }
     }
-}
 
-private class ResponseUserConverter : Converter<ResponseBody, User?> {
-    override fun convert(responseBody: ResponseBody): User? {
-        return User.deserialize(JSONObject(responseBody.string()))
-    }
-}
-
-private class ResponseUserListConverter : Converter<ResponseBody, List<User>> {
-    override fun convert(responseBody: ResponseBody): List<User> {
-        return JSONArray(responseBody.string()).asJSONObjectSequence().mapNotNull { userJSONObject ->
-            User.deserialize(userJSONObject)
-        }.toList()
+    /**
+     * Converts a serialized JSON string response to a list of `User` objects.
+     */
+    private class ResponseUserListConverter : Converter<ResponseBody, List<User>> {
+        override fun convert(responseBody: ResponseBody): List<User> {
+            return JSONArray(responseBody.string()).asJSONObjectSequence().mapNotNull { userJSONObject ->
+                User.deserialize(userJSONObject)
+            }.toList()
+        }
     }
 }
