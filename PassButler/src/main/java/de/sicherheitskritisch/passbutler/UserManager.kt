@@ -22,6 +22,8 @@ import org.json.JSONObject
 import retrofit2.Retrofit
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.time.Instant
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 class UserManager(applicationContext: Context, private val localRepository: PassButlerRepository) : CoroutineScope {
@@ -108,26 +110,51 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
     }
 
     fun updateUser(user: User) {
+        L.d("UserManager", "updateUser(): user = $user")
+
         launch {
+            user.modified = Date.from(Instant.now())
             localRepository.updateUser(user)
         }
     }
 
     suspend fun synchronizeUsers() {
-        // TODO: Remove artificial delay:
-        delay(1000)
-
         // TODO: Could be done async/independently parallel
         val localUserList = fetchLocalUserList()
         val remoteUserList = fetchRemoteUserList()
 
         val newLocalUserItemList = Synchronization.collectNewUserItems(localUserList, remoteUserList)
-        L.d("UserManager", "synchronizeUsers(): New user items for local database: $newLocalUserItemList")
-        addNewUsersToLocalDatabase(newLocalUserItemList)
+        L.d("UserManager", "synchronizeUsers(): New user items for local database: ${newLocalUserItemList.buildShortUserList()}")
+
+        if (newLocalUserItemList.isNotEmpty()) {
+            addNewUsersToLocalDatabase(newLocalUserItemList)
+        }
 
         val newRemoteUserItemList = Synchronization.collectNewUserItems(remoteUserList, localUserList)
-        L.d("UserManager", "synchronizeUsers(): New user items for remote database: $newRemoteUserItemList")
-        addNewUsersToRemoteDatabase(newRemoteUserItemList)
+        L.d("UserManager", "synchronizeUsers(): New user items for remote database: ${newRemoteUserItemList.buildShortUserList()}")
+
+        if (newRemoteUserItemList.isNotEmpty()) {
+            addNewUsersToRemoteDatabase(newRemoteUserItemList)
+        }
+
+        val mergedLocalUserList = localUserList + newLocalUserItemList
+        val mergedRemoteUserList = remoteUserList + newRemoteUserItemList
+
+        val modifiedLocalUserItemList = Synchronization.collectModifiedUserItems(mergedLocalUserList, mergedRemoteUserList)
+        L.d("UserManager", "synchronizeUsers(): Modified user items for local database: ${modifiedLocalUserItemList.buildShortUserList()}")
+
+        if (modifiedLocalUserItemList.isNotEmpty()) {
+            // TODO: check if succeeded
+            updateModifiedUsersToLocalDatabase(modifiedLocalUserItemList)
+        }
+
+        val modifiedRemoteUserItemList = Synchronization.collectModifiedUserItems(mergedRemoteUserList, mergedLocalUserList)
+        L.d("UserManager", "synchronizeUsers(): Modified user items for remote database: ${modifiedRemoteUserItemList.buildShortUserList()}")
+
+        if (modifiedRemoteUserItemList.isNotEmpty()) {
+            // TODO: check if succeeded
+            updateModifiedUsersToRemoteDatabase(modifiedRemoteUserItemList)
+        }
 
         L.d("UserManager", "synchronizeUsers(): Finished")
     }
@@ -152,6 +179,15 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         remoteUsersListRequest.await()
     }
 
+    private suspend fun updateModifiedUsersToLocalDatabase(modifiedLocalUserItemList: List<User>) {
+        localRepository.updateUser(*modifiedLocalUserItemList.toTypedArray())
+    }
+
+    private suspend fun updateModifiedUsersToRemoteDatabase(modifiedRemoteUserItemList: List<User>) {
+        val remoteUsersListRequest = remoteWebservice.updateUsersAsync(modifiedRemoteUserItemList)
+        remoteUsersListRequest.await()
+    }
+
     private suspend fun storeUser(user: User, isDemoMode: Boolean) {
         localRepository.insertUser(user)
 
@@ -169,3 +205,7 @@ private const val SERIALIZATION_KEY_DEMOMODE = "isDemoMode"
 
 class LoginFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
 class UserSynchronizationException(message: String) : Exception(message)
+
+private fun List<User>.buildShortUserList(): List<String> {
+    return this.map { "'${it.username}' (${it.modified})" }
+}

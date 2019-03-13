@@ -25,6 +25,7 @@ import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -98,6 +99,9 @@ interface UserWebservice {
 
     @POST("/users")
     fun addUsersAsync(@Body newUsers: List<User>): Deferred<Response<List<User>>>
+
+    @PUT("/users")
+    fun updateUsersAsync(@Body modifiedUsers: List<User>): Deferred<Response<List<User>>>
 
     @GET("/user/{username}")
     fun getUser(@Path("username") username: String): Call<User>
