@@ -130,35 +130,36 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         val localUserList = localUserListDeferred.await()
         val remoteUserList = remoteUserListDeferred.await()
 
-        val newLocalUserItemList = Synchronization.collectNewUserItems(localUserList, remoteUserList)
-        L.d("UserManager", "synchronizeUsers(): New user items for local database: ${newLocalUserItemList.buildShortUserList()}")
+        val newLocalUsers = Synchronization.collectNewUserItems(localUserList, remoteUserList)
+        L.d("UserManager", "synchronizeUsers(): New user items for local database: ${newLocalUsers.buildShortUserList()}")
 
-        if (newLocalUserItemList.isNotEmpty()) {
-            addNewUsersToLocalDatabase(newLocalUserItemList)
+        if (newLocalUsers.isNotEmpty()) {
+            addNewUsersToLocalDatabase(newLocalUsers)
         }
 
-        val newRemoteUserItemList = Synchronization.collectNewUserItems(remoteUserList, localUserList)
-        L.d("UserManager", "synchronizeUsers(): New user items for remote database: ${newRemoteUserItemList.buildShortUserList()}")
+        val newRemoteUsers = Synchronization.collectNewUserItems(remoteUserList, localUserList)
+        L.d("UserManager", "synchronizeUsers(): New user items for remote database: ${newRemoteUsers.buildShortUserList()}")
 
-        if (newRemoteUserItemList.isNotEmpty()) {
-            addNewUsersToRemoteDatabase(newRemoteUserItemList)
+        if (newRemoteUsers.isNotEmpty()) {
+            addNewUsersToRemoteDatabase(newRemoteUsers)
         }
 
-        val mergedLocalUserList = localUserList + newLocalUserItemList
-        val mergedRemoteUserList = remoteUserList + newRemoteUserItemList
+        // Build up both complete lists to avoid query/fetch again
+        val mergedLocalUserList = localUserList + newLocalUsers
+        val mergedRemoteUserList = remoteUserList + newRemoteUsers
 
-        val modifiedLocalUserItemList = Synchronization.collectModifiedUserItems(mergedLocalUserList, mergedRemoteUserList)
-        L.d("UserManager", "synchronizeUsers(): Modified user items for local database: ${modifiedLocalUserItemList.buildShortUserList()}")
+        val modifiedLocalUsers = Synchronization.collectModifiedUserItems(mergedLocalUserList, mergedRemoteUserList)
+        L.d("UserManager", "synchronizeUsers(): Modified user items for local database: ${modifiedLocalUsers.buildShortUserList()}")
 
-        if (modifiedLocalUserItemList.isNotEmpty()) {
-            updateModifiedUsersToLocalDatabase(modifiedLocalUserItemList)
+        if (modifiedLocalUsers.isNotEmpty()) {
+            updateModifiedUsersToLocalDatabase(modifiedLocalUsers)
         }
 
-        val modifiedRemoteUserItemList = Synchronization.collectModifiedUserItems(mergedRemoteUserList, mergedLocalUserList)
-        L.d("UserManager", "synchronizeUsers(): Modified user items for remote database: ${modifiedRemoteUserItemList.buildShortUserList()}")
+        val modifiedRemoteUsers = Synchronization.collectModifiedUserItems(mergedRemoteUserList, mergedLocalUserList)
+        L.d("UserManager", "synchronizeUsers(): Modified user items for remote database: ${modifiedRemoteUsers.buildShortUserList()}")
 
-        if (modifiedRemoteUserItemList.isNotEmpty()) {
-            updateModifiedUsersToRemoteDatabase(modifiedRemoteUserItemList)
+        if (modifiedRemoteUsers.isNotEmpty()) {
+            updateModifiedUsersToRemoteDatabase(modifiedRemoteUsers)
         }
 
         L.d("UserManager", "synchronizeUsers(): Finished successfully")
@@ -175,12 +176,12 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         return response.body() ?: throw UserSynchronizationException("The remote user list is null - can't process with synchronization!")
     }
 
-    private suspend fun addNewUsersToLocalDatabase(newLocalUserItemList: List<User>) {
-        localRepository.insertUser(*newLocalUserItemList.toTypedArray())
+    private suspend fun addNewUsersToLocalDatabase(newUsers: List<User>) {
+        localRepository.insertUser(*newUsers.toTypedArray())
     }
 
-    private suspend fun addNewUsersToRemoteDatabase(newRemoteUserItemList: List<User>) {
-        val remoteUsersListRequest = remoteWebservice.addUsersAsync(newRemoteUserItemList)
+    private suspend fun addNewUsersToRemoteDatabase(newUsers: List<User>) {
+        val remoteUsersListRequest = remoteWebservice.addUsersAsync(newUsers)
         val requestDeferred = remoteUsersListRequest.await()
 
         if (!requestDeferred.isSuccessful) {
@@ -188,12 +189,12 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         }
     }
 
-    private suspend fun updateModifiedUsersToLocalDatabase(modifiedLocalUserItemList: List<User>) {
-        localRepository.updateUser(*modifiedLocalUserItemList.toTypedArray())
+    private suspend fun updateModifiedUsersToLocalDatabase(modifiedUsers: List<User>) {
+        localRepository.updateUser(*modifiedUsers.toTypedArray())
     }
 
-    private suspend fun updateModifiedUsersToRemoteDatabase(modifiedRemoteUserItemList: List<User>) {
-        val remoteUsersListRequest = remoteWebservice.updateUsersAsync(modifiedRemoteUserItemList)
+    private suspend fun updateModifiedUsersToRemoteDatabase(modifiedUsers: List<User>) {
+        val remoteUsersListRequest = remoteWebservice.updateUsersAsync(modifiedUsers)
         val requestDeferred = remoteUsersListRequest.await()
 
         if (!requestDeferred.isSuccessful) {

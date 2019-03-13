@@ -47,31 +47,31 @@ class PassButlerRepository(applicationContext: Context) : CoroutineScope {
     }
 
     suspend fun findAllUsers(): List<User> {
-        return withContext(context = coroutineContext) {
+        return withContext(coroutineContext) {
             localDatabase.userDao().findAll()
         }
     }
 
     suspend fun findUser(username: String): User? {
-        return withContext(context = coroutineContext) {
+        return withContext(coroutineContext) {
             localDatabase.userDao().findUser(username)
         }
     }
 
     suspend fun insertUser(vararg user: User) {
-        withContext(context = coroutineContext) {
+        withContext(coroutineContext) {
             localDatabase.userDao().insert(*user)
         }
     }
 
     suspend fun updateUser(vararg user: User) {
-        withContext(context = coroutineContext) {
+        withContext(coroutineContext) {
             localDatabase.userDao().update(*user)
         }
     }
 
     suspend fun reset() {
-        withContext(context = coroutineContext) {
+        withContext(coroutineContext) {
             localDatabase.clearAllTables()
         }
     }
