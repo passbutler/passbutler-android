@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.databinding.FragmentSettingsBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.SimpleOnSeekBarChangeListener
@@ -48,7 +47,6 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
                 }
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {
                     seekBar?.progress?.let { newProgress ->
-                        L.d("SettingsFragment", "onStopTrackingTouch(): progress = $newProgress")
                         loggedInUserViewModel?.lockTimeout?.value = newProgress
                     }
                 }
