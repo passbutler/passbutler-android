@@ -18,10 +18,11 @@ class UserViewModel(private val userManager: UserManager, private val user: User
     }
 
     init {
+        // Register observers first to avoid initial observer calls
+        registerObservers()
+
         username.value = user.username
         lockTimeout.value = user.lockTimeout
-
-        registerObservers()
     }
 
     private fun registerObservers() {
