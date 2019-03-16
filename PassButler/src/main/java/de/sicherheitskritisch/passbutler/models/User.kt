@@ -3,6 +3,7 @@ package de.sicherheitskritisch.passbutler.models
 import android.arch.persistence.room.Dao
 import android.arch.persistence.room.Delete
 import android.arch.persistence.room.Entity
+import android.arch.persistence.room.Ignore
 import android.arch.persistence.room.Insert
 import android.arch.persistence.room.OnConflictStrategy
 import android.arch.persistence.room.PrimaryKey
@@ -10,6 +11,7 @@ import android.arch.persistence.room.Query
 import android.arch.persistence.room.Update
 import de.sicherheitskritisch.passbutler.common.JSONSerializable
 import de.sicherheitskritisch.passbutler.common.L
+import de.sicherheitskritisch.passbutler.common.Synchronizable
 import de.sicherheitskritisch.passbutler.common.asJSONObjectSequence
 import kotlinx.coroutines.Deferred
 import okhttp3.MediaType
@@ -37,9 +39,12 @@ data class User(
     val username: String,
     var lockTimeout: Int,
     var deleted: Boolean,
-    var modified: Date,
+    override var modified: Date,
     val created: Date
-) : JSONSerializable {
+) : Synchronizable, JSONSerializable {
+
+    @Ignore
+    override val primaryField = username
 
     override fun serialize(): JSONObject {
         return JSONObject().apply {

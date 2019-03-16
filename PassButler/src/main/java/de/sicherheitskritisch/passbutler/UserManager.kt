@@ -44,7 +44,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
     private val remoteWebservice: UserWebservice by lazy {
         // TODO: Use server url given by user
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.0.20:5000")
+            .baseUrl("http://172.16.0.125:5000")
             .addConverterFactory(UnitConverterFactory())
             .addConverterFactory(UserConverterFactory())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
@@ -130,14 +130,14 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         val localUserList = localUserListDeferred.await()
         val remoteUserList = remoteUserListDeferred.await()
 
-        val newLocalUsers = Synchronization.collectNewUserItems(localUserList, remoteUserList)
+        val newLocalUsers = Synchronization.collectNewItems(localUserList, remoteUserList)
         L.d("UserManager", "synchronizeUsers(): New user items for local database: ${newLocalUsers.buildShortUserList()}")
 
         if (newLocalUsers.isNotEmpty()) {
             addNewUsersToLocalDatabase(newLocalUsers)
         }
 
-        val newRemoteUsers = Synchronization.collectNewUserItems(remoteUserList, localUserList)
+        val newRemoteUsers = Synchronization.collectNewItems(remoteUserList, localUserList)
         L.d("UserManager", "synchronizeUsers(): New user items for remote database: ${newRemoteUsers.buildShortUserList()}")
 
         if (newRemoteUsers.isNotEmpty()) {

@@ -1,7 +1,7 @@
 package de.sicherheitskritisch.passbutler.common
 
 import de.sicherheitskritisch.passbutler.common.Synchronization.collectModifiedUserItems
-import de.sicherheitskritisch.passbutler.common.Synchronization.collectNewUserItems
+import de.sicherheitskritisch.passbutler.common.Synchronization.collectNewItems
 import de.sicherheitskritisch.passbutler.models.User
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -11,13 +11,17 @@ import java.util.*
 
 class SynchronizationTest {
 
+    /**
+     * `collectNewItems()` tests
+     */
+
     @Test
     fun `If no new users are given nor current users are given, an empty list is returned`() {
         val currentUsers = listOf<User>()
         val newUsers = listOf<User>()
 
         val expectedUsers = emptyList<User>()
-        assertEquals(expectedUsers, collectNewUserItems(currentUsers, newUsers))
+        assertEquals(expectedUsers, collectNewItems(currentUsers, newUsers))
     }
 
     @Test
@@ -30,7 +34,7 @@ class SynchronizationTest {
         val newUsers = emptyList<User>()
 
         val expectedUsers = emptyList<User>()
-        assertEquals(expectedUsers, collectNewUserItems(currentUsers, newUsers))
+        assertEquals(expectedUsers, collectNewItems(currentUsers, newUsers))
     }
 
     @Test
@@ -43,7 +47,7 @@ class SynchronizationTest {
         val newUsers = currentUsers.toList()
 
         val expectedUsers = emptyList<User>()
-        assertEquals(expectedUsers, collectNewUserItems(currentUsers, newUsers))
+        assertEquals(expectedUsers, collectNewItems(currentUsers, newUsers))
     }
 
     @Test
@@ -57,7 +61,7 @@ class SynchronizationTest {
         )
 
         val expectedUsers = emptyList<User>()
-        assertEquals(expectedUsers, collectNewUserItems(currentUsers, newUsers))
+        assertEquals(expectedUsers, collectNewItems(currentUsers, newUsers))
     }
 
     @Test
@@ -72,7 +76,7 @@ class SynchronizationTest {
         )
 
         val expectedUsers = newUsers.toList()
-        assertEquals(expectedUsers, collectNewUserItems(currentUsers, newUsers))
+        assertEquals(expectedUsers, collectNewItems(currentUsers, newUsers))
     }
 
     @Test
@@ -92,8 +96,12 @@ class SynchronizationTest {
             createUser("user c")
         )
 
-        assertEquals(expectedUsers, collectNewUserItems(currentUsers, newUsers))
+        assertEquals(expectedUsers, collectNewItems(currentUsers, newUsers))
     }
+
+    /**
+     * `collectModifiedUserItems()` tests
+     */
 
     @Test
     fun `If the list size is different, an exception is thrown`() {

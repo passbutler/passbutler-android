@@ -1,42 +1,46 @@
 package de.sicherheitskritisch.passbutler.common
 
-import de.sicherheitskritisch.passbutler.models.User
+import java.util.*
 
 object Synchronization {
     /**
-     * Detects new items between two lists with users. To detect new items, the primary key `username` is used.
+     * Detects new items between two lists. To detect new items, the item primary key must be specified (e.g. `username` or `id`).
      */
-    fun collectNewUserItems(currentUsers: List<User>, newUsers: List<User>): List<User> {
-        return newUsers.filter { newUsersElement ->
-            // The element should not be contained in current users (identified via primary field)
-            !currentUsers.any { it.username == newUsersElement.username }
+    fun <T : Synchronizable> collectNewItems(currentItems: List<T>, newItems: List<T>): List<T> {
+        return newItems.filter { newItem ->
+            // The element should not be contained in current items (identified via primary field)
+            !currentItems.any { it.primaryField == newItem.primaryField }
         }
     }
 
     /**
-     * Collects a list of items of modified items (determined by modified date) based on
-     * current item and potentially updated item list.
+     * Collects a list of items of modified items (determined by modified date) based on current item and potentially updated item list.
      */
-    fun collectModifiedUserItems(currentUsers: List<User>, updatedUsers: List<User>): List<User> {
-        if (currentUsers.size != updatedUsers.size) {
+    fun <T : Synchronizable> collectModifiedUserItems(currentItems: List<T>, updatedItems: List<T>): List<T> {
+        if (currentItems.size != updatedItems.size) {
             throw IllegalArgumentException("The current user list and updated user list size must be the same!")
         }
 
-        val sortedCurrentUsers = currentUsers.sortedBy { it.username }
-        val sortedUpdatedUsers = updatedUsers.sortedBy { it.username }
+        val sortedCurrentItems = currentItems.sortedBy { it.primaryField }
+        val sortedUpdatedItems = updatedItems.sortedBy { it.primaryField }
 
-        return sortedCurrentUsers.mapIndexedNotNull { index, currentUserItem ->
-            val updatedUserItem = sortedUpdatedUsers[index]
+        return sortedCurrentItems.mapIndexedNotNull { index, currentUserItem ->
+            val updatedItem = sortedUpdatedItems[index]
 
-            if (currentUserItem.username != updatedUserItem.username) {
-                throw IllegalStateException("The current user list and updated user list must contain the same users!")
+            if (currentUserItem.primaryField != updatedItem.primaryField) {
+                throw IllegalStateException("The current item list and updated item list must contain the same items!")
             }
 
-            if (updatedUserItem.modified > currentUserItem.modified) {
-                updatedUserItem
+            if (updatedItem.modified > currentUserItem.modified) {
+                updatedItem
             } else {
                 null
             }
         }
     }
+}
+
+interface Synchronizable {
+    val primaryField: String
+    var modified: Date
 }
