@@ -40,9 +40,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + coroutineJob
 
-    private var loggedInUserViewModel: UserViewModel? = null
-
     private val coroutineJob = SupervisorJob()
+
+    private var loggedInUserViewModel: UserViewModel? = null
 
     private var synchronizeDataRequestSendingViewHandler: SynchronizeDataRequestSendingViewHandler? = null
 
