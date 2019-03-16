@@ -50,33 +50,39 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
         when (rootScreenState) {
             is RootViewModel.RootScreenState.LoggedIn -> {
                 when (rootScreenState.isUnlocked) {
-                    true -> {
-                        when {
-                            isFragmentShown(LockedScreenFragment::class.java) -> {
-                                // Pop locked locked screen fragment if it is shown
-                                popBackstack()
-                            }
-                            !isFragmentShown(OverviewFragment::class.java) -> {
-                                val overviewFragment = OverviewFragment.newInstance()
-                                showFragmentAsFirstScreen(overviewFragment)
-                            }
-                        }
-                    }
-                    false -> {
-                        // Only show locked screen fragment is still not shown - do not replace fragment, because we want to pop back
-                        if (!isFragmentShown(LockedScreenFragment::class.java)) {
-                            val overviewFragment = LockedScreenFragment.newInstance()
-                            showFragment(overviewFragment, replaceFragment = false, addToBackstack = true)
-                        }
-                    }
+                    true -> handleLoggedInUnlockedState()
+                    false -> handleLoggedInLockedState()
                 }
             }
-            is RootViewModel.RootScreenState.LoggedOut -> {
-                if (!isFragmentShown(LoginFragment::class.java)) {
-                    val loginFragment = LoginFragment.newInstance()
-                    showFragmentAsFirstScreen(loginFragment)
-                }
+            is RootViewModel.RootScreenState.LoggedOut -> handleLoggedOutState()
+        }
+    }
+
+    private fun handleLoggedInUnlockedState() {
+        when {
+            isFragmentShown(LockedScreenFragment::class.java) -> {
+                // Pop locked locked screen fragment if it is shown
+                popBackstack()
             }
+            !isFragmentShown(OverviewFragment::class.java) -> {
+                val overviewFragment = OverviewFragment.newInstance()
+                showFragmentAsFirstScreen(overviewFragment)
+            }
+        }
+    }
+
+    private fun handleLoggedInLockedState() {
+        // Only show locked screen fragment is still not shown - do not replace fragment, because we want to pop back
+        if (!isFragmentShown(LockedScreenFragment::class.java)) {
+            val overviewFragment = LockedScreenFragment.newInstance()
+            showFragment(overviewFragment, replaceFragment = false, addToBackstack = true)
+        }
+    }
+
+    private fun handleLoggedOutState() {
+        if (!isFragmentShown(LoginFragment::class.java)) {
+            val loginFragment = LoginFragment.newInstance()
+            showFragmentAsFirstScreen(loginFragment)
         }
     }
 
