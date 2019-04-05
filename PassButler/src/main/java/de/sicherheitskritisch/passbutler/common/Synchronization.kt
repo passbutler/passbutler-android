@@ -40,6 +40,10 @@ object Synchronization {
     }
 }
 
+/**
+ * Interface to mark models as synchronizable. The `primaryField` is needed to differentiate between the model items when comparing,
+ * and the `modified` item is used to determine which item is newer when comparing the same items.
+ */
 interface Synchronizable {
     val primaryField: String
     var modified: Date
