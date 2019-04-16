@@ -7,12 +7,12 @@ import de.sicherheitskritisch.passbutler.database.PassButlerRepository
 
 abstract class AbstractPassButlerApplication : Application() {
 
-    internal val passButlerRepository by lazy {
-        PassButlerRepository(applicationContext)
+    internal val userManager by lazy {
+        UserManager(applicationContext, localRepository)
     }
 
-    internal val userManager by lazy {
-        UserManager(applicationContext, passButlerRepository)
+    private val localRepository by lazy {
+        PassButlerRepository(applicationContext)
     }
 
     override fun onCreate() {

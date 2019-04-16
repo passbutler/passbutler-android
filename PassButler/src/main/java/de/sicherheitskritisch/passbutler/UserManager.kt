@@ -41,8 +41,8 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
 
     private val coroutineJob = SupervisorJob()
 
+    // TODO: Pass object via constructor instead creating here + use server url from preferences
     private val remoteWebservice: UserWebservice by lazy {
-        // TODO: Use server url given by user
         val retrofit = Retrofit.Builder()
             .baseUrl("http://172.16.0.125:5000")
             .addConverterFactory(UnitConverterFactory())
@@ -53,6 +53,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         retrofit.create(UserWebservice::class.java)
     }
 
+    // TODO: App global preferences instead of local?
     private val sharedPreferences by lazy {
         applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
     }
@@ -76,6 +77,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         }
     }
 
+    // TODO: Local user concept instead of "demo mode"
     suspend fun loginDemoUser() {
         // Add an artificial delay for login progress simulation
         delay(1000)
