@@ -11,6 +11,7 @@ import android.arch.persistence.room.Query
 import android.arch.persistence.room.Update
 import de.sicherheitskritisch.passbutler.common.JSONSerializable
 import de.sicherheitskritisch.passbutler.common.L
+import de.sicherheitskritisch.passbutler.common.ProtectedData
 import de.sicherheitskritisch.passbutler.common.Synchronizable
 import de.sicherheitskritisch.passbutler.common.asJSONObjectSequence
 import kotlinx.coroutines.Deferred
@@ -37,7 +38,7 @@ import java.util.*
 data class User(
     @PrimaryKey
     val username: String,
-    var lockTimeout: Int,
+    var settings: ProtectedData<UserSettings>,
     var deleted: Boolean,
     override var modified: Date,
     val created: Date
@@ -49,7 +50,7 @@ data class User(
     override fun serialize(): JSONObject {
         return JSONObject().apply {
             put(SERIALIZATION_KEY_USERNAME, username)
-            put(SERIALIZATION_KEY_LOCK_TIMEOUT, lockTimeout)
+            put(SERIALIZATION_KEY_SETTINGS, settings)
             put(SERIALIZATION_KEY_DELETED, deleted)
             put(SERIALIZATION_KEY_MODIFIED, modified.time)
             put(SERIALIZATION_KEY_CREATED, created.time)
@@ -61,7 +62,7 @@ data class User(
             return try {
                 User(
                     username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
-                    lockTimeout = jsonObject.getInt(SERIALIZATION_KEY_LOCK_TIMEOUT),
+                    settings = ProtectedData.deserialize(jsonObject.getJSONObject(SERIALIZATION_KEY_SETTINGS)) ?: throw JSONException("The settings ProtectedData object could not be deserialized!"),
                     deleted = jsonObject.getBoolean(SERIALIZATION_KEY_DELETED),
                     modified = Date(jsonObject.getLong(SERIALIZATION_KEY_MODIFIED)),
                     created = Date(jsonObject.getLong(SERIALIZATION_KEY_CREATED))
@@ -73,10 +74,33 @@ data class User(
         }
 
         private const val SERIALIZATION_KEY_USERNAME = "username"
-        private const val SERIALIZATION_KEY_LOCK_TIMEOUT = "lockTimeout"
+        private const val SERIALIZATION_KEY_SETTINGS = "settings"
         private const val SERIALIZATION_KEY_DELETED = "deleted"
         private const val SERIALIZATION_KEY_MODIFIED = "modified"
         private const val SERIALIZATION_KEY_CREATED = "created"
+    }
+}
+
+data class UserSettings(val lockTimeout: Int) : JSONSerializable {
+    override fun serialize(): JSONObject {
+        return JSONObject().apply {
+            put(SERIALIZATION_KEY_LOCK_TIMEOUT, lockTimeout)
+        }
+    }
+
+    companion object {
+        private const val SERIALIZATION_KEY_LOCK_TIMEOUT = "lockTimeout"
+
+        fun deserialize(jsonObject: JSONObject): UserSettings? {
+            return try {
+                UserSettings(
+                    jsonObject.getInt(SERIALIZATION_KEY_LOCK_TIMEOUT)
+                )
+            } catch (e: JSONException) {
+                L.w("User", "The UserSettings could not be deserialized using the following JSON: $jsonObject", e)
+                null
+            }
+        }
     }
 }
 

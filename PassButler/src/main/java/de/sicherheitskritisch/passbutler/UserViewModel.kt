@@ -4,28 +4,48 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.models.User
+import de.sicherheitskritisch.passbutler.models.UserSettings
 
 class UserViewModel(private val userManager: UserManager, private val user: User) : ViewModel() {
 
     val username = MutableLiveData<String>()
     val lockTimeout = MutableLiveData<Int>()
 
-    private val lockTimeoutObserver = Observer<Int> {
-        if (it != null) {
-            user.lockTimeout = it
+    private val settings = MutableLiveData<UserSettings>()
+
+    // TODO: Where to get the key?
+    private val userSettingsKey
+        get() = emptyArray<Byte>()
+
+    private val settingsObserver = Observer<UserSettings> {
+        it?.let { newUserSettings ->
+            // Update internal fields based on settings
+            lockTimeout.value = newUserSettings.lockTimeout
+
+            user.settings = user.settings.cloneWithUpdatedValue(userSettingsKey, newUserSettings)
             userManager.updateUser(user)
         }
     }
 
     init {
         username.value = user.username
-        lockTimeout.value = user.lockTimeout
+        settings.value = user.settings.decryptValue(userSettingsKey) {
+            UserSettings.deserialize(it)
+        }
 
         // Register observers afterwards to avoid initial observer calls
         registerObservers()
     }
 
     private fun registerObservers() {
-        lockTimeout.observeForever(lockTimeoutObserver)
+        settings.observeForever(settingsObserver)
+
+        lockTimeout.observeForever {
+            it?.let { newLockTimeout ->
+                // Clone object with updated setting value to be sure object is different to make change detection more transparent
+                val updatedUserSettings = settings.value?.copy(lockTimeout = newLockTimeout)
+                settings.value = updatedUserSettings
+            }
+        }
     }
 }

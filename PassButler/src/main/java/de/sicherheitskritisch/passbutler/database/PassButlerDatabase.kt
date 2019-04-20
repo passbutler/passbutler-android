@@ -6,6 +6,7 @@ import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.TypeConverter
 import android.arch.persistence.room.TypeConverters
 import android.content.Context
+import de.sicherheitskritisch.passbutler.common.ProtectedDataConverters
 import de.sicherheitskritisch.passbutler.models.User
 import de.sicherheitskritisch.passbutler.models.UserDao
 import kotlinx.coroutines.CoroutineScope
@@ -16,23 +17,17 @@ import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 @Database(entities = [User::class], version = 1, exportSchema = false)
-@TypeConverters(DatabaseConverters::class)
+@TypeConverters(GeneralDatabaseConverters::class, ProtectedDataConverters::class)
 abstract class PassButlerDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
 }
 
-class DatabaseConverters {
+class GeneralDatabaseConverters {
     @TypeConverter
     fun longToDate(long: Long?) = long?.let { Date(it) }
 
     @TypeConverter
     fun dateToLong(date: Date?) = date?.time
-
-    @TypeConverter
-    fun booleanToInt(boolean: Boolean?) = boolean?.let { if (it) 1 else 0 }
-
-    @TypeConverter
-    fun intToBoolean(int: Int?) = int?.let { it == 1 }
 }
 
 class PassButlerRepository(applicationContext: Context) : CoroutineScope {

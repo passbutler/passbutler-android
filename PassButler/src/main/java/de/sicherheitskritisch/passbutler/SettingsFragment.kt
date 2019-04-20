@@ -17,8 +17,6 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
     override val transitionType = AnimatedFragment.TransitionType.SLIDE_VERTICAL
 
-    private var loggedInUserViewModel: UserViewModel? = null
-
     override fun getToolBarTitle() = getString(R.string.settings_title)
 
     override fun onAttach(context: Context?) {
@@ -28,26 +26,27 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             viewModel = ViewModelProviders.of(it).get(SettingsViewModel::class.java)
 
             val rootViewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
-            loggedInUserViewModel = rootViewModel.loggedInUserViewModel
+            viewModel.loggedInUserViewModel = rootViewModel.loggedInUserViewModel
         }
     }
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = DataBindingUtil.inflate<FragmentSettingsBinding>(inflater, R.layout.fragment_settings, container, false)
-        binding.userViewModel = loggedInUserViewModel
+        binding.lifecycleOwner = this
+        binding.viewModel = viewModel
 
         binding.seekBarSettingLocktimeout.apply {
             max = 5
-            progress = loggedInUserViewModel?.lockTimeout?.value ?: 0
+            progress = viewModel.lockTimeout?.value ?: 0
 
             setOnSeekBarChangeListener(object : SimpleOnSeekBarChangeListener() {
                 override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                    // Manually update value (in this callback, the value is not written to the viewmodel
+                    // Manually update value (in this callback, the value is not written to the viewmodel)
                     binding.textViewSettingLocktimeoutValue.text = progress.toString()
                 }
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {
                     seekBar?.progress?.let { newProgress ->
-                        loggedInUserViewModel?.lockTimeout?.value = newProgress
+                        viewModel.lockTimeout?.value = newProgress
                     }
                 }
             })
