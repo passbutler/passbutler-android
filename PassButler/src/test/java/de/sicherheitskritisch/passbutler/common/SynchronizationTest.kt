@@ -2,7 +2,7 @@ package de.sicherheitskritisch.passbutler.common
 
 import de.sicherheitskritisch.passbutler.common.Synchronization.collectModifiedUserItems
 import de.sicherheitskritisch.passbutler.common.Synchronization.collectNewItems
-import de.sicherheitskritisch.passbutler.models.User
+import de.sicherheitskritisch.passbutler.database.models.User
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test

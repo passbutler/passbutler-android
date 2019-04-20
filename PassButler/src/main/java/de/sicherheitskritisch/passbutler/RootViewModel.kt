@@ -6,7 +6,7 @@ import android.arch.lifecycle.Observer
 import android.text.format.DateUtils
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
-import de.sicherheitskritisch.passbutler.models.User
+import de.sicherheitskritisch.passbutler.database.models.User
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay

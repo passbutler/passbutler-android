@@ -1,7 +1,7 @@
 package de.sicherheitskritisch.passbutler.common
 
 import android.arch.persistence.room.TypeConverter
-import de.sicherheitskritisch.passbutler.models.UserSettings
+import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONException

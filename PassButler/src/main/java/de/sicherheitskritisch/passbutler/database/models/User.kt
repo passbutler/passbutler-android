@@ -1,4 +1,4 @@
-package de.sicherheitskritisch.passbutler.models
+package de.sicherheitskritisch.passbutler.database.models
 
 import android.arch.persistence.room.Dao
 import android.arch.persistence.room.Delete

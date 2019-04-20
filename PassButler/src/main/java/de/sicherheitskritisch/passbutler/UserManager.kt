@@ -10,9 +10,9 @@ import de.sicherheitskritisch.passbutler.common.Synchronization
 import de.sicherheitskritisch.passbutler.common.UnitConverterFactory
 import de.sicherheitskritisch.passbutler.common.readTextFileContents
 import de.sicherheitskritisch.passbutler.database.PassButlerRepository
-import de.sicherheitskritisch.passbutler.models.User
-import de.sicherheitskritisch.passbutler.models.UserConverterFactory
-import de.sicherheitskritisch.passbutler.models.UserWebservice
+import de.sicherheitskritisch.passbutler.database.models.User
+import de.sicherheitskritisch.passbutler.database.models.UserConverterFactory
+import de.sicherheitskritisch.passbutler.database.models.UserWebservice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

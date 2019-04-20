@@ -1,4 +1,4 @@
-package de.sicherheitskritisch.passbutler.models
+package de.sicherheitskritisch.passbutler.database.models
 
 import android.util.Log
 import io.mockk.every

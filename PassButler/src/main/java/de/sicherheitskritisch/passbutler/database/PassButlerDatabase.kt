@@ -7,8 +7,8 @@ import android.arch.persistence.room.TypeConverter
 import android.arch.persistence.room.TypeConverters
 import android.content.Context
 import de.sicherheitskritisch.passbutler.common.ProtectedDataConverters
-import de.sicherheitskritisch.passbutler.models.User
-import de.sicherheitskritisch.passbutler.models.UserDao
+import de.sicherheitskritisch.passbutler.database.models.User
+import de.sicherheitskritisch.passbutler.database.models.UserDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
