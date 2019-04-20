@@ -28,6 +28,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
             binding.lifecycleOwner = this
             binding.viewModel = viewModel
 
+            // TODO: Proper unlock
             binding.imageViewFingerprintIcon.setOnClickListener {
                 viewModel.unlockScreen()
             }
