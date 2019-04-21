@@ -22,3 +22,12 @@ fun <T> LiveData<T>.observeForever(notifyOnRegister: Boolean, observer: Observer
         observer.onChanged(value)
     }
 }
+
+@MainThread
+fun <T> LiveData<T>.observeForeverNotifyForNonNullValues(observer: (T) -> Unit) {
+    observeForever {
+        if (it != null) {
+            observer(it)
+        }
+    }
+}
