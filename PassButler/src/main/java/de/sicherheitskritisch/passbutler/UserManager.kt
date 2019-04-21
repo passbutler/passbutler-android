@@ -122,6 +122,8 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
             user.modified = Date.from(Instant.now())
             localRepository.updateUser(user)
         }
+
+        // TODO: Trigger sync?
     }
 
     suspend fun synchronizeUsers() = coroutineScope {

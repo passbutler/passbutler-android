@@ -29,82 +29,134 @@ object Crypto {
     }
 }
 
-class ProtectedData<T : JSONSerializable>(
-    val initializationVector: Array<Byte>,
-    val algorithmInformation: String,
-    val encryptedData: List<Byte>
-): JSONSerializable {
+class ProtectedValue<T : JSONSerializable> private constructor(
+    private var initializationVector: ByteArray,
+    private val algorithm: Algorithm,
+    private var encryptedValue: ByteArray
+) : JSONSerializable {
 
     override fun serialize(): JSONObject {
         return JSONObject().apply {
             put(SERIALIZATION_KEY_INITIALIZATION_VECTOR, initializationVector)
-            put(SERIALIZATION_KEY_ALGORITHM_INFORMATION, algorithmInformation)
-            put(SERIALIZATION_KEY_ENCRYPTED_DATA, encryptedData)
+            put(SERIALIZATION_KEY_ALGORITHM, algorithm.stringRepresentation)
+            put(SERIALIZATION_KEY_ENCRYPTED_VALUE, encryptedValue)
         }
     }
 
-    fun decryptValue(key: Array<Byte>, instantiationDelegate: (JSONObject) -> T?): T? {
-        val decryptedJsonSerializedString = decrypt(key, encryptedData)
-        return decryptedJsonSerializedString?.let { instantiationDelegate(it) }
+    fun decrypt(encryptionKey: ByteArray, instantiationDelegate: (JSONObject) -> T?): T? {
+        val decryptedBytes = algorithm.decrypt(initializationVector, encryptionKey, encryptedValue)
+
+        return try {
+            decryptedBytes?.let {
+                val jsonSerializedString = String(it)
+                val jsonObject = JSONObject(jsonSerializedString)
+                instantiationDelegate(jsonObject)
+            } ?: throw DecryptionFailedException()
+        } catch (e: JSONException) {
+            L.w("ProtectedValue", "The deserialization of the given value failed!", e)
+            null
+        } catch (e: DecryptionFailedException) {
+            L.w("ProtectedValue", "The decryption of the given value failed!")
+            null
+        }
     }
 
-    fun cloneWithUpdatedValue(key: Array<Byte>, newValue: T): ProtectedData<T> {
-        val newInitializationVector = generateNewInitializationVector()
-        val jsonSerializedString = newValue.serialize()
-        val newEncryptedData = encrypt(newInitializationVector, key, jsonSerializedString)
+    fun update(encryptionKey: ByteArray, updatedValue: T) {
+        val newInitializationVector = algorithm.generateInitializationVector()
+        val valueAsByteArray = updatedValue.toByteArray()
 
-        return ProtectedData(
-            initializationVector = newInitializationVector,
-            algorithmInformation = algorithmInformation,
-            encryptedData = newEncryptedData
-        )
+        algorithm.encrypt(newInitializationVector, encryptionKey, valueAsByteArray)?.let { encryptedValue ->
+            initializationVector = newInitializationVector
+            this.encryptedValue = encryptedValue
+        } ?: run {
+            L.w("ProtectedValue", "The value could not be updated because encryption failed!")
+        }
     }
 
-    private fun encrypt(newInitializationVector: Array<Byte>, key: Array<Byte>, jsonSerializedString: JSONObject): List<Byte> {
-        // TODO: Implement
-        return emptyList()
-    }
-
-    private fun decrypt(key: Array<Byte>, encryptedData: List<Byte>): JSONObject? {
-        // TODO: Implement
-        return null
-    }
-
-    private fun generateNewInitializationVector(): Array<Byte> {
-        // TODO: Implement
-        return emptyArray()
-    }
+    private class DecryptionFailedException : Exception()
 
     companion object {
         const val SERIALIZATION_KEY_INITIALIZATION_VECTOR = "initializationVector"
-        const val SERIALIZATION_KEY_ALGORITHM_INFORMATION = "algorithmInformation"
-        const val SERIALIZATION_KEY_ENCRYPTED_DATA = "encryptedData"
+        const val SERIALIZATION_KEY_ALGORITHM = "algorithm"
+        const val SERIALIZATION_KEY_ENCRYPTED_VALUE = "encryptedValue"
 
-        fun <T : JSONSerializable> deserialize(jsonObject: JSONObject): ProtectedData<T>? {
+        fun <T : JSONSerializable> deserialize(jsonObject: JSONObject): ProtectedValue<T>? {
             return try {
-                ProtectedData(
-                    initializationVector = jsonObject.getString(SERIALIZATION_KEY_INITIALIZATION_VECTOR).toByteArray().toTypedArray(),
-                    algorithmInformation = jsonObject.getString(SERIALIZATION_KEY_ALGORITHM_INFORMATION),
-                    encryptedData = jsonObject.getString(SERIALIZATION_KEY_ENCRYPTED_DATA).toByteArray().toList()
+                ProtectedValue(
+                    jsonObject.getString(SERIALIZATION_KEY_INITIALIZATION_VECTOR).toByteArray(),
+                    jsonObject.getString(SERIALIZATION_KEY_ALGORITHM)?.let { Algorithm.valueOf(it) } ?: throw JSONException("The algorithm could not be deserialized!"),
+                    jsonObject.getString(SERIALIZATION_KEY_ENCRYPTED_VALUE).toByteArray()
                 )
             } catch (e: JSONException) {
-                L.w("ProtectedData", "The ProtectedData object could not be deserialized using the following JSON: $jsonObject", e)
+                L.w("ProtectedValue", "The ProtectedValue object could not be deserialized using the following JSON: $jsonObject", e)
+                null
+            }
+        }
+
+        fun <T : JSONSerializable> create(encryptionKey: ByteArray, initialValue: T): ProtectedValue<T>? {
+            val algorithm: Algorithm = Algorithm.AES256GCM
+
+            val newInitializationVector = algorithm.generateInitializationVector()
+            val valueAsByteArray = initialValue.toByteArray()
+
+            return algorithm.encrypt(newInitializationVector, encryptionKey, valueAsByteArray)?.let { encryptedValue ->
+                ProtectedValue<T>(newInitializationVector, algorithm, encryptedValue)
+            } ?: run {
+                L.w("ProtectedValue", "The ProtectedValue could not be created because value encryption failed!")
                 null
             }
         }
     }
 }
 
-class ProtectedDataConverters {
+private fun <T : JSONSerializable> T.toByteArray(): ByteArray {
+    val valueAsJsonSerializedString = this.serialize().toString()
+    return valueAsJsonSerializedString.toByteArray()
+}
+
+sealed class Algorithm(val stringRepresentation: String) {
+
+    abstract fun generateInitializationVector(): ByteArray
+    abstract fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray?
+    abstract fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray?
+
+    object AES256GCM : Algorithm("AES-256-GCM") {
+        override fun generateInitializationVector(): ByteArray {
+            // TODO: Implement
+            return ByteArray(0)
+        }
+
+        override fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray? {
+            // TODO: Implement
+            return ByteArray(0)
+        }
+
+        override fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray? {
+            // TODO: Implement
+            return ByteArray(0)
+        }
+    }
+
+    companion object {
+        fun valueOf(stringRepresentation: String): Algorithm? {
+            return when (stringRepresentation) {
+                Algorithm.AES256GCM.stringRepresentation -> Algorithm.AES256GCM
+                else -> null
+            }
+        }
+    }
+}
+
+class ProtectedValueConverters {
     @TypeConverter
-    fun protectedDataToString(protectedData: ProtectedData<*>?): String? {
-        return protectedData?.serialize()?.toString()
+    fun protectedValueToString(protectedValue: ProtectedValue<*>?): String? {
+        return protectedValue?.serialize()?.toString()
     }
 
     @TypeConverter
-    fun stringToProtectedDataWithUserSettings(serializedProtectedData: String?): ProtectedData<UserSettings>? {
-        return serializedProtectedData?.let {
-            ProtectedData.deserialize(JSONObject(it))
+    fun stringToProtectedValueWithUserSettings(serializedProtectedValue: String?): ProtectedValue<UserSettings>? {
+        return serializedProtectedValue?.let {
+            ProtectedValue.deserialize(JSONObject(it))
         }
     }
 }

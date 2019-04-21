@@ -11,7 +11,7 @@ import android.arch.persistence.room.Query
 import android.arch.persistence.room.Update
 import de.sicherheitskritisch.passbutler.common.JSONSerializable
 import de.sicherheitskritisch.passbutler.common.L
-import de.sicherheitskritisch.passbutler.common.ProtectedData
+import de.sicherheitskritisch.passbutler.common.ProtectedValue
 import de.sicherheitskritisch.passbutler.common.Synchronizable
 import de.sicherheitskritisch.passbutler.common.asJSONObjectSequence
 import kotlinx.coroutines.Deferred
@@ -38,7 +38,7 @@ import java.util.*
 data class User(
     @PrimaryKey
     val username: String,
-    var settings: ProtectedData<UserSettings>,
+    var settings: ProtectedValue<UserSettings>,
     var deleted: Boolean,
     override var modified: Date,
     val created: Date
@@ -62,7 +62,7 @@ data class User(
             return try {
                 User(
                     username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
-                    settings = ProtectedData.deserialize(jsonObject.getJSONObject(SERIALIZATION_KEY_SETTINGS)) ?: throw JSONException("The settings ProtectedData object could not be deserialized!"),
+                    settings = ProtectedValue.deserialize(jsonObject.getJSONObject(SERIALIZATION_KEY_SETTINGS)) ?: throw JSONException("The settings could not be deserialized!"),
                     deleted = jsonObject.getBoolean(SERIALIZATION_KEY_DELETED),
                     modified = Date(jsonObject.getLong(SERIALIZATION_KEY_MODIFIED)),
                     created = Date(jsonObject.getLong(SERIALIZATION_KEY_CREATED))
