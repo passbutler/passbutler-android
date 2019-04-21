@@ -35,6 +35,12 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
+        setupLockTimeoutSeekBar(binding)
+
+        return binding.root
+    }
+
+    private fun setupLockTimeoutSeekBar(binding: FragmentSettingsBinding) {
         binding.seekBarSettingLocktimeout.apply {
             max = 5
             progress = viewModel.lockTimeout?.value ?: 0
@@ -44,6 +50,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
                     // Manually update value (in this callback, the value is not written to the viewmodel)
                     binding.textViewSettingLocktimeoutValue.text = progress.toString()
                 }
+
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {
                     seekBar?.progress?.let { newProgress ->
                         viewModel.lockTimeout?.value = newProgress
@@ -51,8 +58,6 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
                 }
             })
         }
-
-        return binding.root
     }
 
     companion object {
