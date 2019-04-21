@@ -37,16 +37,16 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
         }
     }
 
-    fun loginDemoUser() {
+    fun loginLocalUser() {
         loginJob?.cancel()
         loginJob = launch {
             loginRequestSendingViewModel.isLoading.postValue(true)
 
             try {
-                userManager.loginDemoUser()
+                userManager.loginLocalUser()
                 loginRequestSendingViewModel.requestFinishedSuccessfully.emit()
             } catch (exception: LoginFailedException) {
-                L.w("UserManager", "loginDemoUser(): The demo login failed with exception!", exception)
+                L.w("UserManager", "loginLocalUser(): The local login failed with exception!", exception)
                 loginRequestSendingViewModel.requestError.postValue(exception)
             } finally {
                 loginRequestSendingViewModel.isLoading.postValue(false)

@@ -160,3 +160,12 @@ class ProtectedValueConverters {
         }
     }
 }
+
+/**
+ * Clear out a byte array for security reasons (for crypto keys etc.)
+ */
+fun ByteArray.clear() {
+    this.forEachIndexed { index, _ ->
+        this[index] = 0
+    }
+}

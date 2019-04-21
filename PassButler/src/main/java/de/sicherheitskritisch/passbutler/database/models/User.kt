@@ -81,7 +81,7 @@ data class User(
     }
 }
 
-data class UserSettings(val lockTimeout: Int) : JSONSerializable {
+data class UserSettings(val lockTimeout: Int = DEFAULT_LOCK_TIMEOUT) : JSONSerializable {
     override fun serialize(): JSONObject {
         return JSONObject().apply {
             put(SERIALIZATION_KEY_LOCK_TIMEOUT, lockTimeout)
@@ -89,6 +89,8 @@ data class UserSettings(val lockTimeout: Int) : JSONSerializable {
     }
 
     companion object {
+        private const val DEFAULT_LOCK_TIMEOUT = 2
+
         private const val SERIALIZATION_KEY_LOCK_TIMEOUT = "lockTimeout"
 
         fun deserialize(jsonObject: JSONObject): UserSettings? {

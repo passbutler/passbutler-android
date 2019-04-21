@@ -53,7 +53,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
             binding.viewModel = viewModel
 
             binding.imageViewLogo.setOnLongClickListener {
-                loginDemoClicked(binding)
+                loginLocalClicked(binding)
                 true
             }
 
@@ -69,7 +69,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         return binding?.root
     }
 
-    private fun loginDemoClicked(binding: FragmentLoginBinding) {
+    private fun loginLocalClicked(binding: FragmentLoginBinding) {
         // Clean form field errors first to be sure everything looks clean if the progress shows up
         listOf(binding.editTextServerurl, binding.editTextUsername, binding.editTextPassword).forEach { formField ->
             formField.error = null
@@ -78,7 +78,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         // Remove focus for the same reason
         removeFormFieldsFocus()
 
-        viewModel.loginDemoUser()
+        viewModel.loginLocalUser()
     }
 
     private fun loginClicked(binding: FragmentLoginBinding) {

@@ -4,14 +4,15 @@ import android.arch.lifecycle.MutableLiveData
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
-import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.common.L
+import de.sicherheitskritisch.passbutler.common.ProtectedValue
 import de.sicherheitskritisch.passbutler.common.Synchronization
 import de.sicherheitskritisch.passbutler.common.UnitConverterFactory
-import de.sicherheitskritisch.passbutler.common.readTextFileContents
+import de.sicherheitskritisch.passbutler.common.clear
 import de.sicherheitskritisch.passbutler.database.PassButlerRepository
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserConverterFactory
+import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import de.sicherheitskritisch.passbutler.database.models.UserWebservice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,11 +21,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.json.JSONArray
 import org.json.JSONObject
 import retrofit2.Retrofit
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.time.Instant
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -33,8 +31,8 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
 
     internal val loggedInUser = MutableLiveData<User?>()
 
-    internal val isDemoMode
-        get() = sharedPreferences.getBoolean(SERIALIZATION_KEY_DEMOMODE, false)
+    internal val isLocalUser
+        get() = sharedPreferences.getBoolean(SERIALIZATION_KEY_IS_LOCAL_USER, false)
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + coroutineJob
@@ -58,6 +56,9 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
     }
 
+    private val currentDate
+        get() = Date.from(Instant.now())
+
     suspend fun loginUser(userName: String, password: String, serverUrl: String) {
         // TODO: Connect to server
         // TODO: Authenticate with given credentials
@@ -77,27 +78,29 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         }
     }
 
-    // TODO: Local user concept instead of "demo mode"
-    suspend fun loginDemoUser() {
+    suspend fun loginLocalUser() {
         // Add an artificial delay for login progress simulation
         delay(1000)
 
-        try {
-            val assetsDirectory = AbstractPassButlerApplication.applicationContext.assets
-            BufferedReader(InputStreamReader(assetsDirectory.open("demomode_users.json"))).use { responseReader ->
-                val demoModeUsersFileContents = responseReader.readTextFileContents()
-                val demoModeUsers = JSONArray(demoModeUsersFileContents)
-                val demoModeUserJsonObject = demoModeUsers.getJSONObject(0)
+        // TODO: Use proper key
+        val userSettingsEncryptionKey = ByteArray(0)
+        val defaultUserSettings = UserSettings()
+        val localUser = ProtectedValue.create(userSettingsEncryptionKey, defaultUserSettings)?.let { protectedUserSettings ->
+            val currentDate = currentDate
 
-                User.deserialize(demoModeUserJsonObject)?.let { deserializedUser ->
-                    storeUser(deserializedUser, true)
-                } ?: run {
-                    throw LoginFailedException("The demo mode users file could not be deserialized!")
-                }
-            }
-        } catch (exception: Exception) {
-            throw LoginFailedException("The demo mode users file could not be read!", exception)
+            User(
+                username = "local@passbutler.app",
+                settings = protectedUserSettings,
+                deleted = false,
+                modified = currentDate,
+                created = currentDate
+            )
+        } ?: run {
+            throw LoginFailedException("The local user could not be created because settings creation failed!")
         }
+
+        userSettingsEncryptionKey.clear()
+        storeUser(localUser, true)
     }
 
     suspend fun logoutUser() {
@@ -119,7 +122,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         L.d("UserManager", "updateUser(): user = $user")
 
         launch {
-            user.modified = Date.from(Instant.now())
+            user.modified = currentDate
             localRepository.updateUser(user)
         }
 
@@ -206,12 +209,12 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         }
     }
 
-    private suspend fun storeUser(user: User, isDemoMode: Boolean) {
+    private suspend fun storeUser(user: User, isLocalUser: Boolean) {
         localRepository.insertUser(user)
 
         sharedPreferences.edit().also {
             it.putString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, user.username)
-            it.putBoolean(SERIALIZATION_KEY_DEMOMODE, isDemoMode)
+            it.putBoolean(SERIALIZATION_KEY_IS_LOCAL_USER, isLocalUser)
         }.apply()
 
         loggedInUser.postValue(user)
@@ -219,7 +222,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
 }
 
 private const val SERIALIZATION_KEY_LOGGED_IN_USERNAME = "loggedInUsername"
-private const val SERIALIZATION_KEY_DEMOMODE = "isDemoMode"
+private const val SERIALIZATION_KEY_IS_LOCAL_USER = "isLocalUser"
 
 class LoginFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
 class UserSynchronizationException(message: String) : Exception(message)
