@@ -19,6 +19,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import de.sicherheitskritisch.passbutler.common.RequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.common.RequestSendingViewModel
+import de.sicherheitskritisch.passbutler.common.createMainDispatcher
 import de.sicherheitskritisch.passbutler.databinding.FragmentOverviewBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
@@ -26,7 +27,6 @@ import de.sicherheitskritisch.passbutler.ui.VisibilityHideMode
 import de.sicherheitskritisch.passbutler.ui.applyTint
 import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -38,7 +38,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     override val transitionType = AnimatedFragment.TransitionType.SLIDE_HORIZONTAL
 
     override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + coroutineJob
+        get() = createMainDispatcher() + coroutineJob
 
     private val coroutineJob = SupervisorJob()
 
