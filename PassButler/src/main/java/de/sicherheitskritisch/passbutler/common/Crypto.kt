@@ -37,9 +37,9 @@ class ProtectedValue<T : JSONSerializable> private constructor(
 
     override fun serialize(): JSONObject {
         return JSONObject().apply {
-            put(SERIALIZATION_KEY_INITIALIZATION_VECTOR, initializationVector)
-            put(SERIALIZATION_KEY_ALGORITHM, algorithm.stringRepresentation)
-            put(SERIALIZATION_KEY_ENCRYPTED_VALUE, encryptedValue)
+            putString(SERIALIZATION_KEY_INITIALIZATION_VECTOR, initializationVector.toUTF8String())
+            putString(SERIALIZATION_KEY_ALGORITHM, algorithm.stringRepresentation)
+            putString(SERIALIZATION_KEY_ENCRYPTED_VALUE, encryptedValue.toUTF8String())
         }
     }
 
@@ -48,7 +48,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
 
         return try {
             decryptedBytes?.let {
-                val jsonSerializedString = String(it)
+                val jsonSerializedString = it.toUTF8String()
                 val jsonObject = JSONObject(jsonSerializedString)
                 instantiationDelegate(jsonObject)
             } ?: throw DecryptionFailedException()
@@ -84,7 +84,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
             return try {
                 ProtectedValue(
                     jsonObject.getString(SERIALIZATION_KEY_INITIALIZATION_VECTOR).toByteArray(),
-                    jsonObject.getString(SERIALIZATION_KEY_ALGORITHM)?.let { Algorithm.valueOf(it) } ?: throw JSONException("The algorithm could not be deserialized!"),
+                    jsonObject.getString(SERIALIZATION_KEY_ALGORITHM).toAlgorithm() ?: throw JSONException("The algorithm could not be deserialized!"),
                     jsonObject.getString(SERIALIZATION_KEY_ENCRYPTED_VALUE).toByteArray()
                 )
             } catch (e: JSONException) {
@@ -136,14 +136,12 @@ sealed class Algorithm(val stringRepresentation: String) {
             return ByteArray(0)
         }
     }
+}
 
-    companion object {
-        fun valueOf(stringRepresentation: String): Algorithm? {
-            return when (stringRepresentation) {
-                Algorithm.AES256GCM.stringRepresentation -> Algorithm.AES256GCM
-                else -> null
-            }
-        }
+private fun String.toAlgorithm(): Algorithm? {
+    return when (this) {
+        Algorithm.AES256GCM.stringRepresentation -> Algorithm.AES256GCM
+        else -> null
     }
 }
 
@@ -159,6 +157,13 @@ class ProtectedValueConverters {
             ProtectedValue.deserialize(JSONObject(it))
         }
     }
+}
+
+/**
+ * Converts the `ByteArray` to `String` with UTF-8 charset (basically what the `String()` constructor does)
+ */
+fun ByteArray.toUTF8String(): String {
+    return toString(Charsets.UTF_8)
 }
 
 /**

@@ -14,6 +14,10 @@ import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.ProtectedValue
 import de.sicherheitskritisch.passbutler.common.Synchronizable
 import de.sicherheitskritisch.passbutler.common.asJSONObjectSequence
+import de.sicherheitskritisch.passbutler.common.putBoolean
+import de.sicherheitskritisch.passbutler.common.putInt
+import de.sicherheitskritisch.passbutler.common.putLong
+import de.sicherheitskritisch.passbutler.common.putString
 import kotlinx.coroutines.Deferred
 import okhttp3.MediaType
 import okhttp3.RequestBody
@@ -48,12 +52,13 @@ data class User(
     override val primaryField = username
 
     override fun serialize(): JSONObject {
+        // TODO: Create proper `put*()` extension for `settings`
         return JSONObject().apply {
-            put(SERIALIZATION_KEY_USERNAME, username)
+            putString(SERIALIZATION_KEY_USERNAME, username)
             put(SERIALIZATION_KEY_SETTINGS, settings)
-            put(SERIALIZATION_KEY_DELETED, deleted)
-            put(SERIALIZATION_KEY_MODIFIED, modified.time)
-            put(SERIALIZATION_KEY_CREATED, created.time)
+            putBoolean(SERIALIZATION_KEY_DELETED, deleted)
+            putLong(SERIALIZATION_KEY_MODIFIED, modified.time)
+            putLong(SERIALIZATION_KEY_CREATED, created.time)
         }
     }
 
@@ -84,7 +89,7 @@ data class User(
 data class UserSettings(val lockTimeout: Int = DEFAULT_LOCK_TIMEOUT) : JSONSerializable {
     override fun serialize(): JSONObject {
         return JSONObject().apply {
-            put(SERIALIZATION_KEY_LOCK_TIMEOUT, lockTimeout)
+            putInt(SERIALIZATION_KEY_LOCK_TIMEOUT, lockTimeout)
         }
     }
 
