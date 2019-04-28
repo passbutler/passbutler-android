@@ -163,6 +163,16 @@ class ProtectedValueConverters {
     }
 }
 
+@Throws(JSONException::class)
+fun JSONObject.putProtectedValue(name: String, value: ProtectedValue<*>): JSONObject {
+    return putJSONObject(name, value.serialize())
+}
+
+fun <T : JSONSerializable> JSONObject.getProtectedValue(name: String): ProtectedValue<T>? {
+    return ProtectedValue.deserialize(getJSONObject(name))
+}
+
+
 /**
  * Converts the `ByteArray` to `String` with UTF-8 charset (basically what the `String()` constructor does but in explicit way)
  */

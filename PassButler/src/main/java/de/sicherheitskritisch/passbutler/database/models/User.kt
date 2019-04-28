@@ -14,10 +14,11 @@ import de.sicherheitskritisch.passbutler.common.L
 import de.sicherheitskritisch.passbutler.common.ProtectedValue
 import de.sicherheitskritisch.passbutler.common.Synchronizable
 import de.sicherheitskritisch.passbutler.common.asJSONObjectSequence
+import de.sicherheitskritisch.passbutler.common.getProtectedValue
 import de.sicherheitskritisch.passbutler.common.putBoolean
 import de.sicherheitskritisch.passbutler.common.putInt
-import de.sicherheitskritisch.passbutler.common.putJSONObject
 import de.sicherheitskritisch.passbutler.common.putLong
+import de.sicherheitskritisch.passbutler.common.putProtectedValue
 import de.sicherheitskritisch.passbutler.common.putString
 import kotlinx.coroutines.Deferred
 import okhttp3.MediaType
@@ -55,7 +56,7 @@ data class User(
     override fun serialize(): JSONObject {
         return JSONObject().apply {
             putString(SERIALIZATION_KEY_USERNAME, username)
-            putJSONObject(SERIALIZATION_KEY_SETTINGS, settings.serialize())
+            putProtectedValue(SERIALIZATION_KEY_SETTINGS, settings)
             putBoolean(SERIALIZATION_KEY_DELETED, deleted)
             putLong(SERIALIZATION_KEY_MODIFIED, modified.time)
             putLong(SERIALIZATION_KEY_CREATED, created.time)
@@ -67,7 +68,7 @@ data class User(
             return try {
                 User(
                     username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
-                    settings = ProtectedValue.deserialize(jsonObject.getJSONObject(SERIALIZATION_KEY_SETTINGS)) ?: throw JSONException("The settings could not be deserialized!"),
+                    settings = jsonObject.getProtectedValue(SERIALIZATION_KEY_SETTINGS) ?: throw JSONException("The user settings could not be deserialized!"),
                     deleted = jsonObject.getBoolean(SERIALIZATION_KEY_DELETED),
                     modified = Date(jsonObject.getLong(SERIALIZATION_KEY_MODIFIED)),
                     created = Date(jsonObject.getLong(SERIALIZATION_KEY_CREATED))
