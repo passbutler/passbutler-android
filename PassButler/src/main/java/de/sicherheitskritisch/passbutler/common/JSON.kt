@@ -13,7 +13,7 @@ fun JSONArray.asJSONObjectSequence(): Sequence<JSONObject> {
 }
 
 /**
- * Put a string value to `JSONObject` (ensure the string type in compare to multi signature `put()` method)
+ * Put a string value to `JSONObject` (ensures the type compared to multi signature `put()` method)
  */
 @Throws(JSONException::class)
 fun JSONObject.putString(name: String, value: String): JSONObject {
@@ -21,7 +21,7 @@ fun JSONObject.putString(name: String, value: String): JSONObject {
 }
 
 /**
- * Put a boolean value to `JSONObject` (ensure the boolean type in compare to multi signature `put()` method)
+ * Put a boolean value to `JSONObject` (ensures the type compared to multi signature `put()` method)
  */
 @Throws(JSONException::class)
 fun JSONObject.putBoolean(name: String, value: Boolean): JSONObject {
@@ -29,7 +29,7 @@ fun JSONObject.putBoolean(name: String, value: Boolean): JSONObject {
 }
 
 /**
- * Put a integer value to `JSONObject` (ensure the integer type in compare to multi signature `put()` method)
+ * Put a integer value to `JSONObject` (ensures the type compared to multi signature `put()` method)
  */
 @Throws(JSONException::class)
 fun JSONObject.putInt(name: String, value: Int): JSONObject {
@@ -37,9 +37,17 @@ fun JSONObject.putInt(name: String, value: Int): JSONObject {
 }
 
 /**
- * Put a long value to `JSONObject` (ensure the long type in compare to multi signature `put()` method)
+ * Put a long value to `JSONObject` (ensures the type compared to multi signature `put()` method)
  */
 @Throws(JSONException::class)
 fun JSONObject.putLong(name: String, value: Long): JSONObject {
+    return put(name, value)
+}
+
+/**
+ * Put a `JSONObject` value to `JSONObject` (ensures the type compared to multi signature `put()` method)
+ */
+@Throws(JSONException::class)
+fun JSONObject.putJSONObject(name: String, value: JSONObject): JSONObject {
     return put(name, value)
 }

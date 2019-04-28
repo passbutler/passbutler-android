@@ -16,6 +16,7 @@ import de.sicherheitskritisch.passbutler.common.Synchronizable
 import de.sicherheitskritisch.passbutler.common.asJSONObjectSequence
 import de.sicherheitskritisch.passbutler.common.putBoolean
 import de.sicherheitskritisch.passbutler.common.putInt
+import de.sicherheitskritisch.passbutler.common.putJSONObject
 import de.sicherheitskritisch.passbutler.common.putLong
 import de.sicherheitskritisch.passbutler.common.putString
 import kotlinx.coroutines.Deferred
@@ -52,10 +53,9 @@ data class User(
     override val primaryField = username
 
     override fun serialize(): JSONObject {
-        // TODO: Create proper `put*()` extension for `settings`
         return JSONObject().apply {
             putString(SERIALIZATION_KEY_USERNAME, username)
-            put(SERIALIZATION_KEY_SETTINGS, settings)
+            putJSONObject(SERIALIZATION_KEY_SETTINGS, settings.serialize())
             putBoolean(SERIALIZATION_KEY_DELETED, deleted)
             putLong(SERIALIZATION_KEY_MODIFIED, modified.time)
             putLong(SERIALIZATION_KEY_CREATED, created.time)
