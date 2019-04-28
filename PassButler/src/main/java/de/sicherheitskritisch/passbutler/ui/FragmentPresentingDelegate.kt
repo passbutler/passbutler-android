@@ -25,22 +25,24 @@ class FragmentPresentingDelegate(
     private val activity
         get() = activityWeakReference.get()
 
+    /**
+     * The root fragment actually is used to contain the shown fragments
+     */
     private val rootFragment
         get() = rootFragmentWeakReference.get()
 
     /**
-     * The fragment manager is used to provide fragment handling for the one-activity app concept
+     * The root fragment manager is used to provide fragment handling for the one-activity app concept
      */
     private val rootFragmentManager
         get() = rootFragment?.childFragmentManager
 
-    override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean) {
-        if (activity.isNotFinished) {
-            rootFragmentManager?.beginTransaction()?.let { fragmentTransaction ->
-                // Add fragment transitions to look transaction beautiful
-                applyTransitionToAnimatedFragment(fragment)
+    private var lastShowFragmentTransactionTimestamp: Long = 0
 
-                // TODO: debouncing
+    override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean) {
+        if (activity.isNotFinished && checkNoRecentShowFragmentTransactionWasDone()) {
+            rootFragmentManager?.beginTransaction()?.let { fragmentTransaction ->
+                applyTransitionToAnimatedFragment(fragment)
 
                 if (fragment is BaseFragment) {
                     fragment.fragmentPresentingDelegate = this
@@ -68,6 +70,24 @@ class FragmentPresentingDelegate(
         }
     }
 
+    private fun checkNoRecentShowFragmentTransactionWasDone(): Boolean {
+        val currentTimestamp = System.currentTimeMillis()
+        val lastShowFragmentTransactionTimestampDelta = currentTimestamp - lastShowFragmentTransactionTimestamp
+        val noRecentShowFragmentTransactionWasDone = lastShowFragmentTransactionTimestampDelta > SHOW_FRAGMENT_DEBOUNCE_TIME_MILLISECONDS
+
+        L.d(
+            "FragmentPresentingDelegate",
+            "checkNoRecentShowFragmentTransactionWasDone(): $noRecentShowFragmentTransactionWasDone (lastShowFragmentTransactionTimestampDelta = $lastShowFragmentTransactionTimestampDelta)"
+        )
+
+        // If no recent show fragment transaction was done, set current timestamp
+        if (noRecentShowFragmentTransactionWasDone) {
+            lastShowFragmentTransactionTimestamp = currentTimestamp
+        }
+
+        return noRecentShowFragmentTransactionWasDone
+    }
+
     override fun showFragmentAsFirstScreen(fragment: Fragment) {
         showFragment(fragment, replaceFragment = true, addToBackstack = false)
     }
@@ -92,6 +112,8 @@ class FragmentPresentingDelegate(
     }
 
     companion object {
+        private const val SHOW_FRAGMENT_DEBOUNCE_TIME_MILLISECONDS = 450L
+
         fun getFragmentTag(fragment: Fragment): String {
             return fragment.javaClass.canonicalName ?: fragment.javaClass.toString()
         }

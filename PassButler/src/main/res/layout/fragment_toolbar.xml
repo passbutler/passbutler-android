@@ -23,11 +23,13 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <!-- Add explicit background to hide underlaying fragments, also made container clickable to avoid touch-through underlaying fragments -->
     <FrameLayout
         android:id="@+id/frameLayout_fragment_toolbar_content_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white" />
+        android:background="@color/white"
+        android:clickable="true" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/main_fab"
