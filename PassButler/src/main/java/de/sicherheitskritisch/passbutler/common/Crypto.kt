@@ -30,6 +30,9 @@ object Crypto {
     }
 }
 
+/**
+ * Wraps a `JSONSerializable` object to store it encrypted.
+ */
 class ProtectedValue<T : JSONSerializable> private constructor(
     private var initializationVector: ByteArray,
     private val algorithm: Algorithm,
@@ -54,10 +57,10 @@ class ProtectedValue<T : JSONSerializable> private constructor(
                 instantiationDelegate(jsonObject)
             } ?: throw DecryptionFailedException()
         } catch (e: JSONException) {
-            L.w("ProtectedValue", "The deserialization of the given value failed!", e)
+            L.w("ProtectedValue", "decrypt(): The value could not be deserialized!", e)
             null
         } catch (e: DecryptionFailedException) {
-            L.w("ProtectedValue", "The decryption of the given value failed!")
+            L.w("ProtectedValue", "decrypt(): The value could not be decrypted!")
             null
         }
     }
@@ -70,7 +73,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
             initializationVector = newInitializationVector
             this.encryptedValue = encryptedValue
         } ?: run {
-            L.w("ProtectedValue", "The value could not be updated because encryption failed!")
+            L.w("ProtectedValue", "update(): The value could not be updated because encryption failed!")
         }
     }
 
@@ -89,7 +92,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
                     jsonObject.getString(SERIALIZATION_KEY_ENCRYPTED_VALUE).toByteArray()
                 )
             } catch (e: JSONException) {
-                L.w("ProtectedValue", "The ProtectedValue object could not be deserialized using the following JSON: $jsonObject", e)
+                L.w("ProtectedValue", "deserialize(): The ProtectedValue object could not be deserialized using the following JSON: $jsonObject", e)
                 null
             }
         }
@@ -103,7 +106,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
             return algorithm.encrypt(newInitializationVector, encryptionKey, valueAsByteArray)?.let { encryptedValue ->
                 ProtectedValue<T>(newInitializationVector, algorithm, encryptedValue)
             } ?: run {
-                L.w("ProtectedValue", "The ProtectedValue could not be created because value encryption failed!")
+                L.w("ProtectedValue", "create(): The value could not be created because encryption failed!")
                 null
             }
         }
@@ -161,7 +164,7 @@ class ProtectedValueConverters {
 }
 
 /**
- * Converts the `ByteArray` to `String` with UTF-8 charset (basically what the `String()` constructor does)
+ * Converts the `ByteArray` to `String` with UTF-8 charset (basically what the `String()` constructor does but in explicit way)
  */
 fun ByteArray.toUTF8String(): String {
     return toString(Charsets.UTF_8)
