@@ -3,6 +3,8 @@ package de.sicherheitskritisch.passbutler.common
 import de.sicherheitskritisch.passbutler.common.Synchronization.collectModifiedUserItems
 import de.sicherheitskritisch.passbutler.common.Synchronization.collectNewItems
 import de.sicherheitskritisch.passbutler.database.models.User
+import de.sicherheitskritisch.passbutler.database.models.UserSettings
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -16,7 +18,7 @@ class SynchronizationTest {
      */
 
     @Test
-    fun `If no new users are given nor current users are given, an empty list is returned`() {
+    fun `If no newUsers list nor currentUsers list are given, an empty list is returned`() {
         val currentUsers = listOf<User>()
         val newUsers = listOf<User>()
 
@@ -25,7 +27,7 @@ class SynchronizationTest {
     }
 
     @Test
-    fun `If the new users list contains no user, an empty list is returned`() {
+    fun `If the newUsers list contains no user, an empty list is returned`() {
         val currentUsers = listOf(
             createUser("user a"),
             createUser("user b")
@@ -38,7 +40,7 @@ class SynchronizationTest {
     }
 
     @Test
-    fun `If the new users list contains only the current users, an empty list is returned`() {
+    fun `If the newUsers list contains only the currentUsers list, an empty list is returned`() {
         val currentUsers = listOf(
             createUser("user a"),
             createUser("user b")
@@ -51,21 +53,7 @@ class SynchronizationTest {
     }
 
     @Test
-    fun `If the new users list contains a user contained in current users, but with a modified non-primary field, an empty list is returned`() {
-        val currentUsers = listOf(
-            createUser("user a")
-        )
-
-        val newUsers = listOf(
-            createUser("user a", 2)
-        )
-
-        val expectedUsers = emptyList<User>()
-        assertEquals(expectedUsers, collectNewItems(currentUsers, newUsers))
-    }
-
-    @Test
-    fun `If the new users list contains only 1 new user, a list containing only the new user is returned`() {
+    fun `If the newUsers list contains only 1 new user, a list containing only the new user is returned`() {
         val currentUsers = listOf(
             createUser("user a"),
             createUser("user b")
@@ -80,7 +68,7 @@ class SynchronizationTest {
     }
 
     @Test
-    fun `If the new users list contains the current users and a new user, a list containing only the new user is returned`() {
+    fun `If the newUsers list contains the currentUsers list and a new user, a list containing only the new user is returned`() {
         val currentUsers = listOf(
             createUser("user a"),
             createUser("user b")
@@ -137,16 +125,13 @@ class SynchronizationTest {
     }
 
     @Test
-    fun `If the updated list is the same as the current users list, an empty list is returned`() {
+    fun `If the updated list is the same as the currentUsers list list, an empty list is returned`() {
         val currentUsers = listOf(
             createUser("user a", modified = "2019-03-12T10:15:00Z"),
             createUser("user b", modified = "2019-03-12T10:15:00Z")
         )
 
-        val updatedUsers = listOf(
-            createUser("user a", modified = "2019-03-12T10:15:00Z"),
-            createUser("user b", modified = "2019-03-12T10:15:00Z")
-        )
+        val updatedUsers = currentUsers.toList()
 
         val expectedUsers = emptyList<User>()
         assertEquals(expectedUsers, collectModifiedUserItems(currentUsers, updatedUsers))
@@ -210,12 +195,15 @@ class SynchronizationTest {
     }
 }
 
-private fun createUser(userName: String, lockTimeout: Int = 1, modified: String? = null): User {
+// Use the same protected value settings mock object for all users because the settings are not important for tests
+private val mockProtectedValueSettings = mockk<ProtectedValue<UserSettings>>()
+
+private fun createUser(userName: String, modified: String? = null): User {
     val currentDate = Date.from(Instant.parse("2019-03-12T10:00:00Z"))
 
     return User(
         username = userName,
-        lockTimeout = lockTimeout,
+        settings = mockProtectedValueSettings,
         deleted = false,
         modified = modified?.let { Date.from(Instant.parse(it)) } ?: currentDate,
         created = currentDate

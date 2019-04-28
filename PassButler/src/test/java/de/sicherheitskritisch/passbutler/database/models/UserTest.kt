@@ -1,9 +1,13 @@
 package de.sicherheitskritisch.passbutler.database.models
 
 import android.util.Log
+import de.sicherheitskritisch.passbutler.common.ProtectedValue
 import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.mockkStatic
-import io.mockk.unmockkStatic
+import io.mockk.unmockkAll
+import org.json.JSONObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -21,17 +25,23 @@ internal class UserTest {
 
     @AfterEach
     fun unsetUp() {
-        unmockkStatic(Log::class)
+        unmockkAll()
     }
 
     @Test
     fun `Serialize and deserialize a User should result an equal object`() {
+        mockkObject(ProtectedValue.Companion)
+
+        val mockProtectedValueSettings = mockk<ProtectedValue<UserSettings>>()
+        every { mockProtectedValueSettings.serialize() } returns JSONObject()
+        every { ProtectedValue.deserialize<UserSettings>(any()) } returns mockProtectedValueSettings
+
         val modifiedDate: Long = 12345678
         val createdDate: Long = 12345679
 
         val exampleUser = User(
             username = "myUserName",
-            lockTimeout = 1337,
+            settings = mockProtectedValueSettings,
             deleted = true,
             modified = Date(modifiedDate),
             created = Date(createdDate)
