@@ -20,6 +20,7 @@ object Crypto {
 
     suspend fun generateRandomBytes(count: Int): List<Byte> {
         return withContext(Dispatchers.IO) {
+            // TODO: Better `SecureRandom()`?
             val blockingSecureRandomInstance = SecureRandom.getInstance("NativePRNGBlocking")
 
             ByteArray(count).also {

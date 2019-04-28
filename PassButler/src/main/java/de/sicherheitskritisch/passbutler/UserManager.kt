@@ -51,7 +51,6 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         retrofit.create(UserWebservice::class.java)
     }
 
-    // TODO: App global preferences instead of local?
     private val sharedPreferences by lazy {
         applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
     }
@@ -60,11 +59,13 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         get() = Date.from(Instant.now())
 
     suspend fun loginUser(userName: String, password: String, serverUrl: String) {
-        // TODO: Connect to server
-        // TODO: Authenticate with given credentials
-        // TODO: If successful, store server url and credentials
-        // TODO: Load users list and find user
-
+        /*
+         * TODO:
+         * - Connect to server
+         * - Authenticate with given credentials
+         * - If successful, store server url and credentials
+         * - Load users list and find user
+         */
         try {
             val userJsonObject = JSONObject()
 
