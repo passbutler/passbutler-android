@@ -1,4 +1,4 @@
-package de.sicherheitskritisch.passbutler.common
+package de.sicherheitskritisch.passbutler.base
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer

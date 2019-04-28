@@ -1,4 +1,4 @@
-package de.sicherheitskritisch.passbutler.common
+package de.sicherheitskritisch.passbutler.base
 
 import android.os.Build
 import android.os.Handler

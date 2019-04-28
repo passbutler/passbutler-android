@@ -1,4 +1,4 @@
-package de.sicherheitskritisch.passbutler.common
+package de.sicherheitskritisch.passbutler.base
 
 import org.json.JSONArray
 import org.json.JSONException
@@ -13,7 +13,7 @@ fun JSONArray.asJSONObjectSequence(): Sequence<JSONObject> {
 }
 
 /**
- * Put a string value to `JSONObject` (ensures the type compared to multi signature `put()` method)
+ * Put a string value to `JSONObject` (ensures the type compared to multi signature `put()` method).
  */
 @Throws(JSONException::class)
 fun JSONObject.putString(name: String, value: String): JSONObject {
@@ -21,7 +21,7 @@ fun JSONObject.putString(name: String, value: String): JSONObject {
 }
 
 /**
- * Put a boolean value to `JSONObject` (ensures the type compared to multi signature `put()` method)
+ * Put a boolean value to `JSONObject` (ensures the type compared to multi signature `put()` method).
  */
 @Throws(JSONException::class)
 fun JSONObject.putBoolean(name: String, value: Boolean): JSONObject {
@@ -29,7 +29,7 @@ fun JSONObject.putBoolean(name: String, value: Boolean): JSONObject {
 }
 
 /**
- * Put a integer value to `JSONObject` (ensures the type compared to multi signature `put()` method)
+ * Put a integer value to `JSONObject` (ensures the type compared to multi signature `put()` method).
  */
 @Throws(JSONException::class)
 fun JSONObject.putInt(name: String, value: Int): JSONObject {
@@ -37,7 +37,7 @@ fun JSONObject.putInt(name: String, value: Int): JSONObject {
 }
 
 /**
- * Put a long value to `JSONObject` (ensures the type compared to multi signature `put()` method)
+ * Put a long value to `JSONObject` (ensures the type compared to multi signature `put()` method).
  */
 @Throws(JSONException::class)
 fun JSONObject.putLong(name: String, value: Long): JSONObject {
@@ -45,7 +45,7 @@ fun JSONObject.putLong(name: String, value: Long): JSONObject {
 }
 
 /**
- * Put a `JSONObject` value to `JSONObject` (ensures the type compared to multi signature `put()` method)
+ * Put a `JSONObject` value to `JSONObject` (ensures the type compared to multi signature `put()` method).
  */
 @Throws(JSONException::class)
 fun JSONObject.putJSONObject(name: String, value: JSONObject): JSONObject {

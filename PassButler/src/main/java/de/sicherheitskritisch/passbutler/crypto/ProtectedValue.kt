@@ -1,12 +1,13 @@
-package de.sicherheitskritisch.passbutler.common
+package de.sicherheitskritisch.passbutler.crypto
 
 import android.arch.persistence.room.TypeConverter
+import de.sicherheitskritisch.passbutler.base.JSONSerializable
+import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.putJSONObject
+import de.sicherheitskritisch.passbutler.base.putString
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import org.json.JSONException
 import org.json.JSONObject
-import javax.crypto.Cipher
-import javax.crypto.spec.GCMParameterSpec
-import javax.crypto.spec.SecretKeySpec
 
 // TODO: Add unit tests for this
 // TODO: Better store `encryptedValue` Base64 encoded?
@@ -95,79 +96,24 @@ class ProtectedValue<T : JSONSerializable> private constructor(
     }
 }
 
+/**
+ * Converts a `JSONSerializable` to a `ByteArray`.
+ */
 private fun <T : JSONSerializable> T.toByteArray(): ByteArray {
     val valueAsJsonSerializedString = this.serialize().toString()
     return valueAsJsonSerializedString.toByteArray()
 }
 
-sealed class Algorithm(val stringRepresentation: String) {
-
-    abstract fun generateInitializationVector(): ByteArray
-    abstract fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray?
-    abstract fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray?
-
-    object AES256GCM : Algorithm("AES-256-GCM") {
-
-        private const val AES_KEY_LENGTH = 256
-        private const val GCM_INITIALIZATION_VECTOR_LENGTH = 96
-        private const val GCM_AUTHENTICATION_TAG_LENGTH = 128
-
-        override fun generateInitializationVector(): ByteArray {
-            /*
-            return withContext(Dispatchers.IO) {
-                val blockingSecureRandomInstance = SecureRandom.getInstanceStrong()
-                val bytesCount = GCM_INITIALIZATION_VECTOR_LENGTH / 8
-
-                ByteArray(bytesCount).also {
-                    blockingSecureRandomInstance.nextBytes(it)
-                }
-            }
-            */
-
-            // TODO: Implement
-            return ByteArray(0)
-        }
-
-        override fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray? {
-            return try {
-                if (initializationVector.size * 8 != GCM_INITIALIZATION_VECTOR_LENGTH) {
-                    throw IllegalArgumentException("The initialization vector must be 96 bits long!")
-                }
-
-                if (encryptionKey.size * 8 != AES_KEY_LENGTH) {
-                    throw IllegalArgumentException("The encryption key must be 256 bits long!")
-                }
-
-                val secretKey = SecretKeySpec(encryptionKey, "AES")
-                val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_LENGTH, initializationVector)
-
-                // The GCM is no classic block mode and thus has no padding
-                val encryptCipherInstance = Cipher.getInstance("AES/GCM/NoPadding")
-                encryptCipherInstance.init(Cipher.ENCRYPT_MODE, secretKey, gcmParameterSpec)
-
-                val encryptedData = encryptCipherInstance.doFinal(data)
-
-                encryptedData
-            } catch (e: Exception) {
-                L.w("Algorithm.AES256GCM", "encrypt(): The value could not be encrypted!", e)
-                null
-            }
-        }
-
-        override fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray? {
-            // TODO: Implement
-            return ByteArray(0)
-        }
-    }
+/**
+ * Converts the `ByteArray` to `String` with UTF-8 charset (basically what the `String()` constructor does but in explicit way).
+ */
+private fun ByteArray.toUTF8String(): String {
+    return toString(Charsets.UTF_8)
 }
 
-private fun String.toAlgorithm(): Algorithm? {
-    return when (this) {
-        Algorithm.AES256GCM.stringRepresentation -> Algorithm.AES256GCM
-        else -> null
-    }
-}
-
+/**
+ * Type converter for `ProtectedValue` used for `RoomDatabase`.
+ */
 class ProtectedValueConverters {
     @TypeConverter
     fun protectedValueToString(protectedValue: ProtectedValue<*>?): String? {
@@ -182,28 +128,17 @@ class ProtectedValueConverters {
     }
 }
 
+/**
+ * Convenience method to put a `ProtectedValue` value to `JSONObject`.
+ */
 @Throws(JSONException::class)
 fun JSONObject.putProtectedValue(name: String, value: ProtectedValue<*>): JSONObject {
     return putJSONObject(name, value.serialize())
 }
 
+/**
+ * Convenience method to get a `ProtectedValue` value from `JSONObject`-
+ */
 fun <T : JSONSerializable> JSONObject.getProtectedValue(name: String): ProtectedValue<T>? {
     return ProtectedValue.deserialize(getJSONObject(name))
-}
-
-
-/**
- * Converts the `ByteArray` to `String` with UTF-8 charset (basically what the `String()` constructor does but in explicit way)
- */
-fun ByteArray.toUTF8String(): String {
-    return toString(Charsets.UTF_8)
-}
-
-/**
- * Clear out a byte array for security reasons (for crypto keys etc.)
- */
-fun ByteArray.clear() {
-    this.forEachIndexed { index, _ ->
-        this[index] = 0
-    }
 }

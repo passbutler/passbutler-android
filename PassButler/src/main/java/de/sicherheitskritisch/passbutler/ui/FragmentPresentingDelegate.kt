@@ -9,7 +9,7 @@ import android.support.v4.app.Fragment
 import android.support.v4.view.animation.FastOutSlowInInterpolator
 import android.view.Gravity
 import de.sicherheitskritisch.passbutler.RootFragment
-import de.sicherheitskritisch.passbutler.common.L
+import de.sicherheitskritisch.passbutler.base.L
 import java.lang.ref.WeakReference
 
 /**

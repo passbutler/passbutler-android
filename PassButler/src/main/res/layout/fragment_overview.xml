@@ -8,7 +8,7 @@
 
         <variable
             name="requestSendingViewModel"
-            type="de.sicherheitskritisch.passbutler.common.DefaultRequestSendingViewModel" />
+            type="de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel" />
 
     </data>
 

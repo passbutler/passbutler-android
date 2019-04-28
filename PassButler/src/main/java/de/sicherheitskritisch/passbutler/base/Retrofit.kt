@@ -1,4 +1,4 @@
-package de.sicherheitskritisch.passbutler.common
+package de.sicherheitskritisch.passbutler.base
 
 import okhttp3.ResponseBody
 import retrofit2.Converter

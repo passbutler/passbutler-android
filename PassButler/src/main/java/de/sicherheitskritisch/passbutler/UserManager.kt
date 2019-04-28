@@ -4,11 +4,11 @@ import android.arch.lifecycle.MutableLiveData
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
-import de.sicherheitskritisch.passbutler.common.L
-import de.sicherheitskritisch.passbutler.common.ProtectedValue
-import de.sicherheitskritisch.passbutler.common.Synchronization
-import de.sicherheitskritisch.passbutler.common.UnitConverterFactory
-import de.sicherheitskritisch.passbutler.common.clear
+import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.database.Synchronization
+import de.sicherheitskritisch.passbutler.base.UnitConverterFactory
+import de.sicherheitskritisch.passbutler.crypto.clear
+import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.database.PassButlerRepository
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserConverterFactory

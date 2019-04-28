@@ -2,7 +2,7 @@ package de.sicherheitskritisch.passbutler
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import de.sicherheitskritisch.passbutler.common.L
+import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
 
 class MainActivity : AppCompatActivity() {

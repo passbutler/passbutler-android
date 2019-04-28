@@ -1,7 +1,7 @@
 package de.sicherheitskritisch.passbutler.database.models
 
 import android.util.Log
-import de.sicherheitskritisch.passbutler.common.ProtectedValue
+import de.sicherheitskritisch.passbutler.synchronization.ProtectedValue
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject

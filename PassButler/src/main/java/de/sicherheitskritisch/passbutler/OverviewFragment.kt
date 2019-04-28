@@ -17,9 +17,9 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import de.sicherheitskritisch.passbutler.common.RequestSendingViewHandler
-import de.sicherheitskritisch.passbutler.common.RequestSendingViewModel
-import de.sicherheitskritisch.passbutler.common.createMainDispatcher
+import de.sicherheitskritisch.passbutler.base.RequestSendingViewHandler
+import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
+import de.sicherheitskritisch.passbutler.base.createMainDispatcher
 import de.sicherheitskritisch.passbutler.databinding.FragmentOverviewBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment

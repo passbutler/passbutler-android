@@ -1,4 +1,4 @@
-package de.sicherheitskritisch.passbutler.common
+package de.sicherheitskritisch.passbutler.base
 
 import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.LiveData

@@ -2,7 +2,7 @@ package de.sicherheitskritisch.passbutler
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
-import de.sicherheitskritisch.passbutler.common.observeForeverNotifyForNonNullValues
+import de.sicherheitskritisch.passbutler.base.observeForeverNotifyForNonNullValues
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 

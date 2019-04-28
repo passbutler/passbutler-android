@@ -6,7 +6,7 @@ import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.TypeConverter
 import android.arch.persistence.room.TypeConverters
 import android.content.Context
-import de.sicherheitskritisch.passbutler.common.ProtectedValueConverters
+import de.sicherheitskritisch.passbutler.crypto.ProtectedValueConverters
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserDao
 import kotlinx.coroutines.CoroutineScope
