@@ -1,5 +1,6 @@
 package de.sicherheitskritisch.passbutler.synchronization
 
+import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.database.Synchronization.collectModifiedUserItems
 import de.sicherheitskritisch.passbutler.database.Synchronization.collectNewItems
 import de.sicherheitskritisch.passbutler.database.models.User
