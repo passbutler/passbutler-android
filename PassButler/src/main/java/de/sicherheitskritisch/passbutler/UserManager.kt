@@ -5,11 +5,11 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import de.sicherheitskritisch.passbutler.base.L
-import de.sicherheitskritisch.passbutler.database.Synchronization
 import de.sicherheitskritisch.passbutler.base.UnitConverterFactory
-import de.sicherheitskritisch.passbutler.crypto.clear
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
+import de.sicherheitskritisch.passbutler.crypto.clear
 import de.sicherheitskritisch.passbutler.database.PassButlerRepository
+import de.sicherheitskritisch.passbutler.database.Synchronization
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserConverterFactory
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
@@ -125,9 +125,9 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         launch {
             user.modified = currentDate
             localRepository.updateUser(user)
-        }
 
-        // TODO: Trigger sync?
+            // TODO: Trigger sync?
+        }
     }
 
     suspend fun synchronizeUsers() = coroutineScope {
