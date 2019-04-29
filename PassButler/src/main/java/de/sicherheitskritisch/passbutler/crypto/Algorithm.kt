@@ -56,8 +56,28 @@ sealed class Algorithm(val stringRepresentation: String) {
 
         @Throws(DecryptionFailedException::class)
         override fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray {
-            // TODO: Implement
-            return ByteArray(0)
+            return try {
+                if (initializationVector.bitSize != GCM_INITIALIZATION_VECTOR_LENGTH) {
+                    throw IllegalArgumentException("The initialization vector must be 96 bits long!")
+                }
+
+                if (encryptionKey.bitSize != AES_KEY_LENGTH) {
+                    throw IllegalArgumentException("The encryption key must be 256 bits long!")
+                }
+
+                val secretKeySpec = SecretKeySpec(encryptionKey, "AES")
+                val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_LENGTH, initializationVector)
+
+                // The GCM is no classic block mode and thus has no padding
+                val encryptCipherInstance = Cipher.getInstance("AES/GCM/NoPadding")
+                encryptCipherInstance.init(Cipher.DECRYPT_MODE, secretKeySpec, gcmParameterSpec)
+
+                val decryptedData = encryptCipherInstance.doFinal(data)
+
+                decryptedData
+            } catch (e: Exception) {
+                throw DecryptionFailedException(e)
+            }
         }
     }
 
