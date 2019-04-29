@@ -18,7 +18,8 @@ sealed class Algorithm(val stringRepresentation: String) {
         private const val GCM_AUTHENTICATION_TAG_LENGTH = 128
 
         override fun generateInitializationVector(): ByteArray {
-            return SecureRandom().let { nonBlockingSecureRandomInstance->
+            // Use default `SecureRandom` constructor that uses `/dev/urandom` that is sufficient secure and does not block
+            return SecureRandom().let { nonBlockingSecureRandomInstance ->
                 val bytesCount = GCM_INITIALIZATION_VECTOR_LENGTH.byteSize
                 val newInitializationVector = ByteArray(bytesCount)
                 nonBlockingSecureRandomInstance.nextBytes(newInitializationVector)
