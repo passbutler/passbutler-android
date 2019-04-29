@@ -1,5 +1,6 @@
 package de.sicherheitskritisch.passbutler.crypto
 
+import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -17,19 +18,13 @@ sealed class Algorithm(val stringRepresentation: String) {
         private const val GCM_AUTHENTICATION_TAG_LENGTH = 128
 
         override fun generateInitializationVector(): ByteArray {
-            /*
-            return withContext(Dispatchers.IO) {
-                val blockingSecureRandomInstance = SecureRandom.getInstanceStrong()
-                val bytesCount = GCM_INITIALIZATION_VECTOR_LENGTH / 8
+            return SecureRandom().let { nonBlockingSecureRandomInstance->
+                val bytesCount = GCM_INITIALIZATION_VECTOR_LENGTH.byteSize
+                val newInitializationVector = ByteArray(bytesCount)
+                nonBlockingSecureRandomInstance.nextBytes(newInitializationVector)
 
-                ByteArray(bytesCount).also {
-                    blockingSecureRandomInstance.nextBytes(it)
-                }
+                newInitializationVector
             }
-            */
-
-            // TODO: Implement
-            return ByteArray(0)
         }
 
         @Throws(EncryptionFailedException::class)
@@ -88,5 +83,8 @@ fun ByteArray.clear() {
     }
 }
 
-private val ByteArray.bitSize
+private val ByteArray.bitSize: Int
     get() = size * 8
+
+private val Int.byteSize: Int
+    get() = this / 8
