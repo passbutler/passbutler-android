@@ -29,38 +29,34 @@ class ProtectedValue<T : JSONSerializable> private constructor(
     }
 
     fun decrypt(encryptionKey: ByteArray, instantiationDelegate: (JSONObject) -> T?): T? {
-        val decryptedBytes = algorithm.decrypt(initializationVector, encryptionKey, encryptedValue)
-
         return try {
-            decryptedBytes?.let {
-                val jsonSerializedString = it.toUTF8String()
+            algorithm.decrypt(initializationVector, encryptionKey, encryptedValue).let { decryptedBytes ->
+                val jsonSerializedString = decryptedBytes.toUTF8String()
                 val jsonObject = JSONObject(jsonSerializedString)
                 instantiationDelegate(jsonObject)
-            } ?: throw DecryptionFailedException()
+            }
         } catch (e: JSONException) {
             L.w("ProtectedValue", "decrypt(): The value could not be deserialized!", e)
             null
-        } catch (e: DecryptionFailedException) {
-            L.w("ProtectedValue", "decrypt(): The value could not be decrypted!")
+        } catch (e: Algorithm.DecryptionFailedException) {
+            L.w("ProtectedValue", "decrypt(): The value could not be decrypted!", e)
             null
         }
     }
 
     fun update(encryptionKey: ByteArray, updatedValue: T) {
         val newInitializationVector = algorithm.generateInitializationVector()
-        val valueAsByteArray = updatedValue.toByteArray()
 
-        algorithm.encrypt(newInitializationVector, encryptionKey, valueAsByteArray)?.let { encryptedValue ->
+        try {
+            val encryptedValue = algorithm.encrypt(newInitializationVector, encryptionKey, updatedValue.toByteArray())
+
             // Update values only if encryption was successful
             this.initializationVector = newInitializationVector
             this.encryptedValue = encryptedValue
-        } ?: run {
-            L.w("ProtectedValue", "update(): The value could not be updated because encryption failed!")
+        } catch (e: Algorithm.EncryptionFailedException) {
+            L.w("ProtectedValue", "update(): The value could not be updated because encryption failed!", e)
         }
     }
-
-    // TODO: Put in `Algorithm` and let throw in `Algorithm` child classes
-    private class DecryptionFailedException : Exception()
 
     companion object {
         const val SERIALIZATION_KEY_INITIALIZATION_VECTOR = "initializationVector"
@@ -81,15 +77,14 @@ class ProtectedValue<T : JSONSerializable> private constructor(
         }
 
         fun <T : JSONSerializable> create(encryptionKey: ByteArray, initialValue: T): ProtectedValue<T>? {
-            val algorithm: Algorithm = Algorithm.AES256GCM
+            val symmetricAlgorithm: Algorithm = Algorithm.AES256GCM
+            val newInitializationVector = symmetricAlgorithm.generateInitializationVector()
 
-            val newInitializationVector = algorithm.generateInitializationVector()
-            val valueAsByteArray = initialValue.toByteArray()
-
-            return algorithm.encrypt(newInitializationVector, encryptionKey, valueAsByteArray)?.let { encryptedValue ->
-                ProtectedValue<T>(newInitializationVector, algorithm, encryptedValue)
-            } ?: run {
-                L.w("ProtectedValue", "create(): The value could not be created because encryption failed!")
+            return try {
+                val encryptedValue = symmetricAlgorithm.encrypt(newInitializationVector, encryptionKey, initialValue.toByteArray())
+                ProtectedValue(newInitializationVector, symmetricAlgorithm, encryptedValue)
+            } catch (e: Algorithm.EncryptionFailedException) {
+                L.w("ProtectedValue", "create(): The value could not be created because encryption failed!", e)
                 null
             }
         }
