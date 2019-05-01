@@ -10,15 +10,22 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
 
-// TODO: Add unit tests for this
 /**
  * Wraps a `JSONSerializable` object to store it encrypted.
  */
-class ProtectedValue<T : JSONSerializable> private constructor(
-    private var initializationVector: ByteArray,
-    private val algorithm: Algorithm,
-    private var encryptedValue: ByteArray
+class ProtectedValue<T : JSONSerializable>(
+    initializationVector: ByteArray,
+    algorithm: Algorithm,
+    encryptedValue: ByteArray
 ) : JSONSerializable {
+
+    var initializationVector = initializationVector
+        private set
+
+    val algorithm = algorithm
+
+    var encryptedValue = encryptedValue
+        private set
 
     override fun serialize(): JSONObject {
         return JSONObject().apply {
@@ -56,6 +63,26 @@ class ProtectedValue<T : JSONSerializable> private constructor(
         } catch (e: Algorithm.EncryptionFailedException) {
             L.w("ProtectedValue", "update(): The value could not be updated because encryption failed!", e)
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ProtectedValue<*>
+
+        if (!initializationVector.contentEquals(other.initializationVector)) return false
+        if (algorithm != other.algorithm) return false
+        if (!encryptedValue.contentEquals(other.encryptedValue)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = initializationVector.contentHashCode()
+        result = 31 * result + algorithm.hashCode()
+        result = 31 * result + encryptedValue.contentHashCode()
+        return result
     }
 
     companion object {
