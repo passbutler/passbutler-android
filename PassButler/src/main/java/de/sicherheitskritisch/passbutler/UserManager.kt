@@ -6,7 +6,7 @@ import android.content.Context.MODE_PRIVATE
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.UnitConverterFactory
-import de.sicherheitskritisch.passbutler.crypto.Algorithm
+import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.clear
 import de.sicherheitskritisch.passbutler.database.PassButlerRepository
@@ -87,7 +87,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         // TODO: Use proper key
         val userSettingsEncryptionKey = ByteArray(0)
         val defaultUserSettings = UserSettings()
-        val localUser = ProtectedValue.create(Algorithm.AES256GCM, userSettingsEncryptionKey, defaultUserSettings)?.let { protectedUserSettings ->
+        val localUser = ProtectedValue.create(EncryptionAlgorithm.AES256GCM, userSettingsEncryptionKey, defaultUserSettings)?.let { protectedUserSettings ->
             val currentDate = currentDate
 
             User(

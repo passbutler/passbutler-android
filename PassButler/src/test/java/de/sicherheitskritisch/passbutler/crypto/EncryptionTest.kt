@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
-class AlgorithmTest {
+class EncryptionTest {
 
     // TODO: tests for password derivation (empty password, salt -> exception)
 
@@ -18,7 +18,7 @@ class AlgorithmTest {
     fun `Encrypt with an empty initialization vector throws an exception`() {
         val testVector = invalidTestVectors.getValue("tooLongInitializationVector")
 
-        val exception = assertThrows(Algorithm.EncryptionFailedException::class.java) {
+        val exception = assertThrows(EncryptionAlgorithm.EncryptionFailedException::class.java) {
             encryptAES256GCM(testVector)
         }
 
@@ -29,7 +29,7 @@ class AlgorithmTest {
     fun `Encrypt with a too long initialization vector throws an exception`() {
         val testVector = invalidTestVectors.getValue("emptyInitializationVector")
 
-        val exception = assertThrows(Algorithm.EncryptionFailedException::class.java) {
+        val exception = assertThrows(EncryptionAlgorithm.EncryptionFailedException::class.java) {
             encryptAES256GCM(testVector)
         }
 
@@ -40,7 +40,7 @@ class AlgorithmTest {
     fun `Encrypt with an empty key throws an exception`() {
         val testVector = invalidTestVectors.getValue("emptyKey")
 
-        val exception = assertThrows(Algorithm.EncryptionFailedException::class.java) {
+        val exception = assertThrows(EncryptionAlgorithm.EncryptionFailedException::class.java) {
             encryptAES256GCM(testVector)
         }
 
@@ -51,7 +51,7 @@ class AlgorithmTest {
     fun `Encrypt with a too long key throws an exception`() {
         val testVector = invalidTestVectors.getValue("tooLongKey")
 
-        val exception = assertThrows(Algorithm.EncryptionFailedException::class.java) {
+        val exception = assertThrows(EncryptionAlgorithm.EncryptionFailedException::class.java) {
             encryptAES256GCM(testVector)
         }
 
@@ -114,7 +114,7 @@ class AlgorithmTest {
     fun `Decrypt with an empty initialization vector throws an exception`() {
         val testVector = invalidTestVectors.getValue("tooLongInitializationVector")
 
-        val exception = assertThrows(Algorithm.DecryptionFailedException::class.java) {
+        val exception = assertThrows(EncryptionAlgorithm.DecryptionFailedException::class.java) {
             decryptAES256GCM(testVector)
         }
 
@@ -125,7 +125,7 @@ class AlgorithmTest {
     fun `Decrypt with a too long initialization vector throws an exception`() {
         val testVector = invalidTestVectors.getValue("emptyInitializationVector")
 
-        val exception = assertThrows(Algorithm.DecryptionFailedException::class.java) {
+        val exception = assertThrows(EncryptionAlgorithm.DecryptionFailedException::class.java) {
             decryptAES256GCM(testVector)
         }
 
@@ -136,7 +136,7 @@ class AlgorithmTest {
     fun `Decrypt with an empty key throws an exception`() {
         val testVector = invalidTestVectors.getValue("emptyKey")
 
-        val exception = assertThrows(Algorithm.DecryptionFailedException::class.java) {
+        val exception = assertThrows(EncryptionAlgorithm.DecryptionFailedException::class.java) {
             decryptAES256GCM(testVector)
         }
 
@@ -147,7 +147,7 @@ class AlgorithmTest {
     fun `Decrypt with a too long key throws an exception`() {
         val testVector = invalidTestVectors.getValue("tooLongKey")
 
-        val exception = assertThrows(Algorithm.DecryptionFailedException::class.java) {
+        val exception = assertThrows(EncryptionAlgorithm.DecryptionFailedException::class.java) {
             decryptAES256GCM(testVector)
         }
 
@@ -311,11 +311,11 @@ private val validTestVectors = listOf(
 )
 
 private fun encryptAES256GCM(testVector: TestVector): String {
-    return Algorithm.AES256GCM.encrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), testVector.plainText.hexToBytes()).toHexString()
+    return EncryptionAlgorithm.AES256GCM.encrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), testVector.plainText.hexToBytes()).toHexString()
 }
 
 private fun decryptAES256GCM(testVector: TestVector): String {
-    return Algorithm.AES256GCM.decrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), (testVector.cipherText + testVector.tag).hexToBytes()).toHexString()
+    return EncryptionAlgorithm.AES256GCM.decrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), (testVector.cipherText + testVector.tag).hexToBytes()).toHexString()
 }
 
 private data class TestVector(

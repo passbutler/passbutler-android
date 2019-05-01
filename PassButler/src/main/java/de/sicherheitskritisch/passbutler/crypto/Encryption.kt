@@ -8,13 +8,13 @@ import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-sealed class Algorithm(val stringRepresentation: String) {
+sealed class EncryptionAlgorithm(val stringRepresentation: String) {
 
     abstract fun generateInitializationVector(): ByteArray
     abstract fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray
     abstract fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray
 
-    object AES256GCM : Algorithm("AES-256-GCM") {
+    object AES256GCM : EncryptionAlgorithm("AES-256-GCM") {
 
         private const val AES_KEY_LENGTH = 256
         private const val GCM_INITIALIZATION_VECTOR_LENGTH = 96
@@ -89,22 +89,22 @@ sealed class Algorithm(val stringRepresentation: String) {
 }
 
 /**
- * Convenience method to put a `Algorithm` value to `JSONObject`.
+ * Convenience method to put a `EncryptionAlgorithm` value to `JSONObject`.
  */
 @Throws(JSONException::class)
-fun JSONObject.putAlgorithm(name: String, value: Algorithm): JSONObject {
+fun JSONObject.putEncryptionAlgorithm(name: String, value: EncryptionAlgorithm): JSONObject {
     val algorithmStringRepresentation = value.stringRepresentation
     return putString(name, algorithmStringRepresentation)
 }
 
 /**
- * Convenience method to get a `Algorithm` value from `JSONObject`.
+ * Convenience method to get a `EncryptionAlgorithm` value from `JSONObject`.
  */
 @Throws(JSONException::class)
-fun JSONObject.getAlgorithm(name: String): Algorithm {
+fun JSONObject.getEncryptionAlgorithm(name: String): EncryptionAlgorithm {
     return when (val algorithmStringRepresentation = getString(name)) {
-        Algorithm.AES256GCM.stringRepresentation -> Algorithm.AES256GCM
-        else -> throw JSONException("The algorithm string representation '$algorithmStringRepresentation' could not be found!")
+        EncryptionAlgorithm.AES256GCM.stringRepresentation -> EncryptionAlgorithm.AES256GCM
+        else -> throw JSONException("The EncryptionAlgorithm string representation '$algorithmStringRepresentation' could not be found!")
     }
 }
 
