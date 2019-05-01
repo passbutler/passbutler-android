@@ -84,8 +84,8 @@ sealed class Algorithm(val stringRepresentation: String) {
         }
     }
 
-    class EncryptionFailedException(cause: Exception) : Exception(cause)
-    class DecryptionFailedException(cause: Exception) : Exception(cause)
+    class EncryptionFailedException(cause: Exception? = null) : Exception(cause)
+    class DecryptionFailedException(cause: Exception? = null) : Exception(cause)
 }
 
 /**

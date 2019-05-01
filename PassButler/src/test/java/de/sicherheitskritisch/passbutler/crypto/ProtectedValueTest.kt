@@ -1,26 +1,41 @@
 package de.sicherheitskritisch.passbutler.crypto
 
+import android.util.Log
 import de.sicherheitskritisch.passbutler.assertJSONObjectEquals
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.putString
 import de.sicherheitskritisch.passbutler.hexToBytes
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.slot
+import io.mockk.unmockkAll
 import org.json.JSONObject
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ProtectedValueTest {
 
-    /**
-     * Serialization and deserialization tests
-     */
+    @BeforeEach
+    fun setUp() {
+        mockkStatic(Log::class)
+        every { Log.w(any(), any(), any()) } returns 0
+        every { Log.w(any(), any<String>()) } returns 0
+    }
+
+    @AfterEach
+    fun unsetUp() {
+        unmockkAll()
+    }
 
     @Test
     fun `Serialize a protected value with short encrypted value and deserialize it than`() {
         val protectedValueReference = createTestProtectedValue(
-            initializationVectorString = "1310aadeaa489ae84125c36a",
-            encryptedValueString = "4e692fce708b1b759cf61beb5c4e55a3a22d749c5839b3654d6cbe2299b3c28a"
+            initializationVector = "1310aadeaa489ae84125c36a".hexToBytes(),
+            encryptedValue = "4e692fce708b1b759cf61beb5c4e55a3a22d749c5839b3654d6cbe2299b3c28a".hexToBytes()
         )
 
         val serializedProtectedValueReference = JSONObject().apply {
@@ -39,25 +54,14 @@ class ProtectedValueTest {
     @Test
     fun `Serialize a protected value with longer encrypted value and deserialize it than`() {
         val protectedValueReference = createTestProtectedValue(
-            initializationVectorString = "b263e025c3d0e60765e7eeba",
-            encryptedValueString =
-            "efd78a8f3216381554fce904e25c2cb91db04ecb59c375d2483624d6c7bbd2c0a97e319e4f5e6fa40cf7607b058c1fe278d9" +
-            "07f6912258cca305a744b6a5444f4b8fd15f59fbae86b46232835c34937e38466ae24ff33d3562cbe62771721ef4b96a93d1" +
-            "fd7f7519a3b2878daf9a01f6e4972a0ee8cc73f7fd086a442a02db860b9f778e28595cf96a227a56ab8cb60dd6a140aca2d2" +
-            "693c08bdf244daf1fe7ca270e263a9f9657de6fad58f22dc691aac0ec3a6390867c0142b120faa9dee620df912800725bd3e" +
-            "ccb6198fc621cad3a1092708861febe07d136d89554f2d18b9487f085da83596b22a03f121580e721653716ad07e0c51ef29"
+            initializationVector = "b263e025c3d0e60765e7eeba".hexToBytes(),
+            encryptedValue = "0664c21c4485b0a37ebd3d0c5cba77c88ed4be3d8035b40390d8c32c6eaaa12dfd3d6fc19fa6b0d12092e9384f26e60747019c0294de426574b8a3d1dab2f5802a4db735952300b5da".hexToBytes()
         )
 
         val serializedProtectedValueReference = JSONObject().apply {
             putString("initializationVector", "smPgJcPQ5gdl5+66")
             putString("algorithm", "AES-256-GCM")
-            putString(
-                "encryptedValue",
-                "79eKjzIWOBVU/OkE4lwsuR2wTstZw3XSSDYk1se70sCpfjGeT15vpAz3YHsFjB/ieNkH9pEiWMyjBadEtqVET0uP0V9Z+66GtGIy" +
-                "g1w0k344RmriT/M9NWLL5idxch70uWqT0f1/dRmjsoeNr5oB9uSXKg7ozHP3/QhqRCoC24YLn3eOKFlc+WoielarjLYN1qFArKLS" +
-                "aTwIvfJE2vH+fKJw4mOp+WV95vrVjyLcaRqsDsOmOQhnwBQrEg+qne5iDfkSgAclvT7MthmPxiHK06EJJwiGH+vgfRNtiVVPLRi5" +
-                "SH8IXag1lrIqA/EhWA5yFlNxatB+DFHvKQ=="
-            )
+            putString("encryptedValue", "BmTCHESFsKN+vT0MXLp3yI7Uvj2ANbQDkNjDLG6qoS39PW/Bn6aw0SCS6ThPJuYHRwGcApTeQmV0uKPR2rL1gCpNtzWVIwC12g==")
         }
 
         val serializedProtectedValue = protectedValueReference.serialize()
@@ -66,29 +70,111 @@ class ProtectedValueTest {
         val deserializedProtectedValue = ProtectedValue.deserialize<JSONSerializable>(serializedProtectedValue)
         assertEquals(protectedValueReference, deserializedProtectedValue)
     }
+
+    @Test
+    fun `Deserialize a protected value returns null if the deserialization failed`() {
+        val invalidSerializedProtectedValue = JSONObject()
+
+        val deserializedProtectedValue = ProtectedValue.deserialize<JSONSerializable>(invalidSerializedProtectedValue)
+        assertEquals(null, deserializedProtectedValue)
+    }
+
+    @Test
+    fun `Create a protected value returns null if the encryption failed`() {
+        val initializationVector = "aaaaaaaaaaaaaaaaaaaaaaaa".hexToBytes()
+        val mockAES256GCMAlgorithm = createMockAlgorithmAES256GCMWithoutEncryption(initializationVector, true)
+
+        val unusedEncryptionKey = ByteArray(0)
+        val testJSONSerializable = TestJSONSerializable()
+
+        val protectedValue = ProtectedValue.create(mockAES256GCMAlgorithm, unusedEncryptionKey, testJSONSerializable)
+        assertEquals(null, protectedValue)
+    }
+
+    @Test
+    fun `Create a protected value and expect the given initial values`() {
+        val initializationVector = "aaaaaaaaaaaaaaaaaaaaaaaa".hexToBytes()
+        val mockAES256GCMAlgorithm = createMockAlgorithmAES256GCMWithoutEncryption(initializationVector)
+
+        val unusedEncryptionKey = ByteArray(0)
+        val testJSONSerializable = TestJSONSerializable()
+
+        val protectedValue = ProtectedValue.create(mockAES256GCMAlgorithm, unusedEncryptionKey, testJSONSerializable)!!
+
+        assertArrayEquals(initializationVector, protectedValue.initializationVector)
+        assertEquals(mockAES256GCMAlgorithm, protectedValue.algorithm)
+        assertArrayEquals(TestJSONSerializable.SERIALIZED_OBJECT_BYTE_ARRAY, protectedValue.encryptedValue)
+    }
+
+    @Test
+    fun `Update a protected value and expect an updated initialization vector and updated encrypted value`() {
+        val updatedInitializationVector = "bbbbbbbbbbbbbbbbbbbbbbbb".hexToBytes()
+        val mockAES256GCMAlgorithm = createMockAlgorithmAES256GCMWithoutEncryption(updatedInitializationVector)
+
+        val initialInitializationVector = "aaaaaaaaaaaaaaaaaaaaaaaa".hexToBytes()
+        val protectedValue = createTestProtectedValue(
+            initializationVector = initialInitializationVector,
+            algorithm = mockAES256GCMAlgorithm,
+            encryptedValue = "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
+        )
+
+        val unusedEncryptionKey = ByteArray(0)
+        val updatedJSONSerializable = TestJSONSerializable()
+        protectedValue.update(unusedEncryptionKey, updatedJSONSerializable)
+
+        assertArrayEquals(updatedInitializationVector, protectedValue.initializationVector)
+        assertEquals(mockAES256GCMAlgorithm, protectedValue.algorithm)
+        assertArrayEquals(TestJSONSerializable.SERIALIZED_OBJECT_BYTE_ARRAY, protectedValue.encryptedValue)
+    }
+
+    @Test
+    fun `If it fails to update a protected value, the initialization vector and updated encrypted value are not changed`() {
+        val updatedInitializationVector = "bbbbbbbbbbbbbbbbbbbbbbbb".hexToBytes()
+        val mockAES256GCMAlgorithm = createMockAlgorithmAES256GCMWithoutEncryption(updatedInitializationVector, true)
+
+        val initialInitializationVector = "aaaaaaaaaaaaaaaaaaaaaaaa".hexToBytes()
+        val initialEncryptedValue = "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
+        val protectedValue = createTestProtectedValue(
+            initializationVector = initialInitializationVector,
+            algorithm = mockAES256GCMAlgorithm,
+            encryptedValue = initialEncryptedValue
+        )
+
+        val unusedEncryptionKey = ByteArray(0)
+        val updatedJSONSerializable = TestJSONSerializable()
+        protectedValue.update(unusedEncryptionKey, updatedJSONSerializable)
+
+        assertArrayEquals(initialInitializationVector, protectedValue.initializationVector)
+        assertEquals(mockAES256GCMAlgorithm, protectedValue.algorithm)
+        assertArrayEquals(initialEncryptedValue, protectedValue.encryptedValue)
+    }
 }
 
-private fun createTestProtectedValue(initializationVectorString: String, encryptedValueString: String): ProtectedValue<JSONSerializable> {
-    val initializationVector = initializationVectorString.hexToBytes()
-    val algorithm = Algorithm.AES256GCM
-    val encryptedValue = encryptedValueString.hexToBytes()
-
+/**
+ * Create a simple `ProtectedValue` with given argument values and pre-set algorithm.
+ */
+private fun createTestProtectedValue(initializationVector: ByteArray, algorithm: Algorithm = Algorithm.AES256GCM, encryptedValue: ByteArray): ProtectedValue<JSONSerializable> {
     return ProtectedValue(initializationVector, algorithm, encryptedValue)
 }
 
-private fun createMockEncryptAlgorithmAES256GCM(generatedInitializationVector: ByteArray, encryptedValue: ByteArray): Algorithm.AES256GCM {
-    val mockAlgorithm = mockk<Algorithm.AES256GCM>()
-    every { mockAlgorithm.stringRepresentation } returns Algorithm.AES256GCM.stringRepresentation
-    every { mockAlgorithm.generateInitializationVector() } returns generatedInitializationVector
-    every { mockAlgorithm.encrypt(any(), any(), any()) } returns encryptedValue
+/**
+ * Creates a mock `Algorithm.AES256GCM` that returns always the given initialization vector and does NOT encrypt (input data == output data).
+ */
+private fun createMockAlgorithmAES256GCMWithoutEncryption(generatedInitializationVector: ByteArray, shouldEncryptionFail: Boolean = false): Algorithm.AES256GCM {
+    val mockAES256GCMAlgorithm = mockk<Algorithm.AES256GCM>()
+    every { mockAES256GCMAlgorithm.stringRepresentation } returns Algorithm.AES256GCM.stringRepresentation
+    every { mockAES256GCMAlgorithm.generateInitializationVector() } returns generatedInitializationVector
 
-    return mockAlgorithm
-}
+    val dataCaptureSlot = slot<ByteArray>()
+    every { mockAES256GCMAlgorithm.encrypt(initializationVector = any(), encryptionKey = any(), data = capture(dataCaptureSlot)) } answers {
+        if (shouldEncryptionFail) {
+            throw Algorithm.EncryptionFailedException()
+        } else {
+            dataCaptureSlot.captured
+        }
+    }
 
-private fun createMockJSONSerializable(): JSONSerializable {
-    val mockJSONSerializable = mockk<JSONSerializable>()
-    every { mockJSONSerializable.serialize() } returns JSONObject()
-    return mockJSONSerializable
+    return mockAES256GCMAlgorithm
 }
 
 private class TestJSONSerializable : JSONSerializable {
@@ -96,5 +182,10 @@ private class TestJSONSerializable : JSONSerializable {
         return JSONObject().apply {
             putString("teststring", "testvalue")
         }
+    }
+
+    companion object {
+        // Created with `testJSONSerializable.serialize().toByteArray(Charsets.UTF_8)`
+        val SERIALIZED_OBJECT_BYTE_ARRAY = byteArrayOf(123, 34, 116, 101, 115, 116, 115, 116, 114, 105, 110, 103, 34, 58, 34, 116, 101, 115, 116, 118, 97, 108, 117, 101, 34, 125)
     }
 }

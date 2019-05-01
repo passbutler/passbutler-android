@@ -4,6 +4,10 @@ import org.json.JSONObject
 import org.junit.jupiter.api.Assertions
 
 internal fun String.hexToBytes(): ByteArray {
+    if (this.length % 2 != 0) {
+        throw IllegalArgumentException("The given string must have an even length!")
+    }
+
     return ByteArray(this.length / 2) {
         this.substring(it * 2, (it * 2) + 2).toInt(16).toByte()
     }
