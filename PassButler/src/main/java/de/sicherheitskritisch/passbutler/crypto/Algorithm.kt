@@ -1,5 +1,8 @@
 package de.sicherheitskritisch.passbutler.crypto
 
+import de.sicherheitskritisch.passbutler.base.putString
+import org.json.JSONException
+import org.json.JSONObject
 import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
@@ -86,12 +89,22 @@ sealed class Algorithm(val stringRepresentation: String) {
 }
 
 /**
- * Retrieves `Algorithm` instance by the string representation. Similar to `Enum.valueOf(String)` method.
+ * Convenience method to put a `Algorithm` value to `JSONObject`.
  */
-fun String.toAlgorithm(): Algorithm? {
-    return when (this) {
+@Throws(JSONException::class)
+fun JSONObject.putAlgorithm(name: String, value: Algorithm): JSONObject {
+    val algorithmStringRepresentation = value.stringRepresentation
+    return putString(name, algorithmStringRepresentation)
+}
+
+/**
+ * Convenience method to get a `Algorithm` value from `JSONObject`.
+ */
+@Throws(JSONException::class)
+fun JSONObject.getAlgorithm(name: String): Algorithm {
+    return when (val algorithmStringRepresentation = getString(name)) {
         Algorithm.AES256GCM.stringRepresentation -> Algorithm.AES256GCM
-        else -> null
+        else -> throw JSONException("The algorithm string representation '$algorithmStringRepresentation' could not be found!")
     }
 }
 
