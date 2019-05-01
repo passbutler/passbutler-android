@@ -128,8 +128,6 @@ fun <T : JSONSerializable> JSONObject.getProtectedValue(name: String): Protected
  */
 @Throws(JSONException::class)
 fun JSONObject.putByteArray(name: String, value: ByteArray): JSONObject {
-
-
     val base64EncodedValue = Base64.getEncoder().encodeToString(value)
     return putString(name, base64EncodedValue)
 }
