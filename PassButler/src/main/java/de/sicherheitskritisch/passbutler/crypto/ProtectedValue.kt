@@ -1,7 +1,6 @@
 package de.sicherheitskritisch.passbutler.crypto
 
 import android.arch.persistence.room.TypeConverter
-import android.util.Base64
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.putJSONObject
@@ -9,6 +8,7 @@ import de.sicherheitskritisch.passbutler.base.putString
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import org.json.JSONException
 import org.json.JSONObject
+import java.util.*
 
 // TODO: Add unit tests for this
 /**
@@ -128,7 +128,9 @@ fun <T : JSONSerializable> JSONObject.getProtectedValue(name: String): Protected
  */
 @Throws(JSONException::class)
 fun JSONObject.putByteArray(name: String, value: ByteArray): JSONObject {
-    val base64EncodedValue = Base64.encodeToString(value, Base64.NO_WRAP)
+
+
+    val base64EncodedValue = Base64.getEncoder().encodeToString(value)
     return putString(name, base64EncodedValue)
 }
 
@@ -139,7 +141,7 @@ fun JSONObject.putByteArray(name: String, value: ByteArray): JSONObject {
 fun JSONObject.getByteArray(name: String): ByteArray {
     val base64EncodedValue = getString(name)
     return try {
-        Base64.decode(base64EncodedValue, Base64.NO_WRAP)
+        Base64.getDecoder().decode(base64EncodedValue)
     } catch (e: IllegalArgumentException) {
         throw JSONException("The value could not be Base64 decoded!")
     }
