@@ -76,13 +76,12 @@ class ProtectedValue<T : JSONSerializable> private constructor(
             }
         }
 
-        fun <T : JSONSerializable> create(encryptionKey: ByteArray, initialValue: T): ProtectedValue<T>? {
-            val symmetricAlgorithm: Algorithm = Algorithm.AES256GCM
-            val newInitializationVector = symmetricAlgorithm.generateInitializationVector()
+        fun <T : JSONSerializable> create(algorithm: Algorithm, encryptionKey: ByteArray, initialValue: T): ProtectedValue<T>? {
+            val newInitializationVector = algorithm.generateInitializationVector()
 
             return try {
-                val encryptedValue = symmetricAlgorithm.encrypt(newInitializationVector, encryptionKey, initialValue.toByteArray())
-                ProtectedValue(newInitializationVector, symmetricAlgorithm, encryptedValue)
+                val encryptedValue = algorithm.encrypt(newInitializationVector, encryptionKey, initialValue.toByteArray())
+                ProtectedValue(newInitializationVector, algorithm, encryptedValue)
             } catch (e: Algorithm.EncryptionFailedException) {
                 L.w("ProtectedValue", "create(): The value could not be created because encryption failed!", e)
                 null
