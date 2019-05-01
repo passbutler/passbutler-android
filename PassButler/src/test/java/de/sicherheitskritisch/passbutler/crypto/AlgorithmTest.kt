@@ -1,5 +1,7 @@
 package de.sicherheitskritisch.passbutler.crypto
 
+import de.sicherheitskritisch.passbutler.hexToBytes
+import de.sicherheitskritisch.passbutler.toHexString
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -104,10 +106,6 @@ class AlgorithmTest {
         assertEquals(testVector.cipherText + testVector.tag, encryptionResult)
     }
 
-    private fun encryptAES256GCM(testVector: TestVector): String {
-        return Algorithm.AES256GCM.encrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), testVector.plainText.hexToBytes()).toHexString()
-    }
-
     /**
      * AES-256-GCM decryption tests
      */
@@ -202,10 +200,6 @@ class AlgorithmTest {
 
         val decryptionResult = decryptAES256GCM(testVector)
         assertEquals(testVector.plainText, decryptionResult)
-    }
-
-    private fun decryptAES256GCM(testVector: TestVector): String {
-        return Algorithm.AES256GCM.decrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), (testVector.cipherText + testVector.tag).hexToBytes()).toHexString()
     }
 }
 
@@ -316,6 +310,14 @@ private val validTestVectors = listOf(
     )
 )
 
+private fun encryptAES256GCM(testVector: TestVector): String {
+    return Algorithm.AES256GCM.encrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), testVector.plainText.hexToBytes()).toHexString()
+}
+
+private fun decryptAES256GCM(testVector: TestVector): String {
+    return Algorithm.AES256GCM.decrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), (testVector.cipherText + testVector.tag).hexToBytes()).toHexString()
+}
+
 private data class TestVector(
     val key: String,
     val initializationVector: String,
@@ -323,13 +325,3 @@ private data class TestVector(
     val cipherText: String,
     val tag: String
 )
-
-private fun String.hexToBytes(): ByteArray {
-    return ByteArray(this.length / 2) {
-        this.substring(it * 2, (it * 2) + 2).toInt(16).toByte()
-    }
-}
-
-private fun ByteArray?.toHexString(): String {
-    return this?.joinToString("") { "%02x".format(it) } ?: ""
-}
