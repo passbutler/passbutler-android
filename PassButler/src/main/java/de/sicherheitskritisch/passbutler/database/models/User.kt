@@ -8,6 +8,7 @@ import android.arch.persistence.room.Insert
 import android.arch.persistence.room.OnConflictStrategy
 import android.arch.persistence.room.PrimaryKey
 import android.arch.persistence.room.Query
+import android.arch.persistence.room.TypeConverter
 import android.arch.persistence.room.Update
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.L
@@ -112,6 +113,39 @@ interface UserDao {
 
     @Delete
     fun delete(user: User)
+}
+
+class UserModelConverters {
+    @TypeConverter
+    fun keyDerivationInformationToString(keyDerivationInformation: KeyDerivationInformation?): String? {
+        return keyDerivationInformation?.serialize()?.toString()
+    }
+
+    @TypeConverter
+    fun stringToKeyDerivationInformation(serializedKeyDerivationInformation: String?): KeyDerivationInformation? {
+        return serializedKeyDerivationInformation?.let {
+            KeyDerivationInformation.deserialize(JSONObject(it))
+        }
+    }
+
+    @TypeConverter
+    fun protectedValueToString(protectedValue: ProtectedValue<*>?): String? {
+        return protectedValue?.serialize()?.toString()
+    }
+
+    @TypeConverter
+    fun stringToProtectedValueWithCryptographicKey(serializedProtectedValue: String?): ProtectedValue<CryptographicKey>? {
+        return serializedProtectedValue?.let {
+            ProtectedValue.deserialize(JSONObject(it))
+        }
+    }
+
+    @TypeConverter
+    fun stringToProtectedValueWithUserSettings(serializedProtectedValue: String?): ProtectedValue<UserSettings>? {
+        return serializedProtectedValue?.let {
+            ProtectedValue.deserialize(JSONObject(it))
+        }
+    }
 }
 
 interface UserWebservice {

@@ -9,7 +9,7 @@ object PasswordDerivation {
     private const val AES_KEY_LENGTH = 256
 
     @Throws(IllegalArgumentException::class)
-    fun deriveAES256KeyFromPassword(password: String, salt: ByteArray, iterationCount: Int): ByteArray? {
+    fun deriveAES256KeyFromPassword(password: String, salt: ByteArray, iterationCount: Int): ByteArray {
         if (password.isBlank()) {
             throw IllegalArgumentException("The password must not be empty!")
         }

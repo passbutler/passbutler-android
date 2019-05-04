@@ -7,10 +7,14 @@ import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterF
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.UnitConverterFactory
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
+import de.sicherheitskritisch.passbutler.crypto.PasswordDerivation
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
+import de.sicherheitskritisch.passbutler.crypto.RandomGenerator
 import de.sicherheitskritisch.passbutler.crypto.clear
 import de.sicherheitskritisch.passbutler.database.PassButlerRepository
 import de.sicherheitskritisch.passbutler.database.Synchronization
+import de.sicherheitskritisch.passbutler.database.models.CryptographicKey
+import de.sicherheitskritisch.passbutler.database.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserConverterFactory
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
@@ -56,9 +60,6 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
     }
 
-    private val currentDate
-        get() = Date.from(Instant.now())
-
     suspend fun loginUser(userName: String, password: String, serverUrl: String) {
         /*
          * TODO:
@@ -84,25 +85,45 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         // Add an artificial delay for login progress simulation
         delay(1000)
 
-        // TODO: Use proper key
-        val userSettingsEncryptionKey = ByteArray(0)
+        // TODO: Remove this
+        val masterPassword = "1234"
+
+        val masterKeySalt = RandomGenerator.generateRandomBytes(32)
+        val masterKeyIterationCount = 100_000
+        val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
+        val masterKey = PasswordDerivation.deriveAES256KeyFromPassword(masterPassword, masterKeySalt, masterKeyIterationCount)
+
+        val masterEncryptionKey = EncryptionAlgorithm.AES256GCM.generateEncryptionKey()
+        val serializableMasterEncryptionKey = CryptographicKey(masterEncryptionKey)
+        val protectedMasterEncryptionKey = ProtectedValue.create(EncryptionAlgorithm.AES256GCM, masterKey, serializableMasterEncryptionKey)
+
         val defaultUserSettings = UserSettings()
-        val localUser = ProtectedValue.create(EncryptionAlgorithm.AES256GCM, userSettingsEncryptionKey, defaultUserSettings)?.let { protectedUserSettings ->
-            val currentDate = currentDate
+        val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.AES256GCM, masterEncryptionKey, defaultUserSettings)
 
-            User(
-                username = "local@passbutler.app",
-                settings = protectedUserSettings,
-                deleted = false,
-                modified = currentDate,
-                created = currentDate
-            )
-        } ?: run {
-            throw LoginFailedException("The local user could not be created because settings creation failed!")
+        try {
+            val localUser = if (protectedMasterEncryptionKey != null && protectedUserSettings != null) {
+                val currentDate = currentDate
+
+                User(
+                    "local@passbutler.app",
+                    masterKeyDerivationInformation,
+                    protectedMasterEncryptionKey,
+                    protectedUserSettings,
+                    false,
+                    currentDate,
+                    currentDate
+                )
+            } else {
+                throw LoginFailedException("The local user could not be created because protected values creation failed!")
+            }
+
+            storeUser(localUser, true)
+
+        } finally {
+            // Always active clear all sensible data before returning method
+            masterKey.clear()
+            masterEncryptionKey.clear()
         }
-
-        userSettingsEncryptionKey.clear()
-        storeUser(localUser, true)
     }
 
     suspend fun logoutUser() {
@@ -228,6 +249,9 @@ private const val SERIALIZATION_KEY_IS_LOCAL_USER = "isLocalUser"
 
 class LoginFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
 class UserSynchronizationException(message: String) : Exception(message)
+
+private val currentDate
+    get() = Date.from(Instant.now())
 
 private fun List<User>.buildShortUserList(): List<String> {
     return this.map { "'${it.username}' (${it.modified})" }

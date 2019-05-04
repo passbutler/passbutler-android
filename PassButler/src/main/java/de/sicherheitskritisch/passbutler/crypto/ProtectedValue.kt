@@ -1,11 +1,9 @@
 package de.sicherheitskritisch.passbutler.crypto
 
-import android.arch.persistence.room.TypeConverter
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.putJSONObject
 import de.sicherheitskritisch.passbutler.base.putString
-import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
@@ -169,22 +167,5 @@ fun JSONObject.getByteArray(name: String): ByteArray {
         Base64.getDecoder().decode(base64EncodedValue)
     } catch (e: IllegalArgumentException) {
         throw JSONException("The value could not be Base64 decoded!")
-    }
-}
-
-/**
- * Type converter for `ProtectedValue` used for `RoomDatabase`.
- */
-class ProtectedValueConverters {
-    @TypeConverter
-    fun protectedValueToString(protectedValue: ProtectedValue<*>?): String? {
-        return protectedValue?.serialize()?.toString()
-    }
-
-    @TypeConverter
-    fun stringToProtectedValueWithUserSettings(serializedProtectedValue: String?): ProtectedValue<UserSettings>? {
-        return serializedProtectedValue?.let {
-            ProtectedValue.deserialize(JSONObject(it))
-        }
     }
 }

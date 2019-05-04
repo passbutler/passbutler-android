@@ -6,9 +6,9 @@ import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.TypeConverter
 import android.arch.persistence.room.TypeConverters
 import android.content.Context
-import de.sicherheitskritisch.passbutler.crypto.ProtectedValueConverters
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserDao
+import de.sicherheitskritisch.passbutler.database.models.UserModelConverters
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,7 +17,7 @@ import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 @Database(entities = [User::class], version = 1, exportSchema = false)
-@TypeConverters(GeneralDatabaseConverters::class, ProtectedValueConverters::class)
+@TypeConverters(GeneralDatabaseConverters::class, UserModelConverters::class)
 abstract class PassButlerDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
 }

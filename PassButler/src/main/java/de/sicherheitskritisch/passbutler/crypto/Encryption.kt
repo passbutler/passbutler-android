@@ -9,6 +9,7 @@ import javax.crypto.spec.SecretKeySpec
 
 sealed class EncryptionAlgorithm(val stringRepresentation: String) {
 
+    abstract fun generateEncryptionKey(): ByteArray
     abstract fun generateInitializationVector(): ByteArray
     abstract fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray
     abstract fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray
@@ -18,6 +19,11 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
         private const val AES_KEY_LENGTH = 256
         private const val GCM_INITIALIZATION_VECTOR_LENGTH = 96
         private const val GCM_AUTHENTICATION_TAG_LENGTH = 128
+
+        override fun generateEncryptionKey(): ByteArray {
+            val bytesCount = AES_KEY_LENGTH.byteSize
+            return RandomGenerator.generateRandomBytes(bytesCount)
+        }
 
         override fun generateInitializationVector(): ByteArray {
             val bytesCount = GCM_INITIALIZATION_VECTOR_LENGTH.byteSize
