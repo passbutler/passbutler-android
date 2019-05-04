@@ -105,15 +105,6 @@ class PasswordDerivationTest {
         assertArrayEquals("493242BAD12E66F6E1A2CE3BDF7390693A4552FDDCC6EECA94B0A2E6C4C40D5B".hexToBytes(), derivedKey)
     }
 
-    @Test
-    fun `Derive a key from password and salt without iterations argument defaults to 100000 iterations`() {
-        val userPassword = "1234abcd"
-        val salt = "007A1D97CB4B60D69F323E67C25014845E9693A16352C4A032D677AF16F036C1".hexToBytes()
-
-        val derivedKey = PasswordDerivation.deriveAES256KeyFromPassword(userPassword, salt)
-        assertArrayEquals("493242BAD12E66F6E1A2CE3BDF7390693A4552FDDCC6EECA94B0A2E6C4C40D5B".hexToBytes(), derivedKey)
-    }
-
     /**
      * Password preparation tests
      */
