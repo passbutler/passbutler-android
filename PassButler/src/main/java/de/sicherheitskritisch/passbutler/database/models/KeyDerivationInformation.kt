@@ -9,7 +9,7 @@ import org.json.JSONException
 import org.json.JSONObject
 
 // TODO: Add unit tests for serialization/deserialization
-data class PasswordDerivationInformation(val salt: ByteArray, val iterationCount: Int) : JSONSerializable {
+data class KeyDerivationInformation(val salt: ByteArray, val iterationCount: Int) : JSONSerializable {
 
     override fun serialize(): JSONObject {
         return JSONObject().apply {
@@ -22,7 +22,7 @@ data class PasswordDerivationInformation(val salt: ByteArray, val iterationCount
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as PasswordDerivationInformation
+        other as KeyDerivationInformation
 
         if (!salt.contentEquals(other.salt)) return false
         if (iterationCount != other.iterationCount) return false
@@ -40,14 +40,14 @@ data class PasswordDerivationInformation(val salt: ByteArray, val iterationCount
         private const val SERIALIZATION_KEY_SALT = "salt"
         private const val SERIALIZATION_KEY_ITERATION_COUNT = "iterationCount"
 
-        fun deserialize(jsonObject: JSONObject): PasswordDerivationInformation? {
+        fun deserialize(jsonObject: JSONObject): KeyDerivationInformation? {
             return try {
-                PasswordDerivationInformation(
+                KeyDerivationInformation(
                     jsonObject.getByteArray(SERIALIZATION_KEY_SALT),
                     jsonObject.getInt(SERIALIZATION_KEY_ITERATION_COUNT)
                 )
             } catch (e: JSONException) {
-                L.w("PasswordDerivationInformation", "The PasswordDerivationInformation could not be deserialized using the following JSON: $jsonObject", e)
+                L.w("KeyDerivationInformation", "The KeyDerivationInformation could not be deserialized using the following JSON: $jsonObject", e)
                 null
             }
         }

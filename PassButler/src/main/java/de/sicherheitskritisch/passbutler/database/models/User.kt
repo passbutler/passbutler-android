@@ -13,6 +13,7 @@ import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.asJSONObjectSequence
 import de.sicherheitskritisch.passbutler.base.putBoolean
+import de.sicherheitskritisch.passbutler.base.putJSONObject
 import de.sicherheitskritisch.passbutler.base.putLong
 import de.sicherheitskritisch.passbutler.base.putString
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
@@ -43,6 +44,8 @@ import java.util.*
 data class User(
     @PrimaryKey
     val username: String,
+    val masterKeyDerivationInformation: KeyDerivationInformation,
+    var masterEncryptionKey: ProtectedValue<CryptographicKey>,
     var settings: ProtectedValue<UserSettings>,
     var deleted: Boolean,
     override var modified: Date,
@@ -55,6 +58,8 @@ data class User(
     override fun serialize(): JSONObject {
         return JSONObject().apply {
             putString(SERIALIZATION_KEY_USERNAME, username)
+            putJSONObject(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, masterKeyDerivationInformation.serialize())
+            putProtectedValue(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY, masterEncryptionKey)
             putProtectedValue(SERIALIZATION_KEY_SETTINGS, settings)
             putBoolean(SERIALIZATION_KEY_DELETED, deleted)
             putLong(SERIALIZATION_KEY_MODIFIED, modified.time)
@@ -67,6 +72,9 @@ data class User(
             return try {
                 User(
                     username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
+                    masterKeyDerivationInformation = KeyDerivationInformation.deserialize(jsonObject.getJSONObject(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION))
+                        ?: throw JSONException("The master key derivation information could not be deserialized!"),
+                    masterEncryptionKey = jsonObject.getProtectedValue(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY) ?: throw JSONException("The master encryption key could not be deserialized!"),
                     settings = jsonObject.getProtectedValue(SERIALIZATION_KEY_SETTINGS) ?: throw JSONException("The user settings could not be deserialized!"),
                     deleted = jsonObject.getBoolean(SERIALIZATION_KEY_DELETED),
                     modified = Date(jsonObject.getLong(SERIALIZATION_KEY_MODIFIED)),
@@ -79,6 +87,8 @@ data class User(
         }
 
         private const val SERIALIZATION_KEY_USERNAME = "username"
+        private const val SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION = "masterKeyDerivationInformation"
+        private const val SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY = "masterEncryptionKey"
         private const val SERIALIZATION_KEY_SETTINGS = "settings"
         private const val SERIALIZATION_KEY_DELETED = "deleted"
         private const val SERIALIZATION_KEY_MODIFIED = "modified"
