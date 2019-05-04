@@ -13,13 +13,12 @@ import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.asJSONObjectSequence
 import de.sicherheitskritisch.passbutler.base.putBoolean
-import de.sicherheitskritisch.passbutler.base.putInt
 import de.sicherheitskritisch.passbutler.base.putLong
 import de.sicherheitskritisch.passbutler.base.putString
-import de.sicherheitskritisch.passbutler.database.Synchronizable
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.getProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.putProtectedValue
+import de.sicherheitskritisch.passbutler.database.Synchronizable
 import kotlinx.coroutines.Deferred
 import okhttp3.MediaType
 import okhttp3.RequestBody
@@ -84,31 +83,6 @@ data class User(
         private const val SERIALIZATION_KEY_DELETED = "deleted"
         private const val SERIALIZATION_KEY_MODIFIED = "modified"
         private const val SERIALIZATION_KEY_CREATED = "created"
-    }
-}
-
-data class UserSettings(val lockTimeout: Int = DEFAULT_LOCK_TIMEOUT) : JSONSerializable {
-    override fun serialize(): JSONObject {
-        return JSONObject().apply {
-            putInt(SERIALIZATION_KEY_LOCK_TIMEOUT, lockTimeout)
-        }
-    }
-
-    companion object {
-        private const val DEFAULT_LOCK_TIMEOUT = 2
-
-        private const val SERIALIZATION_KEY_LOCK_TIMEOUT = "lockTimeout"
-
-        fun deserialize(jsonObject: JSONObject): UserSettings? {
-            return try {
-                UserSettings(
-                    jsonObject.getInt(SERIALIZATION_KEY_LOCK_TIMEOUT)
-                )
-            } catch (e: JSONException) {
-                L.w("User", "The UserSettings could not be deserialized using the following JSON: $jsonObject", e)
-                null
-            }
-        }
     }
 }
 
