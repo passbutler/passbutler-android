@@ -8,8 +8,6 @@ import org.junit.jupiter.api.Test
 
 class EncryptionTest {
 
-    // TODO: tests for password derivation (empty password, salt -> exception)
-
     /**
      * AES-256-GCM encryption tests
      */
