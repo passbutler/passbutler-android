@@ -16,12 +16,14 @@
         android:fillViewport="true">
 
         <!-- Add explicit background to hide underlaying fragments, also made container clickable to avoid touch-through underlaying fragments -->
+        <!-- The `focusableInTouchMode` with `clickable` removes focus of `TextInputEditText` if user clicked outer area -->
         <android.support.constraint.ConstraintLayout
             android:id="@+id/constraintLayout_locked_screen_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/white"
             android:clickable="true"
+            android:focusableInTouchMode="true"
             >
 
             <ImageView
@@ -34,6 +36,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.40"
                 app:layout_constraintVertical_chainStyle="packed" />
 
             <TextView

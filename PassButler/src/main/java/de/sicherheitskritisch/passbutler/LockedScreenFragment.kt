@@ -57,7 +57,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
         when (formValidationResult) {
             is FormValidationResult.Valid -> {
-                // Remove focus before login to be sure keyboard is hidden
+                // Remove focus before unlock to be sure keyboard is hidden
                 removeFormFieldsFocus()
 
                 val password = binding.textInputEditTextPassword.text.toString()

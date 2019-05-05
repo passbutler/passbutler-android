@@ -26,7 +26,7 @@
             android:fillViewport="true"
             >
 
-            <!-- The `focusableInTouchMode` with `clickable` removed edit text field focus if user clicked outer area -->
+            <!-- The `focusableInTouchMode` with `clickable` removes focus of `TextInputEditText` if user clicked outer area -->
             <android.support.constraint.ConstraintLayout
                 android:id="@+id/constraintLayout_login_screen_container"
                 android:layout_width="match_parent"
