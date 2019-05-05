@@ -4,7 +4,7 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.clear
-import de.sicherheitskritisch.passbutler.base.contentNotEquals
+import de.sicherheitskritisch.passbutler.base.optionalContentNotEquals
 import de.sicherheitskritisch.passbutler.crypto.PasswordDerivation
 import de.sicherheitskritisch.passbutler.database.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.database.models.User
@@ -27,7 +27,7 @@ class UserViewModel(private val userManager: UserManager, private val user: User
 
     private var masterEncryptionKey: ByteArray? = null
         set(newMasterEncryptionKey) {
-            if (field.contentNotEquals(newMasterEncryptionKey)) {
+            if (field.optionalContentNotEquals(newMasterEncryptionKey)) {
                 field = newMasterEncryptionKey
 
                 if (newMasterEncryptionKey != null) {

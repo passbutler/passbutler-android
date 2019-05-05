@@ -1,7 +1,6 @@
 package de.sicherheitskritisch.passbutler.base
 
-// TODO: Test this
-fun ByteArray?.contentEquals(other: ByteArray?): Boolean {
+fun ByteArray?.optionalContentEquals(other: ByteArray?): Boolean {
     return when {
         this == null && other == null -> true
         this != null && other != null -> this.contentEquals(other)
@@ -9,8 +8,8 @@ fun ByteArray?.contentEquals(other: ByteArray?): Boolean {
     }
 }
 
-fun ByteArray?.contentNotEquals(other: ByteArray?): Boolean {
-    return !contentEquals(other)
+fun ByteArray?.optionalContentNotEquals(other: ByteArray?): Boolean {
+    return !optionalContentEquals(other)
 }
 
 fun ByteArray?.toHexString(): String {
