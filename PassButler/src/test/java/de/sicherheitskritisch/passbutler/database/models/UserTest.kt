@@ -31,21 +31,9 @@ class UserTest {
     fun `Serialize and deserialize a User should result an equal object`() {
         mockkObject(ProtectedValue.Companion)
 
-        val salt = "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
-        val iterationCount = 1234
-        val testMasterKeyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
-
-        val testProtectedValueMasterEncryptionKey = ProtectedValue<CryptographicKey>(
-            "AAAAAAAAAAAAAAAAAAAAAAAA".hexToBytes(),
-            EncryptionAlgorithm.AES256GCM,
-            "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
-        )
-
-        val testProtectedValueSettings = ProtectedValue<UserSettings>(
-            "BBBBBBBBBBBBBBBBBBBBBBBB".hexToBytes(),
-            EncryptionAlgorithm.AES256GCM,
-            "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
-        )
+        val testMasterKeyDerivationInformation = createTestKeyDerivationInformation()
+        val testProtectedValueMasterEncryptionKey = createTestProtectedValueMasterEncryptionKey()
+        val testProtectedValueSettings = createTestProtectedValueSettings()
 
         val modifiedDate: Long = 12345678
         val createdDate: Long = 12345679
@@ -64,5 +52,32 @@ class UserTest {
         val deserializedUser = User.deserialize(serializedUser)
 
         assertEquals(exampleUser, deserializedUser)
+    }
+
+    companion object {
+        fun createTestKeyDerivationInformation(): KeyDerivationInformation {
+            val salt = "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
+            val iterationCount = 1234
+            val testMasterKeyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
+            return testMasterKeyDerivationInformation
+        }
+
+        fun createTestProtectedValueMasterEncryptionKey(): ProtectedValue<CryptographicKey> {
+            val testProtectedValueMasterEncryptionKey = ProtectedValue<CryptographicKey>(
+                "AAAAAAAAAAAAAAAAAAAAAAAA".hexToBytes(),
+                EncryptionAlgorithm.AES256GCM,
+                "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
+            )
+            return testProtectedValueMasterEncryptionKey
+        }
+
+        fun createTestProtectedValueSettings(): ProtectedValue<UserSettings> {
+            val testProtectedValueSettings = ProtectedValue<UserSettings>(
+                "BBBBBBBBBBBBBBBBBBBBBBBB".hexToBytes(),
+                EncryptionAlgorithm.AES256GCM,
+                "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
+            )
+            return testProtectedValueSettings
+        }
     }
 }

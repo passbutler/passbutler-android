@@ -1,11 +1,9 @@
-package de.sicherheitskritisch.passbutler.synchronization
+package de.sicherheitskritisch.passbutler.database
 
-import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.database.Synchronization.collectModifiedUserItems
 import de.sicherheitskritisch.passbutler.database.Synchronization.collectNewItems
 import de.sicherheitskritisch.passbutler.database.models.User
-import de.sicherheitskritisch.passbutler.database.models.UserSettings
-import io.mockk.mockk
+import de.sicherheitskritisch.passbutler.database.models.UserTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -196,17 +194,20 @@ class SynchronizationTest {
     }
 }
 
-// Use the same protected value settings mock object for all users because the settings are not important for tests
-private val mockProtectedValueSettings = mockk<ProtectedValue<UserSettings>>()
-
 private fun createUser(userName: String, modified: String? = null): User {
     val currentDate = Date.from(Instant.parse("2019-03-12T10:00:00Z"))
 
+    val testMasterKeyDerivationInformation = UserTest.createTestKeyDerivationInformation()
+    val testProtectedValueMasterEncryptionKey = UserTest.createTestProtectedValueMasterEncryptionKey()
+    val testProtectedValueSettings = UserTest.createTestProtectedValueSettings()
+
     return User(
-        username = userName,
-        settings = mockProtectedValueSettings,
-        deleted = false,
-        modified = modified?.let { Date.from(Instant.parse(it)) } ?: currentDate,
-        created = currentDate
+        userName,
+        testMasterKeyDerivationInformation,
+        testProtectedValueMasterEncryptionKey,
+        testProtectedValueSettings,
+        false,
+        modified?.let { Date.from(Instant.parse(it)) } ?: currentDate,
+        currentDate
     )
 }
