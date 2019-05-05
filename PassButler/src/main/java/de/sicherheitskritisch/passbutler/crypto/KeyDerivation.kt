@@ -9,6 +9,9 @@ object KeyDerivation {
 
     private const val AES_KEY_LENGTH = 256
 
+    /**
+     * Derives a cryptographic AES-256 key from a password using PBKDF2 with SHA-1.
+     */
     @Throws(IllegalArgumentException::class)
     fun deriveAES256KeyFromPassword(password: String, salt: ByteArray, iterationCount: Int): ByteArray {
         if (password.isBlank()) {

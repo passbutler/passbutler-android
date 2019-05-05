@@ -9,8 +9,10 @@
       <w>demomode</w>
       <w>deserialized</w>
       <w>doublebang</w>
+      <w>hmac</w>
       <w>masterkey</w>
       <w>mockk</w>
+      <w>pbkdf</w>
       <w>serverurl</w>
       <w>snackbar</w>
       <w>synchronizable</w>
