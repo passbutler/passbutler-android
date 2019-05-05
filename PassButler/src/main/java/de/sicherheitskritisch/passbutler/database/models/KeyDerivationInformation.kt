@@ -9,7 +9,9 @@ import de.sicherheitskritisch.passbutler.crypto.putByteArray
 import org.json.JSONException
 import org.json.JSONObject
 
-// TODO: Add unit tests for serialization/deserialization + docu
+/**
+ * Wraps the meta information of a key derivation from a password.
+ */
 data class KeyDerivationInformation(val salt: ByteArray, val iterationCount: Int) : JSONSerializable {
 
     override fun serialize(): JSONObject {
@@ -57,5 +59,4 @@ data class KeyDerivationInformation(val salt: ByteArray, val iterationCount: Int
             }
         }
     }
-
 }
