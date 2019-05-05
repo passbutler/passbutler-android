@@ -30,7 +30,8 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
             // TODO: Proper unlock
             binding.imageViewFingerprintIcon.setOnClickListener {
-                viewModel.unlockScreen()
+                // TODO: Remove hardcoded password
+                viewModel.unlockScreen("1234")
             }
         }
 

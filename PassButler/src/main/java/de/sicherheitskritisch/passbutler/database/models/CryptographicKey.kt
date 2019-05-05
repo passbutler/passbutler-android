@@ -7,7 +7,7 @@ import de.sicherheitskritisch.passbutler.crypto.putByteArray
 import org.json.JSONException
 import org.json.JSONObject
 
-// TODO: Add unit tests for serialization/deserialization
+// TODO: Add unit tests for serialization/deserialization + docu
 data class CryptographicKey(val key: ByteArray) : JSONSerializable {
 
     override fun serialize(): JSONObject {

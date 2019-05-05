@@ -15,6 +15,8 @@ import kotlinx.coroutines.launch
 class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
     val rootScreenState = MutableLiveData<RootScreenState>()
+
+    // TODO: Store in user table
     val unlockScreenMethod = MutableLiveData<UnlockScreenMethod>()
 
     var loggedInUserViewModel: UserViewModel? = null
@@ -56,7 +58,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
     private fun startLockScreenTimer() {
         // Only if user is logged in, start delayed lock screen timer
-        loggedInUserViewModel?.lockTimeout?.value?.let { lockTimeout ->
+        loggedInUserViewModel?.lockTimeoutSetting?.value?.let { lockTimeout ->
             launch {
                 // Cancel previous `lockScreenCoroutineJob` and wait it finished, until the new job is started
                 lockScreenCoroutineJob?.cancelAndJoin()
@@ -78,20 +80,18 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
             // Only alter the "logged in" screen state if the user is still in this state after the delay
             if (rootScreenState.value is RootScreenState.LoggedIn) {
                 rootScreenState.postValue(RootScreenState.LoggedIn(false))
-
-                // TODO: Free crypto memory and resources
+                loggedInUserViewModel?.clearCryptoResources()
             }
         }
     }
 
-    internal fun unlockScreen() {
+    internal fun unlockScreen(masterPassword: String) {
         // Always dispatch on background thread because of resource creation happen her
         launch {
             // Only alter the "logged in" screen state if the user is still in this state after the delay
             if (rootScreenState.value is RootScreenState.LoggedIn) {
                 rootScreenState.postValue(RootScreenState.LoggedIn(true))
-
-                // TODO: Decrypt data and recreate resources
+                loggedInUserViewModel?.unlockCryptoResources(masterPassword)
             }
         }
     }

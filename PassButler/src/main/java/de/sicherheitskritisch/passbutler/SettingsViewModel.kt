@@ -8,5 +8,5 @@ class SettingsViewModel : ViewModel() {
     var loggedInUserViewModel: UserViewModel? = null
 
     val lockTimeout: MutableLiveData<Int>?
-        get() = loggedInUserViewModel?.lockTimeout
+        get() = loggedInUserViewModel?.lockTimeoutSetting
 }
