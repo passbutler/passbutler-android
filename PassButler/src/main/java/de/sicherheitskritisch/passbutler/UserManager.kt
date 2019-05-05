@@ -24,7 +24,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import retrofit2.Retrofit
@@ -82,9 +81,6 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
     }
 
     suspend fun loginLocalUser() {
-        // Add an artificial delay for login progress simulation
-        delay(1000)
-
         // TODO: Remove hardcoded password
         val masterPassword = "1234"
 
