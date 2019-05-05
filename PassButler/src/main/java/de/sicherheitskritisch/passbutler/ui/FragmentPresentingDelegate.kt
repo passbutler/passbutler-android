@@ -75,11 +75,6 @@ class FragmentPresentingDelegate(
         val lastShowFragmentTransactionTimestampDelta = currentTimestamp - lastShowFragmentTransactionTimestamp
         val noRecentShowFragmentTransactionWasDone = lastShowFragmentTransactionTimestampDelta > SHOW_FRAGMENT_DEBOUNCE_TIME_MILLISECONDS
 
-        L.d(
-            "FragmentPresentingDelegate",
-            "checkNoRecentShowFragmentTransactionWasDone(): $noRecentShowFragmentTransactionWasDone (lastShowFragmentTransactionTimestampDelta = $lastShowFragmentTransactionTimestampDelta)"
-        )
-
         // If no recent show fragment transaction was done, set current timestamp
         if (noRecentShowFragmentTransactionWasDone) {
             lastShowFragmentTransactionTimestamp = currentTimestamp
