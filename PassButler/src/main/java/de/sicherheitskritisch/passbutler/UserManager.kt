@@ -43,8 +43,8 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
 
     private val coroutineJob = SupervisorJob()
 
-    // TODO: Pass object via constructor instead creating here + use server url from preferences
     private val remoteWebservice: UserWebservice by lazy {
+        // TODO: Use server url from preferences
         val retrofit = Retrofit.Builder()
             .baseUrl("http://172.16.0.125:5000")
             .addConverterFactory(UnitConverterFactory())
@@ -60,13 +60,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
     }
 
     suspend fun loginUser(userName: String, password: String, serverUrl: String) {
-        /*
-         * TODO:
-         * - Connect to server
-         * - Authenticate with given credentials
-         * - If successful, store server url and credentials
-         * - Load users list and find user
-         */
+        // TODO: Proper server login
         try {
             val userJsonObject = JSONObject()
 
