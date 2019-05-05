@@ -199,121 +199,124 @@ class EncryptionTest {
         val decryptionResult = decryptAES256GCM(testVector)
         assertEquals(testVector.plainText, decryptionResult)
     }
-}
 
-private val invalidTestVectors = mapOf(
-    "emptyInitializationVector" to TestVector(
-        key = "0000000000000000000000000000000000000000000000000000000000000000",
-        initializationVector = "",
-        plainText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        cipherText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        tag = "00000000000000000000000000000000"
-    ),
+    companion object {
 
-    "tooLongInitializationVector" to TestVector(
-        key = "0000000000000000000000000000000000000000000000000000000000000000",
-        initializationVector = "000000000000000000000000AA",
-        plainText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        cipherText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        tag = "00000000000000000000000000000000"
-    ),
+        private val invalidTestVectors = mapOf(
+            "emptyInitializationVector" to TestVector(
+                key = "0000000000000000000000000000000000000000000000000000000000000000",
+                initializationVector = "",
+                plainText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                cipherText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                tag = "00000000000000000000000000000000"
+            ),
 
-    "emptyKey" to TestVector(
-        key = "",
-        initializationVector = "000000000000000000000000",
-        plainText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        cipherText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        tag = "00000000000000000000000000000000"
-    ),
+            "tooLongInitializationVector" to TestVector(
+                key = "0000000000000000000000000000000000000000000000000000000000000000",
+                initializationVector = "000000000000000000000000AA",
+                plainText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                cipherText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                tag = "00000000000000000000000000000000"
+            ),
 
-    "tooLongKey" to TestVector(
-        key = "0000000000000000000000000000000000000000000000000000000000000000AA",
-        initializationVector = "000000000000000000000000",
-        plainText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        cipherText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        tag = "00000000000000000000000000000000"
-    )
-)
+            "emptyKey" to TestVector(
+                key = "",
+                initializationVector = "000000000000000000000000",
+                plainText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                cipherText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                tag = "00000000000000000000000000000000"
+            ),
 
-/**
- * Test vectors took from <https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/gcmtestvectors.zip>
- */
-private val validTestVectors = listOf(
+            "tooLongKey" to TestVector(
+                key = "0000000000000000000000000000000000000000000000000000000000000000AA",
+                initializationVector = "000000000000000000000000",
+                plainText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                cipherText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                tag = "00000000000000000000000000000000"
+            )
+        )
 
-    /*
-     * [Keylen = 256]
-     * [IVlen = 96]
-     * [PTlen = 0]
-     * [AADlen = 0]
-     * [Taglen = 128]
-     *
-     * (from file `gcmDecrypt256.rsp`)
-    */
-    TestVector(
-        key = "f5a2b27c74355872eb3ef6c5feafaa740e6ae990d9d48c3bd9bb8235e589f010",
-        initializationVector = "58d2240f580a31c1d24948e9",
-        plainText = "",
-        cipherText = "",
-        tag = "15e051a5e4a5f5da6cea92e2ebee5bac"
-    ),
+        /**
+         * Test vectors took from <https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/gcmtestvectors.zip>
+         */
+        private val validTestVectors = listOf(
 
-    /*
-     * [Keylen = 256]
-     * [IVlen = 96]
-     * [PTlen = 408]
-     * [AADlen = 0]
-     * [Taglen = 128]
-     *
-     * (from file `gcmEncryptExtIV256.rsp`)
-     */
+            /*
+             * [Keylen = 256]
+             * [IVlen = 96]
+             * [PTlen = 0]
+             * [AADlen = 0]
+             * [Taglen = 128]
+             *
+             * (from file `gcmDecrypt256.rsp`)
+            */
+            TestVector(
+                key = "F5A2B27C74355872EB3EF6C5FEAFAA740E6AE990D9D48C3BD9BB8235E589F010",
+                initializationVector = "58D2240F580A31C1D24948E9",
+                plainText = "",
+                cipherText = "",
+                tag = "15E051A5E4A5F5DA6CEA92E2EBEE5BAC"
+            ),
 
-    TestVector(
-        key = "1fded32d5999de4a76e0f8082108823aef60417e1896cf4218a2fa90f632ec8a",
-        initializationVector = "1f3afa4711e9474f32e70462",
-        plainText = "06b2c75853df9aeb17befd33cea81c630b0fc53667ff45199c629c8e15dce41e530aa792f796b8138eeab2e86c7b7bee1d40b0",
-        cipherText = "91fbd061ddc5a7fcc9513fcdfdc9c3a7c5d4d64cedf6a9c24ab8a77c36eefbf1c5dc00bc50121b96456c8cd8b6ff1f8b3e480f",
-        tag = "30096d340f3d5c42d82a6f475def23eb"
-    ),
+            /*
+             * [Keylen = 256]
+             * [IVlen = 96]
+             * [PTlen = 408]
+             * [AADlen = 0]
+             * [Taglen = 128]
+             *
+             * (from file `gcmEncryptExtIV256.rsp`)
+             */
 
-    TestVector(
-        key = "b405ac89724f8b555bfee1eaa369cd854003e9fae415f28c5a199d4d6efc83d6",
-        initializationVector = "cec71a13b14c4d9bd024ef29",
-        plainText = "ab4fd35bef66addfd2856b3881ff2c74fdc09c82abe339f49736d69b2bd0a71a6b4fe8fc53f50f8b7d6d6d6138ab442c7f653f",
-        cipherText = "69a079bca9a6a26707bbfa7fd83d5d091edc88a7f7ff08bd8656d8f2c92144ff23400fcb5c370b596ad6711f386e18f2629e76",
-        tag = "6d2b7861a3c59ba5a3e3a11c92bb2b14"
-    ),
+            TestVector(
+                key = "1FDED32D5999DE4A76E0F8082108823AEF60417E1896CF4218A2FA90F632EC8A",
+                initializationVector = "1F3AFA4711E9474F32E70462",
+                plainText = "06B2C75853DF9AEB17BEFD33CEA81C630B0FC53667FF45199C629C8E15DCE41E530AA792F796B8138EEAB2E86C7B7BEE1D40B0",
+                cipherText = "91FBD061DDC5A7FCC9513FCDFDC9C3A7C5D4D64CEDF6A9C24AB8A77C36EEFBF1C5DC00BC50121B96456C8CD8B6FF1F8B3E480F",
+                tag = "30096D340F3D5C42D82A6F475DEF23EB"
+            ),
 
-    TestVector(
-        key = "fad40c82264dc9b8d9a42c10a234138344b0133a708d8899da934bfee2bdd6b8",
-        initializationVector = "0dade2c95a9b85a8d2bc13ef",
-        plainText = "664ea95d511b2cfdb9e5fb87efdd41cbfb88f3ff47a7d2b8830967e39071a89b948754ffb0ed34c357ed6d4b4b2f8a76615c03",
-        cipherText = "ea94dcbf52b22226dda91d9bfc96fb382730b213b66e30960b0d20d2417036cbaa9e359984eea947232526e175f49739095e69",
-        tag = "5ca8905d469fffec6fba7435ebdffdaf"
-    ),
+            TestVector(
+                key = "B405AC89724F8B555BFEE1EAA369CD854003E9FAE415F28C5A199D4D6EFC83D6",
+                initializationVector = "CEC71A13B14C4D9BD024EF29",
+                plainText = "AB4FD35BEF66ADDFD2856B3881FF2C74FDC09C82ABE339F49736D69B2BD0A71A6B4FE8FC53F50F8B7D6D6D6138AB442C7F653F",
+                cipherText = "69A079BCA9A6A26707BBFA7FD83D5D091EDC88A7F7FF08BD8656D8F2C92144FF23400FCB5C370B596AD6711F386E18F2629E76",
+                tag = "6D2B7861A3C59BA5A3E3A11C92BB2B14"
+            ),
 
-    TestVector(
-        key = "aa5fca688cc83283ecf39454679948f4d30aa8cb43db7cc4da4eff1669d6c52f",
-        initializationVector = "4b2d7b699a5259f9b541fa49",
-        plainText = "c691f3b8f3917efb76825108c0e37dc33e7a8342764ce68a62a2dc1a5c940594961fcd5c0df05394a5c0fff66c254c6b26a549",
-        cipherText = "2cd380ebd6b2cf1b80831cff3d6dc2b6770778ad0d0a91d03eb8553696800f84311d337302519d1036feaab8c8eb845882c5f0",
-        tag = "5de4ef67bf8896fbe82c01dca041d590"
-    ),
+            TestVector(
+                key = "FAD40C82264DC9B8D9A42C10A234138344B0133A708D8899DA934BFEE2BDD6B8",
+                initializationVector = "0DADE2C95A9B85A8D2BC13EF",
+                plainText = "664EA95D511B2CFDB9E5FB87EFDD41CBFB88F3FF47A7D2B8830967E39071A89B948754FFB0ED34C357ED6D4B4B2F8A76615C03",
+                cipherText = "EA94DCBF52B22226DDA91D9BFC96FB382730B213B66E30960B0D20D2417036CBAA9E359984EEA947232526E175F49739095E69",
+                tag = "5CA8905D469FFFEC6FBA7435EBDFFDAF"
+            ),
 
-    TestVector(
-        key = "1c7690d5d845fceabba227b11ca221f4d6d302233641016d9cd3a158c3e36017",
-        initializationVector = "93bca8de6b11a4830c5f5f64",
-        plainText = "3c79a39878a605f3ac63a256f68c8a66369cc3cd7af680d19692b485a7ba58ce1d536707c55eda5b256c8b29bbf0b4cbeb4fc4",
-        cipherText = "c9e48684df13afccdb1d9ceaa483759022e59c3111188c1eceb02eaf308035b0428db826de862d925a3c55af0b61fd8f09a74d",
-        tag = "8f577e8730c19858cad8e0124f311dd9"
-    )
-)
+            TestVector(
+                key = "AA5FCA688CC83283ECF39454679948F4D30AA8CB43DB7CC4DA4EFF1669D6C52F",
+                initializationVector = "4B2D7B699A5259F9B541FA49",
+                plainText = "C691F3B8F3917EFB76825108C0E37DC33E7A8342764CE68A62A2DC1A5C940594961FCD5C0DF05394A5C0FFF66C254C6B26A549",
+                cipherText = "2CD380EBD6B2CF1B80831CFF3D6DC2B6770778AD0D0A91D03EB8553696800F84311D337302519D1036FEAAB8C8EB845882C5F0",
+                tag = "5DE4EF67BF8896FBE82C01DCA041D590"
+            ),
 
-private fun encryptAES256GCM(testVector: TestVector): String {
-    return EncryptionAlgorithm.AES256GCM.encrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), testVector.plainText.hexToBytes()).toHexString()
-}
+            TestVector(
+                key = "1C7690D5D845FCEABBA227B11CA221F4D6D302233641016D9CD3A158C3E36017",
+                initializationVector = "93BCA8DE6B11A4830C5F5F64",
+                plainText = "3C79A39878A605F3AC63A256F68C8A66369CC3CD7AF680D19692B485A7BA58CE1D536707C55EDA5B256C8B29BBF0B4CBEB4FC4",
+                cipherText = "C9E48684DF13AFCCDB1D9CEAA483759022E59C3111188C1ECEB02EAF308035B0428DB826DE862D925A3C55AF0B61FD8F09A74D",
+                tag = "8F577E8730C19858CAD8E0124F311DD9"
+            )
+        )
 
-private fun decryptAES256GCM(testVector: TestVector): String {
-    return EncryptionAlgorithm.AES256GCM.decrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), (testVector.cipherText + testVector.tag).hexToBytes()).toHexString()
+        private fun encryptAES256GCM(testVector: TestVector): String {
+            return EncryptionAlgorithm.AES256GCM.encrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), testVector.plainText.hexToBytes()).toHexString()
+        }
+
+        private fun decryptAES256GCM(testVector: TestVector): String {
+            return EncryptionAlgorithm.AES256GCM.decrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), (testVector.cipherText + testVector.tag).hexToBytes()).toHexString()
+        }
+    }
 }
 
 private data class TestVector(
