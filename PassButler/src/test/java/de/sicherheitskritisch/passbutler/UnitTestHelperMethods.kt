@@ -13,10 +13,6 @@ internal fun String.hexToBytes(): ByteArray {
     }
 }
 
-internal fun ByteArray?.toHexString(): String {
-    return this?.joinToString("") { "%02x".format(it) } ?: ""
-}
-
 internal fun assertJSONObjectEquals(expected: JSONObject, actual: JSONObject) {
     Assertions.assertEquals(expected.toString(), actual.toString())
 }

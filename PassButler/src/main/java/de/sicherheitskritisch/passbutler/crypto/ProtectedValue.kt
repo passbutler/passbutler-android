@@ -4,6 +4,7 @@ import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.putJSONObject
 import de.sicherheitskritisch.passbutler.base.putString
+import de.sicherheitskritisch.passbutler.base.toHexString
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
@@ -81,6 +82,10 @@ class ProtectedValue<T : JSONSerializable>(
         result = 31 * result + encryptionAlgorithm.hashCode()
         result = 31 * result + encryptedValue.contentHashCode()
         return result
+    }
+
+    override fun toString(): String {
+        return "ProtectedValue(initializationVector=${initializationVector.toHexString()}, encryptionAlgorithm=$encryptionAlgorithm, encryptedValue=${encryptedValue.toHexString()})"
     }
 
     companion object {

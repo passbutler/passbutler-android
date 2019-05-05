@@ -16,6 +16,10 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
     abstract fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray
     abstract fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray
 
+    override fun toString(): String {
+        return stringRepresentation
+    }
+
     object AES256GCM : EncryptionAlgorithm("AES-256-GCM") {
 
         private const val AES_KEY_LENGTH = 256

@@ -13,6 +13,10 @@ fun ByteArray?.contentNotEquals(other: ByteArray?): Boolean {
     return !contentEquals(other)
 }
 
+fun ByteArray?.toHexString(): String {
+    return this?.joinToString("") { "%02X".format(it) } ?: ""
+}
+
 /**
  * Clears out a `ByteArray` for security reasons (for crypto keys etc.).
  */

@@ -1,7 +1,7 @@
 package de.sicherheitskritisch.passbutler.crypto
 
+import de.sicherheitskritisch.passbutler.base.toHexString
 import de.sicherheitskritisch.passbutler.hexToBytes
-import de.sicherheitskritisch.passbutler.toHexString
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
