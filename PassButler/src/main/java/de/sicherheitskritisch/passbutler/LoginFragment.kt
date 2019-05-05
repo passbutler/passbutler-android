@@ -119,9 +119,6 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         }
     }
 
-    /**
-     * Removes focus of all form fields.
-     */
     private fun removeFormFieldsFocus() {
         binding?.constraintLayoutLoginScreenContainer?.requestFocus()
     }
