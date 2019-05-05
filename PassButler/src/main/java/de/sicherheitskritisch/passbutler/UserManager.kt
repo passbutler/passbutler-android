@@ -33,7 +33,7 @@ import kotlin.coroutines.CoroutineContext
 
 class UserManager(applicationContext: Context, private val localRepository: PassButlerRepository) : CoroutineScope {
 
-    internal val loggedInUser = MutableLiveData<User?>()
+    internal val loggedInUser = MutableLiveData<LoggedInUserResult?>()
 
     internal val isLocalUser
         get() = sharedPreferences.getBoolean(SERIALIZATION_KEY_IS_LOCAL_USER, false)
@@ -65,7 +65,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
             val userJsonObject = JSONObject()
 
             User.deserialize(userJsonObject)?.let { deserializedUser ->
-                createUser(deserializedUser, false)
+                createUser(deserializedUser, "", false)
             } ?: run {
                 throw LoginFailedException("The given user could not be deserialized!")
             }
@@ -107,7 +107,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
                 throw LoginFailedException("The local user could not be created because protected values creation failed!")
             }
 
-            createUser(localUser, true)
+            createUser(localUser, masterPassword, true)
 
         } finally {
             // Always active clear all sensible data before returning method
@@ -116,7 +116,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         }
     }
 
-    private suspend fun createUser(user: User, isLocalUser: Boolean) {
+    private suspend fun createUser(user: User, masterPassword: String, isLocalUser: Boolean) {
         localRepository.insertUser(user)
 
         sharedPreferences.edit().also {
@@ -124,7 +124,8 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
             it.putBoolean(SERIALIZATION_KEY_IS_LOCAL_USER, isLocalUser)
         }.apply()
 
-        loggedInUser.postValue(user)
+        val loggedInUserResult = LoggedInUserResult(user, masterPassword)
+        loggedInUser.postValue(loggedInUserResult)
     }
 
     suspend fun logoutUser() {
@@ -138,7 +139,9 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
             val restoredLoggedInUser = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, null)?.let { loggedInUsername ->
                 localRepository.findUser(loggedInUsername)
             }
-            loggedInUser.postValue(restoredLoggedInUser)
+
+            val loggedInUserResult = restoredLoggedInUser?.let { LoggedInUserResult(it, null) }
+            loggedInUser.postValue(loggedInUserResult)
         }
     }
 
@@ -236,6 +239,8 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
 
 private const val SERIALIZATION_KEY_LOGGED_IN_USERNAME = "loggedInUsername"
 private const val SERIALIZATION_KEY_IS_LOCAL_USER = "isLocalUser"
+
+data class LoggedInUserResult(val user: User, val masterPassword: String?)
 
 class LoginFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
 class UserSynchronizationException(message: String) : Exception(message)

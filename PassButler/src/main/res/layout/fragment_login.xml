@@ -67,7 +67,7 @@
                     >
 
                     <android.support.design.widget.TextInputEditText
-                        android:id="@+id/editText_serverurl"
+                        android:id="@+id/textInputEditText_serverurl"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/login_serverurl_hint"
@@ -95,7 +95,7 @@
                     >
 
                     <android.support.design.widget.TextInputEditText
-                        android:id="@+id/editText_username"
+                        android:id="@+id/textInputEditText_username"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/login_username_hint"
@@ -123,7 +123,7 @@
                     >
 
                     <android.support.design.widget.TextInputEditText
-                        android:id="@+id/editText_password"
+                        android:id="@+id/textInputEditText_password"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/login_password_hint"

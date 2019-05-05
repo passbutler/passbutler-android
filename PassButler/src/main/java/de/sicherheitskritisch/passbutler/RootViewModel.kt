@@ -6,7 +6,7 @@ import android.arch.lifecycle.Observer
 import android.text.format.DateUtils
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
-import de.sicherheitskritisch.passbutler.database.models.User
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
@@ -14,27 +14,32 @@ import kotlinx.coroutines.launch
 
 class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
+    /**
+     * In this class the tasks mainly wait and have not high load tasks
+     */
+    override val coroutineDispatcher = Dispatchers.IO
+
     val rootScreenState = MutableLiveData<RootScreenState>()
 
-    // TODO: Store in user table
-    val unlockScreenMethod = MutableLiveData<UnlockScreenMethod>()
-
     var loggedInUserViewModel: UserViewModel? = null
-
-    private var lockScreenCoroutineJob: Job? = null
 
     private val userManager
         get() = getApplication<AbstractPassButlerApplication>().userManager
 
-    private val loggedInUserObserver = Observer<User?> { newUser ->
-        if (newUser != null) {
-            loggedInUserViewModel = UserViewModel(userManager, newUser)
-            rootScreenState.value = RootScreenState.LoggedIn(true)
+    private val loggedInUserObserver = Observer<LoggedInUserResult?> { loggedInUserResult ->
+        if (loggedInUserResult != null) {
+            loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.user, loggedInUserResult.masterPassword)
+
+            // The unlocked state happens if the `LoggedInUserResult` contains master password (only on login)
+            val isUnlocked = loggedInUserResult.masterPassword != null
+            rootScreenState.value = RootScreenState.LoggedIn(isUnlocked)
         } else {
             loggedInUserViewModel = null
             rootScreenState.value = RootScreenState.LoggedOut
         }
     }
+
+    private var lockScreenCoroutineJob: Job? = null
 
     init {
         userManager.loggedInUser.observeForever(loggedInUserObserver)
@@ -57,12 +62,13 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     private fun startLockScreenTimer() {
-        // Only if user is logged in, start delayed lock screen timer
         loggedInUserViewModel?.lockTimeoutSetting?.value?.let { lockTimeout ->
             launch {
                 // Cancel previous `lockScreenCoroutineJob` and wait it finished, until the new job is started
                 lockScreenCoroutineJob?.cancelAndJoin()
-                lockScreenCoroutineJob = launch {
+
+                // The `unlockScreen` method is called from view on main thread, so call `lockScreen()` also there
+                lockScreenCoroutineJob = launch(Dispatchers.Main) {
                     delay(lockTimeout * DateUtils.SECOND_IN_MILLIS)
                     lockScreen()
                 }
@@ -75,24 +81,19 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     private fun lockScreen() {
-        // Always dispatch on background thread because of resource cleanup happen her
-        launch {
-            // Only alter the "logged in" screen state if the user is still in this state after the delay
-            if (rootScreenState.value is RootScreenState.LoggedIn) {
-                rootScreenState.postValue(RootScreenState.LoggedIn(false))
-                loggedInUserViewModel?.clearCryptoResources()
-            }
+        // Only change the "logged in" screen state if the user is still in this state after the delay
+        if (rootScreenState.value is RootScreenState.LoggedIn) {
+            rootScreenState.value = RootScreenState.LoggedIn(false)
+            loggedInUserViewModel?.clearCryptoResources()
         }
     }
 
+    // TODO: suspend + show error if failed
     internal fun unlockScreen(masterPassword: String) {
-        // Always dispatch on background thread because of resource creation happen her
-        launch {
-            // Only alter the "logged in" screen state if the user is still in this state after the delay
-            if (rootScreenState.value is RootScreenState.LoggedIn) {
-                rootScreenState.postValue(RootScreenState.LoggedIn(true))
-                loggedInUserViewModel?.unlockCryptoResources(masterPassword)
-            }
+        // Only change the "logged in" screen state if the user is still in this state after the delay
+        if (rootScreenState.value is RootScreenState.LoggedIn) {
+            loggedInUserViewModel?.unlockCryptoResources(masterPassword)
+            rootScreenState.value = RootScreenState.LoggedIn(true)
         }
     }
 
@@ -104,10 +105,5 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         }
 
         object LoggedOut : RootScreenState()
-    }
-
-    enum class UnlockScreenMethod {
-        PASSWORD,
-        FINGERPRINT
     }
 }

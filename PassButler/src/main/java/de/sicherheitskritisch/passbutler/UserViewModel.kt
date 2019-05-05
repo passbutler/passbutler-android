@@ -15,7 +15,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
-class UserViewModel(private val userManager: UserManager, private val user: User) : ViewModel(), CoroutineScope {
+class UserViewModel(private val userManager: UserManager, private val user: User, userMasterPassword: String?) : ViewModel(), CoroutineScope {
 
     val username = MutableLiveData<String>()
 
@@ -43,7 +43,7 @@ class UserViewModel(private val userManager: UserManager, private val user: User
                     // Register observers after field initialisations to avoid initial observer calls
                     registerObservers()
                 } else {
-                    L.d("UserViewModel", "setMasterEncryptionKey(): The master encryption key was unset, clear user settings...")
+                    L.d("UserViewModel", "setMasterEncryptionKey(): The master encryption key was reset, clear user settings...")
 
                     // Unregister observers before setting field reset to avoid unnecessary observer calls via the settings `LiveData` fields
                     unregisterObservers()
@@ -58,8 +58,13 @@ class UserViewModel(private val userManager: UserManager, private val user: User
     private var settings: UserSettings? = null
         set(newSettingsValue) {
             if (newSettingsValue != field) {
+                val fieldWasInitialized = (field == null)
                 field = newSettingsValue
-                persistUserSettings(newSettingsValue)
+
+                // Persist not if the field was initialized
+                if (!fieldWasInitialized) {
+                    persistUserSettings(newSettingsValue)
+                }
             }
         }
 
@@ -71,8 +76,10 @@ class UserViewModel(private val userManager: UserManager, private val user: User
     init {
         username.value = user.username
 
-        // TODO: Remove hardcoded password
-        unlockCryptoResources("1234")
+        // If the master password was supplied (only on login), directly unlock resources
+        if (userMasterPassword != null) {
+            unlockCryptoResources(userMasterPassword)
+        }
     }
 
     fun unlockCryptoResources(masterPassword: String) {
@@ -118,11 +125,13 @@ class UserViewModel(private val userManager: UserManager, private val user: User
         val newHidePasswordsSetting = hidePasswordsSetting.value
 
         if (newLockTimeoutSetting != null && newHidePasswordsSetting != null) {
-            settings?.copy(
+            val updatedSettings = settings?.copy(
                 lockTimeout = newLockTimeoutSetting,
                 hidePasswords = newHidePasswordsSetting
-            )?.let { updatedSettings ->
-                settings = updatedSettings
+            )
+
+            updatedSettings?.let {
+                settings = it
             }
         }
     }

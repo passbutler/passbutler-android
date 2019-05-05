@@ -61,9 +61,9 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
                 loginClicked(binding)
             }
 
-            savedInstanceState?.getString(FORM_FIELD_SERVERURL)?.let { binding.editTextServerurl.setText(it) }
-            savedInstanceState?.getString(FORM_FIELD_USERNAME)?.let { binding.editTextUsername.setText(it) }
-            savedInstanceState?.getString(FORM_FIELD_PASSWORD)?.let { binding.editTextPassword.setText(it) }
+            savedInstanceState?.getString(FORM_FIELD_SERVERURL)?.let { binding.textInputEditTextServerurl.setText(it) }
+            savedInstanceState?.getString(FORM_FIELD_USERNAME)?.let { binding.textInputEditTextUsername.setText(it) }
+            savedInstanceState?.getString(FORM_FIELD_PASSWORD)?.let { binding.textInputEditTextPassword.setText(it) }
         }
 
         return binding?.root
@@ -71,7 +71,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
     private fun loginLocalClicked(binding: FragmentLoginBinding) {
         // Clean form field errors first to be sure everything looks clean if the progress shows up
-        listOf(binding.editTextServerurl, binding.editTextUsername, binding.editTextPassword).forEach { formField ->
+        listOf(binding.textInputEditTextServerurl, binding.textInputEditTextUsername, binding.textInputEditTextPassword).forEach { formField ->
             formField.error = null
         }
 
@@ -85,18 +85,18 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         val formValidationResult = validateForm(
             listOf(
                 FormFieldValidator(
-                    binding.editTextServerurl, listOf(
+                    binding.textInputEditTextServerurl, listOf(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_serverurl_validation_error_empty)),
                         FormFieldValidator.Rule({ !URLUtil.isValidUrl(it) }, getString(R.string.login_serverurl_validation_error_invalid))
                     )
                 ),
                 FormFieldValidator(
-                    binding.editTextUsername, listOf(
+                    binding.textInputEditTextUsername, listOf(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_username_validation_error_empty))
                     )
                 ),
                 FormFieldValidator(
-                    binding.editTextPassword, listOf(
+                    binding.textInputEditTextPassword, listOf(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_password_validation_error_empty))
                     )
                 )
@@ -108,9 +108,9 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
                 // Remove focus before login to be sure keyboard is hidden
                 removeFormFieldsFocus()
 
-                val serverUrl = binding.editTextServerurl.text.toString()
-                val username = binding.editTextUsername.text.toString()
-                val password = binding.editTextPassword.text.toString()
+                val serverUrl = binding.textInputEditTextServerurl.text.toString()
+                val username = binding.textInputEditTextUsername.text.toString()
+                val password = binding.textInputEditTextPassword.text.toString()
                 viewModel.loginUser(serverUrl, username, password)
             }
             is FormValidationResult.Invalid -> {
@@ -127,9 +127,9 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         super.onSaveInstanceState(outState)
 
         binding?.let {
-            outState.putString(FORM_FIELD_SERVERURL, it.editTextServerurl.text.toString())
-            outState.putString(FORM_FIELD_USERNAME, it.editTextUsername.text.toString())
-            outState.putString(FORM_FIELD_PASSWORD, it.editTextPassword.text.toString())
+            outState.putString(FORM_FIELD_SERVERURL, it.textInputEditTextServerurl.text.toString())
+            outState.putString(FORM_FIELD_USERNAME, it.textInputEditTextUsername.text.toString())
+            outState.putString(FORM_FIELD_PASSWORD, it.textInputEditTextPassword.text.toString())
         }
     }
 

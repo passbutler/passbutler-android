@@ -57,10 +57,14 @@
     <string name="settings_header">Einstellungen</string>
     <string name="settings_setting_locktimeout_label">Automatische Sperre</string>
 
-
     <!-- Locked screen -->
 
     <string name="locked_screen_header">PassButler ist gesperrt</string>
-    <string name="locked_screen_description">Bitte entsperren Sie mit Passwort oder Fingerabdruck</string>
+    <string name="locked_screen_description_password">Bitte entsperren Sie PassButler im Folgendem mit Ihrem Passwort:</string>
+
+    <string name="locked_screen_password_hint">Passwort</string>
+    <string name="locked_screen_password_validation_error_empty">Passwort nicht ausgefüllt</string>
+
+    <string name="locked_screen_button_text">Entsperren</string>
 
 </resources>
