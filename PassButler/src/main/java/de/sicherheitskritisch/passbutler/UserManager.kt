@@ -8,7 +8,7 @@ import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.UnitConverterFactory
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
-import de.sicherheitskritisch.passbutler.crypto.PasswordDerivation
+import de.sicherheitskritisch.passbutler.crypto.KeyDerivation
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.RandomGenerator
 import de.sicherheitskritisch.passbutler.database.PassButlerRepository
@@ -87,7 +87,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         val masterKeySalt = RandomGenerator.generateRandomBytes(32)
         val masterKeyIterationCount = 100_000
         val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
-        val masterKey = PasswordDerivation.deriveAES256KeyFromPassword(masterPassword, masterKeySalt, masterKeyIterationCount)
+        val masterKey = KeyDerivation.deriveAES256KeyFromPassword(masterPassword, masterKeySalt, masterKeyIterationCount)
 
         val masterEncryptionKey = EncryptionAlgorithm.AES256GCM.generateEncryptionKey()
         val serializableMasterEncryptionKey = CryptographicKey(masterEncryptionKey)

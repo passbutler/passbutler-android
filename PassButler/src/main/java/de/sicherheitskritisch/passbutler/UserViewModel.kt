@@ -5,7 +5,7 @@ import android.arch.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.optionalContentNotEquals
-import de.sicherheitskritisch.passbutler.crypto.PasswordDerivation
+import de.sicherheitskritisch.passbutler.crypto.KeyDerivation
 import de.sicherheitskritisch.passbutler.database.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
@@ -80,7 +80,7 @@ class UserViewModel(private val userManager: UserManager, private val user: User
         launch(Dispatchers.Default) {
             val masterKeySalt = user.masterKeyDerivationInformation.salt
             val masterKeyIterationCount = user.masterKeyDerivationInformation.iterationCount
-            val masterKey = PasswordDerivation.deriveAES256KeyFromPassword(masterPassword, masterKeySalt, masterKeyIterationCount)
+            val masterKey = KeyDerivation.deriveAES256KeyFromPassword(masterPassword, masterKeySalt, masterKeyIterationCount)
 
             masterEncryptionKey = user.masterEncryptionKey.decrypt(masterKey) {
                 CryptographicKey.deserialize(it)

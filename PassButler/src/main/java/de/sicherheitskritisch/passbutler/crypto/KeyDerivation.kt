@@ -5,7 +5,7 @@ import java.text.Normalizer
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 
-object PasswordDerivation {
+object KeyDerivation {
 
     private const val AES_KEY_LENGTH = 256
 
