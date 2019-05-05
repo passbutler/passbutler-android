@@ -72,7 +72,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
             val userJsonObject = JSONObject()
 
             User.deserialize(userJsonObject)?.let { deserializedUser ->
-                storeUser(deserializedUser, false)
+                createUser(deserializedUser, false)
             } ?: run {
                 throw LoginFailedException("The given user could not be deserialized!")
             }
@@ -85,7 +85,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         // Add an artificial delay for login progress simulation
         delay(1000)
 
-        // TODO: Remove this
+        // TODO: Remove hardcoded password
         val masterPassword = "1234"
 
         val masterKeySalt = RandomGenerator.generateRandomBytes(32)
@@ -117,13 +117,24 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
                 throw LoginFailedException("The local user could not be created because protected values creation failed!")
             }
 
-            storeUser(localUser, true)
+            createUser(localUser, true)
 
         } finally {
             // Always active clear all sensible data before returning method
             masterKey.clear()
             masterEncryptionKey.clear()
         }
+    }
+
+    private suspend fun createUser(user: User, isLocalUser: Boolean) {
+        localRepository.insertUser(user)
+
+        sharedPreferences.edit().also {
+            it.putString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, user.username)
+            it.putBoolean(SERIALIZATION_KEY_IS_LOCAL_USER, isLocalUser)
+        }.apply()
+
+        loggedInUser.postValue(user)
     }
 
     suspend fun logoutUser() {
@@ -230,17 +241,6 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         if (!requestDeferred.isSuccessful) {
             throw UserSynchronizationException("The users could not be updated on remote database (HTTP error code ${requestDeferred.code()})!")
         }
-    }
-
-    private suspend fun storeUser(user: User, isLocalUser: Boolean) {
-        localRepository.insertUser(user)
-
-        sharedPreferences.edit().also {
-            it.putString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, user.username)
-            it.putBoolean(SERIALIZATION_KEY_IS_LOCAL_USER, isLocalUser)
-        }.apply()
-
-        loggedInUser.postValue(user)
     }
 }
 
