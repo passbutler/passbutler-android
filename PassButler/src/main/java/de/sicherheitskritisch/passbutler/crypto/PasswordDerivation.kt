@@ -1,5 +1,6 @@
 package de.sicherheitskritisch.passbutler.crypto
 
+import de.sicherheitskritisch.passbutler.base.bitSize
 import java.text.Normalizer
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec

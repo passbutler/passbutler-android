@@ -6,11 +6,11 @@ import android.content.Context.MODE_PRIVATE
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.UnitConverterFactory
+import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.crypto.PasswordDerivation
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.RandomGenerator
-import de.sicherheitskritisch.passbutler.crypto.clear
 import de.sicherheitskritisch.passbutler.database.PassButlerRepository
 import de.sicherheitskritisch.passbutler.database.Synchronization
 import de.sicherheitskritisch.passbutler.database.models.CryptographicKey

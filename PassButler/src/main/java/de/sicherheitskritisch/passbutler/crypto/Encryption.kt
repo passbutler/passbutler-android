@@ -1,5 +1,7 @@
 package de.sicherheitskritisch.passbutler.crypto
 
+import de.sicherheitskritisch.passbutler.base.bitSize
+import de.sicherheitskritisch.passbutler.base.byteSize
 import de.sicherheitskritisch.passbutler.base.putString
 import org.json.JSONException
 import org.json.JSONObject
@@ -106,18 +108,3 @@ fun JSONObject.getEncryptionAlgorithm(name: String): EncryptionAlgorithm {
         else -> throw JSONException("The EncryptionAlgorithm string representation '$algorithmStringRepresentation' could not be found!")
     }
 }
-
-/**
- * Clears out a `ByteArray` for security reasons (for crypto keys etc.).
- */
-fun ByteArray.clear() {
-    this.forEachIndexed { index, _ ->
-        this[index] = 0
-    }
-}
-
-val ByteArray.bitSize: Int
-    get() = size * 8
-
-val Int.byteSize: Int
-    get() = this / 8
