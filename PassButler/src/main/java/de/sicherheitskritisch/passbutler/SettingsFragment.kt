@@ -22,9 +22,10 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     override fun onAttach(context: Context?) {
         super.onAttach(context)
 
-        activity?.let {
-            viewModel = ViewModelProviders.of(it).get(SettingsViewModel::class.java)
+        viewModel = ViewModelProviders.of(this).get(SettingsViewModel::class.java)
 
+        activity?.let {
+            // The `RootViewModel` must be received via activity to be sure it survives fragment lifecycles
             val rootViewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
             viewModel.loggedInUserViewModel = rootViewModel.loggedInUserViewModel
         }

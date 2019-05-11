@@ -3,6 +3,7 @@ package de.sicherheitskritisch.passbutler.base.viewmodels
 import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.support.annotation.CallSuper
+import de.sicherheitskritisch.passbutler.base.L
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -23,10 +24,11 @@ open class CoroutineScopeAndroidViewModel(application: Application) : AndroidVie
      */
     private val coroutineJob = SupervisorJob()
 
-    // TODO: This is not called on fragment destruction
     @CallSuper
     override fun onCleared() {
-        super.onCleared()
+        L.d("CoroutineScopeAndroidViewModel", "onCleared(): $this - cancel the coroutine job...")
         coroutineJob.cancel()
+
+        super.onCleared()
     }
 }

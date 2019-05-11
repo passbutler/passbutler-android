@@ -31,10 +31,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
-
-        activity?.let {
-            viewModel = ViewModelProviders.of(it).get(LoginViewModel::class.java)
-        }
+        viewModel = ViewModelProviders.of(this).get(LoginViewModel::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

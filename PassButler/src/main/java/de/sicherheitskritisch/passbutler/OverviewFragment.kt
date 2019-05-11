@@ -53,9 +53,10 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     override fun onAttach(context: Context?) {
         super.onAttach(context)
 
-        activity?.let {
-            viewModel = ViewModelProviders.of(it).get(OverviewViewModel::class.java)
+        viewModel = ViewModelProviders.of(this).get(OverviewViewModel::class.java)
 
+        activity?.let {
+            // The `RootViewModel` must be received via activity to be sure it survives fragment lifecycles
             val rootViewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
             loggedInUserViewModel = rootViewModel.loggedInUserViewModel
         }

@@ -31,6 +31,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         super.onAttach(context)
 
         activity?.let {
+            // The `RootViewModel` must be received via activity to be sure it survives fragment lifecycles
             viewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
         }
     }

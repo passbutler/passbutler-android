@@ -22,6 +22,7 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
         super.onAttach(context)
 
         activity?.let {
+            // The `RootViewModel` must be received via activity to be sure it survives fragment lifecycles
             viewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
 
             val contentContainerResourceId = R.id.frameLayout_fragment_root_content_container
