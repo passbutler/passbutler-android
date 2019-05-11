@@ -5,6 +5,8 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
 import android.text.format.DateUtils
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
+import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
+import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
@@ -16,6 +18,8 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     val rootScreenState = MutableLiveData<RootScreenState>()
 
     var loggedInUserViewModel: UserViewModel? = null
+
+    val unlockRequestSendingViewModel = DefaultRequestSendingViewModel()
 
     private val userManager
         get() = getApplication<AbstractPassButlerApplication>().userManager
@@ -33,18 +37,40 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         }
     }
 
-    private var lockScreenCoroutineJob: Job? = null
+    private var handleCryptoResourcesCoroutineJob: Job? = null
+    private var lockTimerCoroutineJob: Job? = null
 
     init {
         userManager.loggedInUser.observeForever(loggedInUserObserver)
 
         // Try to restore logged-in user after the observer was added
-        userManager.restoreLoggedInUser()
+        launch {
+            userManager.restoreLoggedInUser()
+        }
     }
 
     override fun onCleared() {
         userManager.loggedInUser.removeObserver(loggedInUserObserver)
         super.onCleared()
+    }
+
+    fun unlockScreen(masterPassword: String) {
+        handleCryptoResourcesCoroutineJob?.cancel()
+        handleCryptoResourcesCoroutineJob = launch {
+            unlockRequestSendingViewModel.isLoading.postValue(true)
+
+            try {
+                loggedInUserViewModel?.unlockCryptoResources(masterPassword)
+
+                rootScreenState.postValue(RootScreenState.LoggedIn(true))
+                unlockRequestSendingViewModel.requestFinishedSuccessfully.emit()
+            } catch (exception: UserViewModel.UnlockFailedException) {
+                L.w("RootViewModel", "unlockScreen(): The unlock failed with exception!", exception)
+                unlockRequestSendingViewModel.requestError.postValue(exception)
+            } finally {
+                unlockRequestSendingViewModel.isLoading.postValue(false)
+            }
+        }
     }
 
     fun applicationWasPaused() {
@@ -56,13 +82,11 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     private fun startLockScreenTimer() {
+        // The lock timer must be only started if the user is logged in and unlocked (lock timeout available)
         loggedInUserViewModel?.lockTimeoutSetting?.value?.let { lockTimeout ->
             launch {
-                // Cancel previous `lockScreenCoroutineJob` and wait it finished, until the new job is started
-                lockScreenCoroutineJob?.cancelAndJoin()
-
-                // The `unlockScreen` method is called from view on main thread, so call `lockScreen()` also there
-                lockScreenCoroutineJob = launch(Dispatchers.Main) {
+                lockTimerCoroutineJob?.cancelAndJoin()
+                lockTimerCoroutineJob = launch {
                     delay(lockTimeout * DateUtils.SECOND_IN_MILLIS)
                     lockScreen()
                 }
@@ -71,23 +95,17 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     private fun cancelLockScreenTimer() {
-        lockScreenCoroutineJob?.cancel()
+        lockTimerCoroutineJob?.cancel()
     }
 
     private fun lockScreen() {
-        // Only change the "logged in" screen state if the user is still in this state after the delay
-        if (rootScreenState.value is RootScreenState.LoggedIn) {
-            rootScreenState.value = RootScreenState.LoggedIn(false)
-            loggedInUserViewModel?.clearCryptoResources()
-        }
-    }
-
-    // TODO: suspend + show error if failed
-    internal fun unlockScreen(masterPassword: String) {
-        // Only change the "logged in" screen state if the user is still in this state after the delay
-        if (rootScreenState.value is RootScreenState.LoggedIn) {
-            loggedInUserViewModel?.unlockCryptoResources(masterPassword)
-            rootScreenState.value = RootScreenState.LoggedIn(true)
+        handleCryptoResourcesCoroutineJob?.cancel()
+        handleCryptoResourcesCoroutineJob = launch {
+            // Only change the screen state if the user is still in this state when this code is called
+            if (rootScreenState.value is RootScreenState.LoggedIn) {
+                rootScreenState.postValue(RootScreenState.LoggedIn(false))
+                loggedInUserViewModel?.clearCryptoResources()
+            }
         }
     }
 

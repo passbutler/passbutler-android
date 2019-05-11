@@ -13,8 +13,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
+// TODO: Use CoroutineScopeAndroidViewModel?
 class UserViewModel(private val userManager: UserManager, private val user: User, userMasterPassword: String?) : ViewModel(), CoroutineScope {
 
     val username = MutableLiveData<String>()
@@ -68,6 +70,7 @@ class UserViewModel(private val userManager: UserManager, private val user: User
             }
         }
 
+    // TODO: cancel job some time?
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default + coroutineJob
 
@@ -78,27 +81,40 @@ class UserViewModel(private val userManager: UserManager, private val user: User
 
         // If the master password was supplied (only on login), directly unlock resources
         if (userMasterPassword != null) {
-            unlockCryptoResources(userMasterPassword)
+            launch {
+                // TODO: catch UnlockFailedException here?
+                unlockCryptoResources(userMasterPassword)
+            }
         }
     }
 
-    fun unlockCryptoResources(masterPassword: String) {
+    @Throws(UnlockFailedException::class)
+    suspend fun unlockCryptoResources(masterPassword: String) {
         // Execute deserialization/decryption on the dispatcher for CPU load
-        launch(Dispatchers.Default) {
+        withContext(Dispatchers.Default) {
             val masterKeySalt = user.masterKeyDerivationInformation.salt
             val masterKeyIterationCount = user.masterKeyDerivationInformation.iterationCount
             val masterKey = KeyDerivation.deriveAES256KeyFromPassword(masterPassword, masterKeySalt, masterKeyIterationCount)
 
-            masterEncryptionKey = user.masterEncryptionKey.decrypt(masterKey) {
+            val decryptedProtectedMasterEncryptionKey = user.masterEncryptionKey.decrypt(masterKey) {
                 CryptographicKey.deserialize(it)
-            }?.key
+            }
 
-            masterKey.clear()
+            try {
+                if (decryptedProtectedMasterEncryptionKey != null) {
+                    masterEncryptionKey = decryptedProtectedMasterEncryptionKey.key
+                } else {
+                    throw UnlockFailedException()
+                }
+            } finally {
+                masterKey.clear()
+            }
         }
     }
 
-    fun clearCryptoResources() {
-        launch(Dispatchers.Default) {
+    suspend fun clearCryptoResources() {
+        // Execute on the same dispatcher as the `unlockCryptoResources` for uniformity reasons
+        withContext(Dispatchers.Default) {
             masterEncryptionKey?.clear()
             masterEncryptionKey = null
         }
@@ -147,4 +163,6 @@ class UserViewModel(private val userManager: UserManager, private val user: User
             }
         }
     }
+
+    class UnlockFailedException(cause: Exception? = null) : Exception(cause)
 }
