@@ -10,4 +10,7 @@ interface FragmentPresenting {
 
     fun popBackstack()
     fun backstackCount(): Int
+
+    fun showProgress()
+    fun hideProgress()
 }

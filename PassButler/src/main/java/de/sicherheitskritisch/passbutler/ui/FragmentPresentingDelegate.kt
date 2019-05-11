@@ -106,6 +106,14 @@ class FragmentPresentingDelegate(
         return rootFragmentManager?.backStackEntryCount ?: 0
     }
 
+    override fun showProgress() {
+        rootFragment?.progressScreenView?.showFadeInOutAnimation(true)
+    }
+
+    override fun hideProgress() {
+        rootFragment?.progressScreenView?.showFadeInOutAnimation(false)
+    }
+
     companion object {
         private const val SHOW_FRAGMENT_DEBOUNCE_TIME_MILLISECONDS = 450L
 

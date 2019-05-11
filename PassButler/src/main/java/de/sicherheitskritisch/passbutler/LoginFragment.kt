@@ -20,7 +20,6 @@ import de.sicherheitskritisch.passbutler.databinding.FragmentLoginBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.Keyboard
-import de.sicherheitskritisch.passbutler.ui.showFadeInAnimation
 import java.lang.ref.WeakReference
 
 class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment {
@@ -149,19 +148,21 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         private val fragmentWeakReference: WeakReference<LoginFragment>
     ) : RequestSendingViewHandler(requestSendingViewModel) {
 
+        private val fragment
+            get() = fragmentWeakReference.get()
+
         private val binding
-            get() = fragmentWeakReference.get()?.binding
+            get() = fragment?.binding
 
         private val resources
-            get() = fragmentWeakReference.get()?.resources
+            get() = fragment?.resources
 
         override fun onIsLoadingChanged(isLoading: Boolean) {
-            /*
-             * Use fade-in animation only because when the `LoginFragment` is replaced by the `RootFragment`,
-             * the animation state of the progress view is reset while fragment transition is running,
-             * which causes a ugly progress bar restart.
-             */
-            binding?.frameLayoutProgressContainer?.showFadeInAnimation(isLoading)
+            if (isLoading) {
+                fragment?.showProgress()
+            } else {
+                fragment?.hideProgress()
+            }
         }
 
         override fun onRequestErrorChanged(requestError: Throwable) {

@@ -7,12 +7,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
 import java.lang.ref.WeakReference
 
 class RootFragment : BaseViewModelFragment<RootViewModel>() {
+
+    val progressScreenView
+        get() = view?.findViewById<FrameLayout>(R.id.frameLayout_progress_container)
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)

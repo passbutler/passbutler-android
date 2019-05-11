@@ -56,6 +56,14 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
         return fragmentPresentingDelegate.backstackCount()
     }
 
+    override fun showProgress() {
+        fragmentPresentingDelegate.showProgress()
+    }
+
+    override fun hideProgress() {
+        fragmentPresentingDelegate.hideProgress()
+    }
+
     /**
      * Override the method to execute custom functionality on backpress action.
      * Return `true` if the fragment handled the action, `false` otherwise.

@@ -1,6 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/frameLayout_fragment_root_content_container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"/>
+    android:layout_height="match_parent">
+
+    <!-- Content container -->
+    <FrameLayout
+        android:id="@+id/frameLayout_fragment_root_content_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Progress screen is clickable to avoid touch-through overlay -->
+    <FrameLayout
+        android:id="@+id/frameLayout_progress_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorBackgroundTransparent"
+        android:clickable="true"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:id="@+id/login_progress"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            />
+
+    </FrameLayout>
+
+</FrameLayout>
+
