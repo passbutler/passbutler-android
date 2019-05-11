@@ -15,18 +15,18 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
     private val userManager
         get() = getApplication<AbstractPassButlerApplication>().userManager
 
-    private var loginJob: Job? = null
+    private var loginCoroutineJob: Job? = null
 
     fun loginUser(serverUrl: String, username: String, password: String) {
-        loginJob?.cancel()
-        loginJob = launch {
+        loginCoroutineJob?.cancel()
+        loginCoroutineJob = launch {
             loginRequestSendingViewModel.isLoading.postValue(true)
 
             try {
                 userManager.loginUser(serverUrl, username, password)
                 loginRequestSendingViewModel.requestFinishedSuccessfully.emit()
             } catch (exception: LoginFailedException) {
-                L.w("UserManager", "loginUser(): The login failed with exception!", exception)
+                L.w("LoginViewModel", "loginUser(): The login failed with exception!", exception)
                 loginRequestSendingViewModel.requestError.postValue(exception)
             } finally {
                 loginRequestSendingViewModel.isLoading.postValue(false)
@@ -35,15 +35,15 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
     }
 
     fun loginLocalUser() {
-        loginJob?.cancel()
-        loginJob = launch {
+        loginCoroutineJob?.cancel()
+        loginCoroutineJob = launch {
             loginRequestSendingViewModel.isLoading.postValue(true)
 
             try {
                 userManager.loginLocalUser()
                 loginRequestSendingViewModel.requestFinishedSuccessfully.emit()
             } catch (exception: LoginFailedException) {
-                L.w("UserManager", "loginLocalUser(): The local login failed with exception!", exception)
+                L.w("LoginViewModel", "loginLocalUser(): The local login failed with exception!", exception)
                 loginRequestSendingViewModel.requestError.postValue(exception)
             } finally {
                 loginRequestSendingViewModel.isLoading.postValue(false)
