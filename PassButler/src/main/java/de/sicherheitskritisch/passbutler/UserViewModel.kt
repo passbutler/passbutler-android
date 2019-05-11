@@ -16,7 +16,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
-// TODO: Use CoroutineScopeAndroidViewModel?
+/**
+ * This viewmodel is held by `RootViewModel` end contains the business logic for logged-in user.
+ *
+ * No need to inherit from `CoroutineScopeAndroidViewModel` because this viewmodel is not held
+ * by a `Fragment` thus `onCleared()` is never called.
+ */
 class UserViewModel(private val userManager: UserManager, private val user: User, userMasterPassword: String?) : ViewModel(), CoroutineScope {
 
     val username = MutableLiveData<String>()
@@ -86,6 +91,12 @@ class UserViewModel(private val userManager: UserManager, private val user: User
                 unlockCryptoResources(userMasterPassword)
             }
         }
+    }
+
+    @Suppress("RedundantOverride")
+    override fun onCleared() {
+        // This is never called because this viewmodel is not held by a `Fragment`
+        super.onCleared()
     }
 
     @Throws(UnlockFailedException::class)
