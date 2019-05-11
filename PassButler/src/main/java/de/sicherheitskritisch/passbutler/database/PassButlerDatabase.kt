@@ -9,12 +9,9 @@ import android.content.Context
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserDao
 import de.sicherheitskritisch.passbutler.database.models.UserModelConverters
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.withContext
 import java.util.*
-import kotlin.coroutines.CoroutineContext
 
 @Database(entities = [User::class], version = 1, exportSchema = false)
 @TypeConverters(GeneralDatabaseConverters::class, UserModelConverters::class)
@@ -30,43 +27,38 @@ class GeneralDatabaseConverters {
     fun dateToLong(date: Date?) = date?.time
 }
 
-class PassButlerRepository(applicationContext: Context) : CoroutineScope {
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.IO + coroutineJob
-
-    private val coroutineJob = SupervisorJob()
+class PassButlerRepository(applicationContext: Context) {
 
     private val localDatabase by lazy {
         Room.databaseBuilder(applicationContext, PassButlerDatabase::class.java, "PassButlerDatabase").build()
     }
 
     suspend fun findAllUsers(): List<User> {
-        return withContext(coroutineContext) {
+        return withContext(Dispatchers.IO) {
             localDatabase.userDao().findAll()
         }
     }
 
     suspend fun findUser(username: String): User? {
-        return withContext(coroutineContext) {
+        return withContext(Dispatchers.IO) {
             localDatabase.userDao().findUser(username)
         }
     }
 
     suspend fun insertUser(vararg user: User) {
-        withContext(coroutineContext) {
+        withContext(Dispatchers.IO) {
             localDatabase.userDao().insert(*user)
         }
     }
 
     suspend fun updateUser(vararg user: User) {
-        withContext(coroutineContext) {
+        withContext(Dispatchers.IO) {
             localDatabase.userDao().update(*user)
         }
     }
 
     suspend fun reset() {
-        withContext(coroutineContext) {
+        withContext(Dispatchers.IO) {
             localDatabase.clearAllTables()
         }
     }

@@ -19,29 +19,19 @@ import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserConverterFactory
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import de.sicherheitskritisch.passbutler.database.models.UserWebservice
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import org.json.JSONObject
 import retrofit2.Retrofit
 import java.time.Instant
 import java.util.*
-import kotlin.coroutines.CoroutineContext
 
-class UserManager(applicationContext: Context, private val localRepository: PassButlerRepository) : CoroutineScope {
+class UserManager(applicationContext: Context, private val localRepository: PassButlerRepository) {
 
     internal val loggedInUser = MutableLiveData<LoggedInUserResult?>()
 
     internal val isLocalUser
         get() = sharedPreferences.getBoolean(SERIALIZATION_KEY_IS_LOCAL_USER, false)
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.IO + coroutineJob
-
-    private val coroutineJob = SupervisorJob()
 
     private val remoteWebservice: UserWebservice by lazy {
         // TODO: Use server url from preferences
@@ -134,26 +124,22 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         loggedInUser.postValue(null)
     }
 
-    fun restoreLoggedInUser() {
-        launch {
-            val restoredLoggedInUser = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, null)?.let { loggedInUsername ->
-                localRepository.findUser(loggedInUsername)
-            }
-
-            val loggedInUserResult = restoredLoggedInUser?.let { LoggedInUserResult(it, null) }
-            loggedInUser.postValue(loggedInUserResult)
+    suspend fun restoreLoggedInUser() {
+        val restoredLoggedInUser = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, null)?.let { loggedInUsername ->
+            localRepository.findUser(loggedInUsername)
         }
+
+        val loggedInUserResult = restoredLoggedInUser?.let { LoggedInUserResult(it, null) }
+        loggedInUser.postValue(loggedInUserResult)
     }
 
-    fun updateUser(user: User) {
+    suspend fun updateUser(user: User) {
         L.d("UserManager", "updateUser(): user = $user")
 
-        launch {
-            user.modified = currentDate
-            localRepository.updateUser(user)
+        user.modified = currentDate
+        localRepository.updateUser(user)
 
-            // TODO: Trigger sync?
-        }
+        // TODO: Trigger sync?
     }
 
     suspend fun synchronizeUsers() = coroutineScope {
