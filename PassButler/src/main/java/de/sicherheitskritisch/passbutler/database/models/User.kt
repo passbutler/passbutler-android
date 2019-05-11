@@ -14,7 +14,6 @@ import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.asJSONObjectSequence
 import de.sicherheitskritisch.passbutler.base.putBoolean
-import de.sicherheitskritisch.passbutler.base.putJSONObject
 import de.sicherheitskritisch.passbutler.base.putLong
 import de.sicherheitskritisch.passbutler.base.putString
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
@@ -59,7 +58,7 @@ data class User(
     override fun serialize(): JSONObject {
         return JSONObject().apply {
             putString(SERIALIZATION_KEY_USERNAME, username)
-            putJSONObject(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, masterKeyDerivationInformation.serialize())
+            putKeyDerivationInformation(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, masterKeyDerivationInformation)
             putProtectedValue(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY, masterEncryptionKey)
             putProtectedValue(SERIALIZATION_KEY_SETTINGS, settings)
             putBoolean(SERIALIZATION_KEY_DELETED, deleted)
@@ -73,7 +72,7 @@ data class User(
             return try {
                 User(
                     username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
-                    masterKeyDerivationInformation = KeyDerivationInformation.deserialize(jsonObject.getJSONObject(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION))
+                    masterKeyDerivationInformation = jsonObject.getKeyDerivationInformation(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION)
                         ?: throw JSONException("The master key derivation information could not be deserialized!"),
                     masterEncryptionKey = jsonObject.getProtectedValue(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY) ?: throw JSONException("The master encryption key could not be deserialized!"),
                     settings = jsonObject.getProtectedValue(SERIALIZATION_KEY_SETTINGS) ?: throw JSONException("The user settings could not be deserialized!"),

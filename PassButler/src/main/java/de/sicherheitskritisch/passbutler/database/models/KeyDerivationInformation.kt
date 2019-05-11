@@ -3,6 +3,7 @@ package de.sicherheitskritisch.passbutler.database.models
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.putInt
+import de.sicherheitskritisch.passbutler.base.putJSONObject
 import de.sicherheitskritisch.passbutler.base.toHexString
 import de.sicherheitskritisch.passbutler.crypto.getByteArray
 import de.sicherheitskritisch.passbutler.crypto.putByteArray
@@ -59,4 +60,22 @@ data class KeyDerivationInformation(val salt: ByteArray, val iterationCount: Int
             }
         }
     }
+}
+
+/**
+ * Convenience method to put a `KeyDerivationInformation` value to `JSONObject`.
+ */
+@Throws(JSONException::class)
+fun JSONObject.putKeyDerivationInformation(name: String, value: KeyDerivationInformation): JSONObject {
+    val serializedKeyDerivationInformation = value.serialize()
+    return putJSONObject(name, serializedKeyDerivationInformation)
+}
+
+/**
+ * Convenience method to get a `KeyDerivationInformation` value from `JSONObject`.
+ */
+@Throws(JSONException::class)
+fun JSONObject.getKeyDerivationInformation(name: String): KeyDerivationInformation? {
+    val serializedKeyDerivationInformation = getJSONObject(name)
+    return KeyDerivationInformation.deserialize(serializedKeyDerivationInformation)
 }
