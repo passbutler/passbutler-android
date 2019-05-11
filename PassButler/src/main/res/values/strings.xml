@@ -41,6 +41,7 @@
     <string name="overview_sync_successful_message">Synchronisation war erfolgreich</string>
     <string name="overview_sync_failed_message">Synchronisation hat leider nicht geklappt</string>
 
+    <string name="overview_logout_failed_title">Abmeldung hat leider nicht geklappt</string>
 
     <!-- About -->
 

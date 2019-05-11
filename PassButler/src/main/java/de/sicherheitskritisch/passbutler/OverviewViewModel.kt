@@ -12,8 +12,10 @@ import kotlinx.coroutines.launch
 class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
     val synchronizeDataRequestSendingViewModel = DefaultRequestSendingViewModel()
+    val logoutRequestSendingViewModel = DefaultRequestSendingViewModel()
 
     private var synchronizeDataCoroutineJob: Job? = null
+    private var logoutCoroutineJob: Job? = null
 
     private val userManager
         get() = getApplication<AbstractPassButlerApplication>().userManager
@@ -25,21 +27,32 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
             try {
                 userManager.synchronizeUsers()
+
+                synchronizeDataRequestSendingViewModel.isLoading.postValue(false)
                 synchronizeDataRequestSendingViewModel.requestFinishedSuccessfully.emit()
             } catch (exception: Exception) {
                 L.w("OverviewViewModel", "synchronizeData(): The synchronization failed with exception!", exception)
-                synchronizeDataRequestSendingViewModel.requestError.postValue(exception)
-            } finally {
                 synchronizeDataRequestSendingViewModel.isLoading.postValue(false)
+                synchronizeDataRequestSendingViewModel.requestError.postValue(exception)
             }
         }
     }
 
     fun logoutUser() {
-        // TODO: If `logoutUser()` takes longer than `OverviewViewModel` is cleared, the job is canceled
-        // We do not care for logout job, fire and forget here
-        launch {
-            userManager.logoutUser()
+        logoutCoroutineJob?.cancel()
+        logoutCoroutineJob = launch {
+            logoutRequestSendingViewModel.isLoading.postValue(true)
+
+            try {
+                userManager.logoutUser()
+
+                logoutRequestSendingViewModel.isLoading.postValue(false)
+                logoutRequestSendingViewModel.requestFinishedSuccessfully.emit()
+            } catch (exception: Exception) {
+                L.w("OverviewViewModel", "logoutUser(): The logout failed with exception!", exception)
+                logoutRequestSendingViewModel.isLoading.postValue(false)
+                logoutRequestSendingViewModel.requestError.postValue(exception)
+            }
         }
     }
 }

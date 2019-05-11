@@ -140,6 +140,10 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
                 }
             }
         }
+
+        override fun onRequestFinishedSuccessfully() {
+            fragment?.popBackstack()
+        }
     }
 
     companion object {

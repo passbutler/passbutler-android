@@ -169,6 +169,11 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
                 }
             }
         }
+
+        override fun onRequestFinishedSuccessfully() {
+            val overviewFragment = OverviewFragment.newInstance()
+            fragment?.showFragmentAsFirstScreen(overviewFragment)
+        }
     }
 
     companion object {

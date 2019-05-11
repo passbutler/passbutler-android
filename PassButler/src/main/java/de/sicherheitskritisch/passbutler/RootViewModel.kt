@@ -62,13 +62,14 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
             try {
                 loggedInUserViewModel?.unlockCryptoResources(masterPassword)
 
-                rootScreenState.postValue(RootScreenState.LoggedIn(true))
-                unlockRequestSendingViewModel.requestFinishedSuccessfully.emit()
-            } catch (exception: UserViewModel.UnlockFailedException) {
-                L.w("RootViewModel", "unlockScreen(): The unlock failed with exception!", exception)
-                unlockRequestSendingViewModel.requestError.postValue(exception)
-            } finally {
                 unlockRequestSendingViewModel.isLoading.postValue(false)
+                unlockRequestSendingViewModel.requestFinishedSuccessfully.emit()
+
+                rootScreenState.postValue(RootScreenState.LoggedIn(true))
+            } catch (exception: Exception) {
+                L.w("RootViewModel", "unlockScreen(): The unlock failed with exception!", exception)
+                unlockRequestSendingViewModel.isLoading.postValue(false)
+                unlockRequestSendingViewModel.requestError.postValue(exception)
             }
         }
     }
@@ -103,8 +104,8 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         handleCryptoResourcesCoroutineJob = launch {
             // Only change the screen state if the user is still in this state when this code is called
             if (rootScreenState.value is RootScreenState.LoggedIn) {
-                rootScreenState.postValue(RootScreenState.LoggedIn(false))
                 loggedInUserViewModel?.clearCryptoResources()
+                rootScreenState.postValue(RootScreenState.LoggedIn(false))
             }
         }
     }

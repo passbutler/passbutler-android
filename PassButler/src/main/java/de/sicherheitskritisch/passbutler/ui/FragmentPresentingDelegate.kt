@@ -39,10 +39,15 @@ class FragmentPresentingDelegate(
 
     private var lastShowFragmentTransactionTimestamp: Long = 0
 
-    override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean) {
-        if (activity.isNotFinished && checkNoRecentShowFragmentTransactionWasDone()) {
+    override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean, debounce: Boolean, animated: Boolean) {
+        val noRecentTransactionWasDone = checkNoRecentShowFragmentTransactionWasDone().takeIf { debounce } ?: true
+
+        if (activity.isNotFinished && noRecentTransactionWasDone) {
             rootFragmentManager?.beginTransaction()?.let { fragmentTransaction ->
-                applyTransitionToAnimatedFragment(fragment)
+
+                if (animated) {
+                    applyTransitionToAnimatedFragment(fragment)
+                }
 
                 if (fragment is BaseFragment) {
                     fragment.fragmentPresentingDelegate = this
@@ -83,8 +88,8 @@ class FragmentPresentingDelegate(
         return noRecentShowFragmentTransactionWasDone
     }
 
-    override fun showFragmentAsFirstScreen(fragment: Fragment) {
-        showFragment(fragment, replaceFragment = true, addToBackstack = false)
+    override fun showFragmentAsFirstScreen(fragment: Fragment, animated: Boolean) {
+        showFragment(fragment, replaceFragment = true, addToBackstack = false, animated = animated)
     }
 
     override fun <T : Fragment> isFragmentShown(fragmentClass: Class<T>): Boolean {

@@ -45,6 +45,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     private var loggedInUserViewModel: UserViewModel? = null
 
     private var synchronizeDataRequestSendingViewHandler: SynchronizeDataRequestSendingViewHandler? = null
+    private var logoutRequestSendingViewHandler: LogoutRequestSendingViewHandler? = null
 
     private var binding: FragmentOverviewBinding? = null
     private var navigationHeaderView: View? = null
@@ -66,6 +67,10 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         super.onCreate(savedInstanceState)
 
         synchronizeDataRequestSendingViewHandler = SynchronizeDataRequestSendingViewHandler(viewModel.synchronizeDataRequestSendingViewModel, WeakReference(this)).apply {
+            registerObservers()
+        }
+
+        logoutRequestSendingViewHandler = LogoutRequestSendingViewHandler(viewModel.logoutRequestSendingViewModel, WeakReference(this)).apply {
             registerObservers()
         }
     }
@@ -143,52 +148,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
     override fun onDestroy() {
         synchronizeDataRequestSendingViewHandler?.unregisterObservers()
+        logoutRequestSendingViewHandler?.unregisterObservers()
         coroutineJob.cancel()
         super.onDestroy()
-    }
-
-    private class SynchronizeDataRequestSendingViewHandler(
-        requestSendingViewModel: RequestSendingViewModel,
-        private val fragmentWeakReference: WeakReference<OverviewFragment>
-    ) : RequestSendingViewHandler(requestSendingViewModel) {
-
-        private val binding
-            get() = fragmentWeakReference.get()?.binding
-
-        private val resources
-            get() = fragmentWeakReference.get()?.resources
-
-        override fun onIsLoadingChanged(isLoading: Boolean) {
-            binding?.toolbar?.menu?.findItem(R.id.overview_menu_item_sync)?.apply {
-                isEnabled = !isLoading
-
-                val menuIconTintColor = when (isLoading) {
-                    true -> resources?.getColor(R.color.whiteDisabled, null)
-                    false -> resources?.getColor(R.color.white, null)
-                }
-                menuIconTintColor?.let {
-                    icon?.applyTint(it)
-                }
-            }
-
-            binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
-        }
-
-        override fun onRequestErrorChanged(requestError: Throwable) {
-            binding?.layoutOverviewContent?.let {
-                resources?.getString(R.string.overview_sync_failed_message)?.let { snackbarMessage ->
-                    Snackbar.make(it.root, snackbarMessage, Snackbar.LENGTH_SHORT).show()
-                }
-            }
-        }
-
-        override fun onRequestFinishedSuccessfully() {
-            binding?.layoutOverviewContent?.let {
-                resources?.getString(R.string.overview_sync_successful_message)?.let { snackbarMessage ->
-                    Snackbar.make(it.root, snackbarMessage, Snackbar.LENGTH_SHORT).show()
-                }
-            }
-        }
     }
 
     private inner class NavigationItemSelectedListener : NavigationView.OnNavigationItemSelectedListener {
@@ -244,6 +206,86 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             intent.data = Uri.parse(uriString)
             startActivity(intent)
+        }
+    }
+
+    private class SynchronizeDataRequestSendingViewHandler(
+        requestSendingViewModel: RequestSendingViewModel,
+        private val fragmentWeakReference: WeakReference<OverviewFragment>
+    ) : RequestSendingViewHandler(requestSendingViewModel) {
+
+        private val binding
+            get() = fragmentWeakReference.get()?.binding
+
+        private val resources
+            get() = fragmentWeakReference.get()?.resources
+
+        override fun onIsLoadingChanged(isLoading: Boolean) {
+            binding?.toolbar?.menu?.findItem(R.id.overview_menu_item_sync)?.apply {
+                isEnabled = !isLoading
+
+                val menuIconTintColor = when (isLoading) {
+                    true -> resources?.getColor(R.color.whiteDisabled, null)
+                    false -> resources?.getColor(R.color.white, null)
+                }
+                menuIconTintColor?.let {
+                    icon?.applyTint(it)
+                }
+            }
+
+            binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
+        }
+
+        override fun onRequestErrorChanged(requestError: Throwable) {
+            binding?.layoutOverviewContent?.let {
+                resources?.getString(R.string.overview_sync_failed_message)?.let { snackbarMessage ->
+                    Snackbar.make(it.root, snackbarMessage, Snackbar.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        override fun onRequestFinishedSuccessfully() {
+            binding?.layoutOverviewContent?.let {
+                resources?.getString(R.string.overview_sync_successful_message)?.let { snackbarMessage ->
+                    Snackbar.make(it.root, snackbarMessage, Snackbar.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private class LogoutRequestSendingViewHandler(
+        requestSendingViewModel: RequestSendingViewModel,
+        private val fragmentWeakReference: WeakReference<OverviewFragment>
+    ) : RequestSendingViewHandler(requestSendingViewModel) {
+
+        private val fragment
+            get() = fragmentWeakReference.get()
+
+        private val binding
+            get() = fragment?.binding
+
+        private val resources
+            get() = fragment?.resources
+
+        override fun onIsLoadingChanged(isLoading: Boolean) {
+            if (isLoading) {
+                fragment?.showProgress()
+            } else {
+                fragment?.hideProgress()
+            }
+        }
+
+        override fun onRequestErrorChanged(requestError: Throwable) {
+            binding?.layoutOverviewContent?.root?.let {
+                resources?.getString(R.string.overview_logout_failed_title)?.let { snackbarMessage ->
+                    Snackbar.make(it, snackbarMessage, Snackbar.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        override fun onRequestFinishedSuccessfully() {
+            val loginFragment = LoginFragment.newInstance()
+            fragment?.showFragmentAsFirstScreen(loginFragment)
         }
     }
 
