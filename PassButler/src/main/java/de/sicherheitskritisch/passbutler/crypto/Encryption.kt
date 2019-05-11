@@ -6,6 +6,7 @@ import de.sicherheitskritisch.passbutler.base.putString
 import org.json.JSONException
 import org.json.JSONObject
 import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
@@ -27,8 +28,11 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
         private const val GCM_AUTHENTICATION_TAG_LENGTH = 128
 
         override fun generateEncryptionKey(): ByteArray {
-            val bytesCount = AES_KEY_LENGTH.byteSize
-            return RandomGenerator.generateRandomBytes(bytesCount)
+            val keyGenerator = KeyGenerator.getInstance("AES")
+            keyGenerator.init(AES_KEY_LENGTH)
+
+            val secretKey = keyGenerator.generateKey()
+            return secretKey.encoded
         }
 
         override fun generateInitializationVector(): ByteArray {
