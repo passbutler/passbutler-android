@@ -67,4 +67,7 @@
 
     <string name="locked_screen_button_text">Entsperren</string>
 
+    <string name="locked_screen_unlock_wrong_password_title">Passwort ist leider nicht korrekt</string>
+
+
 </resources>

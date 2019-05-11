@@ -4,29 +4,42 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.databinding.DataBindingUtil
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
+import de.sicherheitskritisch.passbutler.base.RequestSendingViewHandler
+import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.validateForm
 import de.sicherheitskritisch.passbutler.databinding.FragmentLockedScreenBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.Keyboard
+import java.lang.ref.WeakReference
 
 class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFragment {
 
     override val transitionType = AnimatedFragment.TransitionType.FADE
 
     private var binding: FragmentLockedScreenBinding? = null
+    private var unlockRequestSendingViewHandler: UnlockRequestSendingViewHandler? = null
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
 
         activity?.let {
             viewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        unlockRequestSendingViewHandler = UnlockRequestSendingViewHandler(viewModel.unlockRequestSendingViewModel, WeakReference(this)).apply {
+            registerObservers()
         }
     }
 
@@ -87,9 +100,45 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         super.onDestroyView()
     }
 
+    override fun onDestroy() {
+        unlockRequestSendingViewHandler?.unregisterObservers()
+        super.onDestroy()
+    }
+
     override fun onHandleBackPress(): Boolean {
         // Do not allow pop fragment via backpress
         return true
+    }
+
+    private class UnlockRequestSendingViewHandler(
+        requestSendingViewModel: RequestSendingViewModel,
+        private val fragmentWeakReference: WeakReference<LockedScreenFragment>
+    ) : RequestSendingViewHandler(requestSendingViewModel) {
+
+        private val fragment
+            get() = fragmentWeakReference.get()
+
+        private val binding
+            get() = fragment?.binding
+
+        private val resources
+            get() = fragment?.resources
+
+        override fun onIsLoadingChanged(isLoading: Boolean) {
+            if (isLoading) {
+                fragment?.showProgress()
+            } else {
+                fragment?.hideProgress()
+            }
+        }
+
+        override fun onRequestErrorChanged(requestError: Throwable) {
+            binding?.constraintLayoutLockedScreenContainer?.let {
+                resources?.getString(R.string.locked_screen_unlock_wrong_password_title)?.let { snackbarMessage ->
+                    Snackbar.make(it, snackbarMessage, Snackbar.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     companion object {
