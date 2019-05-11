@@ -87,7 +87,7 @@ class UserViewModel(private val userManager: UserManager, private val user: User
         // If the master password was supplied (only on login), directly unlock resources
         if (userMasterPassword != null) {
             launch {
-                // TODO: catch UnlockFailedException here?
+                // TODO: catch UnlockFailedException here and rethrow it in a IllegalStateException
                 unlockCryptoResources(userMasterPassword)
             }
         }
@@ -99,6 +99,7 @@ class UserViewModel(private val userManager: UserManager, private val user: User
         super.onCleared()
     }
 
+    // TODO: Safer exception management in used API calls
     @Throws(UnlockFailedException::class)
     suspend fun unlockCryptoResources(masterPassword: String) {
         // Execute deserialization/decryption on the dispatcher for CPU load
@@ -163,6 +164,7 @@ class UserViewModel(private val userManager: UserManager, private val user: User
         }
     }
 
+    // TODO: Use `settings` instead of argument?
     private fun persistUserSettings(newSettingsValue: UserSettings?) {
         // Execute encryption on the dispatcher for CPU load
         launch(Dispatchers.Default) {
