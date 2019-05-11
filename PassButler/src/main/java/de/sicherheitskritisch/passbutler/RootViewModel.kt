@@ -6,18 +6,12 @@ import android.arch.lifecycle.Observer
 import android.text.format.DateUtils
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
-
-    /**
-     * In this class the tasks mainly wait and have not high load tasks
-     */
-    override val coroutineDispatcher = Dispatchers.IO
 
     val rootScreenState = MutableLiveData<RootScreenState>()
 

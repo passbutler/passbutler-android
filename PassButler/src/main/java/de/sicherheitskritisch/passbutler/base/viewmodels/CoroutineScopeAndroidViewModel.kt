@@ -10,7 +10,10 @@ import kotlin.coroutines.CoroutineContext
 
 open class CoroutineScopeAndroidViewModel(application: Application) : AndroidViewModel(application), CoroutineScope {
 
-    protected open val coroutineDispatcher = Dispatchers.Default
+    /**
+     * By default use the `IO` dispatcher for time-intensive tasks and not the `Default` dispatcher for CPU-intensive tasks.
+     */
+    protected open val coroutineDispatcher = Dispatchers.IO
 
     override val coroutineContext: CoroutineContext
         get() = coroutineDispatcher + coroutineJob
