@@ -14,6 +14,7 @@ import de.sicherheitskritisch.passbutler.base.validateForm
 import de.sicherheitskritisch.passbutler.databinding.FragmentLockedScreenBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
+import de.sicherheitskritisch.passbutler.ui.Keyboard
 
 class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFragment {
 
@@ -79,6 +80,11 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         binding?.let {
             outState.putString(FORM_FIELD_PASSWORD, it.textInputEditTextPassword.text.toString())
         }
+    }
+
+    override fun onDestroyView() {
+        Keyboard.hideKeyboard(context, this)
+        super.onDestroyView()
     }
 
     override fun onHandleBackPress(): Boolean {
