@@ -28,9 +28,9 @@ import java.util.*
 
 class UserManager(applicationContext: Context, private val localRepository: PassButlerRepository) {
 
-    internal val loggedInUser = MutableLiveData<LoggedInUserResult?>()
+    val loggedInUser = MutableLiveData<LoggedInUserResult?>()
 
-    internal val isLocalUser
+    val isLocalUser
         get() = sharedPreferences.getBoolean(SERIALIZATION_KEY_IS_LOCAL_USER, false)
 
     private val remoteWebservice: UserWebservice by lazy {
@@ -114,7 +114,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
             it.putBoolean(SERIALIZATION_KEY_IS_LOCAL_USER, isLocalUser)
         }.apply()
 
-        val loggedInUserResult = LoggedInUserResult(user, masterPassword)
+        val loggedInUserResult = LoggedInUserResult(user, masterPassword = masterPassword)
         loggedInUser.postValue(loggedInUserResult)
     }
 
@@ -129,7 +129,10 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
             localRepository.findUser(loggedInUsername)
         }
 
-        val loggedInUserResult = restoredLoggedInUser?.let { LoggedInUserResult(it, null) }
+        val loggedInUserResult = restoredLoggedInUser?.let {
+            LoggedInUserResult(it, masterPassword = null)
+        }
+
         loggedInUser.postValue(loggedInUserResult)
     }
 

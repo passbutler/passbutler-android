@@ -29,8 +29,8 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
             loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.user, loggedInUserResult.masterPassword)
 
             // The unlocked state happens if the `LoggedInUserResult` contains master password (only on login)
-            val isUnlocked = loggedInUserResult.masterPassword != null
-            rootScreenState.value = RootScreenState.LoggedIn(isUnlocked)
+            val loggedInUserIsUnlocked = loggedInUserResult.masterPassword != null
+            rootScreenState.value = RootScreenState.LoggedIn(loggedInUserIsUnlocked)
         } else {
             loggedInUserViewModel = null
             rootScreenState.value = RootScreenState.LoggedOut
