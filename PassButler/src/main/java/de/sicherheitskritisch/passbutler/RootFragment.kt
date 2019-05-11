@@ -59,12 +59,28 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
     }
 
     private fun handleLoggedInUnlockedState() {
+        val lockedScreenShown = isFragmentShown(LockedScreenFragment::class.java)
+        val overviewScreenShown = isFragmentShown(OverviewFragment::class.java)
+
         when {
-            isFragmentShown(LockedScreenFragment::class.java) -> {
+            lockedScreenShown && !overviewScreenShown -> {
+                L.d("RootFragment", "handleLoggedInUnlockedState(): Locked screen shown, but overview screen not shown - show overview screen")
+
+                // TODO: This should be done more elegant
+                popBackstack()
+
+                val overviewFragment = OverviewFragment.newInstance()
+                showFragmentAsFirstScreen(overviewFragment)
+            }
+            lockedScreenShown -> {
+                L.d("RootFragment", "handleLoggedInUnlockedState(): Locked screen shown - pop locked screen")
+
                 // Pop locked locked screen fragment if it is shown
                 popBackstack()
             }
-            !isFragmentShown(OverviewFragment::class.java) -> {
+            !overviewScreenShown -> {
+                L.d("RootFragment", "handleLoggedInUnlockedState(): Show overview screen")
+
                 val overviewFragment = OverviewFragment.newInstance()
                 showFragmentAsFirstScreen(overviewFragment)
             }
@@ -72,8 +88,12 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
     }
 
     private fun handleLoggedInLockedState() {
+        L.d("RootFragment", "handleLoggedInLockedState():")
+
         // Only show locked screen fragment is still not shown - do not replace fragment, because we want to pop back
         if (!isFragmentShown(LockedScreenFragment::class.java)) {
+            L.d("RootFragment", "handleLoggedInLockedState(): Show locked screen fragment")
+
             val overviewFragment = LockedScreenFragment.newInstance()
             showFragment(overviewFragment, replaceFragment = false, addToBackstack = true)
         }
