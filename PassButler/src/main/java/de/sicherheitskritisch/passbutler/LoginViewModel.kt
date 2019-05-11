@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
-    internal val loginRequestSendingViewModel = DefaultRequestSendingViewModel()
+    val loginRequestSendingViewModel = DefaultRequestSendingViewModel()
 
     private val userManager
         get() = getApplication<AbstractPassButlerApplication>().userManager
@@ -25,7 +25,7 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
             try {
                 userManager.loginUser(serverUrl, username, password)
                 loginRequestSendingViewModel.requestFinishedSuccessfully.emit()
-            } catch (exception: LoginFailedException) {
+            } catch (exception: Exception) {
                 L.w("LoginViewModel", "loginUser(): The login failed with exception!", exception)
                 loginRequestSendingViewModel.requestError.postValue(exception)
             } finally {
@@ -42,7 +42,7 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
             try {
                 userManager.loginLocalUser()
                 loginRequestSendingViewModel.requestFinishedSuccessfully.emit()
-            } catch (exception: LoginFailedException) {
+            } catch (exception: Exception) {
                 L.w("LoginViewModel", "loginLocalUser(): The local login failed with exception!", exception)
                 loginRequestSendingViewModel.requestError.postValue(exception)
             } finally {

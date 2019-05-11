@@ -73,7 +73,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate<FragmentOverviewBinding>(inflater, R.layout.fragment_overview, container, false).also { binding ->
             binding.lifecycleOwner = this
-            binding.requestSendingViewModel = viewModel.synchronizeDataRequestSendingViewModel
 
             setupToolBar(binding)
             setupDrawerLayout(binding)

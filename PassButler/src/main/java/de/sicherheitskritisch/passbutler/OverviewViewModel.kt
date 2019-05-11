@@ -19,7 +19,6 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
         get() = getApplication<AbstractPassButlerApplication>().userManager
 
     fun synchronizeData() {
-        // Cancels previous job, until the new job is started to prevent multiple refresh
         synchronizeDataCoroutineJob?.cancel()
         synchronizeDataCoroutineJob = launch(Dispatchers.IO) {
             synchronizeDataRequestSendingViewModel.isLoading.postValue(true)
@@ -28,7 +27,7 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
                 userManager.synchronizeUsers()
                 synchronizeDataRequestSendingViewModel.requestFinishedSuccessfully.emit()
             } catch (exception: Exception) {
-                L.w("UserManager", "synchronizeData(): The synchronization failed with exception!", exception)
+                L.w("OverviewViewModel", "synchronizeData(): The synchronization failed with exception!", exception)
                 synchronizeDataRequestSendingViewModel.requestError.postValue(exception)
             } finally {
                 synchronizeDataRequestSendingViewModel.isLoading.postValue(false)

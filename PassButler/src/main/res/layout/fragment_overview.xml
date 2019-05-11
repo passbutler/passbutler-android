@@ -6,10 +6,6 @@
 
     <data>
 
-        <variable
-            name="requestSendingViewModel"
-            type="de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel" />
-
     </data>
 
     <android.support.v4.widget.DrawerLayout
