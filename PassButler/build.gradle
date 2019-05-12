@@ -54,6 +54,9 @@ dependencies {
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
 
+    // Kotlin Coroutines for Android
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.ext.kotlinCoroutinesVersion"
+
     // Android support libraries
     implementation "com.android.support:appcompat-v7:$rootProject.ext.androidSupportLibraryVersion"
     implementation "com.android.support:support-v4:$rootProject.ext.androidSupportLibraryVersion"
@@ -69,9 +72,6 @@ dependencies {
     // Android Room components
     implementation "android.arch.persistence.room:runtime:$rootProject.ext.androidRoomVersion"
     kapt "android.arch.persistence.room:compiler:$rootProject.ext.androidRoomVersion"
-
-    // Kotlin Coroutines for Android
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.ext.kotlinCoroutinesVersion"
 
     // RetroFit 2 + Kotlin Coroutine Adapter
     implementation "com.squareup.retrofit2:retrofit:$rootProject.ext.retrofitVersion"
