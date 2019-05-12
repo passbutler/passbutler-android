@@ -39,7 +39,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        unlockRequestSendingViewHandler = UnlockRequestSendingViewHandler(viewModel.unlockRequestSendingViewModel, WeakReference(this)).apply {
+        unlockRequestSendingViewHandler = UnlockRequestSendingViewHandler(viewModel.unlockScreenRequestSendingViewModel, WeakReference(this)).apply {
             registerObservers()
         }
     }

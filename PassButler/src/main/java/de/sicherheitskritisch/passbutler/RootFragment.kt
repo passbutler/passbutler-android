@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.observeOnce
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
 import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
@@ -42,74 +43,54 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
         L.d("RootFragment", "onViewCreated(): savedInstanceState = $savedInstanceState")
 
-        viewModel.rootScreenState.observe(this, Observer {
-            updateRootScreen()
+        viewModel.rootScreenState.observeOnce(this, Observer {
+            setupRootScreen()
+        })
+
+        viewModel.lockScreenState.observe(this, Observer {
+            if (it == RootViewModel.LockScreenState.Locked) {
+                showLockedScreen()
+            }
         })
     }
 
-    private fun updateRootScreen() {
+    private fun setupRootScreen() {
         val rootScreenState = viewModel.rootScreenState.value
-        L.d("RootFragment", "updateRootScreen(): was called rootScreenState = $rootScreenState")
+        L.d("RootFragment", "setupRootScreen(): rootScreenState = $rootScreenState")
 
         when (rootScreenState) {
-            is RootViewModel.RootScreenState.LoggedIn -> {
-                when (rootScreenState.isUnlocked) {
-                    true -> handleLoggedInUnlockedState()
-                    false -> handleLoggedInLockedState()
-                }
-            }
-            is RootViewModel.RootScreenState.LoggedOut -> handleLoggedOutState()
+            is RootViewModel.RootScreenState.LoggedIn -> setupLoggedInState()
+            is RootViewModel.RootScreenState.LoggedOut -> setupLoggedOutState()
         }
     }
 
-    private fun handleLoggedInUnlockedState() {
-        val lockedScreenShown = isFragmentShown(LockedScreenFragment::class.java)
-        val overviewScreenShown = isFragmentShown(OverviewFragment::class.java)
-
-        when {
-            lockedScreenShown && !overviewScreenShown -> {
-                L.d("RootFragment", "handleLoggedInUnlockedState(): Locked screen shown, but overview screen not shown - show overview screen")
-
-                // TODO: This should be done more elegant
-                popBackstack()
-
-                val overviewFragment = OverviewFragment.newInstance()
-                showFragmentAsFirstScreen(overviewFragment)
-            }
-            lockedScreenShown -> {
-                L.d("RootFragment", "handleLoggedInUnlockedState(): Locked screen shown - pop locked screen")
-
-                // Pop locked locked screen fragment if it is shown
-                popBackstack()
-            }
-            !overviewScreenShown -> {
-                L.d("RootFragment", "handleLoggedInUnlockedState(): Show overview screen")
-
-                val overviewFragment = OverviewFragment.newInstance()
-                showFragmentAsFirstScreen(overviewFragment)
-            }
-            else -> {
-                L.w("RootFragment", "handleLoggedInUnlockedState(): Unexpected state!")
-            }
+    private fun setupLoggedInState() {
+        if (!isFragmentShown(OverviewFragment::class.java)) {
+            // The animation are disabled on app initialisation
+            showFragmentAsFirstScreen(
+                fragment = OverviewFragment.newInstance(),
+                animated = false
+            )
         }
     }
 
-    private fun handleLoggedInLockedState() {
-        // Only show locked screen fragment is still not shown - do not replace fragment, because we want to pop back
-        if (!isFragmentShown(LockedScreenFragment::class.java)) {
-            L.d("RootFragment", "handleLoggedInLockedState(): Show locked screen fragment")
-
-            val overviewFragment = LockedScreenFragment.newInstance()
-            showFragment(overviewFragment, replaceFragment = false, addToBackstack = true)
-        } else {
-            L.w("RootFragment", "handleLoggedInLockedState(): Unexpected state!")
-        }
-    }
-
-    private fun handleLoggedOutState() {
+    private fun setupLoggedOutState() {
         if (!isFragmentShown(LoginFragment::class.java)) {
-            val loginFragment = LoginFragment.newInstance()
-            showFragmentAsFirstScreen(loginFragment)
+            // The animation are disabled on app initialisation
+            showFragmentAsFirstScreen(
+                fragment = LoginFragment.newInstance(),
+                animated = false
+            )
+        }
+    }
+
+    private fun showLockedScreen() {
+        if (!isFragmentShown(LockedScreenFragment::class.java)) {
+            // The debounce check must be disabled because on app initialisation the fragment stack is artificially created
+            showFragment(
+                fragment = LockedScreenFragment.newInstance(),
+                debounce = false
+            )
         }
     }
 

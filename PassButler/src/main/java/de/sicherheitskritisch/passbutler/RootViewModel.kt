@@ -15,11 +15,12 @@ import kotlinx.coroutines.launch
 
 class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
-    val rootScreenState = MutableLiveData<RootScreenState>()
-
     var loggedInUserViewModel: UserViewModel? = null
 
-    val unlockRequestSendingViewModel = DefaultRequestSendingViewModel()
+    val rootScreenState = MutableLiveData<RootScreenState>()
+    val lockScreenState = MutableLiveData<LockScreenState>()
+
+    val unlockScreenRequestSendingViewModel = DefaultRequestSendingViewModel()
 
     private val userManager
         get() = getApplication<AbstractPassButlerApplication>().userManager
@@ -28,14 +29,16 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         if (loggedInUserResult != null) {
             loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.user, loggedInUserResult.masterPassword)
 
-            // The unlocked state happens if the `LoggedInUserResult` contains master password (only on login)
-            val loggedInUserIsUnlocked = loggedInUserResult.masterPassword != null
-            rootScreenState.value = RootScreenState.LoggedIn(loggedInUserIsUnlocked)
+            rootScreenState.value = RootScreenState.LoggedIn
+
+            // The master password is only contained in `LoggedInUserResult` directly after the login
+            lockScreenState.value = if (loggedInUserResult.masterPassword == null) LockScreenState.Locked else LockScreenState.Unlocked
         } else {
+            rootScreenState.value = RootScreenState.LoggedOut
+            lockScreenState.value = null
+
             loggedInUserViewModel?.cancelJobs()
             loggedInUserViewModel = null
-
-            rootScreenState.value = RootScreenState.LoggedOut
         }
     }
 
@@ -59,19 +62,17 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     fun unlockScreen(masterPassword: String) {
         handleCryptoResourcesCoroutineJob?.cancel()
         handleCryptoResourcesCoroutineJob = launch {
-            unlockRequestSendingViewModel.isLoading.postValue(true)
+            unlockScreenRequestSendingViewModel.isLoading.postValue(true)
 
             try {
                 loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
 
-                unlockRequestSendingViewModel.isLoading.postValue(false)
-                unlockRequestSendingViewModel.requestFinishedSuccessfully.emit()
-
-                rootScreenState.postValue(RootScreenState.LoggedIn(true))
+                unlockScreenRequestSendingViewModel.isLoading.postValue(false)
+                unlockScreenRequestSendingViewModel.requestFinishedSuccessfully.emit()
             } catch (exception: Exception) {
                 L.w("RootViewModel", "unlockScreen(): The unlock failed with exception!", exception)
-                unlockRequestSendingViewModel.isLoading.postValue(false)
-                unlockRequestSendingViewModel.requestError.postValue(exception)
+                unlockScreenRequestSendingViewModel.isLoading.postValue(false)
+                unlockScreenRequestSendingViewModel.requestError.postValue(exception)
             }
         }
     }
@@ -104,21 +105,19 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     private fun lockScreen() {
         handleCryptoResourcesCoroutineJob?.cancel()
         handleCryptoResourcesCoroutineJob = launch {
-            // Only change the screen state if the user is still in this state when this code is called
-            if (rootScreenState.value is RootScreenState.LoggedIn) {
-                loggedInUserViewModel?.clearMasterEncryptionKey()
-                rootScreenState.postValue(RootScreenState.LoggedIn(false))
-            }
+            // First show lock screen, than actually clear crypto resource
+            lockScreenState.postValue(LockScreenState.Locked)
+            loggedInUserViewModel?.clearMasterEncryptionKey()
         }
     }
 
     sealed class RootScreenState {
-        class LoggedIn(val isUnlocked: Boolean) : RootScreenState() {
-            override fun toString(): String {
-                return "LoggedIn(isUnlocked=$isUnlocked)"
-            }
-        }
-
+        object LoggedIn : RootScreenState()
         object LoggedOut : RootScreenState()
+    }
+
+    sealed class LockScreenState {
+        object Locked : LockScreenState()
+        object Unlocked : LockScreenState()
     }
 }

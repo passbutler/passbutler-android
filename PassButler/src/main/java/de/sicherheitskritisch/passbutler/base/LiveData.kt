@@ -24,6 +24,16 @@ fun <T> LiveData<T>.observeForever(notifyOnRegister: Boolean, observer: Observer
 }
 
 @MainThread
+fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observer<T>) {
+    observe(lifecycleOwner, object : Observer<T> {
+        override fun onChanged(t: T?) {
+            observer.onChanged(t)
+            removeObserver(this)
+        }
+    })
+}
+
+@MainThread
 fun <T> LiveData<T>.observeForeverNotifyForNonNullValues(observer: (T) -> Unit) {
     observeForever {
         if (it != null) {
@@ -31,3 +41,4 @@ fun <T> LiveData<T>.observeForeverNotifyForNonNullValues(observer: (T) -> Unit) 
         }
     }
 }
+
