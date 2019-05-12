@@ -6,6 +6,7 @@ import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
@@ -47,6 +48,9 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
             try {
                 userManager.logoutUser()
+
+                // Some artificial delay to look flow more natural
+                delay(1000)
 
                 logoutRequestSendingViewModel.isLoading.postValue(false)
                 logoutRequestSendingViewModel.requestFinishedSuccessfully.emit()
