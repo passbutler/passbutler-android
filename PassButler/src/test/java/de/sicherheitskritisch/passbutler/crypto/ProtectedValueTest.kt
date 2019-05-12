@@ -24,7 +24,6 @@ class ProtectedValueTest {
     @BeforeEach
     fun setUp() {
         mockkStatic(Log::class)
-        every { Log.w(any(), any(), any()) } returns 0
         every { Log.w(any(), any<String>()) } returns 0
     }
 
