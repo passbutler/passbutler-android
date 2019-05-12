@@ -21,7 +21,6 @@ import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import de.sicherheitskritisch.passbutler.database.models.UserWebservice
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import org.json.JSONObject
 import retrofit2.Retrofit
 import java.time.Instant
 import java.util.*
@@ -49,38 +48,32 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
     }
 
+    @Throws(LoginFailedException::class)
     suspend fun loginUser(userName: String, password: String, serverUrl: String) {
-        // TODO: Proper server login
-        try {
-            val userJsonObject = JSONObject()
-
-            User.deserialize(userJsonObject)?.let { deserializedUser ->
-                createUser(deserializedUser, "", false)
-            } ?: run {
-                throw LoginFailedException("The given user could not be deserialized!")
-            }
-        } catch (exception: Exception) {
-            throw LoginFailedException("The login failed with an exception!", exception)
-        }
+        // TODO: Proper server login and user creation
     }
 
+    @Throws(LoginFailedException::class)
     suspend fun loginLocalUser() {
         // TODO: Remove hardcoded password
         val masterPassword = "1234"
 
-        val masterKeySalt = RandomGenerator.generateRandomBytes(32)
-        val masterKeyIterationCount = 100_000
-        val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
-        val masterKey = KeyDerivation.deriveAES256KeyFromPassword(masterPassword, masterKeySalt, masterKeyIterationCount)
-
-        val masterEncryptionKey = EncryptionAlgorithm.AES256GCM.generateEncryptionKey()
-        val serializableMasterEncryptionKey = CryptographicKey(masterEncryptionKey)
-        val protectedMasterEncryptionKey = ProtectedValue.create(EncryptionAlgorithm.AES256GCM, masterKey, serializableMasterEncryptionKey)
-
-        val defaultUserSettings = UserSettings()
-        val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.AES256GCM, masterEncryptionKey, defaultUserSettings)
+        var masterKey: ByteArray? = null
+        var masterEncryptionKey: ByteArray? = null
 
         try {
+            val masterKeySalt = RandomGenerator.generateRandomBytes(32)
+            val masterKeyIterationCount = 100_000
+            val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
+            masterKey = KeyDerivation.deriveAES256KeyFromPassword(masterPassword, masterKeySalt, masterKeyIterationCount)
+
+            masterEncryptionKey = EncryptionAlgorithm.AES256GCM.generateEncryptionKey()
+            val serializableMasterEncryptionKey = CryptographicKey(masterEncryptionKey)
+            val protectedMasterEncryptionKey = ProtectedValue.create(EncryptionAlgorithm.AES256GCM, masterKey, serializableMasterEncryptionKey)
+
+            val defaultUserSettings = UserSettings()
+            val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.AES256GCM, masterEncryptionKey, defaultUserSettings)
+
             val localUser = if (protectedMasterEncryptionKey != null && protectedUserSettings != null) {
                 val currentDate = currentDate
 
@@ -94,15 +87,17 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
                     currentDate
                 )
             } else {
-                throw LoginFailedException("The local user could not be created because protected values creation failed!")
+                throw UserCreationFailedException("The local user could not be created because protected values creation failed!")
             }
 
             createUser(localUser, masterPassword, true)
 
+        } catch (exception: Exception) {
+            throw LoginFailedException("The local login failed with an exception!", exception)
         } finally {
             // Always active clear all sensible data before returning method
-            masterKey.clear()
-            masterEncryptionKey.clear()
+            masterKey?.clear()
+            masterEncryptionKey?.clear()
         }
     }
 
@@ -228,15 +223,16 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
             throw UserSynchronizationException("The users could not be updated on remote database (HTTP error code ${requestDeferred.code()})!")
         }
     }
+
+    class UserCreationFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
+    class LoginFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
+    class UserSynchronizationException(message: String) : Exception(message)
 }
 
 private const val SERIALIZATION_KEY_LOGGED_IN_USERNAME = "loggedInUsername"
 private const val SERIALIZATION_KEY_IS_LOCAL_USER = "isLocalUser"
 
 data class LoggedInUserResult(val user: User, val masterPassword: String?)
-
-class LoginFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
-class UserSynchronizationException(message: String) : Exception(message)
 
 private val currentDate
     get() = Date.from(Instant.now())

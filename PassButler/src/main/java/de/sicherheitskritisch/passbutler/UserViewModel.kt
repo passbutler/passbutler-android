@@ -86,8 +86,11 @@ class UserViewModel(private val userManager: UserManager, private val user: User
         // If the master password was supplied (only on login), directly unlock resources
         if (userMasterPassword != null) {
             launch {
-                // TODO: catch UnlockFailedException here and rethrow it in a IllegalStateException
-                unlockCryptoResources(userMasterPassword)
+                try {
+                    unlockMasterEncryptionKey(userMasterPassword)
+                } catch (e: UnlockFailedException) {
+                    throw IllegalStateException("The unlock of the master encryption key failed despite the master password was supplied from login!", e)
+                }
             }
         }
     }
@@ -97,33 +100,36 @@ class UserViewModel(private val userManager: UserManager, private val user: User
         coroutineJob.cancel()
     }
 
-    // TODO: Safer exception management in used API calls
     @Throws(UnlockFailedException::class)
-    suspend fun unlockCryptoResources(masterPassword: String) {
+    suspend fun unlockMasterEncryptionKey(masterPassword: String) {
         // Execute deserialization/decryption on the dispatcher for CPU load
         withContext(Dispatchers.Default) {
-            val masterKeySalt = user.masterKeyDerivationInformation.salt
-            val masterKeyIterationCount = user.masterKeyDerivationInformation.iterationCount
-            val masterKey = KeyDerivation.deriveAES256KeyFromPassword(masterPassword, masterKeySalt, masterKeyIterationCount)
-
-            val decryptedProtectedMasterEncryptionKey = user.masterEncryptionKey.decrypt(masterKey) {
-                CryptographicKey.deserialize(it)
-            }
+            var masterKey: ByteArray? = null
 
             try {
+                val masterKeySalt = user.masterKeyDerivationInformation.salt
+                val masterKeyIterationCount = user.masterKeyDerivationInformation.iterationCount
+                masterKey = KeyDerivation.deriveAES256KeyFromPassword(masterPassword, masterKeySalt, masterKeyIterationCount)
+
+                val decryptedProtectedMasterEncryptionKey = user.masterEncryptionKey.decrypt(masterKey) {
+                    CryptographicKey.deserialize(it)
+                }
+
                 if (decryptedProtectedMasterEncryptionKey != null) {
                     masterEncryptionKey = decryptedProtectedMasterEncryptionKey.key
                 } else {
-                    throw UnlockFailedException()
+                    throw MissingMasterEncryptionKeyException()
                 }
+            } catch (e: Exception) {
+                throw UnlockFailedException(e)
             } finally {
-                masterKey.clear()
+                masterKey?.clear()
             }
         }
     }
 
-    suspend fun clearCryptoResources() {
-        // Execute on the same dispatcher as the `unlockCryptoResources` for uniformity reasons
+    suspend fun clearMasterEncryptionKey() {
+        // Execute on the same dispatcher as the `unlockMasterEncryptionKey` for uniformity reasons
         withContext(Dispatchers.Default) {
             masterEncryptionKey?.clear()
             masterEncryptionKey = null
@@ -175,5 +181,6 @@ class UserViewModel(private val userManager: UserManager, private val user: User
         }
     }
 
+    class MissingMasterEncryptionKeyException : Exception()
     class UnlockFailedException(cause: Exception? = null) : Exception(cause)
 }

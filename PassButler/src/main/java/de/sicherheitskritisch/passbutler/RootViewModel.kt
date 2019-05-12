@@ -62,7 +62,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
             unlockRequestSendingViewModel.isLoading.postValue(true)
 
             try {
-                loggedInUserViewModel?.unlockCryptoResources(masterPassword)
+                loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
 
                 unlockRequestSendingViewModel.isLoading.postValue(false)
                 unlockRequestSendingViewModel.requestFinishedSuccessfully.emit()
@@ -106,7 +106,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         handleCryptoResourcesCoroutineJob = launch {
             // Only change the screen state if the user is still in this state when this code is called
             if (rootScreenState.value is RootScreenState.LoggedIn) {
-                loggedInUserViewModel?.clearCryptoResources()
+                loggedInUserViewModel?.clearMasterEncryptionKey()
                 rootScreenState.postValue(RootScreenState.LoggedIn(false))
             }
         }

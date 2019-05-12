@@ -27,12 +27,17 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
         private const val GCM_INITIALIZATION_VECTOR_LENGTH = 96
         private const val GCM_AUTHENTICATION_TAG_LENGTH = 128
 
+        @Throws(GenerateEncryptionKeyFailedException::class)
         override fun generateEncryptionKey(): ByteArray {
-            val keyGenerator = KeyGenerator.getInstance("AES")
-            keyGenerator.init(AES_KEY_LENGTH)
+            return try {
+                val keyGenerator = KeyGenerator.getInstance("AES")
+                keyGenerator.init(AES_KEY_LENGTH)
 
-            val secretKey = keyGenerator.generateKey()
-            return secretKey.encoded
+                val secretKey = keyGenerator.generateKey()
+                secretKey.encoded
+            } catch (e: Exception) {
+                throw GenerateEncryptionKeyFailedException(e)
+            }
         }
 
         override fun generateInitializationVector(): ByteArray {
@@ -93,6 +98,7 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
         }
     }
 
+    class GenerateEncryptionKeyFailedException(cause: Exception? = null) : Exception(cause)
     class EncryptionFailedException(cause: Exception? = null) : Exception(cause)
     class DecryptionFailedException(cause: Exception? = null) : Exception(cause)
 }

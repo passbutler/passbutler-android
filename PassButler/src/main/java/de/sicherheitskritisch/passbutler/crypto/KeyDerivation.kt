@@ -12,7 +12,7 @@ object KeyDerivation {
     /**
      * Derives a cryptographic AES-256 key from a password using PBKDF2 with SHA-1.
      */
-    @Throws(IllegalArgumentException::class)
+    @Throws(IllegalArgumentException::class, KeyDerivationFailedException::class)
     fun deriveAES256KeyFromPassword(password: String, salt: ByteArray, iterationCount: Int): ByteArray {
         if (password.isBlank()) {
             throw IllegalArgumentException("The password must not be empty!")
@@ -23,13 +23,17 @@ object KeyDerivation {
             throw IllegalArgumentException("The salt must be 256 bits long!")
         }
 
-        val preparedPassword = normalizePassword(trimPassword(password))
+        return try {
+            val preparedPassword = normalizePassword(trimPassword(password))
 
-        val pbeKeySpec = PBEKeySpec(preparedPassword.toCharArray(), salt, iterationCount, AES_KEY_LENGTH)
-        val secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
-        val secretKeyBytes = secretKeyFactory.generateSecret(pbeKeySpec).encoded
+            val pbeKeySpec = PBEKeySpec(preparedPassword.toCharArray(), salt, iterationCount, AES_KEY_LENGTH)
+            val secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
+            val secretKeyBytes = secretKeyFactory.generateSecret(pbeKeySpec).encoded
 
-        return secretKeyBytes
+            secretKeyBytes
+        } catch (e: Exception) {
+            throw KeyDerivationFailedException(e)
+        }
     }
 
     /**
@@ -47,4 +51,6 @@ object KeyDerivation {
     private fun normalizePassword(password: String): String {
         return Normalizer.normalize(password, Normalizer.Form.NFKD)
     }
+
+    class KeyDerivationFailedException(cause: Exception? = null) : Exception(cause)
 }
