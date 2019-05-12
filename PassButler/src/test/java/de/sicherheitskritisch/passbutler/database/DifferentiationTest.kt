@@ -1,7 +1,7 @@
 package de.sicherheitskritisch.passbutler.database
 
-import de.sicherheitskritisch.passbutler.database.Synchronization.collectModifiedUserItems
-import de.sicherheitskritisch.passbutler.database.Synchronization.collectNewItems
+import de.sicherheitskritisch.passbutler.database.Differentiation.collectModifiedUserItems
+import de.sicherheitskritisch.passbutler.database.Differentiation.collectNewItems
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.util.*
 
-class SynchronizationTest {
+class DifferentiationTest {
 
     /**
      * `collectNewItems()` tests

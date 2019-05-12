@@ -2,7 +2,7 @@ package de.sicherheitskritisch.passbutler.database
 
 import java.util.*
 
-object Synchronization {
+object Differentiation {
     /**
      * Detects new items between two lists. To detect new items, the item primary key must be specified (e.g. `username` or `id`).
      */
@@ -47,4 +47,13 @@ object Synchronization {
 interface Synchronizable {
     val primaryField: String
     var modified: Date
+}
+
+/**
+ * Interface for classes that implement a synchronization functionality.
+ */
+interface Synchronization {
+    suspend fun synchronize(): Int
+
+    class SynchronizationFailedException(message: String) : Exception(message)
 }

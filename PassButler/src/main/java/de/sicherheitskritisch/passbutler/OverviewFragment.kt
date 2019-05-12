@@ -110,12 +110,12 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             }
         }
 
-        toolbar.menu.findItem(R.id.overview_menu_item_sync).icon.apply {
+        toolbar.menu.findItem(R.id.overview_menu_item_sync).apply {
             val menuIconColor = resources.getColor(R.color.white, null)
-            applyTint(menuIconColor)
+            icon.applyTint(menuIconColor)
 
             val shouldBeVisible = !viewModel.isLocalUser
-            setVisible(shouldBeVisible, false)
+            isVisible = shouldBeVisible
         }
     }
 
@@ -232,17 +232,17 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             get() = fragment?.resources
 
         override fun onIsLoadingChanged(isLoading: Boolean) {
-            fragment?.toolbarMenuIconSync?.apply {
-                isEnabled = !isLoading
-
-                val menuIconTintColor = when (isLoading) {
-                    true -> resources?.getColor(R.color.whiteDisabled, null)
-                    false -> resources?.getColor(R.color.white, null)
-                }
-                menuIconTintColor?.let {
-                    icon?.applyTint(it)
-                }
-            }
+//            fragment?.toolbarMenuIconSync?.apply {
+//                isEnabled = !isLoading
+//
+//                val menuIconTintColor = when (isLoading) {
+//                    true -> resources?.getColor(R.color.whiteDisabled, null)
+//                    false -> resources?.getColor(R.color.white, null)
+//                }
+//                menuIconTintColor?.let {
+//                    icon?.applyTint(it)
+//                }
+//            }
 
             binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
         }

@@ -12,6 +12,7 @@ import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.crypto.KeyDerivation
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.RandomGenerator
+import de.sicherheitskritisch.passbutler.database.Differentiation
 import de.sicherheitskritisch.passbutler.database.PassButlerRepository
 import de.sicherheitskritisch.passbutler.database.Synchronization
 import de.sicherheitskritisch.passbutler.database.models.CryptographicKey
@@ -20,8 +21,10 @@ import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserConverterFactory
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import de.sicherheitskritisch.passbutler.database.models.UserWebservice
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import java.time.Instant
 import java.util.*
@@ -137,14 +140,15 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
     suspend fun restoreLoggedInUser() {
         L.d("UserManager", "restoreLoggedInUser()")
 
+        sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_SERVERURL, null)?.let { loggedInServerUrl ->
+            initializeRemoteWebservice(loggedInServerUrl)
+        }
+
         val restoredLoggedInUser = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, null)?.let { loggedInUsername ->
             localRepository.findUser(loggedInUsername)
         }
 
-        val loggedInUserResult = restoredLoggedInUser?.let {
-            LoggedInUserResult(it, masterPassword = null)
-        }
-
+        val loggedInUserResult = restoredLoggedInUser?.let { LoggedInUserResult(it, masterPassword = null) }
         loggedInUser.postValue(loggedInUserResult)
     }
 
@@ -153,11 +157,28 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
 
         user.modified = currentDate
         localRepository.updateUser(user)
-
-        // TODO: Trigger sync?
     }
 
-    suspend fun synchronizeUsers() = coroutineScope {
+    @Throws(Synchronization.SynchronizationFailedException::class)
+    suspend fun synchronizeUsers() {
+        val remoteWebservice = remoteWebservice
+
+        if (remoteWebservice != null) {
+            UserSynchronization(localRepository, remoteWebservice).synchronize()
+        } else {
+            throw Synchronization.SynchronizationFailedException("The remote webservice is null - the synchronization can't be started!")
+        }
+    }
+
+    class UserCreationFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
+    class LoginFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
+}
+
+private class UserSynchronization(private val localRepository: PassButlerRepository, private var remoteWebservice: UserWebservice) : Synchronization {
+
+    // TODO: `coroutineScope` or `withContext(IO)`?
+    @Throws(Synchronization.SynchronizationFailedException::class)
+    override suspend fun synchronize() = coroutineScope {
         // Start both operations parallel because they are independent from each other
         val localUserListDeferred = async { fetchLocalUserList() }
         val remoteUserListDeferred = async { fetchRemoteUserList() }
@@ -165,15 +186,15 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         val localUserList = localUserListDeferred.await()
         val remoteUserList = remoteUserListDeferred.await()
 
-        val newLocalUsers = Synchronization.collectNewItems(localUserList, remoteUserList)
-        L.d("UserManager", "synchronizeUsers(): New user items for local database: ${newLocalUsers.buildShortUserList()}")
+        val newLocalUsers = Differentiation.collectNewItems(localUserList, remoteUserList)
+        L.d("UserSynchronization", "synchronize(): New user items for local database: ${newLocalUsers.buildShortUserList()}")
 
         if (newLocalUsers.isNotEmpty()) {
             addNewUsersToLocalDatabase(newLocalUsers)
         }
 
-        val newRemoteUsers = Synchronization.collectNewItems(remoteUserList, localUserList)
-        L.d("UserManager", "synchronizeUsers(): New user items for remote database: ${newRemoteUsers.buildShortUserList()}")
+        val newRemoteUsers = Differentiation.collectNewItems(remoteUserList, localUserList)
+        L.d("UserSynchronization", "synchronize(): New user items for remote database: ${newRemoteUsers.buildShortUserList()}")
 
         if (newRemoteUsers.isNotEmpty()) {
             addNewUsersToRemoteDatabase(newRemoteUsers)
@@ -183,63 +204,69 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         val mergedLocalUserList = localUserList + newLocalUsers
         val mergedRemoteUserList = remoteUserList + newRemoteUsers
 
-        val modifiedLocalUsers = Synchronization.collectModifiedUserItems(mergedLocalUserList, mergedRemoteUserList)
-        L.d("UserManager", "synchronizeUsers(): Modified user items for local database: ${modifiedLocalUsers.buildShortUserList()}")
+        val modifiedLocalUsers = Differentiation.collectModifiedUserItems(mergedLocalUserList, mergedRemoteUserList)
+        L.d("UserSynchronization", "synchronize(): Modified user items for local database: ${modifiedLocalUsers.buildShortUserList()}")
 
         if (modifiedLocalUsers.isNotEmpty()) {
             updateModifiedUsersToLocalDatabase(modifiedLocalUsers)
         }
 
-        val modifiedRemoteUsers = Synchronization.collectModifiedUserItems(mergedRemoteUserList, mergedLocalUserList)
-        L.d("UserManager", "synchronizeUsers(): Modified user items for remote database: ${modifiedRemoteUsers.buildShortUserList()}")
+        val modifiedRemoteUsers = Differentiation.collectModifiedUserItems(mergedRemoteUserList, mergedLocalUserList)
+        L.d("UserSynchronization", "synchronize(): Modified user items for remote database: ${modifiedRemoteUsers.buildShortUserList()}")
 
         if (modifiedRemoteUsers.isNotEmpty()) {
             updateModifiedUsersToRemoteDatabase(modifiedRemoteUsers)
         }
 
-        L.d("UserManager", "synchronizeUsers(): Finished successfully")
+        L.d("UserSynchronization", "synchronize(): Finished successfully")
     }
 
+    @Throws(Synchronization.SynchronizationFailedException::class)
     private suspend fun fetchLocalUserList(): List<User> {
         val localUsersList = localRepository.findAllUsers().takeIf { it.isNotEmpty() }
-        return localUsersList ?: throw UserSynchronizationException("The local user list is null - can't process with synchronization!")
+        return localUsersList ?: throw Synchronization.SynchronizationFailedException("The local user list is null - can't process with synchronization!")
     }
 
+    @Throws(Synchronization.SynchronizationFailedException::class)
     private suspend fun fetchRemoteUserList(): List<User> {
         val remoteUsersListRequest = remoteWebservice.getUsersAsync()
         val response = remoteUsersListRequest.await()
-        return response.body() ?: throw UserSynchronizationException("The remote user list is null - can't process with synchronization!")
+        return response.body() ?: throw Synchronization.SynchronizationFailedException("The remote user list is null - can't process with synchronization!")
     }
 
+    @Throws(Synchronization.SynchronizationFailedException::class)
     private suspend fun addNewUsersToLocalDatabase(newUsers: List<User>) {
         localRepository.insertUser(*newUsers.toTypedArray())
     }
 
+    @Throws(Synchronization.SynchronizationFailedException::class)
     private suspend fun addNewUsersToRemoteDatabase(newUsers: List<User>) {
         val remoteUsersListRequest = remoteWebservice.addUsersAsync(newUsers)
         val requestDeferred = remoteUsersListRequest.await()
 
         if (!requestDeferred.isSuccessful) {
-            throw UserSynchronizationException("The users could not be added to remote database (HTTP error code ${requestDeferred.code()})!")
+            throw Synchronization.SynchronizationFailedException("The users could not be added to remote database (HTTP error code ${requestDeferred.code()})!")
         }
     }
 
+    @Throws(Synchronization.SynchronizationFailedException::class)
     private suspend fun updateModifiedUsersToLocalDatabase(modifiedUsers: List<User>) {
         localRepository.updateUser(*modifiedUsers.toTypedArray())
     }
 
+    @Throws(Synchronization.SynchronizationFailedException::class)
     private suspend fun updateModifiedUsersToRemoteDatabase(modifiedUsers: List<User>) {
         val remoteUsersListRequest = remoteWebservice.updateUsersAsync(modifiedUsers)
         val requestDeferred = remoteUsersListRequest.await()
 
         if (!requestDeferred.isSuccessful) {
-            throw UserSynchronizationException("The users could not be updated on remote database (HTTP error code ${requestDeferred.code()})!")
+            throw Synchronization.SynchronizationFailedException("The users could not be updated on remote database (HTTP error code ${requestDeferred.code()})!")
         }
     }
 
-    class UserCreationFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
-    class LoginFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
-    class UserSynchronizationException(message: String) : Exception(message)
+    private fun List<User>.buildShortUserList(): List<String> {
+        return this.map { "'${it.username}' (${it.modified})" }
+    }
 }
 
 private const val SERIALIZATION_KEY_LOGGED_IN_USERNAME = "loggedInUsername"
@@ -249,7 +276,3 @@ data class LoggedInUserResult(val user: User, val masterPassword: String?)
 
 private val currentDate
     get() = Date.from(Instant.now())
-
-private fun List<User>.buildShortUserList(): List<String> {
-    return this.map { "'${it.username}' (${it.modified})" }
-}
