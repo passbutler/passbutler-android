@@ -20,6 +20,7 @@ import de.sicherheitskritisch.passbutler.databinding.FragmentLoginBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.Keyboard
+import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
 import java.lang.ref.WeakReference
 
 class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment {

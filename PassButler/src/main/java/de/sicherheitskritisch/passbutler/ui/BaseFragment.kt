@@ -40,10 +40,6 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
         fragmentPresentingDelegate?.showFragment(fragment, replaceFragment, addToBackstack, debounce, animated)
     }
 
-    override fun showFragmentAsFirstScreen(fragment: Fragment, animated: Boolean) {
-        fragmentPresentingDelegate?.showFragmentAsFirstScreen(fragment, animated)
-    }
-
     override fun <T : Fragment> isFragmentShown(fragmentClass: Class<T>): Boolean {
         return fragmentPresentingDelegate?.isFragmentShown(fragmentClass) ?: false
     }

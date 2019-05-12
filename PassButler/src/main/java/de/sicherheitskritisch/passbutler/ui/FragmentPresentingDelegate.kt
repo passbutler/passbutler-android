@@ -88,10 +88,6 @@ class FragmentPresentingDelegate(
         return noRecentShowFragmentTransactionWasDone
     }
 
-    override fun showFragmentAsFirstScreen(fragment: Fragment, animated: Boolean) {
-        showFragment(fragment, replaceFragment = true, addToBackstack = false, animated = animated)
-    }
-
     override fun <T : Fragment> isFragmentShown(fragmentClass: Class<T>): Boolean {
         return if (activity.isNotFinished && rootFragment.isStateNotSaved) {
             val fragmentTag = getFragmentTag(fragmentClass)
