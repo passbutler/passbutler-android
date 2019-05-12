@@ -8,6 +8,7 @@ import android.support.transition.TransitionSet
 import android.support.v4.app.Fragment
 import android.support.v4.view.animation.FastOutSlowInInterpolator
 import android.view.Gravity
+import android.widget.FrameLayout
 import de.sicherheitskritisch.passbutler.RootFragment
 import de.sicherheitskritisch.passbutler.base.L
 import java.lang.ref.WeakReference
@@ -19,7 +20,8 @@ import java.lang.ref.WeakReference
 class FragmentPresentingDelegate(
     private val activityWeakReference: WeakReference<Activity>,
     private val rootFragmentWeakReference: WeakReference<RootFragment>,
-    private val rootFragmentContainerResourceId: Int
+    private val rootFragmentContainerResourceId: Int,
+    private val rootFragmentProgressScreenViewResourceId: Int
 ) : FragmentPresenting {
 
     private val activity
@@ -36,6 +38,12 @@ class FragmentPresentingDelegate(
      */
     private val rootFragmentManager
         get() = rootFragment?.childFragmentManager
+
+    /**
+     * The progress screen view is contained in the root fragment and used for progress indication
+     */
+    private val rootFragmentProgressScreenView
+        get() = rootFragment?.view?.findViewById<FrameLayout>(rootFragmentProgressScreenViewResourceId)
 
     private var lastShowFragmentTransactionTimestamp: Long = 0
 
@@ -108,11 +116,11 @@ class FragmentPresentingDelegate(
     }
 
     override fun showProgress() {
-        rootFragment?.progressScreenView?.showFadeInOutAnimation(true)
+        rootFragmentProgressScreenView?.showFadeInOutAnimation(true)
     }
 
     override fun hideProgress() {
-        rootFragment?.progressScreenView?.showFadeInOutAnimation(false)
+        rootFragmentProgressScreenView?.showFadeInOutAnimation(false)
     }
 
     companion object {

@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
@@ -15,9 +14,6 @@ import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
 import java.lang.ref.WeakReference
 
 class RootFragment : BaseViewModelFragment<RootViewModel>() {
-
-    val progressScreenView
-        get() = view?.findViewById<FrameLayout>(R.id.frameLayout_progress_container)
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -27,10 +23,12 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
             viewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
 
             val contentContainerResourceId = R.id.frameLayout_fragment_root_content_container
+            val progressScreenViewResourceId = R.id.frameLayout_progress_container
             fragmentPresentingDelegate = FragmentPresentingDelegate(
                 WeakReference(it),
                 WeakReference(this),
-                contentContainerResourceId
+                contentContainerResourceId,
+                progressScreenViewResourceId
             )
         }
     }
