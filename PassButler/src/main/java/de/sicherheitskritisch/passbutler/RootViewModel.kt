@@ -32,7 +32,9 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
             val loggedInUserIsUnlocked = loggedInUserResult.masterPassword != null
             rootScreenState.value = RootScreenState.LoggedIn(loggedInUserIsUnlocked)
         } else {
+            loggedInUserViewModel?.cancelJobs()
             loggedInUserViewModel = null
+
             rootScreenState.value = RootScreenState.LoggedOut
         }
     }

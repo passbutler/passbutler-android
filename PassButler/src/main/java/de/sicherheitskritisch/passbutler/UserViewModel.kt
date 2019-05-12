@@ -19,8 +19,8 @@ import kotlin.coroutines.CoroutineContext
 /**
  * This viewmodel is held by `RootViewModel` end contains the business logic for logged-in user.
  *
- * No need to inherit from `CoroutineScopeAndroidViewModel` because this viewmodel is not held
- * by a `Fragment` thus `onCleared()` is never called.
+ * No need to inherit from `CoroutineScopeAndroidViewModel` because this viewmodel is not held by a `Fragment`,
+ * thus `onCleared()` is never called. Instead `cancelJobs()` is manually called by `RootViewModel`.
  */
 class UserViewModel(private val userManager: UserManager, private val user: User, userMasterPassword: String?) : ViewModel(), CoroutineScope {
 
@@ -52,7 +52,7 @@ class UserViewModel(private val userManager: UserManager, private val user: User
                 } else {
                     L.d("UserViewModel", "setMasterEncryptionKey(): The master encryption key was reset, clear user settings...")
 
-                    // Unregister observers before setting field reset to avoid unnecessary observer calls via the settings `LiveData` fields
+                    // Unregister observers before setting field reset to avoid unnecessary observer calls
                     unregisterObservers()
 
                     settings = null
@@ -65,17 +65,16 @@ class UserViewModel(private val userManager: UserManager, private val user: User
     private var settings: UserSettings? = null
         set(newSettingsValue) {
             if (newSettingsValue != field) {
-                val fieldWasInitialized = (field == null)
+                val fieldWasUninitialized = (field == null)
                 field = newSettingsValue
 
-                // Persist not if the field was initialized
-                if (!fieldWasInitialized) {
-                    persistUserSettings(newSettingsValue)
+                // Do not persist the first time (if field was uninitialized) because it is unnecessary
+                if (!fieldWasUninitialized) {
+                    persistUserSettings()
                 }
             }
         }
 
-    // TODO: cancel job some time?
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default + coroutineJob
 
@@ -93,10 +92,9 @@ class UserViewModel(private val userManager: UserManager, private val user: User
         }
     }
 
-    @Suppress("RedundantOverride")
-    override fun onCleared() {
-        // This is never called because this viewmodel is not held by a `Fragment`
-        super.onCleared()
+    fun cancelJobs() {
+        L.d("UserViewModel", "cancelJobs()")
+        coroutineJob.cancel()
     }
 
     // TODO: Safer exception management in used API calls
@@ -153,25 +151,25 @@ class UserViewModel(private val userManager: UserManager, private val user: User
         val newHidePasswordsSetting = hidePasswordsSetting.value
 
         if (newLockTimeoutSetting != null && newHidePasswordsSetting != null) {
-            val updatedSettings = settings?.copy(
-                lockTimeout = newLockTimeoutSetting,
-                hidePasswords = newHidePasswordsSetting
-            )
-
-            updatedSettings?.let {
-                settings = it
+            // Update settings only if (still) set
+            settings?.let {
+                settings = it.copy(
+                    lockTimeout = newLockTimeoutSetting,
+                    hidePasswords = newHidePasswordsSetting
+                )
             }
         }
     }
 
-    // TODO: Use `settings` instead of argument?
-    private fun persistUserSettings(newSettingsValue: UserSettings?) {
+    private fun persistUserSettings() {
         // Execute encryption on the dispatcher for CPU load
         launch(Dispatchers.Default) {
             val masterEncryptionKey = masterEncryptionKey
+            val settings = settings
 
-            if (masterEncryptionKey != null && newSettingsValue != null) {
-                user.settings.update(masterEncryptionKey, newSettingsValue)
+            // Persist user with new settings only master encryption key and settings are (still) set
+            if (masterEncryptionKey != null && settings != null) {
+                user.settings.update(masterEncryptionKey, settings)
                 userManager.updateUser(user)
             }
         }

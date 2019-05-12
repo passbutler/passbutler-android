@@ -26,7 +26,7 @@ open class CoroutineScopeAndroidViewModel(application: Application) : AndroidVie
 
     @CallSuper
     override fun onCleared() {
-        L.d("CoroutineScopeAndroidViewModel", "onCleared(): $this - cancel the coroutine job...")
+        L.d("CoroutineScopeAndroidViewModel", "onCleared(): ${this.javaClass.simpleName} - Cancel the coroutine job...")
         coroutineJob.cancel()
 
         super.onCleared()

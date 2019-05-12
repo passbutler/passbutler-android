@@ -119,12 +119,16 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
     }
 
     suspend fun logoutUser() {
+        L.d("UserManager", "logoutUser()")
+
         localRepository.reset()
         sharedPreferences.edit().clear().apply()
         loggedInUser.postValue(null)
     }
 
     suspend fun restoreLoggedInUser() {
+        L.d("UserManager", "restoreLoggedInUser()")
+
         val restoredLoggedInUser = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, null)?.let { loggedInUsername ->
             localRepository.findUser(loggedInUsername)
         }
