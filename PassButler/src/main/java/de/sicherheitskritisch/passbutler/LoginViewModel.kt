@@ -1,6 +1,7 @@
 package de.sicherheitskritisch.passbutler
 
 import android.app.Application
+import android.arch.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.L
@@ -9,6 +10,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
+
+    val isLocalLogin = MutableLiveData<Boolean>()
 
     val loginRequestSendingViewModel = DefaultRequestSendingViewModel()
 
@@ -23,30 +26,16 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
             loginRequestSendingViewModel.isLoading.postValue(true)
 
             try {
-                userManager.loginUser(serverUrl, username, password)
+                if (isLocalLogin.value == true) {
+                    userManager.loginLocalUser(username, password)
+                } else {
+                    userManager.loginUser(serverUrl, username, password)
+                }
 
                 loginRequestSendingViewModel.isLoading.postValue(false)
                 loginRequestSendingViewModel.requestFinishedSuccessfully.emit()
             } catch (exception: Exception) {
                 L.w("LoginViewModel", "loginUser(): The login failed with exception!", exception)
-                loginRequestSendingViewModel.isLoading.postValue(false)
-                loginRequestSendingViewModel.requestError.postValue(exception)
-            }
-        }
-    }
-
-    fun loginLocalUser() {
-        loginCoroutineJob?.cancel()
-        loginCoroutineJob = launch {
-            loginRequestSendingViewModel.isLoading.postValue(true)
-
-            try {
-                userManager.loginLocalUser()
-
-                loginRequestSendingViewModel.isLoading.postValue(false)
-                loginRequestSendingViewModel.requestFinishedSuccessfully.emit()
-            } catch (exception: Exception) {
-                L.w("LoginViewModel", "loginLocalUser(): The local login failed with exception!", exception)
                 loginRequestSendingViewModel.isLoading.postValue(false)
                 loginRequestSendingViewModel.requestError.postValue(exception)
             }

@@ -52,6 +52,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     private var navigationHeaderView: View? = null
     private val navigationItemSelectedListener = NavigationItemSelectedListener()
 
+    private val toolbarMenuIconSync
+        get() = binding?.toolbar?.menu?.findItem(R.id.overview_menu_item_sync)
+
     override fun onAttach(context: Context?) {
         super.onAttach(context)
 
@@ -97,10 +100,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     private fun setupToolbarMenu(toolbar: Toolbar) {
         toolbar.inflateMenu(R.menu.overview_menu)
 
-        val menuIconColor = resources.getColor(R.color.white, null)
-        val menuSyncItem = toolbar.menu.findItem(R.id.overview_menu_item_sync).icon
-        menuSyncItem.applyTint(menuIconColor)
-
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.overview_menu_item_sync -> {
@@ -109,6 +108,14 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
                 }
                 else -> false
             }
+        }
+
+        toolbar.menu.findItem(R.id.overview_menu_item_sync).icon.apply {
+            val menuIconColor = resources.getColor(R.color.white, null)
+            applyTint(menuIconColor)
+
+            val shouldBeVisible = !viewModel.isLocalUser
+            setVisible(shouldBeVisible, false)
         }
     }
 
@@ -215,14 +222,17 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         private val fragmentWeakReference: WeakReference<OverviewFragment>
     ) : RequestSendingViewHandler(requestSendingViewModel) {
 
+        private val fragment
+            get() = fragmentWeakReference.get()
+
         private val binding
-            get() = fragmentWeakReference.get()?.binding
+            get() = fragment?.binding
 
         private val resources
-            get() = fragmentWeakReference.get()?.resources
+            get() = fragment?.resources
 
         override fun onIsLoadingChanged(isLoading: Boolean) {
-            binding?.toolbar?.menu?.findItem(R.id.overview_menu_item_sync)?.apply {
+            fragment?.toolbarMenuIconSync?.apply {
                 isEnabled = !isLoading
 
                 val menuIconTintColor = when (isLoading) {

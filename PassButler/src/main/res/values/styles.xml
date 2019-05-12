@@ -90,6 +90,11 @@
         <item name="android:maxHeight">8dp</item>
     </style>
 
+    <style name="Checkbox"
+           parent="Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="android:textSize">15sp</item>
+    </style>
+
     <!-- Special styles -->
 
     <style name="TextPassageBlack"

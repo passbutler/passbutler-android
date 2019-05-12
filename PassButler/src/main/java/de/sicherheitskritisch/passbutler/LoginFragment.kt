@@ -1,5 +1,7 @@
 package de.sicherheitskritisch.passbutler
 
+import android.annotation.SuppressLint
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.databinding.DataBindingUtil
@@ -10,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
+import de.sicherheitskritisch.passbutler.base.Build
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
 import de.sicherheitskritisch.passbutler.base.L
@@ -20,6 +23,8 @@ import de.sicherheitskritisch.passbutler.databinding.FragmentLoginBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.Keyboard
+import de.sicherheitskritisch.passbutler.ui.VisibilityHideMode
+import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
 import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
 import java.lang.ref.WeakReference
 
@@ -50,44 +55,55 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
             binding.lifecycleOwner = this
             binding.viewModel = viewModel
 
-            binding.imageViewLogo.setOnLongClickListener {
-                loginLocalClicked(binding)
-                true
-            }
-
-            binding.buttonLogin.setOnClickListener {
-                loginClicked(binding)
-            }
-
-            savedInstanceState?.getString(FORM_FIELD_SERVERURL)?.let { binding.textInputEditTextServerurl.setText(it) }
-            savedInstanceState?.getString(FORM_FIELD_USERNAME)?.let { binding.textInputEditTextUsername.setText(it) }
-            savedInstanceState?.getString(FORM_FIELD_PASSWORD)?.let { binding.textInputEditTextPassword.setText(it) }
+            restoreSavedInstance(binding, savedInstanceState)
+            setupDebugLoginPresetsButton(binding)
+            setupLocalLoginCheckbox(binding)
+            setupLoginButton(binding)
         }
 
         return binding?.root
     }
 
-    private fun loginLocalClicked(binding: FragmentLoginBinding) {
-        // Clean form field errors first to be sure everything looks clean if the progress shows up
-        listOf(binding.textInputEditTextServerurl, binding.textInputEditTextUsername, binding.textInputEditTextPassword).forEach { formField ->
-            formField.error = null
+    private fun restoreSavedInstance(binding: FragmentLoginBinding, savedInstanceState: Bundle?) {
+        savedInstanceState?.getString(FORM_FIELD_SERVERURL)?.let { binding.textInputEditTextServerurl.setText(it) }
+        savedInstanceState?.getString(FORM_FIELD_USERNAME)?.let { binding.textInputEditTextUsername.setText(it) }
+        savedInstanceState?.getString(FORM_FIELD_PASSWORD)?.let { binding.textInputEditTextPassword.setText(it) }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun setupDebugLoginPresetsButton(binding: FragmentLoginBinding) {
+        if (Build.isDebugBuild) {
+            binding.imageViewLogo.setOnLongClickListener {
+                binding.textInputEditTextUsername.setText("test")
+                binding.textInputEditTextPassword.setText("1234")
+                binding.checkBoxLocalLogin.isChecked = true
+                true
+            }
         }
+    }
 
-        // Remove focus for the same reason
-        removeFormFieldsFocus()
+    private fun setupLocalLoginCheckbox(binding: FragmentLoginBinding) {
+        viewModel.isLocalLogin.observe(this, Observer { isLocalLoginValue ->
+            val shouldShowServerUrl = isLocalLoginValue == false
+            binding.textInputLayoutServerurl.showFadeInOutAnimation(shouldShowServerUrl, VisibilityHideMode.INVISIBLE)
+        })
+    }
 
-        viewModel.loginLocalUser()
+    private fun setupLoginButton(binding: FragmentLoginBinding) {
+        binding.buttonLogin.setOnClickListener {
+            loginClicked(binding)
+        }
     }
 
     private fun loginClicked(binding: FragmentLoginBinding) {
         val formValidationResult = validateForm(
-            listOf(
+            listOfNotNull(
                 FormFieldValidator(
                     binding.textInputEditTextServerurl, listOf(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_serverurl_validation_error_empty)),
                         FormFieldValidator.Rule({ !URLUtil.isValidUrl(it) }, getString(R.string.login_serverurl_validation_error_invalid))
                     )
-                ),
+                ).takeIf { viewModel.isLocalLogin.value == false },
                 FormFieldValidator(
                     binding.textInputEditTextUsername, listOf(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_username_validation_error_empty))

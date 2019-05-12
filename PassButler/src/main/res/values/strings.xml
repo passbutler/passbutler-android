@@ -13,6 +13,8 @@
     <string name="login_password_hint">Passwort</string>
     <string name="login_password_validation_error_empty">Passwort nicht ausgefüllt</string>
 
+    <string name="login_local_login_label">Lokales Konto</string>
+
     <string name="login_button_text">Anmelden</string>
 
     <string name="login_failed_title">Anmeldung hat leider nicht geklappt</string>
@@ -69,6 +71,5 @@
     <string name="locked_screen_button_text">Entsperren</string>
 
     <string name="locked_screen_unlock_wrong_password_title">Passwort ist leider nicht korrekt</string>
-
 
 </resources>

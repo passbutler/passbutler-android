@@ -1,5 +1,6 @@
 package de.sicherheitskritisch.passbutler
 
+import android.annotation.SuppressLint
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.databinding.DataBindingUtil
@@ -9,6 +10,7 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import de.sicherheitskritisch.passbutler.base.Build
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewHandler
@@ -49,14 +51,29 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
             binding.lifecycleOwner = this
             binding.viewModel = viewModel
 
-            binding.buttonUnlock.setOnClickListener {
-                unlockWithPasswordClicked(binding)
-            }
-
-            savedInstanceState?.getString(FORM_FIELD_PASSWORD)?.let { binding.textInputEditTextPassword.setText(it) }
+            restoreSavedInstance(binding, savedInstanceState)
+            setupDebugUnlockPresets(binding)
+            setupUnlockButton(binding)
         }
 
         return binding?.root
+    }
+
+    private fun restoreSavedInstance(binding: FragmentLockedScreenBinding, savedInstanceState: Bundle?) {
+        savedInstanceState?.getString(FORM_FIELD_PASSWORD)?.let { binding.textInputEditTextPassword.setText(it) }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun setupDebugUnlockPresets(binding: FragmentLockedScreenBinding) {
+        if (Build.isDebugBuild) {
+            binding.textInputEditTextPassword.setText("1234")
+        }
+    }
+
+    private fun setupUnlockButton(binding: FragmentLockedScreenBinding) {
+        binding.buttonUnlock.setOnClickListener {
+            unlockWithPasswordClicked(binding)
+        }
     }
 
     private fun unlockWithPasswordClicked(binding: FragmentLockedScreenBinding) {

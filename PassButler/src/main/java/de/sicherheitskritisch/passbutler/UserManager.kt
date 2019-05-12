@@ -1,5 +1,6 @@
 package de.sicherheitskritisch.passbutler
 
+import android.annotation.SuppressLint
 import android.arch.lifecycle.MutableLiveData
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
@@ -30,19 +31,9 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
     val loggedInUser = MutableLiveData<LoggedInUserResult?>()
 
     val isLocalUser
-        get() = sharedPreferences.getBoolean(SERIALIZATION_KEY_IS_LOCAL_USER, false)
+        get() = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_SERVERURL, null) == null
 
-    private val remoteWebservice: UserWebservice by lazy {
-        // TODO: Use server url from preferences
-        val retrofit = Retrofit.Builder()
-            .baseUrl("http://172.16.0.125:5000")
-            .addConverterFactory(UnitConverterFactory())
-            .addConverterFactory(UserConverterFactory())
-            .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .build()
-
-        retrofit.create(UserWebservice::class.java)
-    }
+    private var remoteWebservice: UserWebservice? = null
 
     private val sharedPreferences by lazy {
         applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
@@ -51,13 +42,22 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
     @Throws(LoginFailedException::class)
     suspend fun loginUser(userName: String, password: String, serverUrl: String) {
         // TODO: Proper server login and user creation
+        initializeRemoteWebservice(serverUrl)
+    }
+
+    private fun initializeRemoteWebservice(serverUrl: String) {
+        val retrofitBuilder = Retrofit.Builder()
+            .baseUrl(serverUrl)
+            .addConverterFactory(UnitConverterFactory())
+            .addConverterFactory(UserConverterFactory())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .build()
+
+        remoteWebservice = retrofitBuilder.create(UserWebservice::class.java)
     }
 
     @Throws(LoginFailedException::class)
-    suspend fun loginLocalUser() {
-        // TODO: Remove hardcoded password
-        val masterPassword = "1234"
-
+    suspend fun loginLocalUser(userName: String, password: String) {
         var masterKey: ByteArray? = null
         var masterEncryptionKey: ByteArray? = null
 
@@ -65,20 +65,20 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
             val masterKeySalt = RandomGenerator.generateRandomBytes(32)
             val masterKeyIterationCount = 100_000
             val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
-            masterKey = KeyDerivation.deriveAES256KeyFromPassword(masterPassword, masterKeySalt, masterKeyIterationCount)
+            masterKey = KeyDerivation.deriveAES256KeyFromPassword(password, masterKeySalt, masterKeyIterationCount)
 
             masterEncryptionKey = EncryptionAlgorithm.AES256GCM.generateEncryptionKey()
             val serializableMasterEncryptionKey = CryptographicKey(masterEncryptionKey)
             val protectedMasterEncryptionKey = ProtectedValue.create(EncryptionAlgorithm.AES256GCM, masterKey, serializableMasterEncryptionKey)
 
-            val defaultUserSettings = UserSettings()
-            val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.AES256GCM, masterEncryptionKey, defaultUserSettings)
+            val userSettings = UserSettings()
+            val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.AES256GCM, masterEncryptionKey, userSettings)
 
             val localUser = if (protectedMasterEncryptionKey != null && protectedUserSettings != null) {
                 val currentDate = currentDate
 
                 User(
-                    "local@passbutler.app",
+                    userName,
                     masterKeyDerivationInformation,
                     protectedMasterEncryptionKey,
                     protectedUserSettings,
@@ -90,7 +90,11 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
                 throw UserCreationFailedException("The local user could not be created because protected values creation failed!")
             }
 
-            createUser(localUser, masterPassword, true)
+            createUser(localUser)
+            persistPreferences(localUser.username, null)
+
+            val loggedInUserResult = LoggedInUserResult(localUser, masterPassword = password)
+            loggedInUser.postValue(loggedInUserResult)
 
         } catch (exception: Exception) {
             throw LoginFailedException("The local login failed with an exception!", exception)
@@ -101,24 +105,33 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         }
     }
 
-    private suspend fun createUser(user: User, masterPassword: String, isLocalUser: Boolean) {
+    private suspend fun createUser(user: User) {
         localRepository.insertUser(user)
+    }
 
-        sharedPreferences.edit().also {
-            it.putString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, user.username)
-            it.putBoolean(SERIALIZATION_KEY_IS_LOCAL_USER, isLocalUser)
-        }.apply()
-
-        val loggedInUserResult = LoggedInUserResult(user, masterPassword = masterPassword)
-        loggedInUser.postValue(loggedInUserResult)
+    @SuppressLint("ApplySharedPref")
+    private suspend fun persistPreferences(loggedInUsername: String, serverUrl: String?) {
+        withContext(Dispatchers.IO) {
+            // Use blocking `commit()` because we are in suspending function
+            sharedPreferences.edit().also {
+                it.putString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, loggedInUsername)
+                it.putString(SERIALIZATION_KEY_LOGGED_IN_SERVERURL, serverUrl)
+            }.commit()
+        }
     }
 
     suspend fun logoutUser() {
         L.d("UserManager", "logoutUser()")
 
+        shutdownRemoteWebservice()
+
         localRepository.reset()
         sharedPreferences.edit().clear().apply()
         loggedInUser.postValue(null)
+    }
+
+    private fun shutdownRemoteWebservice() {
+        remoteWebservice = null
     }
 
     suspend fun restoreLoggedInUser() {
@@ -230,7 +243,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
 }
 
 private const val SERIALIZATION_KEY_LOGGED_IN_USERNAME = "loggedInUsername"
-private const val SERIALIZATION_KEY_IS_LOCAL_USER = "isLocalUser"
+private const val SERIALIZATION_KEY_LOGGED_IN_SERVERURL = "loggedInServerUrl"
 
 data class LoggedInUserResult(val user: User, val masterPassword: String?)
 
