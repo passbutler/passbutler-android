@@ -176,7 +176,6 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
 
 private class UserSynchronization(private val localRepository: PassButlerRepository, private var remoteWebservice: UserWebservice) : Synchronization {
 
-    // TODO: `coroutineScope` or `withContext(IO)`?
     @Throws(Synchronization.SynchronizationFailedException::class)
     override suspend fun synchronize() = coroutineScope {
         // Start both operations parallel because they are independent from each other

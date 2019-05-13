@@ -53,6 +53,11 @@ interface Synchronizable {
  * Interface for classes that implement a synchronization functionality.
  */
 interface Synchronization {
+
+    /**
+     * Implements actual synchronization code. Code should be called in a `coroutineScope` block
+     * to be sure a failed tasks cancel others but does not affect outer coroutine scope.
+     */
     suspend fun synchronize(): Int
 
     class SynchronizationFailedException(message: String) : Exception(message)
