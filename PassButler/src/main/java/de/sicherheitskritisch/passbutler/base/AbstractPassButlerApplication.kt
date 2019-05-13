@@ -21,7 +21,6 @@ abstract class AbstractPassButlerApplication : Application() {
     }
 
     companion object {
-        // If the context is accessed before application `onCreate` there is something wrong, so doublebang is okay here
         lateinit var applicationContext: Context
             private set
     }

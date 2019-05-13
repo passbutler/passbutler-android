@@ -12,7 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
-import de.sicherheitskritisch.passbutler.base.Build
+import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
 import de.sicherheitskritisch.passbutler.base.L
@@ -72,7 +72,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
     @SuppressLint("SetTextI18n")
     private fun setupDebugLoginPresetsButton(binding: FragmentLoginBinding) {
-        if (Build.isDebugBuild) {
+        if (BuildType.isDebugBuild) {
             binding.imageViewLogo.setOnLongClickListener {
                 binding.textInputEditTextUsername.setText("test")
                 binding.textInputEditTextPassword.setText("1234")
