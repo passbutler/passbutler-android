@@ -10,7 +10,7 @@ object KeyDerivation {
     private const val AES_KEY_LENGTH = 256
 
     /**
-     * Derives a cryptographic AES-256 key from a password using PBKDF2 with SHA-1.
+     * Derives a cryptographic AES-256 key from a password using PBKDF2 with SHA-256.
      */
     @Throws(IllegalArgumentException::class, KeyDerivationFailedException::class)
     fun deriveAES256KeyFromPassword(password: String, salt: ByteArray, iterationCount: Int): ByteArray {
@@ -18,7 +18,7 @@ object KeyDerivation {
             throw IllegalArgumentException("The password must not be empty!")
         }
 
-        // The salt must have the same size as the derived key
+        // The salt should have the same size as the derived key
         if (salt.bitSize != AES_KEY_LENGTH) {
             throw IllegalArgumentException("The salt must be 256 bits long!")
         }
@@ -27,7 +27,7 @@ object KeyDerivation {
             val preparedPassword = normalizePassword(trimPassword(password))
 
             val pbeKeySpec = PBEKeySpec(preparedPassword.toCharArray(), salt, iterationCount, AES_KEY_LENGTH)
-            val secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
+            val secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2withHmacSHA256")
             val secretKeyBytes = secretKeyFactory.generateSecret(pbeKeySpec).encoded
 
             secretKeyBytes
@@ -37,8 +37,8 @@ object KeyDerivation {
     }
 
     /**
-     * Removes leading and trailing spaces from password string (whitespace characters at the start/end
-     * should be avoided because they may not be visible to the user).
+     * Removes leading and trailing spaces from password string (whitespace characters at
+     * the start/end should be avoided because they may not be visible to the user).
      */
     private fun trimPassword(password: String): String {
         return password.trim()

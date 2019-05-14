@@ -82,7 +82,10 @@ class KeyDerivationTest {
     }
 
     /**
-     * Valid key derivation tests (test values generated with: <https://asecuritysite.com/encryption/PBKDF2z>)
+     * Valid key derivation tests.
+     *
+     * Test values generated with "nettle" command line program, e.g.:
+     * $ echo -n "1234abcd" | nettle-pbkdf2 -i 100000 -l 32 --hex-salt 007A1D97CB4B60D69F323E67C25014845E9693A16352C4A032D677AF16F036C1
      */
 
     @Test
@@ -92,7 +95,7 @@ class KeyDerivationTest {
         val iterationCount = 1000
 
         val derivedKey = KeyDerivation.deriveAES256KeyFromPassword(userPassword, salt, iterationCount)
-        assertArrayEquals("8F2984F7BF32EF34E64EEA14C8865899CE0783D39D0DF9B82ADB8D3097A02A10".hexToBytes(), derivedKey)
+        assertArrayEquals("8A803738E7D84E90A607ABB9CCE4E6C10E14F4856B4B8F6D3A2DB0EFC48456EB".hexToBytes(), derivedKey)
     }
 
     @Test
@@ -102,7 +105,7 @@ class KeyDerivationTest {
         val iterationCount = 100_000
 
         val derivedKey = KeyDerivation.deriveAES256KeyFromPassword(userPassword, salt, iterationCount)
-        assertArrayEquals("493242BAD12E66F6E1A2CE3BDF7390693A4552FDDCC6EECA94B0A2E6C4C40D5B".hexToBytes(), derivedKey)
+        assertArrayEquals("10869F0AB3966CA9EF91660167EA6416C30CCE8A1F6C4A7DAB0E465E6D608598".hexToBytes(), derivedKey)
     }
 
     /**
