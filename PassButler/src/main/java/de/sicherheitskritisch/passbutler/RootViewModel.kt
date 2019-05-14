@@ -3,11 +3,14 @@ package de.sicherheitskritisch.passbutler
 import android.app.Application
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
+import android.support.v4.app.FragmentActivity
 import android.text.format.DateUtils
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
+import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
@@ -120,4 +123,13 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         object Locked : LockScreenState()
         object Unlocked : LockScreenState()
     }
+}
+
+/**
+ * Convenience method to obtain the `RootViewModel` from activity.
+ */
+@Suppress("unused")
+fun BaseViewModelFragment<*>.getRootViewModel(activity: FragmentActivity): RootViewModel {
+    // The `RootViewModel` must be received via activity to be sure it is the same for multiple fragment lifecycles
+    return ViewModelProviders.of(activity).get(RootViewModel::class.java)
 }

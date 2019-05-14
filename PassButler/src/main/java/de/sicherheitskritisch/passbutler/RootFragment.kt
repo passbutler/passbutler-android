@@ -1,7 +1,6 @@
 package de.sicherheitskritisch.passbutler
 
 import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -20,8 +19,7 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
         super.onAttach(context)
 
         activity?.let {
-            // The `RootViewModel` must be received via activity to be sure it survives fragment lifecycles
-            viewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
+            viewModel = getRootViewModel(it)
 
             val contentContainerResourceId = R.id.frameLayout_fragment_root_content_container
             val progressScreenViewResourceId = R.id.frameLayout_progress_container

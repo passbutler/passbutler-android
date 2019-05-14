@@ -25,8 +25,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         viewModel = ViewModelProviders.of(this).get(SettingsViewModel::class.java)
 
         activity?.let {
-            // The `RootViewModel` must be received via activity to be sure it survives fragment lifecycles
-            val rootViewModel = ViewModelProviders.of(it).get(RootViewModel::class.java)
+            val rootViewModel = getRootViewModel(it)
             viewModel.loggedInUserViewModel = rootViewModel.loggedInUserViewModel
         }
     }
