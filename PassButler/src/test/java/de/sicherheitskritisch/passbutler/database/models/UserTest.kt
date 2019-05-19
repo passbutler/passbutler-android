@@ -3,6 +3,8 @@ package de.sicherheitskritisch.passbutler.database.models
 import android.util.Log
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
+import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
+import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.hexToBytes
 import io.mockk.every
 import io.mockk.mockkObject

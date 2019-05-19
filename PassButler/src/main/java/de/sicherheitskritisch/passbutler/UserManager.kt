@@ -15,8 +15,8 @@ import de.sicherheitskritisch.passbutler.crypto.RandomGenerator
 import de.sicherheitskritisch.passbutler.database.Differentiation
 import de.sicherheitskritisch.passbutler.database.PassButlerRepository
 import de.sicherheitskritisch.passbutler.database.Synchronization
-import de.sicherheitskritisch.passbutler.database.models.CryptographicKey
-import de.sicherheitskritisch.passbutler.database.models.KeyDerivationInformation
+import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
+import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserConverterFactory
 import de.sicherheitskritisch.passbutler.database.models.UserSettings

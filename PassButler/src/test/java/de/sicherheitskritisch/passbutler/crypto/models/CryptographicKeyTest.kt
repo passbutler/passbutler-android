@@ -1,7 +1,8 @@
-package de.sicherheitskritisch.passbutler.database.models
+package de.sicherheitskritisch.passbutler.crypto.models
 
 import android.util.Log
 import de.sicherheitskritisch.passbutler.assertJSONObjectEquals
+import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.hexToBytes
 import io.mockk.every
 import io.mockk.mockkStatic

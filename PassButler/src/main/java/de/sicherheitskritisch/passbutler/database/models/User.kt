@@ -18,6 +18,10 @@ import de.sicherheitskritisch.passbutler.base.putLong
 import de.sicherheitskritisch.passbutler.base.putString
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.getProtectedValue
+import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
+import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
+import de.sicherheitskritisch.passbutler.crypto.models.getKeyDerivationInformation
+import de.sicherheitskritisch.passbutler.crypto.models.putKeyDerivationInformation
 import de.sicherheitskritisch.passbutler.crypto.putProtectedValue
 import de.sicherheitskritisch.passbutler.database.Synchronizable
 import kotlinx.coroutines.Deferred

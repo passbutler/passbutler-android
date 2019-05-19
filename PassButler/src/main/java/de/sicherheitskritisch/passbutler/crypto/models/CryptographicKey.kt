@@ -1,4 +1,4 @@
-package de.sicherheitskritisch.passbutler.database.models
+package de.sicherheitskritisch.passbutler.crypto.models
 
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.L
