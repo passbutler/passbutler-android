@@ -46,7 +46,9 @@ object Differentiation {
  */
 interface Synchronizable {
     val primaryField: String
+    var deleted: Boolean
     var modified: Date
+    val created: Date
 }
 
 /**

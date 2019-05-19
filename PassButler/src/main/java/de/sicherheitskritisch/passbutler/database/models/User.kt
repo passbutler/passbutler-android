@@ -51,9 +51,9 @@ data class User(
     val masterKeyDerivationInformation: KeyDerivationInformation,
     var masterEncryptionKey: ProtectedValue<CryptographicKey>,
     var settings: ProtectedValue<UserSettings>,
-    var deleted: Boolean,
+    override var deleted: Boolean,
     override var modified: Date,
-    val created: Date
+    override val created: Date
 ) : Synchronizable, JSONSerializable {
 
     @Ignore
