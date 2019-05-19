@@ -17,9 +17,11 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.createMainDispatcher
+import de.sicherheitskritisch.passbutler.database.models.ItemKey
 import de.sicherheitskritisch.passbutler.databinding.FragmentOverviewBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
@@ -32,6 +34,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment, CoroutineScope {
@@ -79,11 +82,24 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate<FragmentOverviewBinding>(inflater, R.layout.fragment_overview, container, false).also { binding ->
+        val binding = DataBindingUtil.inflate<FragmentOverviewBinding>(inflater, R.layout.fragment_overview, container, false).also { binding ->
             binding.lifecycleOwner = this
 
             setupToolBar(binding)
             setupDrawerLayout(binding)
+
+            this.binding = binding
+        }
+
+        val userManager = viewModel.getApplication<AbstractPassButlerApplication>().userManager
+
+        // TODO: Remove test code:
+        binding.layoutOverviewContent.root.setOnClickListener {
+            launch {
+                val currentDate = Date()
+                val itemKey = ItemKey(UUID.randomUUID().toString(), "test1", false, currentDate, currentDate)
+                userManager.createItemKey(itemKey)
+            }
         }
 
         return binding?.root
@@ -231,17 +247,17 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             get() = fragment?.resources
 
         override fun onIsLoadingChanged(isLoading: Boolean) {
-//            fragment?.toolbarMenuIconSync?.apply {
-//                isEnabled = !isLoading
-//
-//                val menuIconTintColor = when (isLoading) {
-//                    true -> resources?.getColor(R.color.whiteDisabled, null)
-//                    false -> resources?.getColor(R.color.white, null)
-//                }
-//                menuIconTintColor?.let {
-//                    icon?.applyTint(it)
-//                }
-//            }
+            fragment?.toolbarMenuIconSync?.apply {
+                isEnabled = !isLoading
+
+                val menuIconTintColor = when (isLoading) {
+                    true -> resources?.getColor(R.color.whiteDisabled, null)
+                    false -> resources?.getColor(R.color.white, null)
+                }
+                menuIconTintColor?.let {
+                    icon?.applyTint(it)
+                }
+            }
 
             binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
         }

@@ -1,6 +1,5 @@
 package de.sicherheitskritisch.passbutler
 
-import android.annotation.SuppressLint
 import android.arch.lifecycle.MutableLiveData
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
@@ -12,11 +11,12 @@ import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.crypto.KeyDerivation
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.RandomGenerator
+import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
+import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.database.Differentiation
 import de.sicherheitskritisch.passbutler.database.PassButlerRepository
 import de.sicherheitskritisch.passbutler.database.Synchronization
-import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
-import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
+import de.sicherheitskritisch.passbutler.database.models.ItemKey
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserConverterFactory
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
@@ -70,12 +70,12 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
             val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
             masterKey = KeyDerivation.deriveAES256KeyFromPassword(password, masterKeySalt, masterKeyIterationCount)
 
-            masterEncryptionKey = EncryptionAlgorithm.AES256GCM.generateEncryptionKey()
+            masterEncryptionKey = EncryptionAlgorithm.Symmetric.AES256GCM.generateEncryptionKey()
             val serializableMasterEncryptionKey = CryptographicKey(masterEncryptionKey)
-            val protectedMasterEncryptionKey = ProtectedValue.create(EncryptionAlgorithm.AES256GCM, masterKey, serializableMasterEncryptionKey)
+            val protectedMasterEncryptionKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterKey, serializableMasterEncryptionKey)
 
             val userSettings = UserSettings()
-            val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.AES256GCM, masterEncryptionKey, userSettings)
+            val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, userSettings)
 
             val localUser = if (protectedMasterEncryptionKey != null && protectedUserSettings != null) {
                 val currentDate = currentDate
@@ -112,7 +112,6 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         localRepository.insertUser(user)
     }
 
-    @SuppressLint("ApplySharedPref")
     private suspend fun persistPreferences(loggedInUsername: String, serverUrl: String?) {
         withContext(Dispatchers.IO) {
             // Use blocking `commit()` because we are in suspending function
@@ -140,6 +139,7 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
     suspend fun restoreLoggedInUser() {
         L.d("UserManager", "restoreLoggedInUser()")
 
+        // Only initialize remote webservice if server URL is available (non-local user)
         sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_SERVERURL, null)?.let { loggedInServerUrl ->
             initializeRemoteWebservice(loggedInServerUrl)
         }
@@ -157,6 +157,22 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
 
         user.modified = currentDate
         localRepository.updateUser(user)
+    }
+
+    suspend fun createItemKey(itemKey: ItemKey) {
+		// TODO: Remove test code:
+
+        L.d("UserManager", "createItemKey(): itemKey = $itemKey")
+        localRepository.insertItemKey(itemKey)
+
+        val itemKeys = localRepository.findAllItemKeys()
+        L.d("UserManager", "createItemKey(): itemKeys = $itemKeys")
+
+        val userItemKeys = localRepository.findUserItemKeys("test")?.itemKeys
+        L.d("UserManager", "createItemKey(): userItemKeys of test = $userItemKeys")
+
+        val userItemKeys2 = localRepository.findUserItemKeys("test1")?.itemKeys
+        L.d("UserManager", "createItemKey(): userItemKeys of test1 = $userItemKeys2")
     }
 
     @Throws(Synchronization.SynchronizationFailedException::class)

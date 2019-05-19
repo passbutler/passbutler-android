@@ -6,17 +6,21 @@ import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.TypeConverter
 import android.arch.persistence.room.TypeConverters
 import android.content.Context
+import de.sicherheitskritisch.passbutler.database.models.ItemDao
+import de.sicherheitskritisch.passbutler.database.models.ItemKey
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserDao
 import de.sicherheitskritisch.passbutler.database.models.UserModelConverters
+import de.sicherheitskritisch.passbutler.database.models.UserWithItemKeys
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.*
 
-@Database(entities = [User::class], version = 1, exportSchema = false)
+@Database(entities = [User::class, ItemKey::class], version = 1, exportSchema = false)
 @TypeConverters(GeneralDatabaseConverters::class, UserModelConverters::class)
 abstract class PassButlerDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
+    abstract fun itemDao(): ItemDao
 }
 
 class GeneralDatabaseConverters {
@@ -62,4 +66,44 @@ class PassButlerRepository(applicationContext: Context) {
             localDatabase.clearAllTables()
         }
     }
+
+
+
+
+
+    suspend fun insertItemKey(vararg itemKey: ItemKey) {
+        withContext(Dispatchers.IO) {
+            localDatabase.itemDao().insert(*itemKey)
+        }
+    }
+
+
+    suspend fun findAllItemKeys(): List<ItemKey>? {
+        return withContext(Dispatchers.IO) {
+            localDatabase.itemDao().findAll()
+        }
+    }
+
+    suspend fun findUserItemKeys(username: String): UserWithItemKeys? {
+        return withContext(Dispatchers.IO) {
+            localDatabase.itemDao().findUserItemKeys(username)
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
