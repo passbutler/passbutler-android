@@ -14,7 +14,7 @@ import java.util.*
  */
 class ProtectedValue<T : JSONSerializable>(
     initializationVector: ByteArray,
-    encryptionAlgorithm: EncryptionAlgorithm,
+    encryptionAlgorithm: EncryptionAlgorithm.Symmetric,
     encryptedValue: ByteArray
 ) : JSONSerializable {
 
@@ -29,7 +29,7 @@ class ProtectedValue<T : JSONSerializable>(
     override fun serialize(): JSONObject {
         return JSONObject().apply {
             putByteArray(SERIALIZATION_KEY_INITIALIZATION_VECTOR, initializationVector)
-            putEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM, encryptionAlgorithm)
+            putSymmetricEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM, encryptionAlgorithm)
             putByteArray(SERIALIZATION_KEY_ENCRYPTED_VALUE, encryptedValue)
         }
     }
@@ -97,7 +97,7 @@ class ProtectedValue<T : JSONSerializable>(
             return try {
                 ProtectedValue(
                     jsonObject.getByteArray(SERIALIZATION_KEY_INITIALIZATION_VECTOR),
-                    jsonObject.getEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM),
+                    jsonObject.getSymmetricEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM),
                     jsonObject.getByteArray(SERIALIZATION_KEY_ENCRYPTED_VALUE)
                 )
             } catch (e: JSONException) {
@@ -106,7 +106,7 @@ class ProtectedValue<T : JSONSerializable>(
             }
         }
 
-        fun <T : JSONSerializable> create(encryptionAlgorithm: EncryptionAlgorithm, encryptionKey: ByteArray, initialValue: T): ProtectedValue<T>? {
+        fun <T : JSONSerializable> create(encryptionAlgorithm: EncryptionAlgorithm.Symmetric, encryptionKey: ByteArray, initialValue: T): ProtectedValue<T>? {
             val newInitializationVector = encryptionAlgorithm.generateInitializationVector()
 
             return try {

@@ -12,88 +12,91 @@ import javax.crypto.spec.SecretKeySpec
 
 sealed class EncryptionAlgorithm(val stringRepresentation: String) {
 
-    abstract fun generateEncryptionKey(): ByteArray
-    abstract fun generateInitializationVector(): ByteArray
-    abstract fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray
-    abstract fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray
-
     override fun toString(): String {
         return stringRepresentation
     }
 
-    object AES256GCM : EncryptionAlgorithm("AES-256-GCM") {
+    sealed class Symmetric(stringRepresentation: String) : EncryptionAlgorithm(stringRepresentation) {
 
-        private const val AES_KEY_LENGTH = 256
-        private const val GCM_INITIALIZATION_VECTOR_LENGTH = 96
-        private const val GCM_AUTHENTICATION_TAG_LENGTH = 128
+        abstract fun generateEncryptionKey(): ByteArray
+        abstract fun generateInitializationVector(): ByteArray
+        abstract fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray
+        abstract fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray
 
-        @Throws(GenerateEncryptionKeyFailedException::class)
-        override fun generateEncryptionKey(): ByteArray {
-            return try {
-                val keyGenerator = KeyGenerator.getInstance("AES")
-                keyGenerator.init(AES_KEY_LENGTH)
+        object AES256GCM : EncryptionAlgorithm.Symmetric("AES-256-GCM") {
 
-                val secretKey = keyGenerator.generateKey()
-                secretKey.encoded
-            } catch (e: Exception) {
-                throw GenerateEncryptionKeyFailedException(e)
+            private const val AES_KEY_LENGTH = 256
+            private const val GCM_INITIALIZATION_VECTOR_LENGTH = 96
+            private const val GCM_AUTHENTICATION_TAG_LENGTH = 128
+
+            @Throws(GenerateEncryptionKeyFailedException::class)
+            override fun generateEncryptionKey(): ByteArray {
+                return try {
+                    val keyGenerator = KeyGenerator.getInstance("AES")
+                    keyGenerator.init(AES_KEY_LENGTH)
+
+                    val secretKey = keyGenerator.generateKey()
+                    secretKey.encoded
+                } catch (e: Exception) {
+                    throw GenerateEncryptionKeyFailedException(e)
+                }
             }
-        }
 
-        override fun generateInitializationVector(): ByteArray {
-            val bytesCount = GCM_INITIALIZATION_VECTOR_LENGTH.byteSize
-            return RandomGenerator.generateRandomBytes(bytesCount)
-        }
-
-        @Throws(EncryptionFailedException::class)
-        override fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray {
-            return try {
-                if (initializationVector.bitSize != GCM_INITIALIZATION_VECTOR_LENGTH) {
-                    throw IllegalArgumentException("The initialization vector must be 96 bits long!")
-                }
-
-                if (encryptionKey.bitSize != AES_KEY_LENGTH) {
-                    throw IllegalArgumentException("The encryption key must be 256 bits long!")
-                }
-
-                val secretKeySpec = SecretKeySpec(encryptionKey, "AES")
-                val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_LENGTH, initializationVector)
-
-                // The GCM is no classic block mode and thus has no padding
-                val encryptCipherInstance = Cipher.getInstance("AES/GCM/NoPadding")
-                encryptCipherInstance.init(Cipher.ENCRYPT_MODE, secretKeySpec, gcmParameterSpec)
-
-                val encryptedData = encryptCipherInstance.doFinal(data)
-
-                encryptedData
-            } catch (e: Exception) {
-                throw EncryptionFailedException(e)
+            override fun generateInitializationVector(): ByteArray {
+                val bytesCount = GCM_INITIALIZATION_VECTOR_LENGTH.byteSize
+                return RandomGenerator.generateRandomBytes(bytesCount)
             }
-        }
 
-        @Throws(DecryptionFailedException::class)
-        override fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray {
-            return try {
-                if (initializationVector.bitSize != GCM_INITIALIZATION_VECTOR_LENGTH) {
-                    throw IllegalArgumentException("The initialization vector must be 96 bits long!")
+            @Throws(EncryptionFailedException::class)
+            override fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray {
+                return try {
+                    if (initializationVector.bitSize != GCM_INITIALIZATION_VECTOR_LENGTH) {
+                        throw IllegalArgumentException("The initialization vector must be 96 bits long!")
+                    }
+
+                    if (encryptionKey.bitSize != AES_KEY_LENGTH) {
+                        throw IllegalArgumentException("The encryption key must be 256 bits long!")
+                    }
+
+                    val secretKeySpec = SecretKeySpec(encryptionKey, "AES")
+                    val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_LENGTH, initializationVector)
+
+                    // The GCM is no classic block mode and thus has no padding
+                    val encryptCipherInstance = Cipher.getInstance("AES/GCM/NoPadding")
+                    encryptCipherInstance.init(Cipher.ENCRYPT_MODE, secretKeySpec, gcmParameterSpec)
+
+                    val encryptedData = encryptCipherInstance.doFinal(data)
+
+                    encryptedData
+                } catch (e: Exception) {
+                    throw EncryptionFailedException(e)
                 }
+            }
 
-                if (encryptionKey.bitSize != AES_KEY_LENGTH) {
-                    throw IllegalArgumentException("The encryption key must be 256 bits long!")
+            @Throws(DecryptionFailedException::class)
+            override fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray {
+                return try {
+                    if (initializationVector.bitSize != GCM_INITIALIZATION_VECTOR_LENGTH) {
+                        throw IllegalArgumentException("The initialization vector must be 96 bits long!")
+                    }
+
+                    if (encryptionKey.bitSize != AES_KEY_LENGTH) {
+                        throw IllegalArgumentException("The encryption key must be 256 bits long!")
+                    }
+
+                    val secretKeySpec = SecretKeySpec(encryptionKey, "AES")
+                    val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_LENGTH, initializationVector)
+
+                    // The GCM is no classic block mode and thus has no padding
+                    val encryptCipherInstance = Cipher.getInstance("AES/GCM/NoPadding")
+                    encryptCipherInstance.init(Cipher.DECRYPT_MODE, secretKeySpec, gcmParameterSpec)
+
+                    val decryptedData = encryptCipherInstance.doFinal(data)
+
+                    decryptedData
+                } catch (e: Exception) {
+                    throw DecryptionFailedException(e)
                 }
-
-                val secretKeySpec = SecretKeySpec(encryptionKey, "AES")
-                val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_LENGTH, initializationVector)
-
-                // The GCM is no classic block mode and thus has no padding
-                val encryptCipherInstance = Cipher.getInstance("AES/GCM/NoPadding")
-                encryptCipherInstance.init(Cipher.DECRYPT_MODE, secretKeySpec, gcmParameterSpec)
-
-                val decryptedData = encryptCipherInstance.doFinal(data)
-
-                decryptedData
-            } catch (e: Exception) {
-                throw DecryptionFailedException(e)
             }
         }
     }
@@ -104,21 +107,21 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
 }
 
 /**
- * Convenience method to put a `EncryptionAlgorithm` value to `JSONObject`.
+ * Convenience method to put a `EncryptionAlgorithm.Symmetric` value to `JSONObject`.
  */
 @Throws(JSONException::class)
-fun JSONObject.putEncryptionAlgorithm(name: String, value: EncryptionAlgorithm): JSONObject {
+fun JSONObject.putSymmetricEncryptionAlgorithm(name: String, value: EncryptionAlgorithm.Symmetric): JSONObject {
     val algorithmStringRepresentation = value.stringRepresentation
     return putString(name, algorithmStringRepresentation)
 }
 
 /**
- * Convenience method to get a `EncryptionAlgorithm` value from `JSONObject`.
+ * Convenience method to get a `EncryptionAlgorithm.Symmetric` value from `JSONObject`.
  */
 @Throws(JSONException::class)
-fun JSONObject.getEncryptionAlgorithm(name: String): EncryptionAlgorithm {
+fun JSONObject.getSymmetricEncryptionAlgorithm(name: String): EncryptionAlgorithm.Symmetric {
     return when (val algorithmStringRepresentation = getString(name)) {
-        EncryptionAlgorithm.AES256GCM.stringRepresentation -> EncryptionAlgorithm.AES256GCM
-        else -> throw JSONException("The EncryptionAlgorithm string representation '$algorithmStringRepresentation' could not be found!")
+        EncryptionAlgorithm.Symmetric.AES256GCM.stringRepresentation -> EncryptionAlgorithm.Symmetric.AES256GCM
+        else -> throw JSONException("The EncryptionAlgorithm.Symmetric string representation '$algorithmStringRepresentation' could not be found!")
     }
 }
