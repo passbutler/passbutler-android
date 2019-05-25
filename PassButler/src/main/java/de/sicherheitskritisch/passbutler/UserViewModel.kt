@@ -36,29 +36,7 @@ class UserViewModel(private val userManager: UserManager, private val user: User
         set(newMasterEncryptionKey) {
             if (field.optionalContentNotEquals(newMasterEncryptionKey)) {
                 field = newMasterEncryptionKey
-
-                if (newMasterEncryptionKey != null) {
-                    L.d("UserViewModel", "setMasterEncryptionKey(): The master encryption key was set, decrypt and update user settings...")
-
-                    settings = user.settings.decrypt(newMasterEncryptionKey) {
-                        UserSettings.deserialize(it)
-                    }
-
-                    lockTimeoutSetting.postValue(settings?.lockTimeout)
-                    hidePasswordsSetting.postValue(settings?.hidePasswords)
-
-                    // Register observers after field initialisations to avoid initial observer calls
-                    registerObservers()
-                } else {
-                    L.d("UserViewModel", "setMasterEncryptionKey(): The master encryption key was reset, clear user settings...")
-
-                    // Unregister observers before setting field reset to avoid unnecessary observer calls
-                    unregisterObservers()
-
-                    settings = null
-                    lockTimeoutSetting.postValue(null)
-                    hidePasswordsSetting.postValue(null)
-                }
+                onMasterEncryptionKeyWasSet(newMasterEncryptionKey)
             }
         }
 
@@ -133,6 +111,31 @@ class UserViewModel(private val userManager: UserManager, private val user: User
         withContext(Dispatchers.Default) {
             masterEncryptionKey?.clear()
             masterEncryptionKey = null
+        }
+    }
+
+    private fun onMasterEncryptionKeyWasSet(newMasterEncryptionKey: ByteArray?) {
+        if (newMasterEncryptionKey != null) {
+            L.d("UserViewModel", "setMasterEncryptionKey(): The master encryption key was set, decrypt and update user settings...")
+
+            settings = user.settings.decrypt(newMasterEncryptionKey) {
+                UserSettings.deserialize(it)
+            }
+
+            lockTimeoutSetting.postValue(settings?.lockTimeout)
+            hidePasswordsSetting.postValue(settings?.hidePasswords)
+
+            // Register observers after field initialisations to avoid initial observer calls
+            registerObservers()
+        } else {
+            L.d("UserViewModel", "setMasterEncryptionKey(): The master encryption key was reset, clear user settings...")
+
+            // Unregister observers before setting field reset to avoid unnecessary observer calls
+            unregisterObservers()
+
+            settings = null
+            lockTimeoutSetting.postValue(null)
+            hidePasswordsSetting.postValue(null)
         }
     }
 

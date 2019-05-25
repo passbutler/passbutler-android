@@ -28,25 +28,10 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     private val userManager
         get() = getApplication<AbstractPassButlerApplication>().userManager
 
-    private val loggedInUserObserver = Observer<LoggedInUserResult?> { loggedInUserResult ->
-        if (loggedInUserResult != null) {
-            loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.user, loggedInUserResult.masterPassword)
+    private val loggedInUserObserver = LoggedInUserObserver()
 
-            rootScreenState.value = RootScreenState.LoggedIn
-
-            // The master password is only contained in `LoggedInUserResult` directly after the login
-            lockScreenState.value = if (loggedInUserResult.masterPassword == null) LockScreenState.Locked else LockScreenState.Unlocked
-        } else {
-            rootScreenState.value = RootScreenState.LoggedOut
-            lockScreenState.value = null
-
-            loggedInUserViewModel?.cancelJobs()
-            loggedInUserViewModel = null
-        }
-    }
-
-    private var handleCryptoResourcesCoroutineJob: Job? = null
-    private var lockTimerCoroutineJob: Job? = null
+    private var cryptoResourcesJob: Job? = null
+    private var lockScreenTimerJob: Job? = null
 
     init {
         userManager.loggedInUser.observeForever(loggedInUserObserver)
@@ -63,8 +48,8 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     fun unlockScreen(masterPassword: String) {
-        handleCryptoResourcesCoroutineJob?.cancel()
-        handleCryptoResourcesCoroutineJob = launch {
+        cryptoResourcesJob?.cancel()
+        cryptoResourcesJob = launch {
             unlockScreenRequestSendingViewModel.isLoading.postValue(true)
 
             try {
@@ -92,8 +77,8 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         // The lock timer must be only started if the user is logged in and unlocked (lock timeout available)
         loggedInUserViewModel?.lockTimeoutSetting?.value?.let { lockTimeout ->
             launch {
-                lockTimerCoroutineJob?.cancelAndJoin()
-                lockTimerCoroutineJob = launch {
+                lockScreenTimerJob?.cancelAndJoin()
+                lockScreenTimerJob = launch {
                     delay(lockTimeout * DateUtils.SECOND_IN_MILLIS)
                     lockScreen()
                 }
@@ -102,13 +87,13 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     private fun cancelLockScreenTimer() {
-        lockTimerCoroutineJob?.cancel()
+        lockScreenTimerJob?.cancel()
     }
 
     private fun lockScreen() {
-        handleCryptoResourcesCoroutineJob?.cancel()
-        handleCryptoResourcesCoroutineJob = launch {
-            // First show lock screen, than actually clear crypto resource
+        cryptoResourcesJob?.cancel()
+        cryptoResourcesJob = launch {
+            // First show lock screen, than clear crypto resources
             lockScreenState.postValue(LockScreenState.Locked)
             loggedInUserViewModel?.clearMasterEncryptionKey()
         }
@@ -123,11 +108,33 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         object Locked : LockScreenState()
         object Unlocked : LockScreenState()
     }
+
+    private inner class LoggedInUserObserver : Observer<LoggedInUserResult?> {
+        override fun onChanged(loggedInUserResult: LoggedInUserResult?) {
+            if (loggedInUserResult != null) {
+                // Create new logged-in user first
+                loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.user, loggedInUserResult.masterPassword)
+
+                rootScreenState.value = RootScreenState.LoggedIn
+
+                // The master password is only contained in `LoggedInUserResult` directly after the login
+                lockScreenState.value = if (loggedInUserResult.masterPassword == null) LockScreenState.Locked else LockScreenState.Unlocked
+            } else {
+                rootScreenState.value = RootScreenState.LoggedOut
+                lockScreenState.value = null
+
+                // Finally reset logged-in user related jobs
+                loggedInUserViewModel?.cancelJobs()
+                loggedInUserViewModel = null
+            }
+        }
+    }
 }
 
 /**
  * Convenience method to obtain the `RootViewModel` from activity.
  */
+// Extension should be only available for specific `Fragment` type
 @Suppress("unused")
 fun BaseViewModelFragment<*>.getRootViewModel(activity: FragmentActivity): RootViewModel {
     // The `RootViewModel` must be received via activity to be sure it is the same for multiple fragment lifecycles
