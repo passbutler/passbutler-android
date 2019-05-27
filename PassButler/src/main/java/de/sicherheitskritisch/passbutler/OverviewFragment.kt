@@ -96,7 +96,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         binding.layoutOverviewContent.root.setOnClickListener {
             launch {
                 val currentDate = Date()
-                val itemKey = ItemKey(UUID.randomUUID().toString(), "test1", false, currentDate, currentDate)
+                val itemKey = ItemKey(UUID.randomUUID().toString(), "test", false, currentDate, currentDate)
                 userManager.createItemKey(itemKey)
             }
         }
