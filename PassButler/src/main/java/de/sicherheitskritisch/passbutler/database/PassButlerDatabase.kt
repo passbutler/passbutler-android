@@ -11,7 +11,6 @@ import de.sicherheitskritisch.passbutler.database.models.ItemKey
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserDao
 import de.sicherheitskritisch.passbutler.database.models.UserModelConverters
-import de.sicherheitskritisch.passbutler.database.models.UserWithItemKeys
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.*
@@ -78,13 +77,13 @@ class PassButlerRepository(applicationContext: Context) {
     }
 
 
-    suspend fun findAllItemKeys(): List<ItemKey>? {
+    suspend fun findAllItemKeys(): List<ItemKey> {
         return withContext(Dispatchers.IO) {
             localDatabase.itemDao().findAll()
         }
     }
 
-    suspend fun findUserItemKeys(username: String): UserWithItemKeys? {
+    suspend fun findUserItemKeys(username: String): List<ItemKey> {
         return withContext(Dispatchers.IO) {
             localDatabase.itemDao().findUserItemKeys(username)
         }

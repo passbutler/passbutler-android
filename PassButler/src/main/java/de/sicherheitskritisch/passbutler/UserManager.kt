@@ -168,10 +168,10 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
         val itemKeys = localRepository.findAllItemKeys()
         L.d("UserManager", "createItemKey(): itemKeys = $itemKeys")
 
-        val userItemKeys = localRepository.findUserItemKeys("test")?.itemKeys
+        val userItemKeys = localRepository.findUserItemKeys("test")
         L.d("UserManager", "createItemKey(): userItemKeys of test = $userItemKeys")
 
-        val userItemKeys2 = localRepository.findUserItemKeys("test1")?.itemKeys
+        val userItemKeys2 = localRepository.findUserItemKeys("test1")
         L.d("UserManager", "createItemKey(): userItemKeys of test1 = $userItemKeys2")
     }
 
