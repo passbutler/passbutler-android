@@ -14,21 +14,18 @@ open class CoroutineScopeAndroidViewModel(application: Application) : AndroidVie
     /**
      * By default use the `IO` dispatcher for time-intensive tasks and not the `Default` dispatcher for CPU-intensive tasks.
      */
-    protected open val coroutineDispatcher = Dispatchers.IO
-
     override val coroutineContext: CoroutineContext
-        get() = coroutineDispatcher + coroutineJob
+        get() = Dispatchers.IO + coroutineJob
 
     /**
      * By default use a `SupervisorJob` to avoid that a failing child job cancel all jobs.
      */
-    private val coroutineJob = SupervisorJob()
+    protected val coroutineJob = SupervisorJob()
 
     @CallSuper
     override fun onCleared() {
         L.d("CoroutineScopeAndroidViewModel", "onCleared(): ${this.javaClass.simpleName} - Cancel the coroutine job...")
         coroutineJob.cancel()
-
         super.onCleared()
     }
 }
