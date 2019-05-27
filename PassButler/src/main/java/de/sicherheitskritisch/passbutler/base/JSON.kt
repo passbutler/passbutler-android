@@ -48,6 +48,6 @@ fun JSONObject.putLong(name: String, value: Long): JSONObject {
  * Put a `JSONObject` value to `JSONObject` (ensures the type compared to multi signature `put()` method).
  */
 @Throws(JSONException::class)
-fun JSONObject.putJSONObject(name: String, value: JSONObject): JSONObject {
+fun JSONObject.putJSONObject(name: String, value: JSONObject?): JSONObject {
     return put(name, value)
 }

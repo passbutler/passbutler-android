@@ -48,9 +48,9 @@ import java.util.*
 data class User(
     @PrimaryKey
     val username: String,
-    val masterKeyDerivationInformation: KeyDerivationInformation,
-    var masterEncryptionKey: ProtectedValue<CryptographicKey>,
-    var settings: ProtectedValue<UserSettings>,
+    val masterKeyDerivationInformation: KeyDerivationInformation?,
+    var masterEncryptionKey: ProtectedValue<CryptographicKey>?,
+    var settings: ProtectedValue<UserSettings>?,
     override var deleted: Boolean,
     override var modified: Date,
     override val created: Date
@@ -76,10 +76,9 @@ data class User(
             return try {
                 User(
                     username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
-                    masterKeyDerivationInformation = jsonObject.getKeyDerivationInformation(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION)
-                        ?: throw JSONException("The master key derivation information could not be deserialized!"),
-                    masterEncryptionKey = jsonObject.getProtectedValue(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY) ?: throw JSONException("The master encryption key could not be deserialized!"),
-                    settings = jsonObject.getProtectedValue(SERIALIZATION_KEY_SETTINGS) ?: throw JSONException("The user settings could not be deserialized!"),
+                    masterKeyDerivationInformation = jsonObject.getKeyDerivationInformation(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION),
+                    masterEncryptionKey = jsonObject.getProtectedValue(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY),
+                    settings = jsonObject.getProtectedValue(SERIALIZATION_KEY_SETTINGS),
                     deleted = jsonObject.getBoolean(SERIALIZATION_KEY_DELETED),
                     modified = Date(jsonObject.getLong(SERIALIZATION_KEY_MODIFIED)),
                     created = Date(jsonObject.getLong(SERIALIZATION_KEY_CREATED))

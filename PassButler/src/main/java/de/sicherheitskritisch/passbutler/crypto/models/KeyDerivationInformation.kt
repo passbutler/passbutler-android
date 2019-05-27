@@ -66,8 +66,8 @@ data class KeyDerivationInformation(val salt: ByteArray, val iterationCount: Int
  * Convenience method to put a `KeyDerivationInformation` value to `JSONObject`.
  */
 @Throws(JSONException::class)
-fun JSONObject.putKeyDerivationInformation(name: String, value: KeyDerivationInformation): JSONObject {
-    val serializedKeyDerivationInformation = value.serialize()
+fun JSONObject.putKeyDerivationInformation(name: String, value: KeyDerivationInformation?): JSONObject {
+    val serializedKeyDerivationInformation = value?.serialize()
     return putJSONObject(name, serializedKeyDerivationInformation)
 }
 

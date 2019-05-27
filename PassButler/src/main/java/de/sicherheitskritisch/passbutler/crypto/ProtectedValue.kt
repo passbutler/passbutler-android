@@ -139,8 +139,8 @@ private fun ByteArray.toUTF8String(): String {
  * Convenience method to put a `ProtectedValue` value to `JSONObject`.
  */
 @Throws(JSONException::class)
-fun JSONObject.putProtectedValue(name: String, value: ProtectedValue<*>): JSONObject {
-    val serializedProtectedValue = value.serialize()
+fun JSONObject.putProtectedValue(name: String, value: ProtectedValue<*>?): JSONObject {
+    val serializedProtectedValue = value?.serialize()
     return putJSONObject(name, serializedProtectedValue)
 }
 

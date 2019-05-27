@@ -1,6 +1,5 @@
 package de.sicherheitskritisch.passbutler
 
-import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
@@ -152,12 +151,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         }
 
         navigationHeaderView = binding.navigationView.inflateHeaderView(R.layout.main_drawer_header)
-
-        loggedInUserViewModel?.username?.observe(this, Observer {
-            navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_subtitle)?.also { subtitleView ->
-                subtitleView.text = loggedInUserViewModel?.username?.value
-            }
-        })
+        navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_subtitle)?.also { subtitleView ->
+            subtitleView.text = loggedInUserViewModel?.username
+        }
     }
 
     override fun onHandleBackPress(): Boolean {

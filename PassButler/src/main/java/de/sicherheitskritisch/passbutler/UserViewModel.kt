@@ -6,7 +6,9 @@ import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.optionalContentNotEquals
 import de.sicherheitskritisch.passbutler.crypto.KeyDerivation
+import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
+import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import kotlinx.coroutines.CoroutineScope
@@ -14,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -22,21 +25,41 @@ import kotlin.coroutines.CoroutineContext
  * No need to inherit from `CoroutineScopeAndroidViewModel` because this viewmodel is not held by a `Fragment`,
  * thus `onCleared()` is never called. Instead `cancelJobs()` is manually called by `RootViewModel`.
  */
-class UserViewModel(private val userManager: UserManager, private val user: User, userMasterPassword: String?) : ViewModel(), CoroutineScope {
+class UserViewModel private constructor(
+    private val userManager: UserManager,
+    val username: String,
+    private val masterKeyDerivationInformation: KeyDerivationInformation,
+    private val protectedMasterEncryptionKey: ProtectedValue<CryptographicKey>,
+    private val protectedSettings: ProtectedValue<UserSettings>,
+    private val deleted: Boolean,
+    private val modified: Date,
+    private val created: Date,
+    userMasterPassword: String?
+) : ViewModel(), CoroutineScope {
 
-    val username = MutableLiveData<String>()
+    constructor(userManager: UserManager, user: User, masterPassword: String?) : this(
+        userManager,
+        user.username,
+        user.masterKeyDerivationInformation ?: throw IllegalArgumentException("The given user has no master key derivation information!"),
+        user.masterEncryptionKey ?: throw IllegalArgumentException("The given user has no master encryption key!"),
+        user.settings ?: throw IllegalArgumentException("The given user has no user settings!"),
+        user.deleted,
+        user.modified,
+        user.created,
+        masterPassword
+    )
 
     val lockTimeoutSetting = MutableLiveData<Int>()
     val hidePasswordsSetting = MutableLiveData<Boolean>()
 
-    private val lockTimeoutSettingChangedObserver: (Int?) -> Unit = { applyCurrentUserSettings() }
-    private val hidePasswordsSettingChangedObserver: (Boolean?) -> Unit = { applyCurrentUserSettings() }
+    private val lockTimeoutSettingChangedObserver: (Int?) -> Unit = { applyUserSettings() }
+    private val hidePasswordsSettingChangedObserver: (Boolean?) -> Unit = { applyUserSettings() }
 
     private var masterEncryptionKey: ByteArray? = null
         set(newMasterEncryptionKey) {
             if (field.optionalContentNotEquals(newMasterEncryptionKey)) {
                 field = newMasterEncryptionKey
-                onMasterEncryptionKeyWasSet(newMasterEncryptionKey)
+                decryptUserSettings(newMasterEncryptionKey)
             }
         }
 
@@ -59,8 +82,6 @@ class UserViewModel(private val userManager: UserManager, private val user: User
     private val coroutineJob = SupervisorJob()
 
     init {
-        username.value = user.username
-
         // If the master password was supplied (only on login), directly unlock resources
         if (userMasterPassword != null) {
             launch {
@@ -85,11 +106,11 @@ class UserViewModel(private val userManager: UserManager, private val user: User
             var masterKey: ByteArray? = null
 
             try {
-                val masterKeySalt = user.masterKeyDerivationInformation.salt
-                val masterKeyIterationCount = user.masterKeyDerivationInformation.iterationCount
+                val masterKeySalt = masterKeyDerivationInformation.salt
+                val masterKeyIterationCount = masterKeyDerivationInformation.iterationCount
                 masterKey = KeyDerivation.deriveAES256KeyFromPassword(masterPassword, masterKeySalt, masterKeyIterationCount)
 
-                val decryptedProtectedMasterEncryptionKey = user.masterEncryptionKey.decrypt(masterKey) {
+                val decryptedProtectedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey) {
                     CryptographicKey.deserialize(it)
                 }
 
@@ -114,11 +135,11 @@ class UserViewModel(private val userManager: UserManager, private val user: User
         }
     }
 
-    private fun onMasterEncryptionKeyWasSet(newMasterEncryptionKey: ByteArray?) {
-        if (newMasterEncryptionKey != null) {
-            L.d("UserViewModel", "setMasterEncryptionKey(): The master encryption key was set, decrypt and update user settings...")
+    private fun decryptUserSettings(masterEncryptionKey: ByteArray?) {
+        if (masterEncryptionKey != null) {
+            L.d("UserViewModel", "decryptUserSettings(): The master encryption key was set, decrypt and update user settings...")
 
-            settings = user.settings.decrypt(newMasterEncryptionKey) {
+            settings = protectedSettings.decrypt(masterEncryptionKey) {
                 UserSettings.deserialize(it)
             }
 
@@ -128,7 +149,7 @@ class UserViewModel(private val userManager: UserManager, private val user: User
             // Register observers after field initialisations to avoid initial observer calls
             registerObservers()
         } else {
-            L.d("UserViewModel", "setMasterEncryptionKey(): The master encryption key was reset, clear user settings...")
+            L.d("UserViewModel", "decryptUserSettings(): The master encryption key was reset, clear user settings...")
 
             // Unregister observers before setting field reset to avoid unnecessary observer calls
             unregisterObservers()
@@ -155,18 +176,12 @@ class UserViewModel(private val userManager: UserManager, private val user: User
         }
     }
 
-    private fun applyCurrentUserSettings() {
+    private fun applyUserSettings() {
         val newLockTimeoutSetting = lockTimeoutSetting.value
         val newHidePasswordsSetting = hidePasswordsSetting.value
 
         if (newLockTimeoutSetting != null && newHidePasswordsSetting != null) {
-            // Update settings only if (still) set
-            settings?.let {
-                settings = it.copy(
-                    lockTimeout = newLockTimeoutSetting,
-                    hidePasswords = newHidePasswordsSetting
-                )
-            }
+            settings = UserSettings(newLockTimeoutSetting, newHidePasswordsSetting)
         }
     }
 
@@ -178,10 +193,24 @@ class UserViewModel(private val userManager: UserManager, private val user: User
 
             // Persist user with new settings only master encryption key and settings are (still) set
             if (masterEncryptionKey != null && settings != null) {
-                user.settings.update(masterEncryptionKey, settings)
+                protectedSettings.update(masterEncryptionKey, settings)
+
+                val user = createUserModel()
                 userManager.updateUser(user)
             }
         }
+    }
+
+    private fun createUserModel(): User {
+        return User(
+            username,
+            masterKeyDerivationInformation,
+            protectedMasterEncryptionKey,
+            protectedSettings,
+            deleted,
+            modified,
+            created
+        )
     }
 
     class MissingMasterEncryptionKeyException : Exception()
