@@ -38,7 +38,7 @@ import kotlin.coroutines.CoroutineContext
 
 class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment, CoroutineScope {
 
-    override val transitionType = AnimatedFragment.TransitionType.SLIDE_HORIZONTAL
+    override val transitionType = AnimatedFragment.TransitionType.SLIDE
 
     override val coroutineContext: CoroutineContext
         get() = createMainDispatcher() + coroutineJob

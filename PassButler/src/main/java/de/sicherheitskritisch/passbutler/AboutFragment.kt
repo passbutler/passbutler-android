@@ -6,15 +6,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.base.viewmodels.EmptyViewModel
+import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
 import java.text.SimpleDateFormat
 import java.util.*
 
 class AboutFragment : ToolBarFragment<EmptyViewModel>() {
 
-    override val transitionType = AnimatedFragment.TransitionType.SLIDE_VERTICAL
+    override val transitionType = AnimatedFragment.TransitionType.MODAL
 
     private val versionName
         get() = BuildConfig.VERSION_NAME

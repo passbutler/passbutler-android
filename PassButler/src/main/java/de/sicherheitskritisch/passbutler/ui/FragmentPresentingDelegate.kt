@@ -137,11 +137,11 @@ class FragmentPresentingDelegate(
         fun applyTransitionToAnimatedFragment(fragment: Fragment) {
             if (fragment is AnimatedFragment) {
                 when (fragment.transitionType) {
-                    AnimatedFragment.TransitionType.SLIDE_HORIZONTAL -> {
+                    AnimatedFragment.TransitionType.SLIDE -> {
                         fragment.enterTransition = createHorizontalSlideInTransition()
                         fragment.exitTransition = createHorizontalSlideOutTransition()
                     }
-                    AnimatedFragment.TransitionType.SLIDE_VERTICAL -> {
+                    AnimatedFragment.TransitionType.MODAL -> {
                         fragment.enterTransition = createVerticalSlideInTransition()
                         fragment.exitTransition = createVerticalSlideOutTransition()
                     }

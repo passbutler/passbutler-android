@@ -4,8 +4,8 @@ interface AnimatedFragment  {
     val transitionType: TransitionType
 
     enum class TransitionType {
-        SLIDE_VERTICAL,
-        SLIDE_HORIZONTAL,
+        MODAL,
+        SLIDE,
         FADE
     }
 }

@@ -30,7 +30,7 @@ import java.lang.ref.WeakReference
 
 class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment {
 
-    override val transitionType = AnimatedFragment.TransitionType.SLIDE_HORIZONTAL
+    override val transitionType = AnimatedFragment.TransitionType.SLIDE
 
     private var binding: FragmentLoginBinding? = null
     private var loginRequestSendingViewHandler: LoginRequestSendingViewHandler? = null

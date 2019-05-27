@@ -15,7 +15,7 @@ import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
 
 class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
-    override val transitionType = AnimatedFragment.TransitionType.SLIDE_VERTICAL
+    override val transitionType = AnimatedFragment.TransitionType.MODAL
 
     override fun getToolBarTitle() = getString(R.string.settings_title)
 
