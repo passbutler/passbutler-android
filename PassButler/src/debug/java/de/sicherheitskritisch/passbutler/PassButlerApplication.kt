@@ -1,20 +1,12 @@
 package de.sicherheitskritisch.passbutler
 
 import android.os.StrictMode
-import com.squareup.leakcanary.LeakCanary
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 
 class PassButlerApplication : AbstractPassButlerApplication() {
+
     override fun onCreate() {
         super.onCreate()
-
-        // If process is dedicated to LeakCanary, do not initialize normal application
-        if (LeakCanary.isInAnalyzerProcess(this)) {
-            return
-        }
-
-        LeakCanary.install(this)
-
         setupStrictMode()
     }
 
