@@ -1,14 +1,14 @@
 package de.sicherheitskritisch.passbutler.ui
 
 import android.app.Activity
-import android.support.transition.Fade
-import android.support.transition.Slide
-import android.support.transition.Transition
-import android.support.transition.TransitionSet
-import android.support.v4.app.Fragment
-import android.support.v4.view.animation.FastOutSlowInInterpolator
 import android.view.Gravity
 import android.widget.FrameLayout
+import androidx.fragment.app.Fragment
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.transition.Fade
+import androidx.transition.Slide
+import androidx.transition.Transition
+import androidx.transition.TransitionSet
 import de.sicherheitskritisch.passbutler.RootFragment
 import de.sicherheitskritisch.passbutler.base.L
 import java.lang.ref.WeakReference

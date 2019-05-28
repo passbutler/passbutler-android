@@ -1,6 +1,6 @@
 package de.sicherheitskritisch.passbutler.ui
 
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 
 interface FragmentPresenting {
     fun showFragment(fragment: Fragment, replaceFragment: Boolean = false, addToBackstack: Boolean = true, debounce: Boolean = true, animated: Boolean = true)

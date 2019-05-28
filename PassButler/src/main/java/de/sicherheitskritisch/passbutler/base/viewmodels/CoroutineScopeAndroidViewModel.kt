@@ -1,8 +1,8 @@
 package de.sicherheitskritisch.passbutler.base.viewmodels
 
 import android.app.Application
-import android.arch.lifecycle.AndroidViewModel
-import android.support.annotation.CallSuper
+import androidx.annotation.CallSuper
+import androidx.lifecycle.AndroidViewModel
 import de.sicherheitskritisch.passbutler.base.L
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

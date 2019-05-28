@@ -1,11 +1,11 @@
 package de.sicherheitskritisch.passbutler
 
-import android.arch.lifecycle.Observer
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.observeOnce
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
@@ -15,7 +15,7 @@ import java.lang.ref.WeakReference
 
 class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
 
         activity?.let {

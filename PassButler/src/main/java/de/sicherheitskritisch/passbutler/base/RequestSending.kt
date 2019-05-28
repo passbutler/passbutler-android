@@ -1,8 +1,8 @@
 package de.sicherheitskritisch.passbutler.base
 
-import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModel
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
 
 interface RequestSendingViewModel {
     val isLoading: MutableLiveData<Boolean>

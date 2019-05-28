@@ -1,13 +1,13 @@
 package de.sicherheitskritisch.passbutler
 
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
-import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProviders
 import de.sicherheitskritisch.passbutler.databinding.FragmentSettingsBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.SimpleOnSeekBarChangeListener
@@ -19,7 +19,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
     override fun getToolBarTitle() = getString(R.string.settings_title)
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
 
         viewModel = ViewModelProviders.of(this).get(SettingsViewModel::class.java)

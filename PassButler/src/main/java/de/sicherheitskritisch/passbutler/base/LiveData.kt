@@ -1,9 +1,9 @@
 package de.sicherheitskritisch.passbutler.base
 
-import android.arch.lifecycle.LifecycleOwner
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.Observer
-import android.support.annotation.MainThread
+import androidx.annotation.MainThread
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 
 @MainThread
 fun <T> LiveData<T>.observe(owner: LifecycleOwner, notifyOnRegister: Boolean, observer: Observer<T>) {
@@ -41,4 +41,3 @@ fun <T> LiveData<T>.observeForeverNotifyForNonNullValues(observer: (T) -> Unit) 
         }
     }
 }
-

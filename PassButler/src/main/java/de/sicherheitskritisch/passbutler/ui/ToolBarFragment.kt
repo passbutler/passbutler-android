@@ -1,13 +1,13 @@
 package de.sicherheitskritisch.passbutler.ui
 
-import android.arch.lifecycle.ViewModel
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
-import android.support.v7.widget.Toolbar
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.ViewModel
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import de.sicherheitskritisch.passbutler.R
 
 abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragment<ViewModelType>(), AnimatedFragment {
