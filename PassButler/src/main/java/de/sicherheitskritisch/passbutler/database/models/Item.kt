@@ -11,8 +11,8 @@ import java.util.*
 
 @Entity(tableName = "items")
 data class Item(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long,
+    @PrimaryKey
+    val uuid: String,
     var data: ProtectedValue<ItemData>,
     override var deleted: Boolean,
     override var modified: Date,
@@ -20,8 +20,17 @@ data class Item(
 ) : Synchronizable, JSONSerializable {
 
     @Ignore
-    override val primaryField = id.toString()
+    override val primaryField = uuid
 
+    override fun serialize(): JSONObject {
+        // TODO: Implement
+        return JSONObject()
+    }
+}
+
+data class ItemData(
+    val password: String
+) : JSONSerializable {
     override fun serialize(): JSONObject {
         // TODO: Implement
         return JSONObject()

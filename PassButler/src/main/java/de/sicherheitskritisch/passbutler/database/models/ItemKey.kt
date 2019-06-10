@@ -16,18 +16,20 @@ import java.util.*
 
 @Entity(
     tableName = "itemkeys",
-    foreignKeys = [ForeignKey(
-        entity = User::class,
-        parentColumns = arrayOf("username"),
-        childColumns = arrayOf("userUsername"),
-        onDelete = ForeignKey.CASCADE)
+    foreignKeys = [
+        ForeignKey(
+            entity = User::class,
+            parentColumns = arrayOf("username"),
+            childColumns = arrayOf("username"),
+            onDelete = ForeignKey.CASCADE
+        )
     ]
 )
 data class ItemKey(
     @PrimaryKey
     val uuid: String,
-    @ColumnInfo(name = "userUsername", index = true)
-    val userUsername: String,
+    @ColumnInfo(index = true)
+    val username: String,
     override var deleted: Boolean,
     override var modified: Date,
     override val created: Date
@@ -50,6 +52,6 @@ interface ItemDao {
     @Query("SELECT * FROM itemkeys")
     fun findAll(): List<ItemKey>
 
-    @Query("SELECT * FROM itemkeys WHERE userUsername = :username")
+    @Query("SELECT * FROM itemkeys WHERE username = :username")
     fun findUserItemKeys(username: String): List<ItemKey>
 }

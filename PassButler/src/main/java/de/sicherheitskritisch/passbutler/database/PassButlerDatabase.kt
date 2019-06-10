@@ -66,10 +66,6 @@ class PassButlerRepository(applicationContext: Context) {
         }
     }
 
-
-
-
-
     suspend fun insertItemKey(vararg itemKey: ItemKey) {
         withContext(Dispatchers.IO) {
             localDatabase.itemDao().insert(*itemKey)
@@ -88,21 +84,4 @@ class PassButlerRepository(applicationContext: Context) {
             localDatabase.itemDao().findUserItemKeys(username)
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
