@@ -160,19 +160,9 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
     }
 
     suspend fun createItemKey(itemKey: ItemKey) {
-		// TODO: Remove test code:
-
+        // TODO: Be sure the username is correctly set + set modified + created?
         L.d("UserManager", "createItemKey(): itemKey = $itemKey")
         localRepository.insertItemKey(itemKey)
-
-        val itemKeys = localRepository.findAllItemKeys()
-        L.d("UserManager", "createItemKey(): itemKeys = $itemKeys")
-
-        val userItemKeys = localRepository.findUserItemKeys("test")
-        L.d("UserManager", "createItemKey(): userItemKeys of test = $userItemKeys")
-
-        val userItemKeys2 = localRepository.findUserItemKeys("test1")
-        L.d("UserManager", "createItemKey(): userItemKeys of test1 = $userItemKeys2")
     }
 
     @Throws(Synchronization.SynchronizationFailedException::class)

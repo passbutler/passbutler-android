@@ -16,11 +16,9 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.createMainDispatcher
-import de.sicherheitskritisch.passbutler.database.models.ItemKey
 import de.sicherheitskritisch.passbutler.databinding.FragmentOverviewBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
@@ -33,7 +31,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
-import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment, CoroutineScope {
@@ -88,17 +85,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             setupDrawerLayout(binding)
 
             this.binding = binding
-        }
-
-        val userManager = viewModel.getApplication<AbstractPassButlerApplication>().userManager
-
-        // TODO: Remove test code:
-        binding.layoutOverviewContent.root.setOnClickListener {
-            launch {
-                val currentDate = Date()
-                val itemKey = ItemKey(UUID.randomUUID().toString(), "test", false, currentDate, currentDate)
-                userManager.createItemKey(itemKey)
-            }
         }
 
         return binding?.root
