@@ -12,6 +12,7 @@ object KeyDerivation {
     /**
      * Derives a cryptographic AES-256 key from a password using PBKDF2 with SHA-256.
      */
+    // TODO: Pass `KeyDerivationInformation` instead?
     @Throws(IllegalArgumentException::class, KeyDerivationFailedException::class)
     fun deriveAES256KeyFromPassword(password: String, salt: ByteArray, iterationCount: Int): ByteArray {
         if (password.isBlank()) {
