@@ -5,7 +5,6 @@ import android.content.Context.MODE_PRIVATE
 import androidx.lifecycle.MutableLiveData
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import de.sicherheitskritisch.passbutler.base.L
-import de.sicherheitskritisch.passbutler.base.UnitConverterFactory
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.crypto.KeyDerivation
@@ -14,13 +13,14 @@ import de.sicherheitskritisch.passbutler.crypto.RandomGenerator
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.database.Differentiation
-import de.sicherheitskritisch.passbutler.database.PassButlerRepository
+import de.sicherheitskritisch.passbutler.database.LocalRepository
 import de.sicherheitskritisch.passbutler.database.Synchronization
+import de.sicherheitskritisch.passbutler.database.UnitConverterFactory
+import de.sicherheitskritisch.passbutler.database.UserConverterFactory
+import de.sicherheitskritisch.passbutler.database.UserWebservice
 import de.sicherheitskritisch.passbutler.database.models.ItemKey
 import de.sicherheitskritisch.passbutler.database.models.User
-import de.sicherheitskritisch.passbutler.database.models.UserConverterFactory
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
-import de.sicherheitskritisch.passbutler.database.models.UserWebservice
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -29,7 +29,7 @@ import retrofit2.Retrofit
 import java.time.Instant
 import java.util.*
 
-class UserManager(applicationContext: Context, private val localRepository: PassButlerRepository) {
+class UserManager(applicationContext: Context, private val localRepository: LocalRepository) {
 
     val loggedInUser = MutableLiveData<LoggedInUserResult?>()
 
@@ -46,6 +46,8 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
     suspend fun loginUser(userName: String, password: String, serverUrl: String) {
         // TODO: Proper server login and user creation
         initializeRemoteWebservice(serverUrl)
+
+        // TODO: Token persistence
     }
 
     private fun initializeRemoteWebservice(serverUrl: String) {
@@ -180,7 +182,8 @@ class UserManager(applicationContext: Context, private val localRepository: Pass
     class LoginFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
 }
 
-private class UserSynchronization(private val localRepository: PassButlerRepository, private var remoteWebservice: UserWebservice) : Synchronization {
+// TODO: Only sync down users
+private class UserSynchronization(private val localRepository: LocalRepository, private var remoteWebservice: UserWebservice) : Synchronization {
 
     @Throws(Synchronization.SynchronizationFailedException::class)
     override suspend fun synchronize() = coroutineScope {

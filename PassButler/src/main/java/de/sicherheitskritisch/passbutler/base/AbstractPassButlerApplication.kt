@@ -3,7 +3,7 @@ package de.sicherheitskritisch.passbutler.base
 import android.app.Application
 import android.content.Context
 import de.sicherheitskritisch.passbutler.UserManager
-import de.sicherheitskritisch.passbutler.database.PassButlerRepository
+import de.sicherheitskritisch.passbutler.database.LocalRepository
 
 abstract class AbstractPassButlerApplication : Application() {
 
@@ -12,7 +12,7 @@ abstract class AbstractPassButlerApplication : Application() {
     }
 
     private val localRepository by lazy {
-        PassButlerRepository(applicationContext)
+        LocalRepository(applicationContext)
     }
 
     override fun onCreate() {

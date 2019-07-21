@@ -1,14 +1,10 @@
 package de.sicherheitskritisch.passbutler.database.models
 
 import androidx.room.ColumnInfo
-import androidx.room.Dao
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Ignore
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
-import androidx.room.Query
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.database.Synchronizable
 import org.json.JSONObject
@@ -42,16 +38,4 @@ data class ItemKey(
         // TODO: Implement
         return JSONObject()
     }
-}
-
-@Dao
-interface ItemDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(vararg itemKey: ItemKey)
-
-    @Query("SELECT * FROM itemkeys")
-    fun findAll(): List<ItemKey>
-
-    @Query("SELECT * FROM itemkeys WHERE username = :username")
-    fun findUserItemKeys(username: String): List<ItemKey>
 }
