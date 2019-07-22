@@ -171,7 +171,7 @@ class ProtectedValueTest {
 
     @Test
     fun `Decrypt and instantiate a protected value`() {
-        val mockAES256GCMAlgorithm = mockk<EncryptionAlgorithm.AES256GCM>()
+        val mockAES256GCMAlgorithm = mockk<EncryptionAlgorithm.Symmetric.AES256GCM>()
 
         val dataCaptureSlot = slot<ByteArray>()
         every { mockAES256GCMAlgorithm.decrypt(initializationVector = any(), encryptionKey = any(), data = capture(dataCaptureSlot)) } answers {
@@ -200,18 +200,18 @@ class ProtectedValueTest {
          */
         private fun createTestProtectedValue(
             initializationVector: ByteArray,
-            encryptionAlgorithm: EncryptionAlgorithm = EncryptionAlgorithm.AES256GCM,
+            encryptionAlgorithm: EncryptionAlgorithm.Symmetric = EncryptionAlgorithm.Symmetric.AES256GCM,
             encryptedValue: ByteArray
         ): ProtectedValue<JSONSerializable> {
             return ProtectedValue(initializationVector, encryptionAlgorithm, encryptedValue)
         }
 
         /**
-         * Creates a mock `EncryptionAlgorithm.AES256GCM` that returns always the given initialization vector and does NOT encrypt (input data == output data).
+         * Creates a mock `EncryptionAlgorithm.Symmetric.AES256GCM` that returns always the given initialization vector and does NOT encrypt (input data == output data).
          */
-        private fun createMockAlgorithmAES256GCMWithoutEncryption(generatedInitializationVector: ByteArray, shouldEncryptionFail: Boolean = false): EncryptionAlgorithm.AES256GCM {
-            val mockAES256GCMAlgorithm = mockk<EncryptionAlgorithm.AES256GCM>()
-            every { mockAES256GCMAlgorithm.stringRepresentation } returns EncryptionAlgorithm.AES256GCM.stringRepresentation
+        private fun createMockAlgorithmAES256GCMWithoutEncryption(generatedInitializationVector: ByteArray, shouldEncryptionFail: Boolean = false): EncryptionAlgorithm.Symmetric.AES256GCM {
+            val mockAES256GCMAlgorithm = mockk<EncryptionAlgorithm.Symmetric.AES256GCM>()
+            every { mockAES256GCMAlgorithm.stringRepresentation } returns EncryptionAlgorithm.Symmetric.AES256GCM.stringRepresentation
             every { mockAES256GCMAlgorithm.generateInitializationVector() } returns generatedInitializationVector
 
             val dataCaptureSlot = slot<ByteArray>()

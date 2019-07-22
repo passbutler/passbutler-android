@@ -310,11 +310,11 @@ class EncryptionTest {
         )
 
         private fun encryptAES256GCM(testVector: TestVector): String {
-            return EncryptionAlgorithm.AES256GCM.encrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), testVector.plainText.hexToBytes()).toHexString()
+            return EncryptionAlgorithm.Symmetric.AES256GCM.encrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), testVector.plainText.hexToBytes()).toHexString()
         }
 
         private fun decryptAES256GCM(testVector: TestVector): String {
-            return EncryptionAlgorithm.AES256GCM.decrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), (testVector.cipherText + testVector.tag).hexToBytes()).toHexString()
+            return EncryptionAlgorithm.Symmetric.AES256GCM.decrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), (testVector.cipherText + testVector.tag).hexToBytes()).toHexString()
         }
     }
 }

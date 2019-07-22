@@ -67,7 +67,7 @@ class UserTest {
         fun createTestProtectedValueMasterEncryptionKey(): ProtectedValue<CryptographicKey> {
             val testProtectedValueMasterEncryptionKey = ProtectedValue<CryptographicKey>(
                 "AAAAAAAAAAAAAAAAAAAAAAAA".hexToBytes(),
-                EncryptionAlgorithm.AES256GCM,
+                EncryptionAlgorithm.Symmetric.AES256GCM,
                 "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
             )
             return testProtectedValueMasterEncryptionKey
@@ -76,7 +76,7 @@ class UserTest {
         fun createTestProtectedValueSettings(): ProtectedValue<UserSettings> {
             val testProtectedValueSettings = ProtectedValue<UserSettings>(
                 "BBBBBBBBBBBBBBBBBBBBBBBB".hexToBytes(),
-                EncryptionAlgorithm.AES256GCM,
+                EncryptionAlgorithm.Symmetric.AES256GCM,
                 "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
             )
             return testProtectedValueSettings
