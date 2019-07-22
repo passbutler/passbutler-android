@@ -1,6 +1,7 @@
 package de.sicherheitskritisch.passbutler.crypto
 
 import de.sicherheitskritisch.passbutler.base.bitSize
+import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import java.text.Normalizer
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
@@ -12,22 +13,21 @@ object Derivation {
     /**
      * Derives a cryptographic symmetric key from a password using PBKDF2 with SHA-256.
      */
-    // TODO: Pass `KeyDerivationInformation` instead?
     @Throws(IllegalArgumentException::class, KeyDerivationFailedException::class)
-    fun deriveSymmetricKey(password: String, salt: ByteArray, iterationCount: Int): ByteArray {
+    fun deriveSymmetricKey(password: String, keyDerivationInformation: KeyDerivationInformation): ByteArray {
         if (password.isBlank()) {
             throw IllegalArgumentException("The password must not be empty!")
         }
 
         // The salt should have the same size as the derived key
-        if (salt.bitSize != SYMMETRIC_KEY_LENGTH) {
+        if (keyDerivationInformation.salt.bitSize != SYMMETRIC_KEY_LENGTH) {
             throw IllegalArgumentException("The salt must be 256 bits long!")
         }
 
         return try {
             val preparedPassword = normalizePassword(trimPassword(password))
 
-            val pbeKeySpec = PBEKeySpec(preparedPassword.toCharArray(), salt, iterationCount, SYMMETRIC_KEY_LENGTH)
+            val pbeKeySpec = PBEKeySpec(preparedPassword.toCharArray(), keyDerivationInformation.salt, keyDerivationInformation.iterationCount, SYMMETRIC_KEY_LENGTH)
             val secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2withHmacSHA256")
             val secretKeyBytes = secretKeyFactory.generateSecret(pbeKeySpec).encoded
 

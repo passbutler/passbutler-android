@@ -59,7 +59,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             val masterKeySalt = RandomGenerator.generateRandomBytes(32)
             val masterKeyIterationCount = 100_000
             val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
-            masterKey = Derivation.deriveSymmetricKey(masterPassword, masterKeySalt, masterKeyIterationCount)
+            masterKey = Derivation.deriveSymmetricKey(masterPassword, masterKeyDerivationInformation)
 
             masterEncryptionKey = EncryptionAlgorithm.Symmetric.AES256GCM.generateEncryptionKey()
             val serializableMasterEncryptionKey = CryptographicKey(masterEncryptionKey)

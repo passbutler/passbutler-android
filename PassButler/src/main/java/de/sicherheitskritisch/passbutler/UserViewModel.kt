@@ -106,9 +106,7 @@ class UserViewModel private constructor(
             var masterKey: ByteArray? = null
 
             try {
-                val masterKeySalt = masterKeyDerivationInformation.salt
-                val masterKeyIterationCount = masterKeyDerivationInformation.iterationCount
-                masterKey = Derivation.deriveSymmetricKey(masterPassword, masterKeySalt, masterKeyIterationCount)
+                masterKey = Derivation.deriveSymmetricKey(masterPassword, masterKeyDerivationInformation)
 
                 val decryptedProtectedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey) {
                     CryptographicKey.deserialize(it)
