@@ -5,8 +5,8 @@ import android.content.Context.MODE_PRIVATE
 import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.clear
+import de.sicherheitskritisch.passbutler.crypto.Derivation
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
-import de.sicherheitskritisch.passbutler.crypto.KeyDerivation
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.RandomGenerator
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
@@ -59,7 +59,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             val masterKeySalt = RandomGenerator.generateRandomBytes(32)
             val masterKeyIterationCount = 100_000
             val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
-            masterKey = KeyDerivation.deriveAES256KeyFromPassword(masterPassword, masterKeySalt, masterKeyIterationCount)
+            masterKey = Derivation.deriveSymmetricKey(masterPassword, masterKeySalt, masterKeyIterationCount)
 
             masterEncryptionKey = EncryptionAlgorithm.Symmetric.AES256GCM.generateEncryptionKey()
             val serializableMasterEncryptionKey = CryptographicKey(masterEncryptionKey)

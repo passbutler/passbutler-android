@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
-class KeyDerivationTest {
+class DerivationTest {
 
     /**
      * Invalid password tests
@@ -19,7 +19,7 @@ class KeyDerivationTest {
         val iterationCount = 1000
 
         val exception = assertThrows(IllegalArgumentException::class.java) {
-            KeyDerivation.deriveAES256KeyFromPassword(userPassword, salt, iterationCount)
+            Derivation.deriveSymmetricKey(userPassword, salt, iterationCount)
         }
 
         assertEquals("The password must not be empty!", exception.message)
@@ -32,7 +32,7 @@ class KeyDerivationTest {
         val iterationCount = 1000
 
         val exception = assertThrows(IllegalArgumentException::class.java) {
-            KeyDerivation.deriveAES256KeyFromPassword(userPassword, salt, iterationCount)
+            Derivation.deriveSymmetricKey(userPassword, salt, iterationCount)
         }
 
         assertEquals("The password must not be empty!", exception.message)
@@ -49,7 +49,7 @@ class KeyDerivationTest {
         val iterationCount = 1000
 
         val exception = assertThrows(IllegalArgumentException::class.java) {
-            KeyDerivation.deriveAES256KeyFromPassword(userPassword, salt, iterationCount)
+            Derivation.deriveSymmetricKey(userPassword, salt, iterationCount)
         }
 
         assertEquals("The salt must be 256 bits long!", exception.message)
@@ -62,7 +62,7 @@ class KeyDerivationTest {
         val iterationCount = 1000
 
         val exception = assertThrows(IllegalArgumentException::class.java) {
-            KeyDerivation.deriveAES256KeyFromPassword(userPassword, salt, iterationCount)
+            Derivation.deriveSymmetricKey(userPassword, salt, iterationCount)
         }
 
         assertEquals("The salt must be 256 bits long!", exception.message)
@@ -75,7 +75,7 @@ class KeyDerivationTest {
         val iterationCount = 1000
 
         val exception = assertThrows(IllegalArgumentException::class.java) {
-            KeyDerivation.deriveAES256KeyFromPassword(userPassword, salt, iterationCount)
+            Derivation.deriveSymmetricKey(userPassword, salt, iterationCount)
         }
 
         assertEquals("The salt must be 256 bits long!", exception.message)
@@ -94,7 +94,7 @@ class KeyDerivationTest {
         val salt = "B2BA57DCB27DD154C0699AB84A24D5D367C047F8C64FE52CFA078047AA0298B2".hexToBytes()
         val iterationCount = 1000
 
-        val derivedKey = KeyDerivation.deriveAES256KeyFromPassword(userPassword, salt, iterationCount)
+        val derivedKey = Derivation.deriveSymmetricKey(userPassword, salt, iterationCount)
         assertArrayEquals("8A803738E7D84E90A607ABB9CCE4E6C10E14F4856B4B8F6D3A2DB0EFC48456EB".hexToBytes(), derivedKey)
     }
 
@@ -104,7 +104,7 @@ class KeyDerivationTest {
         val salt = "007A1D97CB4B60D69F323E67C25014845E9693A16352C4A032D677AF16F036C1".hexToBytes()
         val iterationCount = 100_000
 
-        val derivedKey = KeyDerivation.deriveAES256KeyFromPassword(userPassword, salt, iterationCount)
+        val derivedKey = Derivation.deriveSymmetricKey(userPassword, salt, iterationCount)
         assertArrayEquals("10869F0AB3966CA9EF91660167EA6416C30CCE8A1F6C4A7DAB0E465E6D608598".hexToBytes(), derivedKey)
     }
 
@@ -118,10 +118,10 @@ class KeyDerivationTest {
         val iterationCount = 1000
 
         val userPasswordWithSpaces = "  1234abcd  "
-        val derivedKeyWithSpaces = KeyDerivation.deriveAES256KeyFromPassword(userPasswordWithSpaces, salt, iterationCount)
+        val derivedKeyWithSpaces = Derivation.deriveSymmetricKey(userPasswordWithSpaces, salt, iterationCount)
 
         val userPasswordWithoutSpaces = "1234abcd"
-        val derivedKeyWithoutSpaces = KeyDerivation.deriveAES256KeyFromPassword(userPasswordWithoutSpaces, salt, iterationCount)
+        val derivedKeyWithoutSpaces = Derivation.deriveSymmetricKey(userPasswordWithoutSpaces, salt, iterationCount)
 
         assertArrayEquals(derivedKeyWithSpaces, derivedKeyWithoutSpaces)
     }

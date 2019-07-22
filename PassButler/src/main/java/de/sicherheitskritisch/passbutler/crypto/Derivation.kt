@@ -5,29 +5,29 @@ import java.text.Normalizer
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 
-object KeyDerivation {
+object Derivation {
 
-    private const val AES_KEY_LENGTH = 256
+    private const val SYMMETRIC_KEY_LENGTH = 256
 
     /**
-     * Derives a cryptographic AES-256 key from a password using PBKDF2 with SHA-256.
+     * Derives a cryptographic symmetric key from a password using PBKDF2 with SHA-256.
      */
     // TODO: Pass `KeyDerivationInformation` instead?
     @Throws(IllegalArgumentException::class, KeyDerivationFailedException::class)
-    fun deriveAES256KeyFromPassword(password: String, salt: ByteArray, iterationCount: Int): ByteArray {
+    fun deriveSymmetricKey(password: String, salt: ByteArray, iterationCount: Int): ByteArray {
         if (password.isBlank()) {
             throw IllegalArgumentException("The password must not be empty!")
         }
 
         // The salt should have the same size as the derived key
-        if (salt.bitSize != AES_KEY_LENGTH) {
+        if (salt.bitSize != SYMMETRIC_KEY_LENGTH) {
             throw IllegalArgumentException("The salt must be 256 bits long!")
         }
 
         return try {
             val preparedPassword = normalizePassword(trimPassword(password))
 
-            val pbeKeySpec = PBEKeySpec(preparedPassword.toCharArray(), salt, iterationCount, AES_KEY_LENGTH)
+            val pbeKeySpec = PBEKeySpec(preparedPassword.toCharArray(), salt, iterationCount, SYMMETRIC_KEY_LENGTH)
             val secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2withHmacSHA256")
             val secretKeyBytes = secretKeyFactory.generateSecret(pbeKeySpec).encoded
 
