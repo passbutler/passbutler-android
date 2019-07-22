@@ -47,7 +47,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         super.onCleared()
     }
 
-    fun unlockScreen(masterPassword: String) {
+    fun unlockScreenWithPassword(masterPassword: String) {
         cryptoResourcesJob?.cancel()
         cryptoResourcesJob = launch {
             unlockScreenRequestSendingViewModel.isLoading.postValue(true)
@@ -58,7 +58,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
                 unlockScreenRequestSendingViewModel.isLoading.postValue(false)
                 unlockScreenRequestSendingViewModel.requestFinishedSuccessfully.emit()
             } catch (exception: Exception) {
-                L.w("RootViewModel", "unlockScreen(): The unlock failed with exception!", exception)
+                L.w("RootViewModel", "unlockScreenWithPassword(): The unlock failed with exception!", exception)
                 unlockScreenRequestSendingViewModel.isLoading.postValue(false)
                 unlockScreenRequestSendingViewModel.requestError.postValue(exception)
             }

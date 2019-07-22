@@ -3,7 +3,6 @@ package de.sicherheitskritisch.passbutler
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import androidx.lifecycle.MutableLiveData
-import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
@@ -12,11 +11,10 @@ import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.RandomGenerator
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
+import de.sicherheitskritisch.passbutler.database.AuthWebservice
 import de.sicherheitskritisch.passbutler.database.Differentiation
 import de.sicherheitskritisch.passbutler.database.LocalRepository
 import de.sicherheitskritisch.passbutler.database.Synchronization
-import de.sicherheitskritisch.passbutler.database.UnitConverterFactory
-import de.sicherheitskritisch.passbutler.database.UserConverterFactory
 import de.sicherheitskritisch.passbutler.database.UserWebservice
 import de.sicherheitskritisch.passbutler.database.models.ItemKey
 import de.sicherheitskritisch.passbutler.database.models.User
@@ -25,7 +23,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
-import retrofit2.Retrofit
 import java.time.Instant
 import java.util.*
 
@@ -33,10 +30,14 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
     val loggedInUser = MutableLiveData<LoggedInUserResult?>()
 
-    val isLocalUser
-        get() = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_SERVERURL, null) == null
+    val serverUrl: String?
+        get() = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_SERVERURL, null)
 
-    private var remoteWebservice: UserWebservice? = null
+    val isLocalUser
+        get() = serverUrl == null
+
+    private var authWebservice: AuthWebservice? = null
+    private var userWebservice: UserWebservice? = null
 
     private val sharedPreferences by lazy {
         applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
@@ -45,20 +46,8 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     @Throws(LoginFailedException::class)
     suspend fun loginUser(userName: String, password: String, serverUrl: String) {
         // TODO: Proper server login and user creation
-        initializeRemoteWebservice(serverUrl)
-
+        // TODO: save cred in keychain + fingerprint
         // TODO: Token persistence
-    }
-
-    private fun initializeRemoteWebservice(serverUrl: String) {
-        val retrofitBuilder = Retrofit.Builder()
-            .baseUrl(serverUrl)
-            .addConverterFactory(UnitConverterFactory())
-            .addConverterFactory(UserConverterFactory())
-            .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .build()
-
-        remoteWebservice = retrofitBuilder.create(UserWebservice::class.java)
     }
 
     @Throws(LoginFailedException::class)
@@ -127,24 +116,16 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     suspend fun logoutUser() {
         L.d("UserManager", "logoutUser()")
 
-        shutdownRemoteWebservice()
+        authWebservice = null
+        userWebservice = null
 
         localRepository.reset()
         sharedPreferences.edit().clear().apply()
         loggedInUser.postValue(null)
     }
 
-    private fun shutdownRemoteWebservice() {
-        remoteWebservice = null
-    }
-
     suspend fun restoreLoggedInUser() {
         L.d("UserManager", "restoreLoggedInUser()")
-
-        // Only initialize remote webservice if server URL is available (non-local user)
-        sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_SERVERURL, null)?.let { loggedInServerUrl ->
-            initializeRemoteWebservice(loggedInServerUrl)
-        }
 
         val restoredLoggedInUser = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, null)?.let { loggedInUsername ->
             localRepository.findUser(loggedInUsername)
@@ -169,7 +150,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
     @Throws(Synchronization.SynchronizationFailedException::class)
     suspend fun synchronizeUsers() {
-        val remoteWebservice = remoteWebservice
+        val remoteWebservice = userWebservice
 
         if (remoteWebservice != null) {
             UserSynchronization(localRepository, remoteWebservice).synchronize()
@@ -183,7 +164,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 }
 
 // TODO: Only sync down users
-private class UserSynchronization(private val localRepository: LocalRepository, private var remoteWebservice: UserWebservice) : Synchronization {
+private class UserSynchronization(private val localRepository: LocalRepository, private var userWebservice: UserWebservice) : Synchronization {
 
     @Throws(Synchronization.SynchronizationFailedException::class)
     override suspend fun synchronize() = coroutineScope {
@@ -237,7 +218,7 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
 
     @Throws(Synchronization.SynchronizationFailedException::class)
     private suspend fun fetchRemoteUserList(): List<User> {
-        val remoteUsersListRequest = remoteWebservice.getUsersAsync()
+        val remoteUsersListRequest = userWebservice.getUsersAsync()
         val response = remoteUsersListRequest.await()
         return response.body() ?: throw Synchronization.SynchronizationFailedException("The remote user list is null - can't process with synchronization!")
     }
@@ -249,7 +230,7 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
 
     @Throws(Synchronization.SynchronizationFailedException::class)
     private suspend fun addNewUsersToRemoteDatabase(newUsers: List<User>) {
-        val remoteUsersListRequest = remoteWebservice.addUsersAsync(newUsers)
+        val remoteUsersListRequest = userWebservice.addUsersAsync(newUsers)
         val requestDeferred = remoteUsersListRequest.await()
 
         if (!requestDeferred.isSuccessful) {
@@ -264,7 +245,7 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
 
     @Throws(Synchronization.SynchronizationFailedException::class)
     private suspend fun updateModifiedUsersToRemoteDatabase(modifiedUsers: List<User>) {
-        val remoteUsersListRequest = remoteWebservice.updateUsersAsync(modifiedUsers)
+        val remoteUsersListRequest = userWebservice.updateUsersAsync(modifiedUsers)
         val requestDeferred = remoteUsersListRequest.await()
 
         if (!requestDeferred.isSuccessful) {

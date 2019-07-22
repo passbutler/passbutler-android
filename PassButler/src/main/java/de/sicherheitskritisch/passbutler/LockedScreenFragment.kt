@@ -91,7 +91,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
                 removeFormFieldsFocus()
 
                 val password = binding.textInputEditTextPassword.text.toString()
-                viewModel.unlockScreen(password)
+                viewModel.unlockScreenWithPassword(password)
             }
             is FormValidationResult.Invalid -> {
                 formValidationResult.firstInvalidFormField.requestFocus()
