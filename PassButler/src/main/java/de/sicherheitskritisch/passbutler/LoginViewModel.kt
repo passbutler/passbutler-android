@@ -20,16 +20,16 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
 
     private var loginCoroutineJob: Job? = null
 
-    fun loginUser(serverUrl: String, username: String, password: String) {
+    fun loginUser(serverUrl: String, username: String, masterPassword: String) {
         loginCoroutineJob?.cancel()
         loginCoroutineJob = launch {
             loginRequestSendingViewModel.isLoading.postValue(true)
 
             try {
                 if (isLocalLogin.value == true) {
-                    userManager.loginLocalUser(username, password)
+                    userManager.loginLocalUser(username, masterPassword)
                 } else {
-                    userManager.loginUser(serverUrl, username, password)
+                    userManager.loginUser(serverUrl, username, masterPassword)
                 }
 
                 loginRequestSendingViewModel.isLoading.postValue(false)

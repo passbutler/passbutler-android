@@ -44,14 +44,14 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     }
 
     @Throws(LoginFailedException::class)
-    suspend fun loginUser(userName: String, password: String, serverUrl: String) {
+    suspend fun loginUser(userName: String, masterPassword: String, serverUrl: String) {
         // TODO: Proper server login and user creation
         // TODO: save cred in keychain + fingerprint
         // TODO: Token persistence
     }
 
     @Throws(LoginFailedException::class)
-    suspend fun loginLocalUser(userName: String, password: String) {
+    suspend fun loginLocalUser(userName: String, masterPassword: String) {
         var masterKey: ByteArray? = null
         var masterEncryptionKey: ByteArray? = null
 
@@ -59,7 +59,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             val masterKeySalt = RandomGenerator.generateRandomBytes(32)
             val masterKeyIterationCount = 100_000
             val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
-            masterKey = KeyDerivation.deriveAES256KeyFromPassword(password, masterKeySalt, masterKeyIterationCount)
+            masterKey = KeyDerivation.deriveAES256KeyFromPassword(masterPassword, masterKeySalt, masterKeyIterationCount)
 
             masterEncryptionKey = EncryptionAlgorithm.Symmetric.AES256GCM.generateEncryptionKey()
             val serializableMasterEncryptionKey = CryptographicKey(masterEncryptionKey)
@@ -87,7 +87,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             createUser(localUser)
             persistPreferences(localUser.username, null)
 
-            val loggedInUserResult = LoggedInUserResult(localUser, masterPassword = password)
+            val loggedInUserResult = LoggedInUserResult(localUser, masterPassword = masterPassword)
             loggedInUser.postValue(loggedInUserResult)
 
         } catch (exception: Exception) {
