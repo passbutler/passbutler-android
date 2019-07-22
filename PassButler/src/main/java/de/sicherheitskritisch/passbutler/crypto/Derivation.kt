@@ -13,7 +13,7 @@ object Derivation {
     /**
      * Derives a cryptographic symmetric key from a password using PBKDF2 with SHA-256.
      */
-    @Throws(IllegalArgumentException::class, KeyDerivationFailedException::class)
+    @Throws(IllegalArgumentException::class, DerivationFailedException::class)
     fun deriveSymmetricKey(password: String, keyDerivationInformation: KeyDerivationInformation): ByteArray {
         if (password.isBlank()) {
             throw IllegalArgumentException("The password must not be empty!")
@@ -26,15 +26,17 @@ object Derivation {
 
         return try {
             val preparedPassword = normalizePassword(trimPassword(password))
-
-            val pbeKeySpec = PBEKeySpec(preparedPassword.toCharArray(), keyDerivationInformation.salt, keyDerivationInformation.iterationCount, SYMMETRIC_KEY_LENGTH)
-            val secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2withHmacSHA256")
-            val secretKeyBytes = secretKeyFactory.generateSecret(pbeKeySpec).encoded
-
-            secretKeyBytes
+            performPBKDFWithSHA256(preparedPassword, keyDerivationInformation.salt, keyDerivationInformation.iterationCount, SYMMETRIC_KEY_LENGTH)
         } catch (e: Exception) {
-            throw KeyDerivationFailedException(e)
+            throw DerivationFailedException(e)
         }
+    }
+
+    private fun performPBKDFWithSHA256(password: String, salt: ByteArray, iterationCount: Int, resultLength: Int): ByteArray {
+        val pbeKeySpec = PBEKeySpec(password.toCharArray(), salt, iterationCount, resultLength)
+        val secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2withHmacSHA256")
+        val secretKeyBytes = secretKeyFactory.generateSecret(pbeKeySpec).encoded
+        return secretKeyBytes
     }
 
     /**
@@ -53,5 +55,5 @@ object Derivation {
         return Normalizer.normalize(password, Normalizer.Form.NFKD)
     }
 
-    class KeyDerivationFailedException(cause: Exception? = null) : Exception(cause)
+    class DerivationFailedException(cause: Exception? = null) : Exception(cause)
 }
