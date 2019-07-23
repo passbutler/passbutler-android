@@ -17,7 +17,8 @@
 
     <string name="login_button_text">Anmelden</string>
 
-    <string name="login_failed_title">Anmeldung hat leider nicht geklappt</string>
+    <string name="login_failed_general_title">Anmeldung hat leider nicht geklappt</string>
+    <string name="login_failed_unauthorized_title">Anmeldedaten vermutlich nicht korrekt</string>
 
     <!-- Drawer -->
 

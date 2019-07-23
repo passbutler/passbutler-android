@@ -4,9 +4,12 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.byteSize
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.crypto.Derivation
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
+import de.sicherheitskritisch.passbutler.crypto.MASTER_KEY_BIT_LENGTH
+import de.sicherheitskritisch.passbutler.crypto.MASTER_KEY_ITERATION_COUNT
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.RandomGenerator
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
@@ -44,10 +47,40 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     }
 
     @Throws(LoginFailedException::class)
-    suspend fun loginUser(userName: String, masterPassword: String, serverUrl: String) {
-        // TODO: Proper server login and user creation
-        // TODO: save cred in keychain + fingerprint
-        // TODO: Token persistence
+    suspend fun loginUser(serverUrl: String, userName: String, masterPassword: String) {
+        try {
+            val masterPasswordAuthenticationHash = Derivation.deriveAuthenticationHash(userName, masterPassword)
+            authWebservice = AuthWebservice.create(serverUrl, userName, masterPasswordAuthenticationHash)
+
+            val getTokenRequest = authWebservice?.getTokenAsync()
+            val getTokenResponse = getTokenRequest?.await()
+            val authToken = getTokenResponse?.body()
+
+            if (getTokenResponse?.isSuccessful != true || authToken == null) {
+                throw GetAuthTokenFailedException("The auth token could not be get (HTTP status code ${getTokenResponse?.code()}): ${getTokenResponse?.errorBody()?.string()}")
+            }
+
+            userWebservice = UserWebservice.create(serverUrl, authToken.token)
+
+            val getUserDetailsRequest = userWebservice?.getUserDetailsAsync(userName)
+            val getUserDetailsResponse = getUserDetailsRequest?.await()
+            val remoteUser = getUserDetailsResponse?.body()
+
+            if (getUserDetailsResponse?.isSuccessful != true || remoteUser == null) {
+                throw GetUserDetailsFailedException("The user details could not be get (HTTP status code ${getUserDetailsResponse?.code()}): ${getUserDetailsResponse?.errorBody()?.string()}")
+            }
+
+            createUser(remoteUser)
+            persistPreferences(remoteUser.username, serverUrl)
+
+            val loggedInUserResult = LoggedInUserResult(remoteUser, masterPassword = masterPassword)
+            loggedInUser.postValue(loggedInUserResult)
+
+            // TODO: Persist token + exp + preferences
+
+        } catch (exception: Exception) {
+            throw LoginFailedException("The login failed with an exception!", exception)
+        }
     }
 
     @Throws(LoginFailedException::class)
@@ -56,10 +89,10 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         var masterEncryptionKey: ByteArray? = null
 
         try {
-            val masterKeySalt = RandomGenerator.generateRandomBytes(32)
-            val masterKeyIterationCount = 100_000
+            val masterKeySalt = RandomGenerator.generateRandomBytes(MASTER_KEY_BIT_LENGTH.byteSize)
+            val masterKeyIterationCount = MASTER_KEY_ITERATION_COUNT
             val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
-            masterKey = Derivation.deriveSymmetricKey(masterPassword, masterKeyDerivationInformation)
+            masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation)
 
             masterEncryptionKey = EncryptionAlgorithm.Symmetric.AES256GCM.generateEncryptionKey()
             val serializableMasterEncryptionKey = CryptographicKey(masterEncryptionKey)
@@ -159,6 +192,8 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         }
     }
 
+    class GetAuthTokenFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
+    class GetUserDetailsFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
     class UserCreationFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
     class LoginFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
 }

@@ -74,9 +74,10 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
     private fun setupDebugLoginPresetsButton(binding: FragmentLoginBinding) {
         if (BuildType.isDebugBuild) {
             binding.imageViewLogo.setOnLongClickListener {
-                binding.textInputEditTextUsername.setText("test")
+                binding.textInputEditTextServerurl.setText("http://10.0.0.20:5000")
+                binding.textInputEditTextUsername.setText("testuser")
                 binding.textInputEditTextPassword.setText("1234")
-                binding.checkBoxLocalLogin.isChecked = true
+                binding.checkBoxLocalLogin.isChecked = false
                 true
             }
         }
@@ -181,7 +182,17 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
         override fun onRequestErrorChanged(requestError: Throwable) {
             binding?.constraintLayoutLoginScreenContainer?.let {
-                resources?.getString(R.string.login_failed_title)?.let { snackbarMessage ->
+                val loginFailedExceptionCause = (requestError as? UserManager.LoginFailedException)?.cause
+                val userfacingErrorMessage = when (loginFailedExceptionCause) {
+                    is UserManager.GetAuthTokenFailedException -> {
+                        resources?.getString(R.string.login_failed_unauthorized_title)
+                    }
+                    else -> {
+                        resources?.getString(R.string.login_failed_general_title)
+                    }
+                }
+
+                userfacingErrorMessage?.let { snackbarMessage ->
                     Snackbar.make(it, snackbarMessage, Snackbar.LENGTH_SHORT).show()
                 }
             }

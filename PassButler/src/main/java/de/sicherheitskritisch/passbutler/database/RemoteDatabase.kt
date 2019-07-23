@@ -13,7 +13,6 @@ import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import org.json.JSONArray
 import org.json.JSONObject
-import retrofit2.Call
 import retrofit2.Converter
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -77,7 +76,7 @@ interface UserWebservice {
     fun updateUsersAsync(@Body modifiedUsers: List<User>): Deferred<Response<Unit>>
 
     @GET("/user/{username}")
-    fun getUser(@Path("username") username: String): Call<User>
+    fun getUserDetailsAsync(@Path("username") username: String): Deferred<Response<User>>
 
     // TODO: Implement
     @PUT("/user/{username}")

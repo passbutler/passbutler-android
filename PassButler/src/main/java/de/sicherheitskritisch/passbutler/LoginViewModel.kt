@@ -27,9 +27,16 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
 
             try {
                 if (isLocalLogin.value == true) {
-                    userManager.loginLocalUser(username, masterPassword)
+                    userManager.loginLocalUser(
+                        userName = username,
+                        masterPassword = masterPassword
+                    )
                 } else {
-                    userManager.loginUser(serverUrl, username, masterPassword)
+                    userManager.loginUser(
+                        serverUrl = serverUrl,
+                        userName = username,
+                        masterPassword = masterPassword
+                    )
                 }
 
                 loginRequestSendingViewModel.isLoading.postValue(false)
