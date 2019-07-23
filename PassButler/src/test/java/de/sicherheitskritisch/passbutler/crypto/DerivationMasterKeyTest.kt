@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
-class DerivationTest {
+class DerivationMasterKeyTest {
 
     /**
      * Invalid password tests
@@ -90,8 +90,8 @@ class DerivationTest {
     /**
      * Valid key derivation tests.
      *
-     * Test values generated with "nettle" command line program, e.g.:
-     * $ echo -n "1234abcd" | nettle-pbkdf2 -i 100000 -l 32 --hex-salt 007A1D97CB4B60D69F323E67C25014845E9693A16352C4A032D677AF16F036C1
+     * Test values can be generated with following shell command:
+     * $ echo -n "1234abcd" | nettle-pbkdf2 -i 100000 -l 32 --hex-salt 007A1D97CB4B60D69F323E67C25014845E9693A16352C4A032D677AF16F036C1 | sed 's/ //g' | tr a-z A-Z
      */
 
     @Test
