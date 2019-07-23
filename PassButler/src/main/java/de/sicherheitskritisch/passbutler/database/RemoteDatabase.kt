@@ -47,6 +47,7 @@ interface AuthWebservice {
     }
 
     companion object {
+        // TODO: Enforce TLS for non-debug build
         fun create(serverUrl: String, username: String, password: String): AuthWebservice {
             val okHttpClient = OkHttpClient.Builder()
                 .addInterceptor(PasswordAuthenticationInterceptor(username, password))
@@ -72,6 +73,7 @@ interface UserWebservice {
     @POST("/users")
     fun addUsersAsync(@Body newUsers: List<User>): Deferred<Response<Unit>>
 
+    // TODO: Remove
     @PUT("/users")
     fun updateUsersAsync(@Body modifiedUsers: List<User>): Deferred<Response<Unit>>
 
@@ -143,6 +145,7 @@ interface UserWebservice {
     }
 
     companion object {
+        // TODO: Enforce TLS for non-debug build
         fun create(serverUrl: String, authToken: String): UserWebservice {
             val okHttpClient = OkHttpClient.Builder()
                 .addInterceptor(TokenAuthenticationInterceptor(authToken))
