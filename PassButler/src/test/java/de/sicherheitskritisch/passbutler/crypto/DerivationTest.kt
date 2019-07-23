@@ -21,7 +21,7 @@ class DerivationTest {
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
         val exception = assertThrows(IllegalArgumentException::class.java) {
-            Derivation.deriveSymmetricKey(userPassword, keyDerivationInformation)
+            Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         }
 
         assertEquals("The password must not be empty!", exception.message)
@@ -35,7 +35,7 @@ class DerivationTest {
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
         val exception = assertThrows(IllegalArgumentException::class.java) {
-            Derivation.deriveSymmetricKey(userPassword, keyDerivationInformation)
+            Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         }
 
         assertEquals("The password must not be empty!", exception.message)
@@ -53,7 +53,7 @@ class DerivationTest {
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
         val exception = assertThrows(IllegalArgumentException::class.java) {
-            Derivation.deriveSymmetricKey(userPassword, keyDerivationInformation)
+            Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         }
 
         assertEquals("The salt must be 256 bits long!", exception.message)
@@ -67,7 +67,7 @@ class DerivationTest {
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
         val exception = assertThrows(IllegalArgumentException::class.java) {
-            Derivation.deriveSymmetricKey(userPassword, keyDerivationInformation)
+            Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         }
 
         assertEquals("The salt must be 256 bits long!", exception.message)
@@ -81,7 +81,7 @@ class DerivationTest {
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
         val exception = assertThrows(IllegalArgumentException::class.java) {
-            Derivation.deriveSymmetricKey(userPassword, keyDerivationInformation)
+            Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         }
 
         assertEquals("The salt must be 256 bits long!", exception.message)
@@ -101,7 +101,7 @@ class DerivationTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val derivedKey = Derivation.deriveSymmetricKey(userPassword, keyDerivationInformation)
+        val derivedKey = Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         assertArrayEquals("8A803738E7D84E90A607ABB9CCE4E6C10E14F4856B4B8F6D3A2DB0EFC48456EB".hexToBytes(), derivedKey)
     }
 
@@ -112,7 +112,7 @@ class DerivationTest {
         val iterationCount = 100_000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val derivedKey = Derivation.deriveSymmetricKey(userPassword, keyDerivationInformation)
+        val derivedKey = Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         assertArrayEquals("10869F0AB3966CA9EF91660167EA6416C30CCE8A1F6C4A7DAB0E465E6D608598".hexToBytes(), derivedKey)
     }
 
@@ -127,10 +127,10 @@ class DerivationTest {
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
         val userPasswordWithSpaces = "  1234abcd  "
-        val derivedKeyWithSpaces = Derivation.deriveSymmetricKey(userPasswordWithSpaces, keyDerivationInformation)
+        val derivedKeyWithSpaces = Derivation.deriveMasterKey(userPasswordWithSpaces, keyDerivationInformation)
 
         val userPasswordWithoutSpaces = "1234abcd"
-        val derivedKeyWithoutSpaces = Derivation.deriveSymmetricKey(userPasswordWithoutSpaces, keyDerivationInformation)
+        val derivedKeyWithoutSpaces = Derivation.deriveMasterKey(userPasswordWithoutSpaces, keyDerivationInformation)
 
         assertArrayEquals(derivedKeyWithSpaces, derivedKeyWithoutSpaces)
     }

@@ -6,27 +6,28 @@ import java.text.Normalizer
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 
+const val MASTER_KEY_ITERATION_COUNT = 100_000
+const val MASTER_KEY_BIT_LENGTH = 256
+
 object Derivation {
 
-    private const val SYMMETRIC_KEY_LENGTH = 256
-
     /**
-     * Derives a cryptographic symmetric key from a password using PBKDF2 with SHA-256.
+     * Derives the symmetric master key from a password using PBKDF2 with SHA-256.
      */
     @Throws(IllegalArgumentException::class, DerivationFailedException::class)
-    fun deriveSymmetricKey(password: String, keyDerivationInformation: KeyDerivationInformation): ByteArray {
+    fun deriveMasterKey(password: String, keyDerivationInformation: KeyDerivationInformation): ByteArray {
         if (password.isBlank()) {
             throw IllegalArgumentException("The password must not be empty!")
         }
 
         // The salt should have the same size as the derived key
-        if (keyDerivationInformation.salt.bitSize != SYMMETRIC_KEY_LENGTH) {
+        if (keyDerivationInformation.salt.bitSize != MASTER_KEY_BIT_LENGTH) {
             throw IllegalArgumentException("The salt must be 256 bits long!")
         }
 
         return try {
             val preparedPassword = normalizePassword(trimPassword(password))
-            performPBKDFWithSHA256(preparedPassword, keyDerivationInformation.salt, keyDerivationInformation.iterationCount, SYMMETRIC_KEY_LENGTH)
+            performPBKDFWithSHA256(preparedPassword, keyDerivationInformation.salt, keyDerivationInformation.iterationCount, MASTER_KEY_BIT_LENGTH)
         } catch (e: Exception) {
             throw DerivationFailedException(e)
         }
