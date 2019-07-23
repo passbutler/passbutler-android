@@ -12,7 +12,9 @@ import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.getProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
+import de.sicherheitskritisch.passbutler.crypto.models.getCryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.getKeyDerivationInformation
+import de.sicherheitskritisch.passbutler.crypto.models.putCryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.putKeyDerivationInformation
 import de.sicherheitskritisch.passbutler.crypto.putProtectedValue
 import de.sicherheitskritisch.passbutler.database.Synchronizable
@@ -24,8 +26,11 @@ import java.util.*
 data class User(
     @PrimaryKey
     val username: String,
+    val masterPasswordAuthenticationHash: String?,
     val masterKeyDerivationInformation: KeyDerivationInformation?,
     var masterEncryptionKey: ProtectedValue<CryptographicKey>?,
+    val itemEncryptionPublicKey: CryptographicKey,
+    var itemEncryptionSecretKey: ProtectedValue<CryptographicKey>?,
     var settings: ProtectedValue<UserSettings>?,
     override var deleted: Boolean,
     override var modified: Date,
@@ -38,8 +43,11 @@ data class User(
     override fun serialize(): JSONObject {
         return JSONObject().apply {
             putString(SERIALIZATION_KEY_USERNAME, username)
+            putString(SERIALIZATION_KEY_MASTER_PASSWORD_AUTHENTICATION_HASH, masterPasswordAuthenticationHash)
             putKeyDerivationInformation(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, masterKeyDerivationInformation)
             putProtectedValue(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY, masterEncryptionKey)
+            putCryptographicKey(SERIALIZATION_KEY_ITEM_ENCRYPTION_PUBLIC_KEY, itemEncryptionPublicKey)
+            putProtectedValue(SERIALIZATION_KEY_ITEM_ENCRYPTION_SECRET_KEY, itemEncryptionSecretKey)
             putProtectedValue(SERIALIZATION_KEY_SETTINGS, settings)
             putBoolean(SERIALIZATION_KEY_DELETED, deleted)
             putLong(SERIALIZATION_KEY_MODIFIED, modified.time)
@@ -52,8 +60,11 @@ data class User(
             return try {
                 User(
                     username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
+                    masterPasswordAuthenticationHash = jsonObject.getString(SERIALIZATION_KEY_MASTER_PASSWORD_AUTHENTICATION_HASH),
                     masterKeyDerivationInformation = jsonObject.getKeyDerivationInformation(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION),
                     masterEncryptionKey = jsonObject.getProtectedValue(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY),
+                    itemEncryptionPublicKey = jsonObject.getCryptographicKey(SERIALIZATION_KEY_ITEM_ENCRYPTION_PUBLIC_KEY),
+                    itemEncryptionSecretKey = jsonObject.getProtectedValue(SERIALIZATION_KEY_ITEM_ENCRYPTION_SECRET_KEY),
                     settings = jsonObject.getProtectedValue(SERIALIZATION_KEY_SETTINGS),
                     deleted = jsonObject.getBoolean(SERIALIZATION_KEY_DELETED),
                     modified = Date(jsonObject.getLong(SERIALIZATION_KEY_MODIFIED)),
@@ -66,8 +77,11 @@ data class User(
         }
 
         private const val SERIALIZATION_KEY_USERNAME = "username"
+        private const val SERIALIZATION_KEY_MASTER_PASSWORD_AUTHENTICATION_HASH = "masterPasswordAuthenticationHash"
         private const val SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION = "masterKeyDerivationInformation"
         private const val SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY = "masterEncryptionKey"
+        private const val SERIALIZATION_KEY_ITEM_ENCRYPTION_PUBLIC_KEY = "itemEncryptionPublicKey"
+        private const val SERIALIZATION_KEY_ITEM_ENCRYPTION_SECRET_KEY = "itemEncryptionSecretKey"
         private const val SERIALIZATION_KEY_SETTINGS = "settings"
         private const val SERIALIZATION_KEY_DELETED = "deleted"
         private const val SERIALIZATION_KEY_MODIFIED = "modified"

@@ -2,6 +2,7 @@ package de.sicherheitskritisch.passbutler.crypto.models
 
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.putJSONObject
 import de.sicherheitskritisch.passbutler.crypto.getByteArray
 import de.sicherheitskritisch.passbutler.crypto.putByteArray
 import org.json.JSONException
@@ -47,4 +48,22 @@ data class CryptographicKey(val key: ByteArray) : JSONSerializable {
             }
         }
     }
+}
+
+/**
+ * Convenience method to put a `CryptographicKey` value to `JSONObject`.
+ */
+@Throws(JSONException::class)
+fun JSONObject.putCryptographicKey(name: String, value: CryptographicKey?): JSONObject {
+    val serializedCryptographicKey = value?.serialize()
+    return putJSONObject(name, serializedCryptographicKey)
+}
+
+/**
+ * Convenience method to get a `CryptographicKey` value from `JSONObject`.
+ */
+@Throws(JSONException::class)
+fun JSONObject.getCryptographicKey(name: String): CryptographicKey? {
+    val serializedCryptographicKey = getJSONObject(name)
+    return CryptographicKey.deserialize(serializedCryptographicKey)
 }
