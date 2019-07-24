@@ -150,7 +150,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
         override fun onRequestErrorChanged(requestError: Throwable) {
             binding?.constraintLayoutLockedScreenContainer?.let {
-                resources?.getString(R.string.locked_screen_unlock_wrong_password_title)?.let { snackbarMessage ->
+                resources?.getString(R.string.locked_screen_unlock_failed_general_title)?.let { snackbarMessage ->
                     Snackbar.make(it, snackbarMessage, Snackbar.LENGTH_SHORT).show()
                 }
             }
