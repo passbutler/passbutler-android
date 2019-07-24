@@ -22,6 +22,7 @@ import de.sicherheitskritisch.passbutler.database.UserWebservice
 import de.sicherheitskritisch.passbutler.database.models.ItemKey
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
+import de.sicherheitskritisch.passbutler.database.technicalErrorDescription
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -57,7 +58,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             val authToken = getTokenResponse?.body()
 
             if (getTokenResponse?.isSuccessful != true || authToken == null) {
-                throw GetAuthTokenFailedException("The auth token could not be get (HTTP status code ${getTokenResponse?.code()}): ${getTokenResponse?.errorBody()?.string()}")
+                throw GetAuthTokenFailedException("The auth token could not be get ${getTokenResponse.technicalErrorDescription}")
             }
 
             userWebservice = UserWebservice.create(serverUrl, authToken.token)
@@ -67,7 +68,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             val remoteUser = getUserDetailsResponse?.body()
 
             if (getUserDetailsResponse?.isSuccessful != true || remoteUser == null) {
-                throw GetUserDetailsFailedException("The user details could not be get (HTTP status code ${getUserDetailsResponse?.code()}): ${getUserDetailsResponse?.errorBody()?.string()}")
+                throw GetUserDetailsFailedException("The user details could not be get ${getUserDetailsResponse.technicalErrorDescription}")
             }
 
             createUser(remoteUser)
@@ -178,11 +179,46 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         loggedInUser.postValue(loggedInUserResult)
     }
 
+    suspend fun restoreWebservices(masterPassword: String) {
+        L.d("UserManager", "restoreWebservices()")
+
+        val serverUrl = serverUrl
+        val loggedInUser = loggedInUser.value?.user
+
+        if (serverUrl != null && loggedInUser != null) {
+            val userName = loggedInUser.username
+
+            // TODO: only get token if expired
+            val masterPasswordAuthenticationHash = Derivation.deriveAuthenticationHash(userName, masterPassword)
+            authWebservice = AuthWebservice.create(serverUrl, userName, masterPasswordAuthenticationHash)
+
+            val getTokenRequest = authWebservice?.getTokenAsync()
+            val getTokenResponse = getTokenRequest?.await()
+            val authToken = getTokenResponse?.body()
+
+            if (getTokenResponse?.isSuccessful != true || authToken == null) {
+                throw GetAuthTokenFailedException("The auth token could not be get ${getTokenResponse.technicalErrorDescription}")
+            }
+
+            userWebservice = UserWebservice.create(serverUrl, authToken.token)
+        }
+    }
+
     suspend fun updateUser(user: User) {
         L.d("UserManager", "updateUser(): user = $user")
 
         user.modified = currentDate
         localRepository.updateUser(user)
+        L.d("UserManager", "updateUser(): The user was successfully updated in local database.")
+
+        val setUserDetailsRequest = userWebservice?.setUserDetailsAsync(user.username, user)
+        val setUserDetailsResponse = setUserDetailsRequest?.await()
+
+        if (setUserDetailsResponse?.isSuccessful == true) {
+            L.d("UserManager", "updateUser(): The user was successfully updated on remote database.")
+        } else {
+            L.d("UserManager", "updateUser(): The user could not be updated on remote database ${setUserDetailsResponse.technicalErrorDescription}")
+        }
     }
 
     suspend fun createItemKey(itemKey: ItemKey) {

@@ -27,6 +27,9 @@ import java.lang.reflect.Type
 
 typealias OkHttpResponse = okhttp3.Response
 
+val Response<*>?.technicalErrorDescription
+    get() = "(HTTP status code ${this?.code()}): ${this?.errorBody()?.string()}"
+
 interface AuthWebservice {
     @GET("/token")
     fun getTokenAsync(): Deferred<Response<AuthToken>>
@@ -47,6 +50,7 @@ interface AuthWebservice {
     }
 
     companion object {
+        // TODO: Change type of `serverUrl` to `Uri`?
         // TODO: Enforce TLS for non-debug build
         fun create(serverUrl: String, username: String, password: String): AuthWebservice {
             val okHttpClient = OkHttpClient.Builder()
@@ -80,13 +84,13 @@ interface UserWebservice {
     @GET("/user/{username}")
     fun getUserDetailsAsync(@Path("username") username: String): Deferred<Response<User>>
 
-    // TODO: Implement
     @PUT("/user/{username}")
-    fun updateUserAsync(@Path("username") username: String, @Body modifiedUser: User): Deferred<Response<Unit>>
+    fun setUserDetailsAsync(@Path("username") username: String, @Body modifiedUser: User): Deferred<Response<Unit>>
 
     private class ConverterFactory : Converter.Factory() {
         override fun requestBodyConverter(type: Type, parameterAnnotations: Array<Annotation>, methodAnnotations: Array<Annotation>, retrofit: Retrofit): Converter<*, RequestBody>? {
             return when (type) {
+                User::class.java -> UserRequestConverter()
                 is ParameterizedType -> {
                     when {
                         type.rawType == List::class.java && type.actualTypeArguments.firstOrNull() == User::class.java -> UserListRequestConverter()
@@ -94,6 +98,15 @@ interface UserWebservice {
                     }
                 }
                 else -> null
+            }
+        }
+
+        /**
+         * Converts a `User` object to serialized JSON string.
+         */
+        private class UserRequestConverter : Converter<User, RequestBody> {
+            override fun convert(user: User): RequestBody {
+                return RequestBody.create(MediaType.get("application/json"), user.serialize().toString())
             }
         }
 
@@ -145,6 +158,7 @@ interface UserWebservice {
     }
 
     companion object {
+        // TODO: Change type of `serverUrl` to `Uri`?
         // TODO: Enforce TLS for non-debug build
         fun create(serverUrl: String, authToken: String): UserWebservice {
             val okHttpClient = OkHttpClient.Builder()

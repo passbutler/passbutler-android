@@ -47,8 +47,6 @@ class UserViewModel private constructor(
             if (field.optionalContentNotEquals(newMasterEncryptionKey)) {
                 field = newMasterEncryptionKey
                 decryptUserSettings(newMasterEncryptionKey)
-
-                // TODO: Init auth + user webservice
             }
         }
 
