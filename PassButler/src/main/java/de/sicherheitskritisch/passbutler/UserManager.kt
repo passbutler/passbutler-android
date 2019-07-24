@@ -238,14 +238,14 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
         val mergedLocalUserList = localUserList + newLocalUsers
         val mergedRemoteUserList = remoteUserList + newRemoteUsers
 
-        val modifiedLocalUsers = Differentiation.collectModifiedUserItems(mergedLocalUserList, mergedRemoteUserList)
+        val modifiedLocalUsers = Differentiation.collectModifiedItems(mergedLocalUserList, mergedRemoteUserList)
         L.d("UserSynchronization", "synchronize(): Modified user items for local database: ${modifiedLocalUsers.buildShortUserList()}")
 
         if (modifiedLocalUsers.isNotEmpty()) {
             updateModifiedUsersToLocalDatabase(modifiedLocalUsers)
         }
 
-        val modifiedRemoteUsers = Differentiation.collectModifiedUserItems(mergedRemoteUserList, mergedLocalUserList)
+        val modifiedRemoteUsers = Differentiation.collectModifiedItems(mergedRemoteUserList, mergedLocalUserList)
         L.d("UserSynchronization", "synchronize(): Modified user items for remote database: ${modifiedRemoteUsers.buildShortUserList()}")
 
         if (modifiedRemoteUsers.isNotEmpty()) {
