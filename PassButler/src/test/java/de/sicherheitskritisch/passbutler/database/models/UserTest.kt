@@ -33,18 +33,17 @@ class UserTest {
     fun `Serialize and deserialize a User should result an equal object`() {
         mockkObject(ProtectedValue.Companion)
 
-        val testMasterKeyDerivationInformation = createTestKeyDerivationInformation()
-        val testProtectedValueMasterEncryptionKey = createTestProtectedValueMasterEncryptionKey()
-        val testProtectedValueSettings = createTestProtectedValueSettings()
-
         val modifiedDate: Long = 12345678
         val createdDate: Long = 12345679
 
         val exampleUser = User(
             "myUserName",
-            testMasterKeyDerivationInformation,
-            testProtectedValueMasterEncryptionKey,
-            testProtectedValueSettings,
+            createTestMasterPasswordAuthenticationHash(),
+            createTestKeyDerivationInformation(),
+            createTestProtectedValueMasterEncryptionKey(),
+            createTestItemEncryptionPublicKey(),
+            createTestItemEncryptionSecretKey(),
+            createTestProtectedValueSettings(),
             true,
             Date(modifiedDate),
             Date(createdDate)
@@ -57,14 +56,18 @@ class UserTest {
     }
 
     companion object {
-        fun createTestKeyDerivationInformation(): KeyDerivationInformation {
+        private fun createTestMasterPasswordAuthenticationHash(): String {
+            return "pbkdf2:sha256:150000\$nww6C11M\$241ac264e71f35826b8a475bdeb8c6b231a4de2b228f7af979f246c24b4905de"
+        }
+
+        private fun createTestKeyDerivationInformation(): KeyDerivationInformation {
             val salt = "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
             val iterationCount = 1234
             val testMasterKeyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
             return testMasterKeyDerivationInformation
         }
 
-        fun createTestProtectedValueMasterEncryptionKey(): ProtectedValue<CryptographicKey> {
+        private fun createTestProtectedValueMasterEncryptionKey(): ProtectedValue<CryptographicKey> {
             val testProtectedValueMasterEncryptionKey = ProtectedValue<CryptographicKey>(
                 "AAAAAAAAAAAAAAAAAAAAAAAA".hexToBytes(),
                 EncryptionAlgorithm.Symmetric.AES256GCM,
@@ -73,7 +76,18 @@ class UserTest {
             return testProtectedValueMasterEncryptionKey
         }
 
-        fun createTestProtectedValueSettings(): ProtectedValue<UserSettings> {
+        private fun createTestItemEncryptionPublicKey() = CryptographicKey("AABBCC".hexToBytes())
+
+        private fun createTestItemEncryptionSecretKey(): ProtectedValue<CryptographicKey> {
+            val testProtectedValueMasterEncryptionKey = ProtectedValue<CryptographicKey>(
+                "CCCCCCCCCCCCCCCCCCCCCCCC".hexToBytes(),
+                EncryptionAlgorithm.Symmetric.AES256GCM,
+                "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
+            )
+            return testProtectedValueMasterEncryptionKey
+        }
+
+        private fun createTestProtectedValueSettings(): ProtectedValue<UserSettings> {
             val testProtectedValueSettings = ProtectedValue<UserSettings>(
                 "BBBBBBBBBBBBBBBBBBBBBBBB".hexToBytes(),
                 EncryptionAlgorithm.Symmetric.AES256GCM,
