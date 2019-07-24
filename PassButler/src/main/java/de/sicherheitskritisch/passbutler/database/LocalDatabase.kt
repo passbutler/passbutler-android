@@ -24,7 +24,7 @@ import org.json.JSONObject
 import java.util.*
 
 @Database(entities = [User::class, ItemKey::class], version = 1, exportSchema = false)
-@TypeConverters(GeneralDatabaseConverters::class, UserModelConverters::class)
+@TypeConverters(GeneralDatabaseConverters::class, ModelConverters::class)
 abstract class PassButlerDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun itemDao(): ItemDao
@@ -111,7 +111,19 @@ interface UserDao {
     fun delete(user: User)
 }
 
-class UserModelConverters {
+class ModelConverters {
+    @TypeConverter
+    fun cryptographicKeyToString(cryptographicKey: CryptographicKey?): String? {
+        return cryptographicKey?.serialize()?.toString()
+    }
+
+    @TypeConverter
+    fun stringToCryptographicKey(serializedCryptographicKey: String?): CryptographicKey? {
+        return serializedCryptographicKey?.let {
+            CryptographicKey.deserialize(JSONObject(it))
+        }
+    }
+
     @TypeConverter
     fun keyDerivationInformationToString(keyDerivationInformation: KeyDerivationInformation?): String? {
         return keyDerivationInformation?.serialize()?.toString()

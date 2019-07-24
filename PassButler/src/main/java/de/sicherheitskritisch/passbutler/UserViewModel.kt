@@ -16,7 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -27,27 +26,15 @@ import kotlin.coroutines.CoroutineContext
  */
 class UserViewModel private constructor(
     private val userManager: UserManager,
-    val username: String,
+    private val user: User,
     private val masterKeyDerivationInformation: KeyDerivationInformation,
     private val protectedMasterEncryptionKey: ProtectedValue<CryptographicKey>,
     private val protectedSettings: ProtectedValue<UserSettings>,
-    private val deleted: Boolean,
-    private val modified: Date,
-    private val created: Date,
-    userMasterPassword: String?
+    masterPassword: String?
 ) : ViewModel(), CoroutineScope {
 
-    constructor(userManager: UserManager, user: User, masterPassword: String?) : this(
-        userManager,
-        user.username,
-        user.masterKeyDerivationInformation ?: throw IllegalArgumentException("The given user has no master key derivation information!"),
-        user.masterEncryptionKey ?: throw IllegalArgumentException("The given user has no master encryption key!"),
-        user.settings ?: throw IllegalArgumentException("The given user has no user settings!"),
-        user.deleted,
-        user.modified,
-        user.created,
-        masterPassword
-    )
+    val username
+        get() = user.username
 
     val lockTimeoutSetting = MutableLiveData<Int>()
     val hidePasswordsSetting = MutableLiveData<Boolean>()
@@ -83,12 +70,21 @@ class UserViewModel private constructor(
 
     private val coroutineJob = SupervisorJob()
 
+    constructor(userManager: UserManager, user: User, masterPassword: String?) : this(
+        userManager,
+        user,
+        user.masterKeyDerivationInformation ?: throw IllegalArgumentException("The given user has no master key derivation information!"),
+        user.masterEncryptionKey ?: throw IllegalArgumentException("The given user has no master encryption key!"),
+        user.settings ?: throw IllegalArgumentException("The given user has no user settings!"),
+        masterPassword
+    )
+
     init {
         // If the master password was supplied (only on login), directly unlock resources
-        if (userMasterPassword != null) {
+        if (masterPassword != null) {
             launch {
                 try {
-                    unlockMasterEncryptionKey(userMasterPassword)
+                    unlockMasterEncryptionKey(masterPassword)
                 } catch (e: UnlockFailedException) {
                     throw IllegalStateException("The unlock of the master encryption key failed despite the master password was supplied from login!", e)
                 }
@@ -202,14 +198,10 @@ class UserViewModel private constructor(
     }
 
     private fun createUserModel(): User {
-        return User(
-            username,
-            masterKeyDerivationInformation,
-            protectedMasterEncryptionKey,
-            protectedSettings,
-            deleted,
-            modified,
-            created
+        return user.copy(
+            masterKeyDerivationInformation = masterKeyDerivationInformation,
+            masterEncryptionKey = protectedMasterEncryptionKey,
+            settings = protectedSettings
         )
     }
 

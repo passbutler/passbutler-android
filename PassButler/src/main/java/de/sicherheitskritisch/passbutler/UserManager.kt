@@ -89,6 +89,9 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         var masterEncryptionKey: ByteArray? = null
 
         try {
+            // TODO: Generate real value
+            val masterPasswordAuthenticationHash = ""
+
             val masterKeySalt = RandomGenerator.generateRandomBytes(MASTER_KEY_BIT_LENGTH.byteSize)
             val masterKeyIterationCount = MASTER_KEY_ITERATION_COUNT
             val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
@@ -98,6 +101,10 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             val serializableMasterEncryptionKey = CryptographicKey(masterEncryptionKey)
             val protectedMasterEncryptionKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterKey, serializableMasterEncryptionKey)
 
+            // TODO: Generate real value
+            val itemEncryptionPublicKey = CryptographicKey(ByteArray(0))
+            val itemEncryptionSecretKey = null
+
             val userSettings = UserSettings()
             val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, userSettings)
 
@@ -106,8 +113,11 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
                 User(
                     userName,
+                    masterPasswordAuthenticationHash,
                     masterKeyDerivationInformation,
                     protectedMasterEncryptionKey,
+                    itemEncryptionPublicKey,
+                    itemEncryptionSecretKey,
                     protectedUserSettings,
                     false,
                     currentDate,
