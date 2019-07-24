@@ -47,7 +47,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     }
 
     @Throws(LoginFailedException::class)
-    suspend fun loginRemoteUser(serverUrl: String, userName: String, masterPassword: String) {
+    suspend fun loginRemoteUser(userName: String, masterPassword: String, serverUrl: String) {
         try {
             val masterPasswordAuthenticationHash = Derivation.deriveAuthenticationHash(userName, masterPassword)
             authWebservice = AuthWebservice.create(serverUrl, userName, masterPasswordAuthenticationHash)
@@ -146,11 +146,11 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         localRepository.insertUser(user)
     }
 
-    private suspend fun persistPreferences(loggedInUsername: String, serverUrl: String?) {
+    private suspend fun persistPreferences(userName: String, serverUrl: String?) {
         withContext(Dispatchers.IO) {
             // Use blocking `commit()` because we are in suspending function
             sharedPreferences.edit().also {
-                it.putString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, loggedInUsername)
+                it.putString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, userName)
                 it.putString(SERIALIZATION_KEY_LOGGED_IN_SERVERURL, serverUrl)
             }.commit()
         }

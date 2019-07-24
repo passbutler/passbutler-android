@@ -33,9 +33,9 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
                     )
                 } else {
                     userManager.loginRemoteUser(
-                        serverUrl = serverUrl,
                         userName = username,
-                        masterPassword = masterPassword
+                        masterPassword = masterPassword,
+                        serverUrl = serverUrl
                     )
                 }
 
