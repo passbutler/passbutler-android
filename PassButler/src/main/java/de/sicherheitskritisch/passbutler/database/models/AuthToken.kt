@@ -6,7 +6,7 @@ import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.putString
 import org.json.JSONException
 import org.json.JSONObject
-import java.util.Date
+import java.time.Instant
 
 data class AuthToken(
     val token: String
@@ -34,7 +34,7 @@ data class AuthToken(
     }
 }
 
-val AuthToken.expirationDate: Date?
+val AuthToken.expirationDate: Instant?
     get() {
         return try {
             JSONWebToken.getExpiration(token)
@@ -43,3 +43,6 @@ val AuthToken.expirationDate: Date?
             null
         }
     }
+
+val AuthToken?.isExpired: Boolean
+    get() = this?.expirationDate?.let { it < Instant.now() } ?: true
