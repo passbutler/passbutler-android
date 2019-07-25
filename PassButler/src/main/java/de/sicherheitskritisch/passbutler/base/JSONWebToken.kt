@@ -1,9 +1,9 @@
 package de.sicherheitskritisch.passbutler.base
 
-import android.util.Base64
 import org.json.JSONException
 import org.json.JSONObject
 import java.time.Instant
+import java.util.*
 
 object JSONWebToken {
     @Throws(IllegalArgumentException::class, JSONException::class)
@@ -14,10 +14,10 @@ object JSONWebToken {
             throw IllegalArgumentException("Invalid JSON Web Token!")
         }
 
-        val encodedPayload = splittedJWT[2]
-        val decodedPayload = Base64.decode(encodedPayload, Base64.URL_SAFE).toString(Charsets.UTF_8)
-        val jwtPayload = JSONObject(decodedPayload)
+        val encodedHeader = splittedJWT[0]
+        val decodedHeader = Base64.getUrlDecoder().decode(encodedHeader).toString(Charsets.UTF_8)
+        val jwtHeader = JSONObject(decodedHeader)
 
-        return Instant.ofEpochMilli(jwtPayload.getLong("exp"))
+        return Instant.ofEpochSecond(jwtHeader.getLong("exp"))
     }
 }
