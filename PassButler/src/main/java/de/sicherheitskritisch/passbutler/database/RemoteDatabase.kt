@@ -101,18 +101,12 @@ interface UserWebservice {
             }
         }
 
-        /**
-         * Converts a `User` object to serialized JSON string.
-         */
         private class UserRequestConverter : Converter<User, RequestBody> {
             override fun convert(user: User): RequestBody {
                 return RequestBody.create(MediaType.get("application/json"), user.serialize().toString())
             }
         }
 
-        /**
-         * Converts a list of `User` objects to serialized JSON string.
-         */
         private class UserListRequestConverter : Converter<List<User>, RequestBody> {
             override fun convert(userList: List<User>): RequestBody {
                 return RequestBody.create(MediaType.get("application/json"), JSONArray().also { jsonArray ->
@@ -136,18 +130,12 @@ interface UserWebservice {
             }
         }
 
-        /**
-         * Converts a serialized JSON string response to a `User` object.
-         */
         private class UserResponseConverter : Converter<ResponseBody, User?> {
             override fun convert(responseBody: ResponseBody): User? {
                 return User.deserialize(JSONObject(responseBody.string()))
             }
         }
 
-        /**
-         * Converts a serialized JSON string response to a list of `User` objects.
-         */
         private class UserListResponseConverter : Converter<ResponseBody, List<User>> {
             override fun convert(responseBody: ResponseBody): List<User> {
                 return JSONArray(responseBody.string()).asJSONObjectSequence().mapNotNull { userJSONObject ->
