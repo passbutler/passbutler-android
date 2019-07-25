@@ -28,12 +28,12 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
             try {
                 if (isLocalLogin.value == true) {
                     userManager.loginLocalUser(
-                        userName = username,
+                        username = username,
                         masterPassword = masterPassword
                     )
                 } else {
                     userManager.loginRemoteUser(
-                        userName = username,
+                        username = username,
                         masterPassword = masterPassword,
                         serverUrl = serverUrl
                     )

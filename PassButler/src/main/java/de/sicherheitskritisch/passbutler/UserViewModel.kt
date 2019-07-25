@@ -189,8 +189,11 @@ class UserViewModel private constructor(
             if (masterEncryptionKey != null && settings != null) {
                 protectedSettings.update(masterEncryptionKey, settings)
 
-                val user = createUserModel()
-                userManager.updateUser(user)
+                // Switch back on IO dispatcher
+                withContext(Dispatchers.IO) {
+                    val user = createUserModel()
+                    userManager.updateUser(user)
+                }
             }
         }
     }

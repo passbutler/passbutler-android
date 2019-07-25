@@ -1,7 +1,9 @@
 package de.sicherheitskritisch.passbutler
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
+import android.content.SharedPreferences
 import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.byteSize
@@ -19,14 +21,17 @@ import de.sicherheitskritisch.passbutler.database.Differentiation
 import de.sicherheitskritisch.passbutler.database.LocalRepository
 import de.sicherheitskritisch.passbutler.database.Synchronization
 import de.sicherheitskritisch.passbutler.database.UserWebservice
+import de.sicherheitskritisch.passbutler.database.models.AuthToken
 import de.sicherheitskritisch.passbutler.database.models.ItemKey
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
+import de.sicherheitskritisch.passbutler.database.models.isExpired
 import de.sicherheitskritisch.passbutler.database.technicalErrorDescription
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.time.Instant
 import java.util.*
 
@@ -34,58 +39,71 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
     val loggedInUser = MutableLiveData<LoggedInUserResult?>()
 
-    val serverUrl: String?
-        get() = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_SERVERURL, null)
-
     val isLocalUser
-        get() = serverUrl == null
+        get() = loggedInStateStorage.serverUrl == null
 
     private var authWebservice: AuthWebservice? = null
     private var userWebservice: UserWebservice? = null
 
-    private val sharedPreferences by lazy {
-        applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
+    private val loggedInStateStorage by lazy {
+        val sharedPreferences = applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
+        LoggedInStateStorage(sharedPreferences)
     }
 
     @Throws(LoginFailedException::class)
-    suspend fun loginRemoteUser(userName: String, masterPassword: String, serverUrl: String) {
+    suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrl: String) {
         try {
-            val masterPasswordAuthenticationHash = Derivation.deriveAuthenticationHash(userName, masterPassword)
-            authWebservice = AuthWebservice.create(serverUrl, userName, masterPasswordAuthenticationHash)
+            val masterPasswordAuthenticationHash = Derivation.deriveAuthenticationHash(username, masterPassword)
+            authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
 
-            val getTokenRequest = authWebservice?.getTokenAsync()
-            val getTokenResponse = getTokenRequest?.await()
-            val authToken = getTokenResponse?.body()
-
-            if (getTokenResponse?.isSuccessful != true || authToken == null) {
-                throw GetAuthTokenFailedException("The auth token could not be get ${getTokenResponse.technicalErrorDescription}")
-            }
-
+            val authToken = requestNewAuthToken()
             userWebservice = UserWebservice.create(serverUrl, authToken.token)
 
-            val getUserDetailsRequest = userWebservice?.getUserDetailsAsync(userName)
-            val getUserDetailsResponse = getUserDetailsRequest?.await()
-            val remoteUser = getUserDetailsResponse?.body()
-
-            if (getUserDetailsResponse?.isSuccessful != true || remoteUser == null) {
-                throw GetUserDetailsFailedException("The user details could not be get ${getUserDetailsResponse.technicalErrorDescription}")
-            }
-
+            val remoteUser = requestUserDetails(username)
             createUser(remoteUser)
-            persistPreferences(remoteUser.username, serverUrl)
+
+            loggedInStateStorage.reset()
+
+            loggedInStateStorage.username = remoteUser.username
+            loggedInStateStorage.serverUrl = serverUrl
+            loggedInStateStorage.authToken = authToken
+            loggedInStateStorage.persist()
 
             val loggedInUserResult = LoggedInUserResult(remoteUser, masterPassword = masterPassword)
             loggedInUser.postValue(loggedInUserResult)
-
-            // TODO: Persist token + exp + preferences
-
         } catch (exception: Exception) {
             throw LoginFailedException("The remote login failed with an exception!", exception)
         }
     }
 
+    @Throws(Exception::class)
+    private suspend fun requestNewAuthToken(): AuthToken {
+        val getTokenRequest = authWebservice?.getTokenAsync()
+        val getTokenResponse = getTokenRequest?.await()
+        val authToken = getTokenResponse?.body()
+
+        if (getTokenResponse?.isSuccessful != true || authToken == null) {
+            throw GetAuthTokenFailedException("The auth token could not be get ${getTokenResponse.technicalErrorDescription}")
+        }
+
+        return authToken
+    }
+
+    @Throws(Exception::class)
+    private suspend fun requestUserDetails(username: String): User {
+        val getUserDetailsRequest = userWebservice?.getUserDetailsAsync(username)
+        val getUserDetailsResponse = getUserDetailsRequest?.await()
+        val user = getUserDetailsResponse?.body()
+
+        if (getUserDetailsResponse?.isSuccessful != true || user == null) {
+            throw GetUserDetailsFailedException("The user details could not be get ${getUserDetailsResponse.technicalErrorDescription}")
+        }
+
+        return user
+    }
+
     @Throws(LoginFailedException::class)
-    suspend fun loginLocalUser(userName: String, masterPassword: String) {
+    suspend fun loginLocalUser(username: String, masterPassword: String) {
         var masterKey: ByteArray? = null
         var masterEncryptionKey: ByteArray? = null
 
@@ -113,7 +131,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
                 val currentDate = currentDate
 
                 User(
-                    userName,
+                    username,
                     masterPasswordAuthenticationHash,
                     masterKeyDerivationInformation,
                     protectedMasterEncryptionKey,
@@ -129,11 +147,14 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             }
 
             createUser(localUser)
-            persistPreferences(localUser.username, null)
+
+            loggedInStateStorage.reset()
+
+            loggedInStateStorage.username = localUser.username
+            loggedInStateStorage.persist()
 
             val loggedInUserResult = LoggedInUserResult(localUser, masterPassword = masterPassword)
             loggedInUser.postValue(loggedInUserResult)
-
         } catch (exception: Exception) {
             throw LoginFailedException("The local login failed with an exception!", exception)
         } finally {
@@ -147,16 +168,6 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         localRepository.insertUser(user)
     }
 
-    private suspend fun persistPreferences(userName: String, serverUrl: String?) {
-        withContext(Dispatchers.IO) {
-            // Use blocking `commit()` because we are in suspending function
-            sharedPreferences.edit().also {
-                it.putString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, userName)
-                it.putString(SERIALIZATION_KEY_LOGGED_IN_SERVERURL, serverUrl)
-            }.commit()
-        }
-    }
-
     suspend fun logoutUser() {
         L.d("UserManager", "logoutUser()")
 
@@ -164,14 +175,17 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         userWebservice = null
 
         localRepository.reset()
-        sharedPreferences.edit().clear().apply()
+        loggedInStateStorage.reset()
         loggedInUser.postValue(null)
     }
 
     suspend fun restoreLoggedInUser() {
         L.d("UserManager", "restoreLoggedInUser()")
 
-        val restoredLoggedInUser = sharedPreferences.getString(SERIALIZATION_KEY_LOGGED_IN_USERNAME, null)?.let { loggedInUsername ->
+        // Restore logged in state storage first
+        loggedInStateStorage.restore()
+
+        val restoredLoggedInUser = loggedInStateStorage.username?.let { loggedInUsername ->
             localRepository.findUser(loggedInUsername)
         }
 
@@ -182,42 +196,54 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     suspend fun restoreWebservices(masterPassword: String) {
         L.d("UserManager", "restoreWebservices()")
 
-        val serverUrl = serverUrl
-        val loggedInUser = loggedInUser.value?.user
+        val username = loggedInStateStorage.username
+        val serverUrl = loggedInStateStorage.serverUrl
 
-        if (serverUrl != null && loggedInUser != null) {
-            val userName = loggedInUser.username
+        if (username != null && serverUrl != null) {
+            try {
+                // TODO: If the user changes the master password, the auth webservice needs to be re-initialized
+                if (authWebservice == null) {
+                    val masterPasswordAuthenticationHash = Derivation.deriveAuthenticationHash(username, masterPassword)
+                    authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
+                }
 
-            // TODO: only get token if expired
-            val masterPasswordAuthenticationHash = Derivation.deriveAuthenticationHash(userName, masterPassword)
-            authWebservice = AuthWebservice.create(serverUrl, userName, masterPasswordAuthenticationHash)
+                var authTokenHasChanged = false
+                var authToken = loggedInStateStorage.authToken
 
-            val getTokenRequest = authWebservice?.getTokenAsync()
-            val getTokenResponse = getTokenRequest?.await()
-            val authToken = getTokenResponse?.body()
+                if (authToken == null || authToken.isExpired) {
+                    authToken = requestNewAuthToken()
+                    authTokenHasChanged = true
 
-            if (getTokenResponse?.isSuccessful != true || authToken == null) {
-                throw GetAuthTokenFailedException("The auth token could not be get ${getTokenResponse.technicalErrorDescription}")
+                    loggedInStateStorage.authToken = authToken
+                    loggedInStateStorage.persist()
+                }
+
+                if (userWebservice == null || authTokenHasChanged) {
+                    userWebservice = UserWebservice.create(serverUrl, authToken.token)
+                }
+            } catch (e: Exception) {
+                L.w("UserManager", "restoreWebservices(): The webservices could not be restored!", e)
             }
-
-            userWebservice = UserWebservice.create(serverUrl, authToken.token)
         }
     }
 
     suspend fun updateUser(user: User) {
         L.d("UserManager", "updateUser(): user = $user")
 
-        user.modified = currentDate
-        localRepository.updateUser(user)
-        L.d("UserManager", "updateUser(): The user was successfully updated in local database.")
+        try {
+            // First update in local database
+            user.modified = currentDate
+            localRepository.updateUser(user)
 
-        val setUserDetailsRequest = userWebservice?.setUserDetailsAsync(user.username, user)
-        val setUserDetailsResponse = setUserDetailsRequest?.await()
+            // Than update on remote database
+            val setUserDetailsRequest = userWebservice?.setUserDetailsAsync(user.username, user)
+            val setUserDetailsResponse = setUserDetailsRequest?.await()
 
-        if (setUserDetailsResponse?.isSuccessful == true) {
-            L.d("UserManager", "updateUser(): The user was successfully updated on remote database.")
-        } else {
-            L.d("UserManager", "updateUser(): The user could not be updated on remote database ${setUserDetailsResponse.technicalErrorDescription}")
+            if (setUserDetailsResponse?.isSuccessful != true) {
+                throw SetUserDetailsFailedException("The user details could not be set ${setUserDetailsResponse.technicalErrorDescription})")
+            }
+        } catch (e: Exception) {
+            L.w("UserManager", "updateUser(): The user could not be updated!", e)
         }
     }
 
@@ -240,11 +266,55 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
     class GetAuthTokenFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
     class GetUserDetailsFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
+    class SetUserDetailsFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
     class UserCreationFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
     class LoginFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
 }
 
-// TODO: Only sync down users
+data class LoggedInUserResult(val user: User, val masterPassword: String?)
+
+private class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
+    var username: String? = null
+    var serverUrl: String? = null
+    var authToken: AuthToken? = null
+
+    suspend fun restore() {
+        // TODO: Catch JSONException
+        withContext(Dispatchers.IO) {
+            username = sharedPreferences.getString(SHARED_PREFERENCES_KEY_USERNAME, null)
+            serverUrl = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SERVERURL, null)
+            authToken = sharedPreferences.getString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, null)?.let { AuthToken.deserialize(JSONObject(it)) }
+        }
+    }
+
+    @SuppressLint("ApplySharedPref")
+    suspend fun persist() {
+        withContext(Dispatchers.IO) {
+            // Use blocking `commit()` because we are in suspending function
+            sharedPreferences.edit().apply {
+                putString(SHARED_PREFERENCES_KEY_USERNAME, username)
+                putString(SHARED_PREFERENCES_KEY_SERVERURL, serverUrl)
+                putString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, authToken?.serialize()?.toString())
+            }.commit()
+        }
+    }
+
+    suspend fun reset() {
+        // TODO: Be sure all fields are cleared by design
+        username = null
+        serverUrl = null
+        authToken = null
+
+        persist()
+    }
+
+    companion object {
+        private const val SHARED_PREFERENCES_KEY_USERNAME = "username"
+        private const val SHARED_PREFERENCES_KEY_SERVERURL = "serverUrl"
+        private const val SHARED_PREFERENCES_KEY_AUTH_TOKEN = "authToken"
+    }
+}
+
 private class UserSynchronization(private val localRepository: LocalRepository, private var userWebservice: UserWebservice) : Synchronization {
 
     @Throws(Synchronization.SynchronizationFailedException::class)
@@ -338,11 +408,6 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
         return this.map { "'${it.username}' (${it.modified})" }
     }
 }
-
-private const val SERIALIZATION_KEY_LOGGED_IN_USERNAME = "loggedInUsername"
-private const val SERIALIZATION_KEY_LOGGED_IN_SERVERURL = "loggedInServerUrl"
-
-data class LoggedInUserResult(val user: User, val masterPassword: String?)
 
 private val currentDate
     get() = Date.from(Instant.now())
