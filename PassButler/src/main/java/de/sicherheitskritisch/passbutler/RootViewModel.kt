@@ -56,6 +56,8 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
                 loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
                 userManager.restoreWebservices(masterPassword)
 
+                // TODO: Trigger sync of user etc.
+
                 unlockScreenRequestSendingViewModel.isLoading.postValue(false)
                 unlockScreenRequestSendingViewModel.requestFinishedSuccessfully.emit()
             } catch (exception: Exception) {
@@ -124,7 +126,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
                 rootScreenState.value = RootScreenState.LoggedOut
                 lockScreenState.value = null
 
-                // Finally reset logged-in user related jobs
+                // Finally resetLoggedInStateStorage logged-in user related jobs
                 loggedInUserViewModel?.cancelJobs()
                 loggedInUserViewModel = null
             }
