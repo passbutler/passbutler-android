@@ -36,8 +36,8 @@ class UserViewModel private constructor(
     val username
         get() = user.username
 
-    val lockTimeoutSetting = MutableLiveData<Int>()
-    val hidePasswordsSetting = MutableLiveData<Boolean>()
+    val lockTimeoutSetting = MutableLiveData<Int?>()
+    val hidePasswordsSetting = MutableLiveData<Boolean?>()
 
     private val lockTimeoutSettingChangedObserver: (Int?) -> Unit = { applyUserSettings() }
     private val hidePasswordsSettingChangedObserver: (Boolean?) -> Unit = { applyUserSettings() }

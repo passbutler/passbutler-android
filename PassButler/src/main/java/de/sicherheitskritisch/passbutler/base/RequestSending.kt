@@ -6,13 +6,13 @@ import androidx.lifecycle.ViewModel
 
 interface RequestSendingViewModel {
     val isLoading: MutableLiveData<Boolean>
-    val requestError: MutableLiveData<Throwable>
+    val requestError: MutableLiveData<Throwable?>
     val requestFinishedSuccessfully: SignalEmitter
 }
 
 open class DefaultRequestSendingViewModel : ViewModel(), RequestSendingViewModel {
     override val isLoading = MutableLiveData<Boolean>().also { it.value = false }
-    override val requestError = MutableLiveData<Throwable>()
+    override val requestError = MutableLiveData<Throwable?>()
     override val requestFinishedSuccessfully = SignalEmitter()
 }
 
@@ -24,7 +24,7 @@ abstract class RequestSendingViewHandler(private val requestSendingViewModel: Re
         }
     }
 
-    private val requestErrorObserver = Observer<Throwable> { newValue ->
+    private val requestErrorObserver = Observer<Throwable?> { newValue ->
         newValue?.let {
             onRequestErrorChanged(it)
         }

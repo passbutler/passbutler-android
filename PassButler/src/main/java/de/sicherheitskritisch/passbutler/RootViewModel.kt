@@ -20,8 +20,8 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
     var loggedInUserViewModel: UserViewModel? = null
 
-    val rootScreenState = MutableLiveData<RootScreenState>()
-    val lockScreenState = MutableLiveData<LockScreenState>()
+    val rootScreenState = MutableLiveData<RootScreenState?>()
+    val lockScreenState = MutableLiveData<LockScreenState?>()
 
     val unlockScreenRequestSendingViewModel = DefaultRequestSendingViewModel()
 
