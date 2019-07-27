@@ -280,18 +280,21 @@ private class LoggedInStateStorage(private val sharedPreferences: SharedPreferen
     var authToken: AuthToken? = null
 
     suspend fun restore() {
-        // TODO: Catch JSONException
-        withContext(Dispatchers.IO) {
-            username = sharedPreferences.getString(SHARED_PREFERENCES_KEY_USERNAME, null)
-            serverUrl = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SERVERURL, null)?.let { Uri.parse(it) }
-            authToken = sharedPreferences.getString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, null)?.let { AuthToken.deserialize(JSONObject(it)) }
+        try {
+            withContext(Dispatchers.IO) {
+                username = sharedPreferences.getString(SHARED_PREFERENCES_KEY_USERNAME, null)
+                serverUrl = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SERVERURL, null)?.let { Uri.parse(it) }
+                authToken = sharedPreferences.getString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, null)?.let { AuthToken.deserialize(JSONObject(it)) }
+            }
+        } catch (e: Exception) {
+            L.w("LoggedInStateStorage", "The logged-in-state storage could not be restored!", e)
         }
     }
 
+    // Use blocking `commit()` because we are in suspending function
     @SuppressLint("ApplySharedPref")
     suspend fun persist() {
         withContext(Dispatchers.IO) {
-            // Use blocking `commit()` because we are in suspending function
             sharedPreferences.edit().apply {
                 putString(SHARED_PREFERENCES_KEY_USERNAME, username)
                 putString(SHARED_PREFERENCES_KEY_SERVERURL, serverUrl?.toString())
@@ -301,7 +304,6 @@ private class LoggedInStateStorage(private val sharedPreferences: SharedPreferen
     }
 
     suspend fun reset() {
-        // TODO: Be sure all fields are cleared by design
         username = null
         serverUrl = null
         authToken = null
