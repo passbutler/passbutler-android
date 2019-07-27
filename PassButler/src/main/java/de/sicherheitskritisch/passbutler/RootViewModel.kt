@@ -28,13 +28,13 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     private val userManager
         get() = getApplication<AbstractPassButlerApplication>().userManager
 
-    private val loggedInUserObserver = LoggedInUserObserver()
+    private val loggedInUserResultObserver = LoggedInUserResultObserver()
 
     private var cryptoResourcesJob: Job? = null
     private var lockScreenTimerJob: Job? = null
 
     init {
-        userManager.loggedInUser.observeForever(loggedInUserObserver)
+        userManager.loggedInUserResult.observeForever(loggedInUserResultObserver)
 
         // Try to restore logged-in user after the observer was added
         launch {
@@ -43,7 +43,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     override fun onCleared() {
-        userManager.loggedInUser.removeObserver(loggedInUserObserver)
+        userManager.loggedInUserResult.removeObserver(loggedInUserResultObserver)
         super.onCleared()
     }
 
@@ -110,7 +110,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         object Unlocked : LockScreenState()
     }
 
-    private inner class LoggedInUserObserver : Observer<LoggedInUserResult?> {
+    private inner class LoggedInUserResultObserver : Observer<LoggedInUserResult?> {
         override fun onChanged(loggedInUserResult: LoggedInUserResult?) {
             if (loggedInUserResult != null) {
                 // Create new logged-in user first

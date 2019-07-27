@@ -38,7 +38,7 @@ import java.util.*
 
 class UserManager(applicationContext: Context, private val localRepository: LocalRepository) {
 
-    val loggedInUser = MutableLiveData<LoggedInUserResult?>()
+    val loggedInUserResult = MutableLiveData<LoggedInUserResult?>()
 
     val isLocalUser
         get() = loggedInStateStorage.serverUrl == null
@@ -71,7 +71,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             loggedInStateStorage.persist()
 
             val loggedInUserResult = LoggedInUserResult(remoteUser, masterPassword = masterPassword)
-            loggedInUser.postValue(loggedInUserResult)
+            this.loggedInUserResult.postValue(loggedInUserResult)
         } catch (exception: Exception) {
             throw LoginFailedException("The remote login failed with an exception!", exception)
         }
@@ -155,7 +155,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             loggedInStateStorage.persist()
 
             val loggedInUserResult = LoggedInUserResult(localUser, masterPassword = masterPassword)
-            loggedInUser.postValue(loggedInUserResult)
+            this.loggedInUserResult.postValue(loggedInUserResult)
         } catch (exception: Exception) {
             throw LoginFailedException("The local login failed with an exception!", exception)
         } finally {
@@ -177,7 +177,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
         localRepository.reset()
         loggedInStateStorage.reset()
-        loggedInUser.postValue(null)
+        loggedInUserResult.postValue(null)
     }
 
     suspend fun restoreLoggedInUser() {
@@ -191,7 +191,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         }
 
         val loggedInUserResult = restoredLoggedInUser?.let { LoggedInUserResult(it, masterPassword = null) }
-        loggedInUser.postValue(loggedInUserResult)
+        this.loggedInUserResult.postValue(loggedInUserResult)
     }
 
     suspend fun restoreWebservices(masterPassword: String) {
