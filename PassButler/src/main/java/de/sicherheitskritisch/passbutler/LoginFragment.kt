@@ -104,7 +104,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_serverurl_validation_error_empty)),
                         FormFieldValidator.Rule({ !URLUtil.isValidUrl(it) }, getString(R.string.login_serverurl_validation_error_invalid))
                     )
-                ).takeIf { viewModel.isLocalLogin.value == false },
+                ).takeIf { viewModel.isLocalLogin.value != true },
                 FormFieldValidator(
                     binding.textInputEditTextUsername, listOf(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_username_validation_error_empty))
