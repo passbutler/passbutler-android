@@ -8,7 +8,6 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.time.Instant
 
-// TODO: Add unit tests for serialization/deserialization or just save token as string?
 data class AuthToken(
     val token: String
 ) : JSONSerializable {
