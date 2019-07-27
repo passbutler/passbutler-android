@@ -1,19 +1,19 @@
 package de.sicherheitskritisch.passbutler.base
 
-import android.widget.EditText
+import androidx.appcompat.widget.AppCompatEditText
 
-data class FormFieldValidator(val formField: EditText, val validationRules: List<Rule>) {
-    data class Rule(val isInvalidValidator: (formFieldText: String) -> Boolean, val errorString: String)
+data class FormFieldValidator(val formField: AppCompatEditText, val validationRules: List<Rule>) {
+    data class Rule(val isInvalidValidator: (formFieldText: String?) -> Boolean, val errorString: String)
 }
 
 sealed class FormValidationResult {
     object Valid : FormValidationResult()
-    class Invalid(val firstInvalidFormField: EditText) : FormValidationResult()
+    class Invalid(val firstInvalidFormField: AppCompatEditText) : FormValidationResult()
 }
 
 fun validateForm(formFieldValidators: List<FormFieldValidator>): FormValidationResult {
     var previousValidationErrorOccurred = false
-    var firstInvalidFormField: EditText? = null
+    var firstInvalidFormField: AppCompatEditText? = null
 
     // Resets errors first
     formFieldValidators.forEach { formFieldValidator ->
@@ -22,7 +22,7 @@ fun validateForm(formFieldValidators: List<FormFieldValidator>): FormValidationR
 
     for (formFieldValidator in formFieldValidators) {
         val formField = formFieldValidator.formField
-        val formFieldText = formField.text.toString()
+        val formFieldText = formField.text?.toString()
 
         for (formFieldValidationRule in formFieldValidator.validationRules) {
             val validationFailed = formFieldValidationRule.isInvalidValidator.invoke(formFieldText)
