@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
-    val isLocalLogin = MutableLiveData<Boolean>()
+    val isLocalLogin = MutableLiveData<Boolean>().apply { value = false }
 
     val loginRequestSendingViewModel = DefaultRequestSendingViewModel()
 

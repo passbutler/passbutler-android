@@ -11,7 +11,7 @@ interface RequestSendingViewModel {
 }
 
 open class DefaultRequestSendingViewModel : ViewModel(), RequestSendingViewModel {
-    override val isLoading = MutableLiveData<Boolean>().also { it.value = false }
+    override val isLoading = MutableLiveData<Boolean>().apply { value = false }
     override val requestError = MutableLiveData<Throwable?>()
     override val requestFinishedSuccessfully = SignalEmitter()
 }
