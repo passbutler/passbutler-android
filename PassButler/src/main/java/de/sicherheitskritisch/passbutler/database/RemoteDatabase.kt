@@ -21,7 +21,6 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import java.io.IOException
@@ -72,36 +71,37 @@ interface AuthWebservice {
             return retrofitBuilder.create(AuthWebservice::class.java)
         }
     }
+
+    class GetAuthTokenFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
+}
+
+@Throws(Exception::class)
+suspend fun AuthWebservice?.requestNewAuthToken(): AuthToken {
+    val getTokenRequest = this?.getTokenAsync()
+    val getTokenResponse = getTokenRequest?.await()
+    val authToken = getTokenResponse?.body()
+
+    if (getTokenResponse?.isSuccessful != true || authToken == null) {
+        throw AuthWebservice.GetAuthTokenFailedException("The auth token could not be get ${getTokenResponse.technicalErrorDescription}")
+    }
+
+    return authToken
 }
 
 interface UserWebservice {
     @GET("/users")
     fun getUsersAsync(): Deferred<Response<List<User>>>
 
-    // TODO: Remove
-    @POST("/users")
-    fun addUsersAsync(@Body newUsers: List<User>): Deferred<Response<Unit>>
-
-    // TODO: Remove
-    @PUT("/users")
-    fun updateUsersAsync(@Body modifiedUsers: List<User>): Deferred<Response<Unit>>
-
     @GET("/user/{username}")
     fun getUserDetailsAsync(@Path("username") username: String): Deferred<Response<User>>
 
     @PUT("/user/{username}")
-    fun setUserDetailsAsync(@Path("username") username: String, @Body modifiedUser: User): Deferred<Response<Unit>>
+    fun setUserDetailsAsync(@Path("username") username: String, @Body user: User): Deferred<Response<Unit>>
 
     private class ConverterFactory : Converter.Factory() {
         override fun requestBodyConverter(type: Type, parameterAnnotations: Array<Annotation>, methodAnnotations: Array<Annotation>, retrofit: Retrofit): Converter<*, RequestBody>? {
             return when (type) {
                 User::class.java -> UserRequestConverter()
-                is ParameterizedType -> {
-                    when {
-                        type.rawType == List::class.java && type.actualTypeArguments.firstOrNull() == User::class.java -> UserListRequestConverter()
-                        else -> null
-                    }
-                }
                 else -> null
             }
         }
@@ -109,16 +109,6 @@ interface UserWebservice {
         private class UserRequestConverter : Converter<User, RequestBody> {
             override fun convert(user: User): RequestBody {
                 return RequestBody.create(MediaType.get("application/json"), user.serialize().toString())
-            }
-        }
-
-        private class UserListRequestConverter : Converter<List<User>, RequestBody> {
-            override fun convert(userList: List<User>): RequestBody {
-                return RequestBody.create(MediaType.get("application/json"), JSONArray().also { jsonArray ->
-                    userList.forEach {
-                        jsonArray.put(it.serialize())
-                    }
-                }.toString())
             }
         }
 
@@ -170,6 +160,32 @@ interface UserWebservice {
 
             return retrofitBuilder.create(UserWebservice::class.java)
         }
+    }
+
+    class GetUserDetailsFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
+    class SetUserDetailsFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
+}
+
+@Throws(Exception::class)
+suspend fun UserWebservice?.requestUser(username: String): User {
+    val getUserDetailsRequest = this?.getUserDetailsAsync(username)
+    val getUserDetailsResponse = getUserDetailsRequest?.await()
+    val user = getUserDetailsResponse?.body()
+
+    if (getUserDetailsResponse?.isSuccessful != true || user == null) {
+        throw UserWebservice.GetUserDetailsFailedException("The user details could not be get ${getUserDetailsResponse.technicalErrorDescription}")
+    }
+
+    return user
+}
+
+@Throws(Exception::class)
+suspend fun UserWebservice?.updateUser(user: User) {
+    val setUserDetailsRequest = this?.setUserDetailsAsync(user.username, user)
+    val setUserDetailsResponse = setUserDetailsRequest?.await()
+
+    if (setUserDetailsResponse?.isSuccessful != true) {
+        throw UserWebservice.SetUserDetailsFailedException("The user details could not be set ${setUserDetailsResponse.technicalErrorDescription})")
     }
 }
 
