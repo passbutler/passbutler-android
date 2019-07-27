@@ -90,8 +90,11 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
                 // Remove focus before unlock to be sure keyboard is hidden
                 removeFormFieldsFocus()
 
-                val password = binding.textInputEditTextPassword.text.toString()
-                viewModel.unlockScreenWithPassword(password)
+                val password = binding.textInputEditTextPassword.text?.toString()
+
+                if (password != null) {
+                    viewModel.unlockScreenWithPassword(password)
+                }
             }
             is FormValidationResult.Invalid -> {
                 formValidationResult.firstInvalidFormField.requestFocus()
@@ -107,7 +110,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         super.onSaveInstanceState(outState)
 
         binding?.let {
-            outState.putString(FORM_FIELD_PASSWORD, it.textInputEditTextPassword.text.toString())
+            outState.putString(FORM_FIELD_PASSWORD, it.textInputEditTextPassword.text?.toString())
         }
     }
 

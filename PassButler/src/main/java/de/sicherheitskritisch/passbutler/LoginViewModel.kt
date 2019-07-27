@@ -1,6 +1,7 @@
 package de.sicherheitskritisch.passbutler
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
@@ -20,23 +21,17 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
 
     private var loginCoroutineJob: Job? = null
 
-    fun loginUser(serverUrl: String, username: String, masterPassword: String) {
+    fun loginUser(serverUrlString: String, username: String, masterPassword: String) {
         loginCoroutineJob?.cancel()
         loginCoroutineJob = launch {
             loginRequestSendingViewModel.isLoading.postValue(true)
 
             try {
                 if (isLocalLogin.value == true) {
-                    userManager.loginLocalUser(
-                        username = username,
-                        masterPassword = masterPassword
-                    )
+                    userManager.loginLocalUser(username, masterPassword)
                 } else {
-                    userManager.loginRemoteUser(
-                        username = username,
-                        masterPassword = masterPassword,
-                        serverUrl = serverUrl
-                    )
+                    val serverUrl = Uri.parse(serverUrlString)
+                    userManager.loginRemoteUser(username, masterPassword, serverUrl)
                 }
 
                 loginRequestSendingViewModel.isLoading.postValue(false)

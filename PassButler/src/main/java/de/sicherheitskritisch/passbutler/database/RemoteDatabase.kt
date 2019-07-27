@@ -1,5 +1,6 @@
 package de.sicherheitskritisch.passbutler.database
 
+import android.net.Uri
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import de.sicherheitskritisch.passbutler.base.asJSONObjectSequence
 import de.sicherheitskritisch.passbutler.database.models.AuthToken
@@ -50,15 +51,14 @@ interface AuthWebservice {
     }
 
     companion object {
-        // TODO: Change type of `serverUrl` to `Uri`?
         // TODO: Enforce TLS for non-debug build
-        fun create(serverUrl: String, username: String, password: String): AuthWebservice {
+        fun create(serverUrl: Uri, username: String, password: String): AuthWebservice {
             val okHttpClient = OkHttpClient.Builder()
                 .addInterceptor(PasswordAuthenticationInterceptor(username, password))
                 .build()
 
             val retrofitBuilder = Retrofit.Builder()
-                .baseUrl(serverUrl)
+                .baseUrl(serverUrl.toString())
                 .client(okHttpClient)
                 .addConverterFactory(ConverterFactory())
                 .addCallAdapterFactory(CoroutineCallAdapterFactory())
@@ -146,15 +146,14 @@ interface UserWebservice {
     }
 
     companion object {
-        // TODO: Change type of `serverUrl` to `Uri`?
         // TODO: Enforce TLS for non-debug build
-        fun create(serverUrl: String, authToken: String): UserWebservice {
+        fun create(serverUrl: Uri, authToken: String): UserWebservice {
             val okHttpClient = OkHttpClient.Builder()
                 .addInterceptor(TokenAuthenticationInterceptor(authToken))
                 .build()
 
             val retrofitBuilder = Retrofit.Builder()
-                .baseUrl(serverUrl)
+                .baseUrl(serverUrl.toString())
                 .client(okHttpClient)
                 .addConverterFactory(UnitConverterFactory())
                 .addConverterFactory(ConverterFactory())

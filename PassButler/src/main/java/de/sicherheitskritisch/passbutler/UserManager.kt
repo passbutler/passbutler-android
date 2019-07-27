@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
+import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.byteSize
@@ -51,7 +52,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     }
 
     @Throws(LoginFailedException::class)
-    suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrl: String) {
+    suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrl: Uri) {
         try {
             val masterPasswordAuthenticationHash = Derivation.deriveAuthenticationHash(username, masterPassword)
             authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
@@ -275,14 +276,14 @@ data class LoggedInUserResult(val user: User, val masterPassword: String?)
 
 private class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
     var username: String? = null
-    var serverUrl: String? = null
+    var serverUrl: Uri? = null
     var authToken: AuthToken? = null
 
     suspend fun restore() {
         // TODO: Catch JSONException
         withContext(Dispatchers.IO) {
             username = sharedPreferences.getString(SHARED_PREFERENCES_KEY_USERNAME, null)
-            serverUrl = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SERVERURL, null)
+            serverUrl = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SERVERURL, null)?.let { Uri.parse(it) }
             authToken = sharedPreferences.getString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, null)?.let { AuthToken.deserialize(JSONObject(it)) }
         }
     }
@@ -293,7 +294,7 @@ private class LoggedInStateStorage(private val sharedPreferences: SharedPreferen
             // Use blocking `commit()` because we are in suspending function
             sharedPreferences.edit().apply {
                 putString(SHARED_PREFERENCES_KEY_USERNAME, username)
-                putString(SHARED_PREFERENCES_KEY_SERVERURL, serverUrl)
+                putString(SHARED_PREFERENCES_KEY_SERVERURL, serverUrl?.toString())
                 putString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, authToken?.serialize()?.toString())
             }.commit()
         }

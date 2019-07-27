@@ -123,10 +123,13 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
                 // Remove focus before login to be sure keyboard is hidden
                 removeFormFieldsFocus()
 
-                val serverUrl = binding.textInputEditTextServerurl.text.toString()
-                val username = binding.textInputEditTextUsername.text.toString()
-                val password = binding.textInputEditTextPassword.text.toString()
-                viewModel.loginUser(serverUrl, username, password)
+                val serverUrl = binding.textInputEditTextServerurl.text?.toString()
+                val username = binding.textInputEditTextUsername.text?.toString()
+                val password = binding.textInputEditTextPassword.text?.toString()
+
+                if (serverUrl != null && username != null && password != null) {
+                    viewModel.loginUser(serverUrl, username, password)
+                }
             }
             is FormValidationResult.Invalid -> {
                 formValidationResult.firstInvalidFormField.requestFocus()
@@ -142,9 +145,9 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         super.onSaveInstanceState(outState)
 
         binding?.let {
-            outState.putString(FORM_FIELD_SERVERURL, it.textInputEditTextServerurl.text.toString())
-            outState.putString(FORM_FIELD_USERNAME, it.textInputEditTextUsername.text.toString())
-            outState.putString(FORM_FIELD_PASSWORD, it.textInputEditTextPassword.text.toString())
+            outState.putString(FORM_FIELD_SERVERURL, it.textInputEditTextServerurl.text?.toString())
+            outState.putString(FORM_FIELD_USERNAME, it.textInputEditTextUsername.text?.toString())
+            outState.putString(FORM_FIELD_PASSWORD, it.textInputEditTextPassword.text?.toString())
         }
     }
 
