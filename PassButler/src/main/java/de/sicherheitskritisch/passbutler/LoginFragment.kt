@@ -100,9 +100,10 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         val formValidationResult = validateForm(
             listOfNotNull(
                 FormFieldValidator(
-                    binding.textInputEditTextServerurl, listOf(
+                    binding.textInputEditTextServerurl, listOfNotNull(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_serverurl_validation_error_empty)),
-                        FormFieldValidator.Rule({ !URLUtil.isValidUrl(it) }, getString(R.string.login_serverurl_validation_error_invalid))
+                        FormFieldValidator.Rule({ !URLUtil.isValidUrl(it) }, getString(R.string.login_serverurl_validation_error_invalid)),
+                        FormFieldValidator.Rule({ !URLUtil.isHttpsUrl(it) }, getString(R.string.login_serverurl_validation_error_invalid_scheme)).takeIf { BuildType.isReleaseBuild }
                     )
                 ).takeIf { viewModel.isLocalLogin.value != true },
                 FormFieldValidator(

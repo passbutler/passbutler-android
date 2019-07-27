@@ -2,7 +2,9 @@ package de.sicherheitskritisch.passbutler.database
 
 import android.net.Uri
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
+import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.asJSONObjectSequence
+import de.sicherheitskritisch.passbutler.base.isHttpsScheme
 import de.sicherheitskritisch.passbutler.database.models.AuthToken
 import de.sicherheitskritisch.passbutler.database.models.User
 import kotlinx.coroutines.Deferred
@@ -51,8 +53,11 @@ interface AuthWebservice {
     }
 
     companion object {
-        // TODO: Enforce TLS for non-debug build
         fun create(serverUrl: Uri, username: String, password: String): AuthWebservice {
+            if (BuildType.isReleaseBuild && !serverUrl.isHttpsScheme) {
+                throw IllegalArgumentException("For release build, only TLS server URL are accepted!")
+            }
+
             val okHttpClient = OkHttpClient.Builder()
                 .addInterceptor(PasswordAuthenticationInterceptor(username, password))
                 .build()
@@ -146,8 +151,11 @@ interface UserWebservice {
     }
 
     companion object {
-        // TODO: Enforce TLS for non-debug build
         fun create(serverUrl: Uri, authToken: String): UserWebservice {
+            if (BuildType.isReleaseBuild && !serverUrl.isHttpsScheme) {
+                throw IllegalArgumentException("For release build, only TLS server URL are accepted!")
+            }
+
             val okHttpClient = OkHttpClient.Builder()
                 .addInterceptor(TokenAuthenticationInterceptor(authToken))
                 .build()
