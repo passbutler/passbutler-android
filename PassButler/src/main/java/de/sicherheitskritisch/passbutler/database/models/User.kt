@@ -63,7 +63,7 @@ data class User(
                     masterPasswordAuthenticationHash = jsonObject.getString(SERIALIZATION_KEY_MASTER_PASSWORD_AUTHENTICATION_HASH),
                     masterKeyDerivationInformation = jsonObject.getKeyDerivationInformation(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION),
                     masterEncryptionKey = jsonObject.getProtectedValue(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY),
-                    itemEncryptionPublicKey = jsonObject.getCryptographicKey(SERIALIZATION_KEY_ITEM_ENCRYPTION_PUBLIC_KEY) ?: throw JSONException("The key '$SERIALIZATION_KEY_ITEM_ENCRYPTION_PUBLIC_KEY' was not found!"),
+                    itemEncryptionPublicKey = jsonObject.getCryptographicKey(SERIALIZATION_KEY_ITEM_ENCRYPTION_PUBLIC_KEY) ?: throw JSONException("The mandatory value for '$SERIALIZATION_KEY_ITEM_ENCRYPTION_PUBLIC_KEY' could not be deserialized!"),
                     itemEncryptionSecretKey = jsonObject.getProtectedValue(SERIALIZATION_KEY_ITEM_ENCRYPTION_SECRET_KEY),
                     settings = jsonObject.getProtectedValue(SERIALIZATION_KEY_SETTINGS),
                     deleted = jsonObject.getBoolean(SERIALIZATION_KEY_DELETED),
