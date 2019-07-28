@@ -222,19 +222,21 @@ class UserViewModel private constructor(
         }
     }
 
-    @Throws(IllegalStateException::class)
     private fun persistUserSettings() {
         // Execute encryption on the dispatcher for CPU load
         launch(Dispatchers.Default) {
-            val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to persist the user settings!")
-            val settings = settings ?: throw IllegalStateException("The user settings is null despite it was tried to persist the user settings!")
+            val masterEncryptionKey = masterEncryptionKey
+            val settings = settings
 
-            protectedSettings.update(masterEncryptionKey, settings)
+            // Only persist if master encryption key and settings are set (user logged-in and state unlocked)
+            if (masterEncryptionKey != null && settings != null) {
+                protectedSettings.update(masterEncryptionKey, settings)
 
-            // Switch back on IO dispatcher
-            withContext(Dispatchers.IO) {
-                val user = createUserModel()
-                userManager.updateUser(user)
+                // Switch back on IO dispatcher
+                withContext(Dispatchers.IO) {
+                    val user = createUserModel()
+                    userManager.updateUser(user)
+                }
             }
         }
     }
