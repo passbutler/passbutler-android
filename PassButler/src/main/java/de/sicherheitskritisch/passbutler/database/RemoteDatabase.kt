@@ -76,7 +76,7 @@ interface AuthWebservice {
 }
 
 @Throws(Exception::class)
-suspend fun AuthWebservice?.requestNewAuthToken(): AuthToken {
+suspend fun AuthWebservice?.requestAuthToken(): AuthToken {
     val getTokenRequest = this?.getTokenAsync()
     val getTokenResponse = getTokenRequest?.await()
     val authToken = getTokenResponse?.body()

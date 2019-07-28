@@ -26,7 +26,7 @@ import de.sicherheitskritisch.passbutler.database.models.AuthToken
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import de.sicherheitskritisch.passbutler.database.models.isExpired
-import de.sicherheitskritisch.passbutler.database.requestNewAuthToken
+import de.sicherheitskritisch.passbutler.database.requestAuthToken
 import de.sicherheitskritisch.passbutler.database.requestUser
 import de.sicherheitskritisch.passbutler.database.updateUser
 import kotlinx.coroutines.CoroutineScope
@@ -59,7 +59,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword)
             authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
 
-            val authToken = authWebservice.requestNewAuthToken()
+            val authToken = authWebservice.requestAuthToken()
             userWebservice = UserWebservice.create(serverUrl, authToken.token)
 
             val remoteUser = userWebservice.requestUser(username)
@@ -179,7 +179,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             var authToken = loggedInStateStorage.authToken
 
             if (authToken == null || authToken.isExpired) {
-                authToken = authWebservice.requestNewAuthToken()
+                authToken = authWebservice.requestAuthToken()
                 authTokenHasChanged = true
 
                 loggedInStateStorage.authToken = authToken
