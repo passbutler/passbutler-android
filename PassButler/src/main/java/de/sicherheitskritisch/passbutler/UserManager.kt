@@ -41,6 +41,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
     val loggedInUserResult = MutableLiveData<LoggedInUserResult?>()
 
+    // TODO: More elegant solution - sealed class for `LoggedInState`?
     val isLocalUser
         get() = loggedInStateStorage.serverUrl == null
 
@@ -208,11 +209,11 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         L.d("UserManager", "updateUser(): user = $user")
 
         try {
-            // First update in local database
             localRepository.updateUser(user)
 
-            // Than update on remote database
-            userWebservice.updateUser(user)
+            if (!isLocalUser) {
+                userWebservice.updateUser(user)
+            }
         } catch (e: Exception) {
             L.w("UserManager", "updateUser(): The user could not be updated!", e)
         }
