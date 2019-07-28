@@ -16,10 +16,10 @@ const val MASTER_PASSWORD_AUTHENTICATION_HASH_BIT_LENGTH = 256
 object Derivation {
 
     /**
-     * Derives a authentication hash based on username/password using PBKDF2 with SHA-256.
+     * Derives a authentication hash based on username/password using PBKDF2 with SHA-256 used to avoid sending password in clear text.
      */
     @Throws(IllegalArgumentException::class, DerivationFailedException::class)
-    fun deriveAuthenticationHash(username: String, password: String): String {
+    fun deriveLocalAuthenticationHash(username: String, password: String): String {
         if (username.isBlank()) {
             throw IllegalArgumentException("The username must not be empty!")
         }

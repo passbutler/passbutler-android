@@ -56,7 +56,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     @Throws(LoginFailedException::class)
     suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrl: Uri) {
         try {
-            val masterPasswordAuthenticationHash = Derivation.deriveAuthenticationHash(username, masterPassword)
+            val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword)
             authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
 
             val authToken = authWebservice.requestNewAuthToken()
@@ -173,7 +173,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         if (username != null && serverUrl != null) {
             try {
                 if (authWebservice == null) {
-                    val masterPasswordAuthenticationHash = Derivation.deriveAuthenticationHash(username, masterPassword)
+                    val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword)
                     authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
                 }
 

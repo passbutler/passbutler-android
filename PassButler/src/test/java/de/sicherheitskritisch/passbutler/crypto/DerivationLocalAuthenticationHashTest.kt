@@ -3,7 +3,7 @@ package de.sicherheitskritisch.passbutler.crypto
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class DerivationAuthenticationHashTest {
+class DerivationLocalAuthenticationHashTest {
 
     /**
      * Valid authentication hash derivation tests.
@@ -17,7 +17,7 @@ class DerivationAuthenticationHashTest {
         val username = "testuser"
         val password = "1234abcd"
 
-        val derivedHash = Derivation.deriveAuthenticationHash(username, password)
+        val derivedHash = Derivation.deriveLocalAuthenticationHash(username, password)
         assertEquals("E8DCDA8125DBBAF57893AD24490096C28C0C079762CB48CE045D770E8CF41D45", derivedHash)
     }
 
@@ -26,10 +26,10 @@ class DerivationAuthenticationHashTest {
         val password = "1234abcd"
 
         val usernameWithSpaces = " testuser  "
-        val derivedHashWithSpaces = Derivation.deriveAuthenticationHash(usernameWithSpaces, password)
+        val derivedHashWithSpaces = Derivation.deriveLocalAuthenticationHash(usernameWithSpaces, password)
 
         val usernameWithoutSpaces = "testuser"
-        val derivedHashWithoutSpaces = Derivation.deriveAuthenticationHash(usernameWithoutSpaces, password)
+        val derivedHashWithoutSpaces = Derivation.deriveLocalAuthenticationHash(usernameWithoutSpaces, password)
 
         assertEquals(derivedHashWithSpaces, derivedHashWithoutSpaces)
     }
@@ -39,10 +39,10 @@ class DerivationAuthenticationHashTest {
         val username = "testuser"
 
         val passwordWithSpaces = " 1234abcd  "
-        val derivedHashWithSpaces = Derivation.deriveAuthenticationHash(username, passwordWithSpaces)
+        val derivedHashWithSpaces = Derivation.deriveLocalAuthenticationHash(username, passwordWithSpaces)
 
         val passwordWithoutSpaces = "1234abcd"
-        val derivedHashWithoutSpaces = Derivation.deriveAuthenticationHash(username, passwordWithoutSpaces)
+        val derivedHashWithoutSpaces = Derivation.deriveLocalAuthenticationHash(username, passwordWithoutSpaces)
 
         assertEquals(derivedHashWithSpaces, derivedHashWithoutSpaces)
     }
