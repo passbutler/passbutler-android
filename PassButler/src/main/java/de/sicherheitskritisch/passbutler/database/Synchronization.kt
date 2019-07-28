@@ -16,6 +16,7 @@ object Differentiation {
     /**
      * Collects a list of items of modified items (determined by modified date) based on current item and potentially updated item list.
      */
+    @Throws(IllegalStateException::class)
     fun <T : Synchronizable> collectModifiedItems(currentItems: List<T>, updatedItems: List<T>): List<T> {
         if (currentItems.size != updatedItems.size) {
             throw IllegalArgumentException("The current user list and updated user list size must be the same!")
