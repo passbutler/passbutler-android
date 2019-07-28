@@ -162,8 +162,22 @@ interface UserWebservice {
         }
     }
 
+    class GetUsersFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
     class GetUserDetailsFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
     class SetUserDetailsFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
+}
+
+@Throws(Exception::class)
+suspend fun UserWebservice?.requestPublicUserList(): List<User> {
+    val getUsersListRequest = this?.getUsersAsync()
+    val getUsersListResponse = getUsersListRequest?.await()
+    val usersList = getUsersListResponse?.body()
+
+    if (getUsersListResponse?.isSuccessful != true || usersList == null) {
+        throw UserWebservice.GetUsersFailedException("The public users list could not be get ${getUsersListResponse.technicalErrorDescription}")
+    }
+
+    return usersList
 }
 
 @Throws(Exception::class)

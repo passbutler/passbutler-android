@@ -27,6 +27,7 @@ import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import de.sicherheitskritisch.passbutler.database.models.isExpired
 import de.sicherheitskritisch.passbutler.database.requestAuthToken
+import de.sicherheitskritisch.passbutler.database.requestPublicUserList
 import de.sicherheitskritisch.passbutler.database.requestUser
 import de.sicherheitskritisch.passbutler.database.updateUser
 import kotlinx.coroutines.CoroutineScope
@@ -298,8 +299,14 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
     private suspend fun synchronizePublicUsersList(coroutineScope: CoroutineScope) {
         try {
             // Start both operations parallel because they are independent from each other
-            val localUserListDeferred = coroutineScope.async { fetchLocalUserList() }
-            val remoteUserListDeferred = coroutineScope.async { fetchRemoteUserList() }
+            val localUserListDeferred = coroutineScope.async {
+                val localUserList = localRepository.findAllUsers()
+                localUserList.takeIf { it.isNotEmpty() } ?: throw IllegalArgumentException("The local user list is null - can't process with synchronization!")
+            }
+
+            val remoteUserListDeferred = coroutineScope.async {
+                userWebservice.requestPublicUserList()
+            }
 
             // Only update the public users, not the logged-in user in this step
             var localUserList = localUserListDeferred.await().filterNot { it.username == loggedInUser.username }
@@ -324,19 +331,6 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
         } catch (e: Exception) {
             throw SynchronizePublicUsersListFailedException(e)
         }
-    }
-
-    @Throws(IllegalArgumentException::class)
-    private suspend fun fetchLocalUserList(): List<User> {
-        val localUsersList = localRepository.findAllUsers().takeIf { it.isNotEmpty() }
-        return localUsersList ?: throw IllegalArgumentException("The local user list is null - can't process with synchronization!")
-    }
-
-    @Throws(IllegalArgumentException::class)
-    private suspend fun fetchRemoteUserList(): List<User> {
-        val remoteUsersListRequest = userWebservice.getUsersAsync()
-        val response = remoteUsersListRequest.await()
-        return response.body() ?: throw IllegalArgumentException("The remote user list is null - can't process with synchronization!")
     }
 
     private suspend fun createNewUsersInLocalDatabase(newUsers: List<User>) {
