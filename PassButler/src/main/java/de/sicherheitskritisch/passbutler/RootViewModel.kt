@@ -54,7 +54,6 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
             try {
                 loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
-                userManager.restoreWebservices(masterPassword)
 
                 unlockScreenRequestSendingViewModel.isLoading.postValue(false)
                 unlockScreenRequestSendingViewModel.requestFinishedSuccessfully.emit()
