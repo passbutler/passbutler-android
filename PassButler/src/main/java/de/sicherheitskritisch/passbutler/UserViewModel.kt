@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -46,7 +47,7 @@ class UserViewModel private constructor(
         set(newMasterEncryptionKey) {
             if (field.optionalContentNotEquals(newMasterEncryptionKey)) {
                 field = newMasterEncryptionKey
-                decryptUserSettings(newMasterEncryptionKey)
+                decryptUserSettings()
             }
         }
 
@@ -111,7 +112,7 @@ class UserViewModel private constructor(
                 if (decryptedProtectedMasterEncryptionKey != null) {
                     masterEncryptionKey = decryptedProtectedMasterEncryptionKey.key
                 } else {
-                    throw MissingMasterEncryptionKeyException()
+                    throw IllegalStateException("The master encryption key could not be decrypted!")
                 }
             } catch (e: Exception) {
                 throw UnlockFailedException(e)
@@ -129,7 +130,9 @@ class UserViewModel private constructor(
         }
     }
 
-    private fun decryptUserSettings(masterEncryptionKey: ByteArray?) {
+    private fun decryptUserSettings() {
+        val masterEncryptionKey = masterEncryptionKey
+
         if (masterEncryptionKey != null) {
             L.d("UserViewModel", "decryptUserSettings(): The master encryption key was set, decrypt and update user settings...")
 
@@ -179,33 +182,32 @@ class UserViewModel private constructor(
         }
     }
 
+    @Throws(IllegalStateException::class)
     private fun persistUserSettings() {
         // Execute encryption on the dispatcher for CPU load
         launch(Dispatchers.Default) {
-            val masterEncryptionKey = masterEncryptionKey
-            val settings = settings
+            val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to persist the user settings!")
+            val settings = settings ?: throw IllegalStateException("The user settings is null despite it was tried to persist the user settings!")
 
-            // Persist user with new settings only master encryption key and settings are (still) set
-            if (masterEncryptionKey != null && settings != null) {
-                protectedSettings.update(masterEncryptionKey, settings)
+            protectedSettings.update(masterEncryptionKey, settings)
 
-                // Switch back on IO dispatcher
-                withContext(Dispatchers.IO) {
-                    val user = createUserModel()
-                    userManager.updateUser(user)
-                }
+            // Switch back on IO dispatcher
+            withContext(Dispatchers.IO) {
+                val user = createUserModel()
+                userManager.updateUser(user)
             }
         }
     }
 
     private fun createUserModel(): User {
+        // Only update fields that are allowed to modify (server reject changes on non-allowed field anyway)
         return user.copy(
             masterKeyDerivationInformation = masterKeyDerivationInformation,
             masterEncryptionKey = protectedMasterEncryptionKey,
-            settings = protectedSettings
+            settings = protectedSettings,
+            modified = Date()
         )
     }
 
-    class MissingMasterEncryptionKeyException : Exception()
     class UnlockFailedException(cause: Exception? = null) : Exception(cause)
 }

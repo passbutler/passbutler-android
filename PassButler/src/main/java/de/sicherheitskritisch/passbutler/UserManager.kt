@@ -163,37 +163,45 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         this.loggedInUserResult.postValue(loggedInUserResult)
     }
 
+    @Throws(IllegalStateException::class)
     suspend fun restoreWebservices(masterPassword: String) {
         L.d("UserManager", "restoreWebservices()")
 
-        val username = loggedInStateStorage.username
-        val serverUrl = loggedInStateStorage.serverUrl
+        val serverUrl = loggedInStateStorage.serverUrl ?: throw IllegalStateException("The server URL is null despite it was tried to restore webservices!")
 
-        if (username != null && serverUrl != null) {
-            try {
-                if (authWebservice == null) {
-                    val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword)
-                    authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
-                }
-
-                var authTokenHasChanged = false
-                var authToken = loggedInStateStorage.authToken
-
-                if (authToken == null || authToken.isExpired) {
-                    authToken = authWebservice.requestNewAuthToken()
-                    authTokenHasChanged = true
-
-                    loggedInStateStorage.authToken = authToken
-                    loggedInStateStorage.persist()
-                }
-
-                if (userWebservice == null || authTokenHasChanged) {
-                    userWebservice = UserWebservice.create(serverUrl, authToken.token)
-                }
-            } catch (e: Exception) {
-                L.w("UserManager", "restoreWebservices(): The webservices could not be restored!", e)
+        try {
+            if (authWebservice == null) {
+                initializeAuthWebservice(masterPassword)
             }
+
+            var authTokenHasChanged = false
+            var authToken = loggedInStateStorage.authToken
+
+            if (authToken == null || authToken.isExpired) {
+                authToken = authWebservice.requestNewAuthToken()
+                authTokenHasChanged = true
+
+                loggedInStateStorage.authToken = authToken
+                loggedInStateStorage.persist()
+            }
+
+            if (userWebservice == null || authTokenHasChanged) {
+                userWebservice = UserWebservice.create(serverUrl, authToken.token)
+            }
+        } catch (e: Exception) {
+            L.w("UserManager", "restoreWebservices(): The webservices could not be restored!", e)
         }
+    }
+
+    @Throws(IllegalStateException::class)
+    fun initializeAuthWebservice(masterPassword: String) {
+        L.d("UserManager", "initializeAuthWebservice()")
+
+        val username = loggedInStateStorage.username ?: throw IllegalStateException("The username is null despite it was tried to initialize auth webservice!")
+        val serverUrl = loggedInStateStorage.serverUrl ?: throw IllegalStateException("The server URL is null despite it was tried to initialize auth webservice!")
+
+        val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword)
+        authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
     }
 
     suspend fun updateUser(user: User) {
@@ -210,14 +218,13 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         }
     }
 
-    @Throws(Synchronization.SynchronizationFailedException::class)
+    @Throws(IllegalStateException::class, Synchronization.SynchronizationFailedException::class)
     suspend fun synchronizeUsers() {
-        val userWebservice = userWebservice
-        val loggedInUser = loggedInUserResult.value?.user
+        val userWebservice = userWebservice ?: throw IllegalStateException("The user webservice is null despite it was tried to synchronize user!")
+        val loggedInUser = loggedInUserResult.value?.user ?: throw IllegalStateException("The logged-in user is null despite it was tried to synchronize user!")
 
-        if (userWebservice != null && loggedInUser != null) {
-            UserSynchronization(localRepository, userWebservice, loggedInUser).synchronize()
-        }
+        val userSynchronization = UserSynchronization(localRepository, userWebservice, loggedInUser)
+        userSynchronization.synchronize()
     }
 
     class UserCreationFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
