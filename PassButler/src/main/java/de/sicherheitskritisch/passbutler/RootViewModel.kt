@@ -124,7 +124,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
                 rootScreenState.value = RootScreenState.LoggedOut
                 lockScreenState.value = null
 
-                // Finally resetLoggedInStateStorage logged-in user related jobs
+                // Finally reset logged-in user related jobs
                 loggedInUserViewModel?.cancelJobs()
                 loggedInUserViewModel = null
             }
