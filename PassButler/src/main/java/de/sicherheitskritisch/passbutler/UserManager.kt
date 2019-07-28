@@ -35,7 +35,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import java.time.Instant
 import java.util.*
 
 class UserManager(applicationContext: Context, private val localRepository: LocalRepository) {
@@ -104,7 +103,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, userSettings)
 
             val localUser = if (protectedMasterEncryptionKey != null && protectedUserSettings != null) {
-                val currentDate = currentDate
+                val currentDate = Date()
 
                 User(
                     username,
@@ -202,9 +201,6 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
         try {
             // First update in local database
-            user.modified = currentDate
-
-            // TODO: Only update mutable fields
             localRepository.updateUser(user)
 
             // Than update on remote database
@@ -357,6 +353,3 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
         return this.map { "'${it.username}' (${it.modified})" }
     }
 }
-
-private val currentDate
-    get() = Date.from(Instant.now())
