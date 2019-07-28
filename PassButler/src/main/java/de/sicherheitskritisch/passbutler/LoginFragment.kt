@@ -19,6 +19,7 @@ import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.validateForm
+import de.sicherheitskritisch.passbutler.database.AuthWebservice
 import de.sicherheitskritisch.passbutler.databinding.FragmentLoginBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
@@ -188,7 +189,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
             binding?.constraintLayoutLoginScreenContainer?.let {
                 val loginFailedExceptionCause = (requestError as? UserManager.LoginFailedException)?.cause
                 val userfacingErrorMessage = when (loginFailedExceptionCause) {
-                    is UserManager.GetAuthTokenFailedException -> {
+                    is AuthWebservice.GetAuthTokenFailedException -> {
                         resources?.getString(R.string.login_failed_unauthorized_title)
                     }
                     else -> {
