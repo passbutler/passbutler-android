@@ -327,12 +327,10 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
         return response.body() ?: throw Synchronization.SynchronizationFailedException("The remote user list is null - can't process with synchronization!")
     }
 
-    @Throws(Synchronization.SynchronizationFailedException::class)
     private suspend fun createNewUsersInLocalDatabase(newUsers: List<User>) {
         localRepository.insertUser(*newUsers.toTypedArray())
     }
 
-    @Throws(Synchronization.SynchronizationFailedException::class)
     private suspend fun updateModifiedUsersToLocalDatabase(modifiedUsers: List<User>) {
         localRepository.updateUser(*modifiedUsers.toTypedArray())
     }
