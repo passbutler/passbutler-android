@@ -28,6 +28,7 @@ import kotlin.coroutines.CoroutineContext
 class UserViewModel private constructor(
     private val userManager: UserManager,
     private val user: User,
+    private var masterPasswordAuthenticationHash: String,
     private val masterKeyDerivationInformation: KeyDerivationInformation,
     private val protectedMasterEncryptionKey: ProtectedValue<CryptographicKey>,
     private val protectedSettings: ProtectedValue<UserSettings>,
@@ -72,6 +73,7 @@ class UserViewModel private constructor(
     constructor(userManager: UserManager, user: User, masterPassword: String?) : this(
         userManager,
         user,
+        user.masterPasswordAuthenticationHash ?: throw IllegalArgumentException("The given user has no master password authentication hash!"),
         user.masterKeyDerivationInformation ?: throw IllegalArgumentException("The given user has no master key derivation information!"),
         user.masterEncryptionKey ?: throw IllegalArgumentException("The given user has no master encryption key!"),
         user.settings ?: throw IllegalArgumentException("The given user has no user settings!"),
@@ -127,6 +129,37 @@ class UserViewModel private constructor(
         withContext(Dispatchers.Default) {
             masterEncryptionKey?.clear()
             masterEncryptionKey = null
+        }
+    }
+
+    @Throws(IllegalStateException::class, UpdateMasterPasswordFailedException::class)
+    suspend fun updateMasterPassword(newMasterPassword: String) {
+        // Execute deserialization/decryption on the dispatcher for CPU load
+        withContext(Dispatchers.Default) {
+            val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to update the master password!")
+            var newMasterKey: ByteArray? = null
+
+            try {
+                val newLocalMasterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, newMasterPassword)
+                val newServerMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(newLocalMasterPasswordAuthenticationHash)
+                masterPasswordAuthenticationHash = newServerMasterPasswordAuthenticationHash
+
+                newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation)
+                protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey))
+
+                // First update user on IO dispatcher
+                withContext(Dispatchers.IO) {
+                    val user = createUserModel()
+                    userManager.updateUser(user)
+                }
+
+                // Finally the auth webservice needs to re-initialized because of master password change
+                userManager.initializeAuthWebservice(newMasterPassword)
+            } catch (e: Exception) {
+                throw UpdateMasterPasswordFailedException(e)
+            } finally {
+                newMasterKey?.clear()
+            }
         }
     }
 
@@ -202,6 +235,7 @@ class UserViewModel private constructor(
     private fun createUserModel(): User {
         // Only update fields that are allowed to modify (server reject changes on non-allowed field anyway)
         return user.copy(
+            masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
             masterKeyDerivationInformation = masterKeyDerivationInformation,
             masterEncryptionKey = protectedMasterEncryptionKey,
             settings = protectedSettings,
@@ -210,4 +244,5 @@ class UserViewModel private constructor(
     }
 
     class UnlockFailedException(cause: Exception? = null) : Exception(cause)
+    class UpdateMasterPasswordFailedException(cause: Exception? = null) : Exception(cause)
 }
