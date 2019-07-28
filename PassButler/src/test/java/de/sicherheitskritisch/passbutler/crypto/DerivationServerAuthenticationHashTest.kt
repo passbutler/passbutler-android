@@ -1,7 +1,7 @@
 package de.sicherheitskritisch.passbutler.crypto
 
 import io.mockk.every
-import io.mockk.mockkStatic
+import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -12,8 +12,10 @@ class DerivationServerAuthenticationHashTest {
 
     @BeforeEach
     fun setUp() {
-        mockkStatic(RandomGenerator::class)
-        every { RandomGenerator.generateRandomString(SERVER_AUTHENTICATION_HASH_SALT_LENGTH, SERVER_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS) } returns "abcdefgh"
+        mockkObject(RandomGenerator)
+
+        // Return static salt to be sure tests can be reproduced
+        every { RandomGenerator.generateRandomString(SERVER_AUTHENTICATION_HASH_SALT_LENGTH, SERVER_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS) } returns STATIC_SALT
     }
 
     @AfterEach
@@ -22,10 +24,13 @@ class DerivationServerAuthenticationHashTest {
     }
 
     /**
-     * Valid authentication hash derivation tests.
+     * Test values can be generated with following Python code:
      *
-     * Test values can be generated with following shell command:
-     * TODO
+     * from werkzeug.security import _hash_internal
+     * salt = 'abcdefgh'
+     * password = '1234abcd'
+     * hash = _hash_internal(method='pbkdf2:sha256:150000', salt=salt, password=password)
+     * print("{}${}${}".format(hash[1], salt, hash[0]))
      */
 
     @Test
@@ -34,5 +39,9 @@ class DerivationServerAuthenticationHashTest {
 
         val derivedHash = Derivation.deriveServerAuthenticationHash(password)
         assertEquals("pbkdf2:sha256:150000\$abcdefgh\$e6b929bdae73863bff72d05be560a47c9b026a38233532fdd978ca315e5ea982", derivedHash)
+    }
+
+    companion object {
+        private const val STATIC_SALT = "abcdefgh"
     }
 }

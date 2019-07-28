@@ -6,14 +6,16 @@ import org.junit.jupiter.api.Test
 class DerivationLocalAuthenticationHashTest {
 
     /**
-     * Valid authentication hash derivation tests.
-     *
      * Test values can be generated with following shell command:
-     * $ SALT=$(echo -n "testuser" | od -A n -t x1 | sed 's/ //g'); echo -n "1234abcd" | nettle-pbkdf2 -i 100001 -l 32 --hex-salt $SALT | sed 's/ //g' | tr a-z A-Z
+     *
+     * $ USERNAME="testuser";
+     * $ PASSWORD="1234abcd";
+     * $ SALT=$(echo -n "$USERNAME" | od -A n -t x1 | sed 's/ //g');
+     * $ echo -n "$PASSWORD" | nettle-pbkdf2 -i 100001 -l 32 --hex-salt $SALT | sed 's/ //g' | tr a-z A-Z
      */
 
     @Test
-    fun `Derive an authentication hash from username and password`() {
+    fun `Derive a local authentication hash from username and password`() {
         val username = "testuser"
         val password = "1234abcd"
 

@@ -13,10 +13,16 @@ const val MASTER_KEY_BIT_LENGTH = 256
 const val MASTER_PASSWORD_AUTHENTICATION_HASH_ITERATION_COUNT = 100_001
 const val MASTER_PASSWORD_AUTHENTICATION_HASH_BIT_LENGTH = 256
 
+const val SERVER_AUTHENTICATION_HASH_SALT_LENGTH = 8
+const val SERVER_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+const val SERVER_AUTHENTICATION_HASH_ITERATION_COUNT = 150_000
+const val SERVER_AUTHENTICATION_HASH_BIT_LENGTH = 256
+
 object Derivation {
 
     /**
-     * Derives a authentication hash based on username/password using PBKDF2 with SHA-256 used to avoid sending password in clear text.
+     * Derives a authentication hash based on given username/password using PBKDF2 with SHA-256.
+     * This method is used to avoid sending master password from client to server in clear text.
      */
     @Throws(IllegalArgumentException::class, DerivationFailedException::class)
     fun deriveLocalAuthenticationHash(username: String, password: String): String {
@@ -36,6 +42,30 @@ object Derivation {
 
             val resultingBytes = performPBKDFWithSHA256(preparedPassword, salt, MASTER_PASSWORD_AUTHENTICATION_HASH_ITERATION_COUNT, MASTER_PASSWORD_AUTHENTICATION_HASH_BIT_LENGTH)
             resultingBytes.toHexString()
+        } catch (e: Exception) {
+            throw DerivationFailedException(e)
+        }
+    }
+
+    /**
+     * Derives a authentication hash based on a given password using PBKDF2 with SHA-256.
+     * This method re-implements `werkzeug.security.generate_password_hash` from Python Werkzeug framework.
+     */
+    @Throws(IllegalArgumentException::class, DerivationFailedException::class)
+    fun deriveServerAuthenticationHash(password: String): String {
+        if (password.isBlank()) {
+            throw IllegalArgumentException("The password must not be empty!")
+        }
+
+        return try {
+            val saltString = RandomGenerator.generateRandomString(SERVER_AUTHENTICATION_HASH_SALT_LENGTH, SERVER_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS)
+            val saltBytes = saltString.toByteArray(Charsets.UTF_8)
+
+            val iterationCount = SERVER_AUTHENTICATION_HASH_ITERATION_COUNT
+            val hashBytes = performPBKDFWithSHA256(password, saltBytes, iterationCount, SERVER_AUTHENTICATION_HASH_BIT_LENGTH)
+            val hashString = hashBytes.toHexString().toLowerCase()
+
+            "pbkdf2:sha256:$iterationCount\$$saltString\$$hashString"
         } catch (e: Exception) {
             throw DerivationFailedException(e)
         }

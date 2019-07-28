@@ -23,6 +23,7 @@
       <w>urandom</w>
       <w>userfacing</w>
       <w>viewmodel</w>
+      <w>werkzeug</w>
     </words>
   </dictionary>
 </component>
