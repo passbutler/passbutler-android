@@ -282,53 +282,61 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
 
     @Throws(Synchronization.SynchronizationFailedException::class)
     override suspend fun synchronize() = coroutineScope {
-        L.d("UserSynchronization", "synchronize(): Started")
+        try {
+            L.d("UserSynchronization", "synchronize(): Started")
 
-        synchronizePublicUsersList(this)
-        synchronizeLoggedInUser()
+            synchronizePublicUsersList(this)
+            synchronizeLoggedInUser()
 
-        L.d("UserSynchronization", "synchronize(): Finished successfully")
+            L.d("UserSynchronization", "synchronize(): Finished successfully")
+        } catch (e: Exception) {
+            throw Synchronization.SynchronizationFailedException(e)
+        }
     }
 
-    // TODO: Annotate exceptions
+    @Throws(SynchronizePublicUsersListFailedException::class)
     private suspend fun synchronizePublicUsersList(coroutineScope: CoroutineScope) {
-        // Start both operations parallel because they are independent from each other
-        val localUserListDeferred = coroutineScope.async { fetchLocalUserList() }
-        val remoteUserListDeferred = coroutineScope.async { fetchRemoteUserList() }
+        try {
+            // Start both operations parallel because they are independent from each other
+            val localUserListDeferred = coroutineScope.async { fetchLocalUserList() }
+            val remoteUserListDeferred = coroutineScope.async { fetchRemoteUserList() }
 
-        // Only update the public users, not the logged-in user in this step
-        var localUserList = localUserListDeferred.await().filterNot { it.primaryField == loggedInUser.primaryField }
-        val remoteUserList = remoteUserListDeferred.await().filterNot { it.primaryField == loggedInUser.primaryField }
+            // Only update the public users, not the logged-in user in this step
+            var localUserList = localUserListDeferred.await().filterNot { it.username == loggedInUser.username }
+            val remoteUserList = remoteUserListDeferred.await().filterNot { it.username == loggedInUser.username }
 
-        val newLocalUsers = Differentiation.collectNewItems(localUserList, remoteUserList)
-        L.d("UserSynchronization", "synchronizePublicUsersList(): New user items for local database: ${newLocalUsers.buildShortUserList()}")
+            val newLocalUsers = Differentiation.collectNewItems(localUserList, remoteUserList)
+            L.d("UserSynchronization", "synchronizePublicUsersList(): New user items for local database: ${newLocalUsers.buildShortUserList()}")
 
-        if (newLocalUsers.isNotEmpty()) {
-            createNewUsersInLocalDatabase(newLocalUsers)
-        }
+            if (newLocalUsers.isNotEmpty()) {
+                createNewUsersInLocalDatabase(newLocalUsers)
+            }
 
-        // Merge list to avoid query updated local user list again
-        localUserList = localUserList + newLocalUsers
+            // Merge list to avoid query updated local user list again
+            localUserList = localUserList + newLocalUsers
 
-        val modifiedLocalUsers = Differentiation.collectModifiedItems(localUserList, remoteUserList)
-        L.d("UserSynchronization", "synchronizePublicUsersList(): Modified user items for local database: ${modifiedLocalUsers.buildShortUserList()}")
+            val modifiedLocalUsers = Differentiation.collectModifiedItems(localUserList, remoteUserList)
+            L.d("UserSynchronization", "synchronizePublicUsersList(): Modified user items for local database: ${modifiedLocalUsers.buildShortUserList()}")
 
-        if (modifiedLocalUsers.isNotEmpty()) {
-            updateModifiedUsersToLocalDatabase(modifiedLocalUsers)
+            if (modifiedLocalUsers.isNotEmpty()) {
+                updateModifiedUsersToLocalDatabase(modifiedLocalUsers)
+            }
+        } catch (e: Exception) {
+            throw SynchronizePublicUsersListFailedException(e)
         }
     }
 
-    @Throws(Synchronization.SynchronizationFailedException::class)
+    @Throws(IllegalArgumentException::class)
     private suspend fun fetchLocalUserList(): List<User> {
         val localUsersList = localRepository.findAllUsers().takeIf { it.isNotEmpty() }
-        return localUsersList ?: throw Synchronization.SynchronizationFailedException("The local user list is null - can't process with synchronization!")
+        return localUsersList ?: throw IllegalArgumentException("The local user list is null - can't process with synchronization!")
     }
 
-    @Throws(Synchronization.SynchronizationFailedException::class)
+    @Throws(IllegalArgumentException::class)
     private suspend fun fetchRemoteUserList(): List<User> {
         val remoteUsersListRequest = userWebservice.getUsersAsync()
         val response = remoteUsersListRequest.await()
-        return response.body() ?: throw Synchronization.SynchronizationFailedException("The remote user list is null - can't process with synchronization!")
+        return response.body() ?: throw IllegalArgumentException("The remote user list is null - can't process with synchronization!")
     }
 
     private suspend fun createNewUsersInLocalDatabase(newUsers: List<User>) {
@@ -339,25 +347,31 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
         localRepository.updateUser(*modifiedUsers.toTypedArray())
     }
 
-    // TODO: Pass CoroutineScope?
-    // TODO: Annotate exceptions
+    @Throws(SynchronizeLoggedInUserFailedException::class)
     private suspend fun synchronizeLoggedInUser() {
-        val localLoggedInUser = loggedInUser
-        val remoteLoggedInUser = userWebservice.requestUser(loggedInUser.username)
+        try {
+            val localLoggedInUser = loggedInUser
+            val remoteLoggedInUser = userWebservice.requestUser(loggedInUser.username)
 
-        when {
-            localLoggedInUser.modified > remoteLoggedInUser.modified -> {
-                // Update remote user
-                userWebservice.updateUser(localLoggedInUser)
+            when {
+                localLoggedInUser.modified > remoteLoggedInUser.modified -> {
+                    L.d("UserSynchronization", "synchronizeLoggedInUser(): Update remote user because local user was lastly modified")
+                    userWebservice.updateUser(localLoggedInUser)
+                }
+                localLoggedInUser.modified < remoteLoggedInUser.modified -> {
+                    L.d("UserSynchronization", "synchronizeLoggedInUser(): Update local user because remote user was lastly modified")
+                    localRepository.updateUser(remoteLoggedInUser)
+                }
             }
-            localLoggedInUser.modified < remoteLoggedInUser.modified -> {
-                // Update local user
-                localRepository.updateUser(remoteLoggedInUser)
-            }
+        } catch (e: Exception) {
+            throw SynchronizeLoggedInUserFailedException(e)
         }
     }
 
     private fun List<User>.buildShortUserList(): List<String> {
         return this.map { "'${it.username}' (${it.modified})" }
     }
+
+    class SynchronizePublicUsersListFailedException(cause: Throwable? = null) : Synchronization.SynchronizationFailedException(cause)
+    class SynchronizeLoggedInUserFailedException(cause: Throwable? = null) : Synchronization.SynchronizationFailedException(cause)
 }
