@@ -84,8 +84,8 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         var masterEncryptionKey: ByteArray? = null
 
         try {
-            // TODO: Generate real value
-            val masterPasswordAuthenticationHash = ""
+            val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword)
+            val serverMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(masterPasswordAuthenticationHash)
 
             val masterKeySalt = RandomGenerator.generateRandomBytes(MASTER_KEY_BIT_LENGTH.byteSize)
             val masterKeyIterationCount = MASTER_KEY_ITERATION_COUNT
@@ -108,7 +108,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
                 User(
                     username,
-                    masterPasswordAuthenticationHash,
+                    serverMasterPasswordAuthenticationHash,
                     masterKeyDerivationInformation,
                     protectedMasterEncryptionKey,
                     itemEncryptionPublicKey,
