@@ -97,9 +97,9 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             val serializableMasterEncryptionKey = CryptographicKey(masterEncryptionKey)
             val protectedMasterEncryptionKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterKey, serializableMasterEncryptionKey)
 
-            // TODO: Generate real value
+            // TODO: Generate real values
             val itemEncryptionPublicKey = CryptographicKey(ByteArray(0))
-            val itemEncryptionSecretKey = null
+            val itemEncryptionSecretKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, CryptographicKey(ByteArray(0)))
 
             val userSettings = UserSettings()
             val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, userSettings)

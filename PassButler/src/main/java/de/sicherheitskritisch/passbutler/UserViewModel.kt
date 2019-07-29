@@ -31,6 +31,8 @@ class UserViewModel private constructor(
     private var masterPasswordAuthenticationHash: String,
     private val masterKeyDerivationInformation: KeyDerivationInformation,
     private val protectedMasterEncryptionKey: ProtectedValue<CryptographicKey>,
+    private val itemEncryptionPublicKey: CryptographicKey,
+    private val protectedItemEncryptionSecretKey: ProtectedValue<CryptographicKey>,
     private val protectedSettings: ProtectedValue<UserSettings>,
     masterPassword: String?
 ) : ViewModel(), CoroutineScope {
@@ -76,6 +78,8 @@ class UserViewModel private constructor(
         user.masterPasswordAuthenticationHash ?: throw IllegalArgumentException("The given user has no master password authentication hash!"),
         user.masterKeyDerivationInformation ?: throw IllegalArgumentException("The given user has no master key derivation information!"),
         user.masterEncryptionKey ?: throw IllegalArgumentException("The given user has no master encryption key!"),
+        user.itemEncryptionPublicKey,
+        user.itemEncryptionSecretKey ?: throw IllegalArgumentException("The given user has no item encryption secret key!"),
         user.settings ?: throw IllegalArgumentException("The given user has no user settings!"),
         masterPassword
     )
