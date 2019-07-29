@@ -2,7 +2,6 @@ package de.sicherheitskritisch.passbutler.crypto.models
 
 import android.util.Log
 import de.sicherheitskritisch.passbutler.assertJSONObjectEquals
-import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.hexToBytes
 import io.mockk.every
 import io.mockk.mockkStatic
@@ -33,9 +32,7 @@ class KeyDerivationInformationTest {
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
         val expectedSerializedKeyDerivationInformation = JSONObject(
-            """
-            {"salt":"cMlHzQ==","iterationCount":1234}
-        """
+            """{"salt":"cMlHzQ==","iterationCount":1234}"""
         )
 
         assertJSONObjectEquals(expectedSerializedKeyDerivationInformation, keyDerivationInformation.serialize())
@@ -44,16 +41,14 @@ class KeyDerivationInformationTest {
     @Test
     fun `Deserialize a KeyDerivationInformation from valid JSON`() {
         val serializedKeyDerivationInformation = JSONObject(
-            """
-            {"salt":"cMlHzQ==","iterationCount":1234}
-        """
+            """{"salt":"cMlHzQ==","iterationCount":1234}"""
         )
-
-        val deserializedKeyDerivationInformation = KeyDerivationInformation.deserialize(serializedKeyDerivationInformation)
 
         val salt = "70C947CD".hexToBytes()
         val iterationCount = 1234
         val expectedKeyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
+
+        val deserializedKeyDerivationInformation = KeyDerivationInformation.deserialize(serializedKeyDerivationInformation)
 
         assertEquals(expectedKeyDerivationInformation, deserializedKeyDerivationInformation)
     }
@@ -61,30 +56,22 @@ class KeyDerivationInformationTest {
     @Test
     fun `Deserialize a KeyDerivationInformation from JSON with invalid keys returns null`() {
         val serializedKeyDerivationInformation = JSONObject(
-            """
-            {"foo":"cMlHzQ==","bar":1234}
-        """
+            """{"foo":"cMlHzQ==","bar":1234}"""
         )
 
-        val deserializedKeyDerivationInformation = KeyDerivationInformation.deserialize(serializedKeyDerivationInformation)
-
         val expectedKeyDerivationInformation = null
-
+        val deserializedKeyDerivationInformation = KeyDerivationInformation.deserialize(serializedKeyDerivationInformation)
         assertEquals(expectedKeyDerivationInformation, deserializedKeyDerivationInformation)
     }
 
     @Test
     fun `Deserialize a KeyDerivationInformation from JSON with valid keys but invalid salt type returns null`() {
         val serializedKeyDerivationInformation = JSONObject(
-            """
-            {"salt":1234,"iterationCount":1234}
-        """
+            """{"salt":1234,"iterationCount":1234}"""
         )
 
-        val deserializedKeyDerivationInformation = KeyDerivationInformation.deserialize(serializedKeyDerivationInformation)
-
         val expectedKeyDerivationInformation = null
-
+        val deserializedKeyDerivationInformation = KeyDerivationInformation.deserialize(serializedKeyDerivationInformation)
         assertEquals(expectedKeyDerivationInformation, deserializedKeyDerivationInformation)
     }
 
@@ -96,10 +83,8 @@ class KeyDerivationInformationTest {
         """
         )
 
-        val deserializedKeyDerivationInformation = KeyDerivationInformation.deserialize(serializedKeyDerivationInformation)
-
         val expectedKeyDerivationInformation = null
-
+        val deserializedKeyDerivationInformation = KeyDerivationInformation.deserialize(serializedKeyDerivationInformation)
         assertEquals(expectedKeyDerivationInformation, deserializedKeyDerivationInformation)
     }
 }
