@@ -64,6 +64,11 @@ class ProtectedValue<T : JSONSerializable>(
         }
     }
 
+    /**
+     * The methods `equals()` and `hashCode()` are implemented
+     * to be sure the `ByteArray` field is compared by content and not by reference.
+     */
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
