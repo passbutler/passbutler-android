@@ -31,50 +31,46 @@ class CryptographicKeyTest {
         val key = "AABBCCDD".hexToBytes()
         val cryptographicKey = CryptographicKey(key)
 
-        val expectedSerializedCryptographicKey = JSONObject("""
-            {"key":"qrvM3Q=="}
-        """)
+        val expectedSerializedCryptographicKey = JSONObject(
+            """{"key":"qrvM3Q=="}"""
+        )
 
         assertJSONObjectEquals(expectedSerializedCryptographicKey, cryptographicKey.serialize())
     }
 
     @Test
     fun `Deserialize a CryptographicKey from valid JSON`() {
-        val serializedCryptographicKey = JSONObject("""
-            {"key":"qrvM3Q=="}
-        """)
-
-        val deserializedCryptographicKey = CryptographicKey.deserialize(serializedCryptographicKey)
+        val serializedCryptographicKey = JSONObject(
+            """{"key":"qrvM3Q=="}"""
+        )
 
         val key = "AABBCCDD".hexToBytes()
         val expectedCryptographicKey = CryptographicKey(key)
+
+        val deserializedCryptographicKey = CryptographicKey.deserialize(serializedCryptographicKey)
 
         assertEquals(expectedCryptographicKey, deserializedCryptographicKey)
     }
 
     @Test
     fun `Deserialize a CryptographicKey from JSON with invalid key returns null`() {
-        val serializedCryptographicKey = JSONObject("""
-            {"foobar":""}
-        """)
-
-        val deserializedCryptographicKey = CryptographicKey.deserialize(serializedCryptographicKey)
+        val serializedCryptographicKey = JSONObject(
+            """{"foobar":""}"""
+        )
 
         val expectedCryptographicKey = null
-
+        val deserializedCryptographicKey = CryptographicKey.deserialize(serializedCryptographicKey)
         assertEquals(expectedCryptographicKey, deserializedCryptographicKey)
     }
 
     @Test
     fun `Deserialize a CryptographicKey from JSON with valid key but invalid type returns null`() {
-        val serializedCryptographicKey = JSONObject("""
-            {"key":1337}
-        """)
-
-        val deserializedCryptographicKey = CryptographicKey.deserialize(serializedCryptographicKey)
+        val serializedCryptographicKey = JSONObject(
+            """{"key":1337}"""
+        )
 
         val expectedCryptographicKey = null
-
+        val deserializedCryptographicKey = CryptographicKey.deserialize(serializedCryptographicKey)
         assertEquals(expectedCryptographicKey, deserializedCryptographicKey)
     }
 }

@@ -78,9 +78,7 @@ class KeyDerivationInformationTest {
     @Test
     fun `Deserialize a KeyDerivationInformation from JSON with valid keys but invalid iterationCount type returns null`() {
         val serializedKeyDerivationInformation = JSONObject(
-            """
-            {"salt":"cMlHzQ==","iterationCount":"foo"}
-        """
+            """{"salt":"cMlHzQ==","iterationCount":"foo"}"""
         )
 
         val expectedKeyDerivationInformation = null

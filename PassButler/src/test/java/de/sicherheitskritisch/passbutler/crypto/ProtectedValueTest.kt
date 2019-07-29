@@ -43,14 +43,12 @@ class ProtectedValueTest {
             encryptedValue = "4e692fce708b1b759cf61beb5c4e55a3a22d749c5839b3654d6cbe2299b3c28a".hexToBytes()
         )
 
-        val serializedProtectedValueReference = JSONObject().apply {
-            putString("initializationVector", "ExCq3qpImuhBJcNq")
-            putString("encryptionAlgorithm", "AES-256-GCM")
-            putString("encryptedValue", "TmkvznCLG3Wc9hvrXE5Vo6ItdJxYObNlTWy+Ipmzwoo=")
-        }
+        val expectedSerializedProtectedValue = JSONObject(
+            """{"initializationVector": "ExCq3qpImuhBJcNq", "encryptionAlgorithm": "AES-256-GCM", "encryptedValue": "TmkvznCLG3Wc9hvrXE5Vo6ItdJxYObNlTWy+Ipmzwoo="}"""
+        )
 
         val serializedProtectedValue = protectedValueReference.serialize()
-        assertJSONObjectEquals(serializedProtectedValueReference, serializedProtectedValue)
+        assertJSONObjectEquals(expectedSerializedProtectedValue, serializedProtectedValue)
 
         val deserializedProtectedValue = ProtectedValue.deserialize<JSONSerializable>(serializedProtectedValue)
         assertEquals(protectedValueReference, deserializedProtectedValue)
@@ -63,14 +61,12 @@ class ProtectedValueTest {
             encryptedValue = "0664c21c4485b0a37ebd3d0c5cba77c88ed4be3d8035b40390d8c32c6eaaa12dfd3d6fc19fa6b0d12092e9384f26e60747019c0294de426574b8a3d1dab2f5802a4db735952300b5da".hexToBytes()
         )
 
-        val serializedProtectedValueReference = JSONObject().apply {
-            putString("initializationVector", "smPgJcPQ5gdl5+66")
-            putString("encryptionAlgorithm", "AES-256-GCM")
-            putString("encryptedValue", "BmTCHESFsKN+vT0MXLp3yI7Uvj2ANbQDkNjDLG6qoS39PW/Bn6aw0SCS6ThPJuYHRwGcApTeQmV0uKPR2rL1gCpNtzWVIwC12g==")
-        }
+        val expectedSerializedProtectedValue = JSONObject(
+            """{"initializationVector": "smPgJcPQ5gdl5+66", "encryptionAlgorithm": "AES-256-GCM", "encryptedValue": "BmTCHESFsKN+vT0MXLp3yI7Uvj2ANbQDkNjDLG6qoS39PW/Bn6aw0SCS6ThPJuYHRwGcApTeQmV0uKPR2rL1gCpNtzWVIwC12g=="}"""
+        )
 
         val serializedProtectedValue = protectedValueReference.serialize()
-        assertJSONObjectEquals(serializedProtectedValueReference, serializedProtectedValue)
+        assertJSONObjectEquals(expectedSerializedProtectedValue, serializedProtectedValue)
 
         val deserializedProtectedValue = ProtectedValue.deserialize<JSONSerializable>(serializedProtectedValue)
         assertEquals(protectedValueReference, deserializedProtectedValue)
