@@ -13,8 +13,10 @@ import de.sicherheitskritisch.passbutler.base.putJSONSerializable
 import de.sicherheitskritisch.passbutler.base.putLong
 import de.sicherheitskritisch.passbutler.base.putString
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
+import de.sicherheitskritisch.passbutler.crypto.getProtectedValueOrNull
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
+import de.sicherheitskritisch.passbutler.crypto.putProtectedValue
 import de.sicherheitskritisch.passbutler.database.Synchronizable
 import org.json.JSONException
 import org.json.JSONObject
@@ -43,17 +45,16 @@ data class User(
             putString(SERIALIZATION_KEY_USERNAME, username)
             putString(SERIALIZATION_KEY_MASTER_PASSWORD_AUTHENTICATION_HASH, masterPasswordAuthenticationHash)
             putJSONSerializable(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, masterKeyDerivationInformation)
-            putJSONSerializable(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY, masterEncryptionKey)
+            putProtectedValue(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY, masterEncryptionKey)
             putJSONSerializable(SERIALIZATION_KEY_ITEM_ENCRYPTION_PUBLIC_KEY, itemEncryptionPublicKey)
-            putJSONSerializable(SERIALIZATION_KEY_ITEM_ENCRYPTION_SECRET_KEY, itemEncryptionSecretKey)
-            putJSONSerializable(SERIALIZATION_KEY_SETTINGS, settings)
+            putProtectedValue(SERIALIZATION_KEY_ITEM_ENCRYPTION_SECRET_KEY, itemEncryptionSecretKey)
+            putProtectedValue(SERIALIZATION_KEY_SETTINGS, settings)
             putBoolean(SERIALIZATION_KEY_DELETED, deleted)
             putLong(SERIALIZATION_KEY_MODIFIED, modified.time)
             putLong(SERIALIZATION_KEY_CREATED, created.time)
         }
     }
 
-    // TODO: Fix type inferation issues
     // TODO: Have multiple `Deserializer` to reflect public and current user
     object Deserializer : JSONSerializableDeserializer<User>() {
         @Throws(JSONException::class)
@@ -62,10 +63,10 @@ data class User(
                 username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
                 masterPasswordAuthenticationHash = jsonObject.getStringOrNull(SERIALIZATION_KEY_MASTER_PASSWORD_AUTHENTICATION_HASH),
                 masterKeyDerivationInformation = jsonObject.getJSONSerializableOrNull(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, KeyDerivationInformation.Deserializer),
-                masterEncryptionKey = jsonObject.getJSONSerializableOrNull(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY, ProtectedValue.Deserializer<CryptographicKey>()),
+                masterEncryptionKey = jsonObject.getProtectedValueOrNull(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY),
                 itemEncryptionPublicKey = jsonObject.getJSONSerializable(SERIALIZATION_KEY_ITEM_ENCRYPTION_PUBLIC_KEY, CryptographicKey.Deserializer),
-                itemEncryptionSecretKey = jsonObject.getJSONSerializableOrNull(SERIALIZATION_KEY_ITEM_ENCRYPTION_SECRET_KEY, ProtectedValue.Deserializer<CryptographicKey>()),
-                settings = jsonObject.getJSONSerializableOrNull(SERIALIZATION_KEY_SETTINGS, ProtectedValue.Deserializer<UserSettings>()),
+                itemEncryptionSecretKey = jsonObject.getProtectedValueOrNull(SERIALIZATION_KEY_ITEM_ENCRYPTION_SECRET_KEY),
+                settings = jsonObject.getProtectedValueOrNull(SERIALIZATION_KEY_SETTINGS),
                 deleted = jsonObject.getBoolean(SERIALIZATION_KEY_DELETED),
                 modified = Date(jsonObject.getLong(SERIALIZATION_KEY_MODIFIED)),
                 created = Date(jsonObject.getLong(SERIALIZATION_KEY_CREATED))

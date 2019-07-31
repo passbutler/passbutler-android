@@ -4,7 +4,10 @@ import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.JSONSerializableDeserializer
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.getByteArray
+import de.sicherheitskritisch.passbutler.base.getJSONSerializable
+import de.sicherheitskritisch.passbutler.base.getJSONSerializableOrNull
 import de.sicherheitskritisch.passbutler.base.putByteArray
+import de.sicherheitskritisch.passbutler.base.putJSONSerializable
 import de.sicherheitskritisch.passbutler.base.toHexString
 import org.json.JSONException
 import org.json.JSONObject
@@ -34,7 +37,7 @@ class ProtectedValue<T : JSONSerializable>(
         }
     }
 
-    fun decrypt(encryptionKey: ByteArray,  deserializer: JSONSerializableDeserializer<T>): T? {
+    fun decrypt(encryptionKey: ByteArray, deserializer: JSONSerializableDeserializer<T>): T? {
         return try {
             encryptionAlgorithm.decrypt(initializationVector, encryptionKey, encryptedValue).let { decryptedBytes ->
                 val jsonSerializedString = decryptedBytes.toUTF8String()
@@ -135,4 +138,25 @@ private fun <T : JSONSerializable> T.toByteArray(): ByteArray {
  */
 private fun ByteArray.toUTF8String(): String {
     return toString(Charsets.UTF_8)
+}
+
+/**
+ * Extensions to serialize/deserialize a `ProtectedValue`.
+ */
+
+@Throws(JSONException::class)
+fun <T : JSONSerializable> JSONObject.getProtectedValue(name: String): ProtectedValue<T> {
+    // The explicit type is necessary because type inference fails otherwise
+    @Suppress("RemoveExplicitTypeArguments")
+    return getJSONSerializable<ProtectedValue<T>>(name, ProtectedValue.Deserializer())
+}
+
+fun <T : JSONSerializable> JSONObject.getProtectedValueOrNull(name: String): ProtectedValue<T>? {
+    // The explicit type is necessary because type inference fails otherwise
+    @Suppress("RemoveExplicitTypeArguments")
+    return getJSONSerializableOrNull<ProtectedValue<T>>(name, ProtectedValue.Deserializer())
+}
+
+fun <T : JSONSerializable> JSONObject.putProtectedValue(name: String, value: T?): JSONObject {
+    return putJSONSerializable(name, value)
 }
