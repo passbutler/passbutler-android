@@ -72,6 +72,7 @@ class UserViewModel private constructor(
 
     private val coroutineJob = SupervisorJob()
 
+    @Throws(IllegalArgumentException::class)
     constructor(userManager: UserManager, user: User, masterPassword: String?) : this(
         userManager,
         user,
