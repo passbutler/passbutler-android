@@ -15,7 +15,6 @@ import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import org.json.JSONArray
-import org.json.JSONObject
 import retrofit2.Converter
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -44,9 +43,9 @@ interface AuthWebservice {
             }
         }
 
-        private class AuthTokenResponseConverter : Converter<ResponseBody, AuthToken?> {
-            override fun convert(responseBody: ResponseBody): AuthToken? {
-                return AuthToken.deserialize(JSONObject(responseBody.string()))
+        private class AuthTokenResponseConverter : Converter<ResponseBody, AuthToken> {
+            override fun convert(responseBody: ResponseBody): AuthToken {
+                return AuthToken.Deserializer.deserialize(responseBody.string())
             }
         }
     }
@@ -125,16 +124,16 @@ interface UserWebservice {
             }
         }
 
-        private class UserResponseConverter : Converter<ResponseBody, User?> {
-            override fun convert(responseBody: ResponseBody): User? {
-                return User.deserialize(JSONObject(responseBody.string()))
+        private class UserResponseConverter : Converter<ResponseBody, User> {
+            override fun convert(responseBody: ResponseBody): User {
+                return User.Deserializer.deserialize(responseBody.string())
             }
         }
 
         private class UserListResponseConverter : Converter<ResponseBody, List<User>> {
             override fun convert(responseBody: ResponseBody): List<User> {
-                return JSONArray(responseBody.string()).asJSONObjectSequence().mapNotNull { userJSONObject ->
-                    User.deserialize(userJSONObject)
+                return JSONArray(responseBody.string()).asJSONObjectSequence().mapNotNull { userJsonObject ->
+                    User.Deserializer.deserialize(userJsonObject)
                 }.toList()
             }
         }

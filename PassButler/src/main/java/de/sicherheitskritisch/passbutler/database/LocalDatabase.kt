@@ -20,7 +20,6 @@ import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import java.util.*
 
 @Database(entities = [User::class, ItemKey::class], version = 1, exportSchema = false)
@@ -120,7 +119,7 @@ class ModelConverters {
     @TypeConverter
     fun stringToCryptographicKey(serializedCryptographicKey: String?): CryptographicKey? {
         return serializedCryptographicKey?.let {
-            CryptographicKey.deserialize(JSONObject(it))
+            CryptographicKey.Deserializer.deserializeOrNull(it)
         }
     }
 
@@ -132,7 +131,7 @@ class ModelConverters {
     @TypeConverter
     fun stringToKeyDerivationInformation(serializedKeyDerivationInformation: String?): KeyDerivationInformation? {
         return serializedKeyDerivationInformation?.let {
-            KeyDerivationInformation.deserialize(JSONObject(it))
+            KeyDerivationInformation.Deserializer.deserializeOrNull(it)
         }
     }
 
@@ -144,14 +143,14 @@ class ModelConverters {
     @TypeConverter
     fun stringToProtectedValueWithCryptographicKey(serializedProtectedValue: String?): ProtectedValue<CryptographicKey>? {
         return serializedProtectedValue?.let {
-            ProtectedValue.deserialize(JSONObject(it))
+            ProtectedValue.Deserializer<CryptographicKey>().deserializeOrNull(it)
         }
     }
 
     @TypeConverter
     fun stringToProtectedValueWithUserSettings(serializedProtectedValue: String?): ProtectedValue<UserSettings>? {
         return serializedProtectedValue?.let {
-            ProtectedValue.deserialize(JSONObject(it))
+            ProtectedValue.Deserializer<UserSettings>().deserializeOrNull(it)
         }
     }
 }

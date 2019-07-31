@@ -35,7 +35,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import java.util.*
 
 class UserManager(applicationContext: Context, private val localRepository: LocalRepository) {
@@ -241,14 +240,10 @@ private class LoggedInStateStorage(private val sharedPreferences: SharedPreferen
     var authToken: AuthToken? = null
 
     suspend fun restore() {
-        try {
-            withContext(Dispatchers.IO) {
-                username = sharedPreferences.getString(SHARED_PREFERENCES_KEY_USERNAME, null)
-                serverUrl = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SERVERURL, null)?.let { Uri.parse(it) }
-                authToken = sharedPreferences.getString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, null)?.let { AuthToken.deserialize(JSONObject(it)) }
-            }
-        } catch (e: Exception) {
-            L.w("LoggedInStateStorage", "The logged-in-state storage could not be restored!", e)
+        withContext(Dispatchers.IO) {
+            username = sharedPreferences.getString(SHARED_PREFERENCES_KEY_USERNAME, null)
+            serverUrl = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SERVERURL, null)?.let { Uri.parse(it) }
+            authToken = sharedPreferences.getString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, null)?.let { AuthToken.Deserializer.deserializeOrNull(it) }
         }
     }
 

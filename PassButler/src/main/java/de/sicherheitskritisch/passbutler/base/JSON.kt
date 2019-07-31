@@ -3,9 +3,53 @@ package de.sicherheitskritisch.passbutler.base
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.util.*
 
 interface JSONSerializable {
     fun serialize(): JSONObject
+}
+
+abstract class JSONSerializableDeserializer<T : JSONSerializable> {
+
+    /**
+     * Deserialize a `JSONSerializable` by given `JSONObject` and throw an exception if it does not worked.
+     */
+    @Throws(JSONException::class)
+    abstract fun deserialize(jsonObject: JSONObject): T
+
+    /**
+     * Deserialize a `JSONSerializable` by given JSON string and throw an exception if it does not worked.
+     */
+    @Throws(JSONException::class)
+    fun deserialize(jsonString: String): T {
+        val jsonObject = JSONObject(jsonString)
+        return deserialize(jsonObject)
+    }
+
+    /**
+     * Deserialize a `JSONSerializable` by given `JSONObject` and return null if it does not worked.
+     */
+    fun deserializeOrNull(jsonObject: JSONObject): T? {
+        return try {
+            deserialize(jsonObject)
+        } catch (e: JSONException) {
+            L.w("JSONSerializableDeserializer", "The JSONSerializable could not be deserialized using the following JSON: $jsonObject", e)
+            null
+        }
+    }
+
+    /**
+     * Deserialize a `JSONSerializable` by given JSON string and return null if it does not worked.
+     */
+    fun deserializeOrNull(jsonString: String): T? {
+        return try {
+            val jsonObject = JSONObject(jsonString)
+            deserialize(jsonObject)
+        } catch (e: JSONException) {
+            L.w("JSONSerializableDeserializer", "The JSONSerializable could not be deserialized using the following JSON: $jsonString", e)
+            null
+        }
+    }
 }
 
 fun JSONArray.asJSONObjectSequence(): Sequence<JSONObject> {
@@ -13,41 +57,109 @@ fun JSONArray.asJSONObjectSequence(): Sequence<JSONObject> {
 }
 
 /**
- * Put a string value to `JSONObject` (ensures the type compared to multi signature `put()` method).
+ * The following `get*OrNull()` extension methods provide a consistent way to access optional values.
  */
-@Throws(JSONException::class)
+
+fun JSONObject.getBooleanOrNull(name: String): Boolean? {
+    return try {
+        return optBoolean(name)
+    } catch (e: JSONException) {
+        L.w("JSON", "The boolean value could not be deserialized using the following JSON: $this", e)
+        null
+    }
+}
+
+fun JSONObject.getIntOrNull(name: String): Int? {
+    return try {
+        return getInt(name)
+    } catch (e: JSONException) {
+        L.w("JSON", "The integer value could not be deserialized using the following JSON: $this", e)
+        null
+    }
+}
+
+fun JSONObject.getLongOrNull(name: String): Long? {
+    return try {
+        return getLong(name)
+    } catch (e: JSONException) {
+        L.w("JSON", "The long value could not be deserialized using the following JSON: $this", e)
+        null
+    }
+}
+
+fun JSONObject.getStringOrNull(name: String): String? {
+    return try {
+        return getString(name)
+    } catch (e: JSONException) {
+        L.w("JSON", "The string value could not be deserialized using the following JSON: $this", e)
+        null
+    }
+}
+
+/**
+ * The following `put*()` extension methods explicitly ensures the argument type (compared to multi signature `put()` method):
+ */
+
 fun JSONObject.putString(name: String, value: String?): JSONObject {
     return put(name, value)
 }
 
-/**
- * Put a boolean value to `JSONObject` (ensures the type compared to multi signature `put()` method).
- */
-@Throws(JSONException::class)
 fun JSONObject.putBoolean(name: String, value: Boolean?): JSONObject {
     return put(name, value)
 }
 
-/**
- * Put a integer value to `JSONObject` (ensures the type compared to multi signature `put()` method).
- */
-@Throws(JSONException::class)
 fun JSONObject.putInt(name: String, value: Int?): JSONObject {
     return put(name, value)
 }
 
-/**
- * Put a long value to `JSONObject` (ensures the type compared to multi signature `put()` method).
- */
-@Throws(JSONException::class)
 fun JSONObject.putLong(name: String, value: Long?): JSONObject {
     return put(name, value)
 }
 
-/**
- * Put a `JSONObject` value to `JSONObject` (ensures the type compared to multi signature `put()` method).
- */
-@Throws(JSONException::class)
 fun JSONObject.putJSONObject(name: String, value: JSONObject?): JSONObject {
     return put(name, value)
+}
+
+/**
+ * Extensions to serialize/deserialize a `ByteArray`.
+ */
+
+@Throws(JSONException::class)
+fun JSONObject.getByteArray(name: String): ByteArray {
+    val base64EncodedValue = getString(name)
+    return try {
+        Base64.getDecoder().decode(base64EncodedValue)
+    } catch (e: IllegalArgumentException) {
+        throw JSONException("The value could not be Base64 decoded!")
+    }
+}
+
+fun JSONObject.putByteArray(name: String, value: ByteArray): JSONObject {
+    val base64EncodedValue = Base64.getEncoder().encodeToString(value)
+    return putString(name, base64EncodedValue)
+}
+
+/**
+ * Extensions to serialize/deserialize a `JSONSerializable`.
+ */
+
+@Throws(JSONException::class)
+fun <T : JSONSerializable> JSONObject.getJSONSerializable(name: String, deserializer: JSONSerializableDeserializer<T>): T {
+    val serialized = getJSONObject(name)
+    return deserializer.deserialize(serialized)
+}
+
+fun <T : JSONSerializable> JSONObject.getJSONSerializableOrNull(name: String, deserializer: JSONSerializableDeserializer<T>): T? {
+    return try {
+        val serialized = getJSONObject(name)
+        deserializer.deserializeOrNull(serialized)
+    } catch (e: JSONException) {
+        L.w("JSON", "The JSONSerializable could not be deserialized using the following JSON: $this", e)
+        null
+    }
+}
+
+fun <T : JSONSerializable> JSONObject.putJSONSerializable(name: String, value: T?): JSONObject {
+    val serialized = value?.serialize()
+    return putJSONObject(name, serialized)
 }

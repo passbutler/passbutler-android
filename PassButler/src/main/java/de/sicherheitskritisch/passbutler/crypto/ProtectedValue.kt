@@ -1,13 +1,13 @@
 package de.sicherheitskritisch.passbutler.crypto
 
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
+import de.sicherheitskritisch.passbutler.base.JSONSerializableDeserializer
 import de.sicherheitskritisch.passbutler.base.L
-import de.sicherheitskritisch.passbutler.base.putJSONObject
-import de.sicherheitskritisch.passbutler.base.putString
+import de.sicherheitskritisch.passbutler.base.getByteArray
+import de.sicherheitskritisch.passbutler.base.putByteArray
 import de.sicherheitskritisch.passbutler.base.toHexString
 import org.json.JSONException
 import org.json.JSONObject
-import java.util.*
 
 /**
  * Wraps a `JSONSerializable` object to store it encrypted.
@@ -34,12 +34,11 @@ class ProtectedValue<T : JSONSerializable>(
         }
     }
 
-    fun decrypt(encryptionKey: ByteArray, instantiationDelegate: (JSONObject) -> T?): T? {
+    fun decrypt(encryptionKey: ByteArray,  deserializer: JSONSerializableDeserializer<T>): T? {
         return try {
             encryptionAlgorithm.decrypt(initializationVector, encryptionKey, encryptedValue).let { decryptedBytes ->
                 val jsonSerializedString = decryptedBytes.toUTF8String()
-                val jsonObject = JSONObject(jsonSerializedString)
-                instantiationDelegate(jsonObject)
+                deserializer.deserialize(jsonSerializedString)
             }
         } catch (e: JSONException) {
             L.w("ProtectedValue", "decrypt(): The value could not be deserialized!", e)
@@ -93,23 +92,21 @@ class ProtectedValue<T : JSONSerializable>(
         return "ProtectedValue(initializationVector=${initializationVector.toHexString()}, encryptionAlgorithm=$encryptionAlgorithm, encryptedValue=${encryptedValue.toHexString()})"
     }
 
+    class Deserializer<T : JSONSerializable> : JSONSerializableDeserializer<ProtectedValue<T>>() {
+        @Throws(JSONException::class)
+        override fun deserialize(jsonObject: JSONObject): ProtectedValue<T> {
+            return ProtectedValue(
+                jsonObject.getByteArray(SERIALIZATION_KEY_INITIALIZATION_VECTOR),
+                jsonObject.getSymmetricEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM),
+                jsonObject.getByteArray(SERIALIZATION_KEY_ENCRYPTED_VALUE)
+            )
+        }
+    }
+
     companion object {
         const val SERIALIZATION_KEY_INITIALIZATION_VECTOR = "initializationVector"
         const val SERIALIZATION_KEY_ENCRYPTION_ALGORITHM = "encryptionAlgorithm"
         const val SERIALIZATION_KEY_ENCRYPTED_VALUE = "encryptedValue"
-
-        fun <T : JSONSerializable> deserialize(jsonObject: JSONObject): ProtectedValue<T>? {
-            return try {
-                ProtectedValue(
-                    jsonObject.getByteArray(SERIALIZATION_KEY_INITIALIZATION_VECTOR),
-                    jsonObject.getSymmetricEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM),
-                    jsonObject.getByteArray(SERIALIZATION_KEY_ENCRYPTED_VALUE)
-                )
-            } catch (e: JSONException) {
-                L.w("ProtectedValue", "deserialize(): The ProtectedValue object could not be deserialized using the following JSON: $jsonObject", e)
-                null
-            }
-        }
 
         fun <T : JSONSerializable> create(encryptionAlgorithm: EncryptionAlgorithm.Symmetric, encryptionKey: ByteArray, initialValue: T): ProtectedValue<T>? {
             val newInitializationVector = encryptionAlgorithm.generateInitializationVector()
@@ -138,44 +135,4 @@ private fun <T : JSONSerializable> T.toByteArray(): ByteArray {
  */
 private fun ByteArray.toUTF8String(): String {
     return toString(Charsets.UTF_8)
-}
-
-/**
- * Convenience method to put a `ProtectedValue` value to `JSONObject`.
- */
-@Throws(JSONException::class)
-fun JSONObject.putProtectedValue(name: String, value: ProtectedValue<*>?): JSONObject {
-    val serializedProtectedValue = value?.serialize()
-    return putJSONObject(name, serializedProtectedValue)
-}
-
-/**
- * Convenience method to get a `ProtectedValue` value from `JSONObject`.
- */
-@Throws(JSONException::class)
-fun <T : JSONSerializable> JSONObject.getProtectedValue(name: String): ProtectedValue<T>? {
-    val serializedProtectedValue = getJSONObject(name)
-    return ProtectedValue.deserialize(serializedProtectedValue)
-}
-
-/**
- * Convenience method to put a `ByteArray` value to `JSONObject`.
- */
-@Throws(JSONException::class)
-fun JSONObject.putByteArray(name: String, value: ByteArray): JSONObject {
-    val base64EncodedValue = Base64.getEncoder().encodeToString(value)
-    return putString(name, base64EncodedValue)
-}
-
-/**
- * Convenience method to get a `ByteArray` value from `JSONObject`.
- */
-@Throws(JSONException::class)
-fun JSONObject.getByteArray(name: String): ByteArray {
-    val base64EncodedValue = getString(name)
-    return try {
-        Base64.getDecoder().decode(base64EncodedValue)
-    } catch (e: IllegalArgumentException) {
-        throw JSONException("The value could not be Base64 decoded!")
-    }
 }

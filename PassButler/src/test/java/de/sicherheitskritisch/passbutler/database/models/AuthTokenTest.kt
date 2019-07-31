@@ -41,7 +41,7 @@ class AuthTokenTest {
         )
         val expectedAuthToken = AuthToken("exampleToken")
 
-        assertEquals(expectedAuthToken, AuthToken.deserialize(serializedAuthToken))
+        assertEquals(expectedAuthToken, AuthToken.Deserializer.deserializeOrNull(serializedAuthToken))
     }
 
     @Test
@@ -51,6 +51,6 @@ class AuthTokenTest {
         )
         val expectedAuthToken = null
 
-        assertEquals(expectedAuthToken, AuthToken.deserialize(serializedAuthToken))
+        assertEquals(expectedAuthToken, AuthToken.Deserializer.deserializeOrNull(serializedAuthToken))
     }
 }

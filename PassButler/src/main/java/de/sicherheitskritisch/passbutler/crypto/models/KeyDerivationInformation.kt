@@ -1,12 +1,11 @@
 package de.sicherheitskritisch.passbutler.crypto.models
 
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
-import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.JSONSerializableDeserializer
+import de.sicherheitskritisch.passbutler.base.getByteArray
+import de.sicherheitskritisch.passbutler.base.putByteArray
 import de.sicherheitskritisch.passbutler.base.putInt
-import de.sicherheitskritisch.passbutler.base.putJSONObject
 import de.sicherheitskritisch.passbutler.base.toHexString
-import de.sicherheitskritisch.passbutler.crypto.getByteArray
-import de.sicherheitskritisch.passbutler.crypto.putByteArray
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -49,38 +48,18 @@ data class KeyDerivationInformation(val salt: ByteArray, val iterationCount: Int
         return "KeyDerivationInformation(salt=${salt.toHexString()}, iterationCount=$iterationCount)"
     }
 
+    object Deserializer : JSONSerializableDeserializer<KeyDerivationInformation>() {
+        @Throws(JSONException::class)
+        override fun deserialize(jsonObject: JSONObject): KeyDerivationInformation {
+            return KeyDerivationInformation(
+                jsonObject.getByteArray(SERIALIZATION_KEY_SALT),
+                jsonObject.getInt(SERIALIZATION_KEY_ITERATION_COUNT)
+            )
+        }
+    }
+
     companion object {
         private const val SERIALIZATION_KEY_SALT = "salt"
         private const val SERIALIZATION_KEY_ITERATION_COUNT = "iterationCount"
-
-        fun deserialize(jsonObject: JSONObject): KeyDerivationInformation? {
-            return try {
-                KeyDerivationInformation(
-                    jsonObject.getByteArray(SERIALIZATION_KEY_SALT),
-                    jsonObject.getInt(SERIALIZATION_KEY_ITERATION_COUNT)
-                )
-            } catch (e: JSONException) {
-                L.w("KeyDerivationInformation", "The KeyDerivationInformation could not be deserialized using the following JSON: $jsonObject", e)
-                null
-            }
-        }
     }
-}
-
-/**
- * Convenience method to put a `KeyDerivationInformation` value to `JSONObject`.
- */
-@Throws(JSONException::class)
-fun JSONObject.putKeyDerivationInformation(name: String, value: KeyDerivationInformation?): JSONObject {
-    val serializedKeyDerivationInformation = value?.serialize()
-    return putJSONObject(name, serializedKeyDerivationInformation)
-}
-
-/**
- * Convenience method to get a `KeyDerivationInformation` value from `JSONObject`.
- */
-@Throws(JSONException::class)
-fun JSONObject.getKeyDerivationInformation(name: String): KeyDerivationInformation? {
-    val serializedKeyDerivationInformation = getJSONObject(name)
-    return KeyDerivationInformation.deserialize(serializedKeyDerivationInformation)
 }

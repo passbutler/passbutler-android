@@ -111,9 +111,7 @@ class UserViewModel private constructor(
             try {
                 masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation)
 
-                val decryptedProtectedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey) {
-                    CryptographicKey.deserialize(it)
-                }
+                val decryptedProtectedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer)
 
                 if (decryptedProtectedMasterEncryptionKey != null) {
                     masterEncryptionKey = decryptedProtectedMasterEncryptionKey.key
@@ -180,10 +178,7 @@ class UserViewModel private constructor(
         if (masterEncryptionKey != null) {
             L.d("UserViewModel", "decryptUserSettings(): The master encryption key was set, decrypt and update user settings...")
 
-            settings = protectedSettings.decrypt(masterEncryptionKey) {
-                UserSettings.deserialize(it)
-            }
-
+            settings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer)
             lockTimeoutSetting.postValue(settings?.lockTimeout)
             hidePasswordsSetting.postValue(settings?.hidePasswords)
 

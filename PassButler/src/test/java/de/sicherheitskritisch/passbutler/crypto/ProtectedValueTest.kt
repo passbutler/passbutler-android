@@ -3,7 +3,7 @@ package de.sicherheitskritisch.passbutler.crypto
 import android.util.Log
 import de.sicherheitskritisch.passbutler.assertJSONObjectEquals
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
-import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.JSONSerializableDeserializer
 import de.sicherheitskritisch.passbutler.base.putString
 import de.sicherheitskritisch.passbutler.hexToBytes
 import io.mockk.every
@@ -50,7 +50,7 @@ class ProtectedValueTest {
         val serializedProtectedValue = protectedValueReference.serialize()
         assertJSONObjectEquals(expectedSerializedProtectedValue, serializedProtectedValue)
 
-        val deserializedProtectedValue = ProtectedValue.deserialize<JSONSerializable>(serializedProtectedValue)
+        val deserializedProtectedValue = ProtectedValue.Deserializer<JSONSerializable>().deserializeOrNull(serializedProtectedValue)
         assertEquals(protectedValueReference, deserializedProtectedValue)
     }
 
@@ -68,7 +68,7 @@ class ProtectedValueTest {
         val serializedProtectedValue = protectedValueReference.serialize()
         assertJSONObjectEquals(expectedSerializedProtectedValue, serializedProtectedValue)
 
-        val deserializedProtectedValue = ProtectedValue.deserialize<JSONSerializable>(serializedProtectedValue)
+        val deserializedProtectedValue = ProtectedValue.Deserializer<JSONSerializable>().deserializeOrNull(serializedProtectedValue)
         assertEquals(protectedValueReference, deserializedProtectedValue)
     }
 
@@ -76,7 +76,7 @@ class ProtectedValueTest {
     fun `Deserialize a protected value returns null if the deserialization failed`() {
         val invalidSerializedProtectedValue = JSONObject()
 
-        val deserializedProtectedValue = ProtectedValue.deserialize<JSONSerializable>(invalidSerializedProtectedValue)
+        val deserializedProtectedValue = ProtectedValue.Deserializer<JSONSerializable>().deserializeOrNull(invalidSerializedProtectedValue)
         assertEquals(null, deserializedProtectedValue)
     }
 
@@ -183,9 +183,7 @@ class ProtectedValueTest {
         )
 
         val unusedEncryptionKey = ByteArray(0)
-        val decryptedTestJSONSerializable = protectedValue.decrypt(unusedEncryptionKey) {
-            TestJSONSerializable.deserialize(it)
-        }
+        val decryptedTestJSONSerializable = protectedValue.decrypt(unusedEncryptionKey, TestJSONSerializable.Deserializer)
 
         assertEquals("testValue", decryptedTestJSONSerializable?.testField)
     }
@@ -231,18 +229,16 @@ private class TestJSONSerializable(val testField: String) : JSONSerializable {
         }
     }
 
+    object Deserializer : JSONSerializableDeserializer<TestJSONSerializable>() {
+        @Throws(JSONException::class)
+        override fun deserialize(jsonObject: JSONObject): TestJSONSerializable {
+            return TestJSONSerializable(
+                jsonObject.getString(SERIALIZATION_KEY_TEST_FIELD)
+            )
+        }
+    }
+
     companion object {
         private const val SERIALIZATION_KEY_TEST_FIELD = "testField"
-
-        fun deserialize(jsonObject: JSONObject): TestJSONSerializable? {
-            return try {
-                TestJSONSerializable(
-                    jsonObject.getString(SERIALIZATION_KEY_TEST_FIELD)
-                )
-            } catch (e: JSONException) {
-                L.w("TestJSONSerializable", "The TestJSONSerializable could not be deserialized using the following JSON: $jsonObject", e)
-                null
-            }
-        }
     }
 }

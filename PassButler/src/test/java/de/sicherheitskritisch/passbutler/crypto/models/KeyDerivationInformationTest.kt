@@ -48,7 +48,7 @@ class KeyDerivationInformationTest {
         val iterationCount = 1234
         val expectedKeyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val deserializedKeyDerivationInformation = KeyDerivationInformation.deserialize(serializedKeyDerivationInformation)
+        val deserializedKeyDerivationInformation = KeyDerivationInformation.Deserializer.deserializeOrNull(serializedKeyDerivationInformation)
 
         assertEquals(expectedKeyDerivationInformation, deserializedKeyDerivationInformation)
     }
@@ -60,7 +60,7 @@ class KeyDerivationInformationTest {
         )
 
         val expectedKeyDerivationInformation = null
-        val deserializedKeyDerivationInformation = KeyDerivationInformation.deserialize(serializedKeyDerivationInformation)
+        val deserializedKeyDerivationInformation = KeyDerivationInformation.Deserializer.deserializeOrNull(serializedKeyDerivationInformation)
         assertEquals(expectedKeyDerivationInformation, deserializedKeyDerivationInformation)
     }
 
@@ -71,7 +71,7 @@ class KeyDerivationInformationTest {
         )
 
         val expectedKeyDerivationInformation = null
-        val deserializedKeyDerivationInformation = KeyDerivationInformation.deserialize(serializedKeyDerivationInformation)
+        val deserializedKeyDerivationInformation = KeyDerivationInformation.Deserializer.deserializeOrNull(serializedKeyDerivationInformation)
         assertEquals(expectedKeyDerivationInformation, deserializedKeyDerivationInformation)
     }
 
@@ -82,7 +82,7 @@ class KeyDerivationInformationTest {
         )
 
         val expectedKeyDerivationInformation = null
-        val deserializedKeyDerivationInformation = KeyDerivationInformation.deserialize(serializedKeyDerivationInformation)
+        val deserializedKeyDerivationInformation = KeyDerivationInformation.Deserializer.deserializeOrNull(serializedKeyDerivationInformation)
         assertEquals(expectedKeyDerivationInformation, deserializedKeyDerivationInformation)
     }
 }

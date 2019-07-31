@@ -1,10 +1,9 @@
 package de.sicherheitskritisch.passbutler.crypto.models
 
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
-import de.sicherheitskritisch.passbutler.base.L
-import de.sicherheitskritisch.passbutler.base.putJSONObject
-import de.sicherheitskritisch.passbutler.crypto.getByteArray
-import de.sicherheitskritisch.passbutler.crypto.putByteArray
+import de.sicherheitskritisch.passbutler.base.JSONSerializableDeserializer
+import de.sicherheitskritisch.passbutler.base.getByteArray
+import de.sicherheitskritisch.passbutler.base.putByteArray
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -39,36 +38,16 @@ data class CryptographicKey(val key: ByteArray) : JSONSerializable {
         return key.contentHashCode()
     }
 
-    companion object {
-        private const val SERIALIZATION_KEY_KEY = "key"
-
-        fun deserialize(jsonObject: JSONObject): CryptographicKey? {
-            return try {
-                CryptographicKey(
-                    jsonObject.getByteArray(SERIALIZATION_KEY_KEY)
-                )
-            } catch (e: JSONException) {
-                L.w("CryptographicKey", "The CryptographicKey could not be deserialized using the following JSON: $jsonObject", e)
-                null
-            }
+    object Deserializer : JSONSerializableDeserializer<CryptographicKey>() {
+        @Throws(JSONException::class)
+        override fun deserialize(jsonObject: JSONObject): CryptographicKey {
+            return CryptographicKey(
+                jsonObject.getByteArray(SERIALIZATION_KEY_KEY)
+            )
         }
     }
-}
 
-/**
- * Convenience method to put a `CryptographicKey` value to `JSONObject`.
- */
-@Throws(JSONException::class)
-fun JSONObject.putCryptographicKey(name: String, value: CryptographicKey?): JSONObject {
-    val serializedCryptographicKey = value?.serialize()
-    return putJSONObject(name, serializedCryptographicKey)
-}
-
-/**
- * Convenience method to get a `CryptographicKey` value from `JSONObject`.
- */
-@Throws(JSONException::class)
-fun JSONObject.getCryptographicKey(name: String): CryptographicKey? {
-    val serializedCryptographicKey = getJSONObject(name)
-    return CryptographicKey.deserialize(serializedCryptographicKey)
+    companion object {
+        private const val SERIALIZATION_KEY_KEY = "key"
+    }
 }

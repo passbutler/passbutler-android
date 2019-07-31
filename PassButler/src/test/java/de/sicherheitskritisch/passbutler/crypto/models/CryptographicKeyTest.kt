@@ -47,7 +47,7 @@ class CryptographicKeyTest {
         val key = "AABBCCDD".hexToBytes()
         val expectedCryptographicKey = CryptographicKey(key)
 
-        val deserializedCryptographicKey = CryptographicKey.deserialize(serializedCryptographicKey)
+        val deserializedCryptographicKey = CryptographicKey.Deserializer.deserializeOrNull(serializedCryptographicKey)
 
         assertEquals(expectedCryptographicKey, deserializedCryptographicKey)
     }
@@ -59,7 +59,7 @@ class CryptographicKeyTest {
         )
 
         val expectedCryptographicKey = null
-        val deserializedCryptographicKey = CryptographicKey.deserialize(serializedCryptographicKey)
+        val deserializedCryptographicKey = CryptographicKey.Deserializer.deserializeOrNull(serializedCryptographicKey)
         assertEquals(expectedCryptographicKey, deserializedCryptographicKey)
     }
 
@@ -70,7 +70,7 @@ class CryptographicKeyTest {
         )
 
         val expectedCryptographicKey = null
-        val deserializedCryptographicKey = CryptographicKey.deserialize(serializedCryptographicKey)
+        val deserializedCryptographicKey = CryptographicKey.Deserializer.deserializeOrNull(serializedCryptographicKey)
         assertEquals(expectedCryptographicKey, deserializedCryptographicKey)
     }
 }

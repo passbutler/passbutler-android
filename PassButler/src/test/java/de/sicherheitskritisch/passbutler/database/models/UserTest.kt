@@ -50,7 +50,7 @@ class UserTest {
         )
 
         val serializedUser = exampleUser.serialize()
-        val deserializedUser = User.deserialize(serializedUser)
+        val deserializedUser = User.Deserializer.deserializeOrNull(serializedUser)
 
         assertEquals(exampleUser, deserializedUser)
     }
