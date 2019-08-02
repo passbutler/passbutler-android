@@ -111,9 +111,11 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
     private inner class LoggedInUserResultObserver : Observer<LoggedInUserResult?> {
         override fun onChanged(loggedInUserResult: LoggedInUserResult?) {
-            if (loggedInUserResult != null) {
+            val loggedInUser = userManager.loggedInUser
+
+            if (loggedInUserResult != null && loggedInUser != null) {
                 // Create new logged-in user first
-                loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.user, loggedInUserResult.masterPassword)
+                loggedInUserViewModel = UserViewModel(userManager, loggedInUser, loggedInUserResult.masterPassword)
 
                 rootScreenState.value = RootScreenState.LoggedIn
 
