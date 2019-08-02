@@ -41,17 +41,13 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
     val loggedInUserResult = MutableLiveData<LoggedInUserResult?>()
 
-    // TODO: More elegant solution - sealed class for `LoggedInState`?
-    val isLocalUser
-        get() = loggedInStateStorage.serverUrl == null
-
-    private var authWebservice: AuthWebservice? = null
-    private var userWebservice: UserWebservice? = null
-
-    private val loggedInStateStorage by lazy {
+    val loggedInStateStorage by lazy {
         val sharedPreferences = applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
         LoggedInStateStorage(sharedPreferences)
     }
+
+    private var authWebservice: AuthWebservice? = null
+    private var userWebservice: UserWebservice? = null
 
     @Throws(LoginFailedException::class)
     suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrl: Uri) {
@@ -66,9 +62,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             localRepository.insertUser(remoteUser)
 
             loggedInStateStorage.reset()
-            loggedInStateStorage.username = remoteUser.username
-            loggedInStateStorage.serverUrl = serverUrl
-            loggedInStateStorage.authToken = authToken
+            loggedInStateStorage.userType = UserType.Server(remoteUser.username, serverUrl, authToken)
             loggedInStateStorage.persist()
 
             val loggedInUserResult = LoggedInUserResult(remoteUser, masterPassword = masterPassword)
@@ -125,7 +119,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             localRepository.insertUser(localUser)
 
             loggedInStateStorage.reset()
-            loggedInStateStorage.username = localUser.username
+            loggedInStateStorage.userType = UserType.Local(localUser.username)
             loggedInStateStorage.persist()
 
             val loggedInUserResult = LoggedInUserResult(localUser, masterPassword = masterPassword)
@@ -156,7 +150,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         // Restore logged in state storage first
         loggedInStateStorage.restore()
 
-        val restoredLoggedInUser = loggedInStateStorage.username?.let { loggedInUsername ->
+        val restoredLoggedInUser = loggedInStateStorage.userType?.username?.let { loggedInUsername ->
             localRepository.findUser(loggedInUsername)
         }
 
@@ -168,26 +162,26 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     suspend fun restoreWebservices(masterPassword: String) {
         L.d("UserManager", "restoreWebservices()")
 
-        val serverUrl = loggedInStateStorage.serverUrl ?: throw IllegalStateException("The server URL is null despite it was tried to restore webservices!")
+        val userType = loggedInStateStorage.userType as? UserType.Server ?: throw IllegalStateException("The user is a local kind despite it was tried to restore webservices!")
 
         try {
             if (authWebservice == null) {
                 initializeAuthWebservice(masterPassword)
             }
 
+            var authToken = userType.authToken
             var authTokenHasChanged = false
-            var authToken = loggedInStateStorage.authToken
 
-            if (authToken == null || authToken.isExpired) {
+            if (authToken.isExpired) {
                 authToken = authWebservice.requestAuthToken()
                 authTokenHasChanged = true
 
-                loggedInStateStorage.authToken = authToken
+                userType.authToken = authToken
                 loggedInStateStorage.persist()
             }
 
             if (userWebservice == null || authTokenHasChanged) {
-                userWebservice = UserWebservice.create(serverUrl, authToken.token)
+                userWebservice = UserWebservice.create(userType.serverUrl, authToken.token)
             }
         } catch (e: Exception) {
             L.w("UserManager", "restoreWebservices(): The webservices could not be restored!", e)
@@ -198,8 +192,10 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     fun initializeAuthWebservice(masterPassword: String) {
         L.d("UserManager", "initializeAuthWebservice()")
 
-        val username = loggedInStateStorage.username ?: throw IllegalStateException("The username is null despite it was tried to initialize auth webservice!")
-        val serverUrl = loggedInStateStorage.serverUrl ?: throw IllegalStateException("The server URL is null despite it was tried to initialize auth webservice!")
+        val userType = loggedInStateStorage.userType as? UserType.Server ?: throw IllegalStateException("The user is a local kind despite it was tried to initialize auth webservice!")
+
+        val username = userType.username
+        val serverUrl = userType.serverUrl
 
         val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword)
         authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
@@ -211,7 +207,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         try {
             localRepository.updateUser(user)
 
-            if (!isLocalUser) {
+            if (loggedInStateStorage.userType is UserType.Server) {
                 userWebservice.updateUser(user)
             }
         } catch (e: Exception) {
@@ -234,16 +230,21 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
 data class LoggedInUserResult(val user: User, val masterPassword: String?)
 
-private class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
-    var username: String? = null
-    var serverUrl: Uri? = null
-    var authToken: AuthToken? = null
+class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
+
+    var userType: UserType? = null
 
     suspend fun restore() {
         withContext(Dispatchers.IO) {
-            username = sharedPreferences.getString(SHARED_PREFERENCES_KEY_USERNAME, null)
-            serverUrl = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SERVERURL, null)?.let { Uri.parse(it) }
-            authToken = sharedPreferences.getString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, null)?.let { AuthToken.Deserializer.deserializeOrNull(it) }
+            val username = sharedPreferences.getString(SHARED_PREFERENCES_KEY_USERNAME, null)
+            val serverUrl = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SERVERURL, null)?.let { Uri.parse(it) }
+            val authToken = sharedPreferences.getString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, null)?.let { AuthToken.Deserializer.deserializeOrNull(it) }
+
+            userType = when {
+                (username != null && serverUrl != null && authToken != null) -> UserType.Server(username, serverUrl, authToken)
+                (username != null) -> UserType.Local(username)
+                else -> null
+            }
         }
     }
 
@@ -252,18 +253,15 @@ private class LoggedInStateStorage(private val sharedPreferences: SharedPreferen
     suspend fun persist() {
         withContext(Dispatchers.IO) {
             sharedPreferences.edit().apply {
-                putString(SHARED_PREFERENCES_KEY_USERNAME, username)
-                putString(SHARED_PREFERENCES_KEY_SERVERURL, serverUrl?.toString())
-                putString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, authToken?.serialize()?.toString())
+                putString(SHARED_PREFERENCES_KEY_USERNAME, userType?.username)
+                putString(SHARED_PREFERENCES_KEY_SERVERURL, (userType as? UserType.Server)?.serverUrl?.toString())
+                putString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, (userType as? UserType.Server)?.authToken?.serialize()?.toString())
             }.commit()
         }
     }
 
     suspend fun reset() {
-        username = null
-        serverUrl = null
-        authToken = null
-
+        userType = null
         persist()
     }
 
@@ -272,6 +270,11 @@ private class LoggedInStateStorage(private val sharedPreferences: SharedPreferen
         private const val SHARED_PREFERENCES_KEY_SERVERURL = "serverUrl"
         private const val SHARED_PREFERENCES_KEY_AUTH_TOKEN = "authToken"
     }
+}
+
+sealed class UserType(val username: String) {
+    class Local(username: String) : UserType(username)
+    class Server(username: String, val serverUrl: Uri, var authToken: AuthToken) : UserType(username)
 }
 
 private class UserSynchronization(private val localRepository: LocalRepository, private var userWebservice: UserWebservice, private val loggedInUser: User) : Synchronization {
