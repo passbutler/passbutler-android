@@ -4,8 +4,6 @@ import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.JSONSerializableDeserializer
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.getByteArray
-import de.sicherheitskritisch.passbutler.base.getJSONSerializable
-import de.sicherheitskritisch.passbutler.base.getJSONSerializableOrNull
 import de.sicherheitskritisch.passbutler.base.putByteArray
 import de.sicherheitskritisch.passbutler.base.putJSONSerializable
 import de.sicherheitskritisch.passbutler.base.toHexString
@@ -146,15 +144,18 @@ private fun ByteArray.toUTF8String(): String {
 
 @Throws(JSONException::class)
 fun <T : JSONSerializable> JSONObject.getProtectedValue(name: String): ProtectedValue<T> {
-    // The explicit type is necessary because type inference fails otherwise
-    @Suppress("RemoveExplicitTypeArguments")
-    return getJSONSerializable<ProtectedValue<T>>(name, ProtectedValue.Deserializer())
+    val serialized = getJSONObject(name)
+    return ProtectedValue.Deserializer<T>().deserialize(serialized)
 }
 
 fun <T : JSONSerializable> JSONObject.getProtectedValueOrNull(name: String): ProtectedValue<T>? {
-    // The explicit type is necessary because type inference fails otherwise
-    @Suppress("RemoveExplicitTypeArguments")
-    return getJSONSerializableOrNull<ProtectedValue<T>>(name, ProtectedValue.Deserializer())
+    return try {
+        val serialized = getJSONObject(name)
+        ProtectedValue.Deserializer<T>().deserializeOrNull(serialized)
+    } catch (e: JSONException) {
+        L.d("JSON", "getProtectedValueOrNull(): The ProtectedValue with key '$name' could not be deserialized using the following JSON: $this")
+        null
+    }
 }
 
 fun <T : JSONSerializable> JSONObject.putProtectedValue(name: String, value: T?): JSONObject {
