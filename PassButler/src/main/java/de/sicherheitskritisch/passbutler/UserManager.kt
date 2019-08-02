@@ -215,13 +215,15 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         }
     }
 
-    @Throws(IllegalStateException::class, Synchronization.SynchronizationFailedException::class)
+    @Throws(Synchronization.SynchronizationFailedException::class)
     suspend fun synchronizeUsers() {
-        val userWebservice = userWebservice ?: throw IllegalStateException("The user webservice is null despite it was tried to synchronize user!")
-        val loggedInUser = loggedInUserResult.value?.user ?: throw IllegalStateException("The logged-in user is null despite it was tried to synchronize user!")
+        userWebservice?.let { userWebservice ->
+            // TODO: `loggedInUser` instance is never updated!
+            val loggedInUser = loggedInUserResult.value?.user ?: throw IllegalStateException("The logged-in user is null despite it was tried to synchronize user!")
 
-        val userSynchronization = UserSynchronization(localRepository, userWebservice, loggedInUser)
-        userSynchronization.synchronize()
+            val userSynchronization = UserSynchronization(localRepository, userWebservice, loggedInUser)
+            userSynchronization.synchronize()
+        }
     }
 
     class UserCreationFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
