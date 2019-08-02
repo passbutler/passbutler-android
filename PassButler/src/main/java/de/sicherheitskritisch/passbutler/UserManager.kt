@@ -354,6 +354,9 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
                     L.d("UserSynchronization", "synchronizeLoggedInUser(): Update local user because remote user was lastly modified")
                     localRepository.updateUser(remoteLoggedInUser)
                 }
+                else -> {
+                    L.d("UserSynchronization", "synchronizeLoggedInUser(): No update needed because local and remote user are equal")
+                }
             }
         } catch (e: Exception) {
             throw SynchronizeLoggedInUserFailedException(e)
