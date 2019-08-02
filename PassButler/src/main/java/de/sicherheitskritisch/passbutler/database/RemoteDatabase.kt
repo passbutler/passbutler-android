@@ -38,15 +38,14 @@ interface AuthWebservice {
     private class ConverterFactory : Converter.Factory() {
         override fun responseBodyConverter(type: Type, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
             return when (type) {
-                AuthToken::class.java -> AuthTokenResponseConverter()
+                AuthToken::class.java -> createAuthTokenResponse()
                 else -> null
             }
         }
 
-        private class AuthTokenResponseConverter : Converter<ResponseBody, AuthToken> {
-            override fun convert(responseBody: ResponseBody): AuthToken {
-                return AuthToken.Deserializer.deserialize(responseBody.string())
-            }
+        @Throws(JSONException::class)
+        private fun createAuthTokenResponse() = Converter<ResponseBody, AuthToken> {
+            AuthToken.Deserializer.deserialize(it.string())
         }
     }
 
@@ -100,42 +99,33 @@ interface UserWebservice {
     private class ConverterFactory : Converter.Factory() {
         override fun requestBodyConverter(type: Type, parameterAnnotations: Array<Annotation>, methodAnnotations: Array<Annotation>, retrofit: Retrofit): Converter<*, RequestBody>? {
             return when (type) {
-                User::class.java -> UserRequestConverter()
+                User::class.java -> createUserRequestConverter()
                 else -> null
             }
         }
 
-        private class UserRequestConverter : Converter<User, RequestBody> {
-            override fun convert(user: User): RequestBody {
-                return RequestBody.create(MediaType.get("application/json"), user.serialize().toString())
-            }
+        private fun createUserRequestConverter() = Converter<User, RequestBody> {
+            RequestBody.create(MediaType.get("application/json"), it.serialize().toString())
         }
 
         override fun responseBodyConverter(type: Type, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
-            return when (type) {
-                User::class.java -> UserResponseConverter()
-                is ParameterizedType -> {
-                    when {
-                        type.rawType == List::class.java && type.actualTypeArguments.firstOrNull() == User::class.java -> UserListResponseConverter()
-                        else -> null
-                    }
-                }
+            return when {
+                (type == User::class.java) -> createUserResponseConverter()
+                (type as? ParameterizedType)?.let { it.rawType == List::class.java && it.actualTypeArguments.firstOrNull() == User::class.java } == true -> createUserListResponseConverter()
                 else -> null
             }
         }
 
-        private class UserResponseConverter : Converter<ResponseBody, User> {
-            override fun convert(responseBody: ResponseBody): User {
-                return User.Deserializer.deserialize(responseBody.string())
-            }
+        @Throws(JSONException::class)
+        private fun createUserResponseConverter() = Converter<ResponseBody, User> {
+            User.Deserializer.deserialize(it.string())
         }
 
-        private class UserListResponseConverter : Converter<ResponseBody, List<User>> {
-            override fun convert(responseBody: ResponseBody): List<User> {
-                return JSONArray(responseBody.string()).asJSONObjectSequence().mapNotNull { userJsonObject ->
-                    User.Deserializer.deserialize(userJsonObject)
-                }.toList()
-            }
+        @Throws(JSONException::class)
+        private fun createUserListResponseConverter() = Converter<ResponseBody, List<User>> {
+            JSONArray(it.string()).asJSONObjectSequence().mapNotNull { userJsonObject ->
+                User.Deserializer.deserialize(userJsonObject)
+            }.toList()
         }
     }
 
@@ -232,17 +222,11 @@ private abstract class AuthenticationInterceptor : Interceptor {
  * Allows to have "no content" responses like `Deferred<Response<Unit>>`.
  */
 class UnitConverterFactory : Converter.Factory() {
-    override fun responseBodyConverter(type: Type, annotations: Array<out Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
-        return if (type == Unit::class.java) {
-            UnitConverter
-        } else {
-            null
-        }
+    private val unitConverter = Converter<ResponseBody, Unit> {
+        it.close()
     }
 
-    private object UnitConverter : Converter<ResponseBody, Unit> {
-        override fun convert(value: ResponseBody) {
-            value.close()
-        }
+    override fun responseBodyConverter(type: Type, annotations: Array<out Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
+        return if (type == Unit::class) unitConverter else null
     }
 }
