@@ -123,13 +123,13 @@ interface UserWebservice {
 
         @Throws(JSONException::class)
         private fun createUserResponseConverter() = Converter<ResponseBody, User> {
-            User.Deserializer.deserialize(it.string())
+            User.DefaultUserDeserializer.deserialize(it.string())
         }
 
         @Throws(JSONException::class)
         private fun createUserListResponseConverter() = Converter<ResponseBody, List<User>> {
             JSONArray(it.string()).asJSONObjectSequence().mapNotNull { userJsonObject ->
-                User.Deserializer.deserialize(userJsonObject)
+                User.PartialUserDeserializer.deserialize(userJsonObject)
             }.toList()
         }
     }

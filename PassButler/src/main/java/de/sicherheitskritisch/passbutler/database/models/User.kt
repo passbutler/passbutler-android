@@ -13,6 +13,7 @@ import de.sicherheitskritisch.passbutler.base.putJSONSerializable
 import de.sicherheitskritisch.passbutler.base.putLong
 import de.sicherheitskritisch.passbutler.base.putString
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
+import de.sicherheitskritisch.passbutler.crypto.getProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.getProtectedValueOrNull
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
@@ -55,8 +56,31 @@ data class User(
         }
     }
 
-    // TODO: Have multiple `Deserializer` to reflect public and current user
-    object Deserializer : JSONSerializableDeserializer<User>() {
+    /**
+     * Deserialize a `User` with all fields (used for own user details).
+     */
+    object DefaultUserDeserializer : JSONSerializableDeserializer<User>() {
+        @Throws(JSONException::class)
+        override fun deserialize(jsonObject: JSONObject): User {
+            return User(
+                username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
+                masterPasswordAuthenticationHash = jsonObject.getString(SERIALIZATION_KEY_MASTER_PASSWORD_AUTHENTICATION_HASH),
+                masterKeyDerivationInformation = jsonObject.getJSONSerializable(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, KeyDerivationInformation.Deserializer),
+                masterEncryptionKey = jsonObject.getProtectedValue(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY),
+                itemEncryptionPublicKey = jsonObject.getJSONSerializable(SERIALIZATION_KEY_ITEM_ENCRYPTION_PUBLIC_KEY, CryptographicKey.Deserializer),
+                itemEncryptionSecretKey = jsonObject.getProtectedValue(SERIALIZATION_KEY_ITEM_ENCRYPTION_SECRET_KEY),
+                settings = jsonObject.getProtectedValue(SERIALIZATION_KEY_SETTINGS),
+                deleted = jsonObject.getBoolean(SERIALIZATION_KEY_DELETED),
+                modified = Date(jsonObject.getLong(SERIALIZATION_KEY_MODIFIED)),
+                created = Date(jsonObject.getLong(SERIALIZATION_KEY_CREATED))
+            )
+        }
+    }
+
+    /**
+     * Deserialize a `User` without private fields (used for other users).
+     */
+    object PartialUserDeserializer : JSONSerializableDeserializer<User>() {
         @Throws(JSONException::class)
         override fun deserialize(jsonObject: JSONObject): User {
             return User(
