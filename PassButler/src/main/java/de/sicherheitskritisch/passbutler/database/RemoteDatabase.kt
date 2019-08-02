@@ -15,6 +15,7 @@ import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import org.json.JSONArray
+import org.json.JSONException
 import retrofit2.Converter
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -70,20 +71,24 @@ interface AuthWebservice {
         }
     }
 
-    class GetAuthTokenFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
+    class GetAuthTokenFailedException(cause: Throwable? = null) : Exception(cause)
 }
 
-@Throws(Exception::class)
+@Throws(AuthWebservice.GetAuthTokenFailedException::class)
 suspend fun AuthWebservice?.requestAuthToken(): AuthToken {
-    val getTokenRequest = this?.getTokenAsync()
-    val getTokenResponse = getTokenRequest?.await()
-    val authToken = getTokenResponse?.body()
+    return try {
+        val getTokenRequest = this?.getTokenAsync()
+        val getTokenResponse = getTokenRequest?.await()
+        val authToken = getTokenResponse?.body()
 
-    if (getTokenResponse?.isSuccessful != true || authToken == null) {
-        throw AuthWebservice.GetAuthTokenFailedException("The auth token could not be get ${getTokenResponse.technicalErrorDescription}")
+        if (getTokenResponse?.isSuccessful != true || authToken == null) {
+            throw Exception("The auth token could not be get ${getTokenResponse.technicalErrorDescription}")
+        }
+
+        authToken
+    } catch (e: Exception) {
+        throw AuthWebservice.GetAuthTokenFailedException(e)
     }
-
-    return authToken
 }
 
 interface UserWebservice {
@@ -151,44 +156,56 @@ interface UserWebservice {
         }
     }
 
-    class GetUsersFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
-    class GetUserDetailsFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
-    class SetUserDetailsFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
+    class GetUsersFailedException(cause: Throwable? = null) : Exception(cause)
+    class GetUserDetailsFailedException(cause: Throwable? = null) : Exception(cause)
+    class SetUserDetailsFailedException(cause: Throwable? = null) : Exception(cause)
 }
 
-@Throws(Exception::class)
+@Throws(UserWebservice.GetUsersFailedException::class)
 suspend fun UserWebservice?.requestPublicUserList(): List<User> {
-    val getUsersListRequest = this?.getUsersAsync()
-    val getUsersListResponse = getUsersListRequest?.await()
-    val usersList = getUsersListResponse?.body()
+    return try {
+        val getUsersListRequest = this?.getUsersAsync()
+        val getUsersListResponse = getUsersListRequest?.await()
+        val usersList = getUsersListResponse?.body()
 
-    if (getUsersListResponse?.isSuccessful != true || usersList == null) {
-        throw UserWebservice.GetUsersFailedException("The public users list could not be get ${getUsersListResponse.technicalErrorDescription}")
+        if (getUsersListResponse?.isSuccessful != true || usersList == null) {
+            throw Exception("The public users list could not be get ${getUsersListResponse.technicalErrorDescription}")
+        }
+
+        usersList
+    } catch (e: Exception) {
+        throw UserWebservice.GetUsersFailedException(e)
     }
-
-    return usersList
 }
 
-@Throws(Exception::class)
+@Throws(UserWebservice.GetUserDetailsFailedException::class)
 suspend fun UserWebservice?.requestUser(username: String): User {
-    val getUserDetailsRequest = this?.getUserDetailsAsync(username)
-    val getUserDetailsResponse = getUserDetailsRequest?.await()
-    val user = getUserDetailsResponse?.body()
+    return try {
+        val getUserDetailsRequest = this?.getUserDetailsAsync(username)
+        val getUserDetailsResponse = getUserDetailsRequest?.await()
+        val user = getUserDetailsResponse?.body()
 
-    if (getUserDetailsResponse?.isSuccessful != true || user == null) {
-        throw UserWebservice.GetUserDetailsFailedException("The user details could not be get ${getUserDetailsResponse.technicalErrorDescription}")
+        if (getUserDetailsResponse?.isSuccessful != true || user == null) {
+            throw Exception("The user details could not be get ${getUserDetailsResponse.technicalErrorDescription}")
+        }
+
+        user
+    } catch (e: Exception) {
+        throw UserWebservice.GetUserDetailsFailedException(e)
     }
-
-    return user
 }
 
-@Throws(Exception::class)
+@Throws(UserWebservice.SetUserDetailsFailedException::class)
 suspend fun UserWebservice?.updateUser(user: User) {
-    val setUserDetailsRequest = this?.setUserDetailsAsync(user.username, user)
-    val setUserDetailsResponse = setUserDetailsRequest?.await()
+    try {
+        val setUserDetailsRequest = this?.setUserDetailsAsync(user.username, user)
+        val setUserDetailsResponse = setUserDetailsRequest?.await()
 
-    if (setUserDetailsResponse?.isSuccessful != true) {
-        throw UserWebservice.SetUserDetailsFailedException("The user details could not be set ${setUserDetailsResponse.technicalErrorDescription})")
+        if (setUserDetailsResponse?.isSuccessful != true) {
+            throw Exception("The user details could not be set ${setUserDetailsResponse.technicalErrorDescription})")
+        }
+    } catch (e: Exception) {
+        throw UserWebservice.SetUserDetailsFailedException(e)
     }
 }
 
