@@ -224,7 +224,8 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         }
     }
 
-    @Throws(Synchronization.SynchronizationFailedException::class)
+    // TODO: Do not throw multiple exceptions
+    @Throws(IllegalStateException::class, Synchronization.SynchronizationFailedException::class)
     suspend fun synchronizeUsers() {
         userWebservice?.let { userWebservice ->
             val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is null despite it was tried to synchronize user!")
@@ -298,6 +299,8 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
             synchronizeLoggedInUser()
 
             L.d("UserSynchronization", "synchronize(): Finished successfully")
+
+            // TODO: Exception is not catched and thrown through
         } catch (e: Exception) {
             throw Synchronization.SynchronizationFailedException(e)
         }

@@ -120,11 +120,12 @@ class UserViewModel private constructor(
                     throw IllegalStateException("The master encryption key could not be decrypted!")
                 }
 
-                // Finally restore webservices and trigger sync if it is a non-local user
+                // Finally restore webservices if it is a non-local user
                 if (userManager.loggedInStateStorage.userType is UserType.Server) {
                     userManager.restoreWebservices(masterPassword)
-                    userManager.synchronizeUsers()
                 }
+
+                // TODO: Trigger sync delayed after unlock
             } catch (e: Exception) {
                 throw UnlockFailedException(e)
             } finally {
