@@ -19,6 +19,7 @@ import com.google.android.material.snackbar.Snackbar
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.createMainDispatcher
+import de.sicherheitskritisch.passbutler.base.signal
 import de.sicherheitskritisch.passbutler.databinding.FragmentOverviewBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
@@ -27,6 +28,7 @@ import de.sicherheitskritisch.passbutler.ui.applyTint
 import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
 import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -54,6 +56,14 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     private val toolbarMenuIconSync
         get() = binding?.toolbar?.menu?.findItem(R.id.overview_menu_item_sync)
 
+    private val unlockedFinishedSignal = signal {
+        // Explicitly dispatch to IO to be independent which dispatcher calls the signal
+        launch(Dispatchers.IO) {
+            delay(500)
+            viewModel.synchronizeData()
+        }
+    }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
@@ -75,6 +85,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         logoutRequestSendingViewHandler = LogoutRequestSendingViewHandler(viewModel.logoutRequestSendingViewModel, WeakReference(this)).apply {
             registerObservers()
         }
+
+        loggedInUserViewModel?.unlockFinished?.addSignal(unlockedFinishedSignal)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -154,6 +166,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     override fun onDestroy() {
         synchronizeDataRequestSendingViewHandler?.unregisterObservers()
         logoutRequestSendingViewHandler?.unregisterObservers()
+        loggedInUserViewModel?.unlockFinished?.removeSignal(unlockedFinishedSignal)
         coroutineJob.cancel()
         super.onDestroy()
     }

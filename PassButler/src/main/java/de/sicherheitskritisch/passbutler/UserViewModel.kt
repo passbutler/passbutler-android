@@ -3,6 +3,7 @@ package de.sicherheitskritisch.passbutler
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.SignalEmitter
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.optionalContentNotEquals
 import de.sicherheitskritisch.passbutler.crypto.Derivation
@@ -42,6 +43,8 @@ class UserViewModel private constructor(
 
     val lockTimeoutSetting = MutableLiveData<Int?>()
     val hidePasswordsSetting = MutableLiveData<Boolean?>()
+
+    val unlockFinished = SignalEmitter()
 
     private val lockTimeoutSettingChangedObserver: (Int?) -> Unit = { applyUserSettings() }
     private val hidePasswordsSettingChangedObserver: (Boolean?) -> Unit = { applyUserSettings() }
@@ -120,12 +123,11 @@ class UserViewModel private constructor(
                     throw IllegalStateException("The master encryption key could not be decrypted!")
                 }
 
-                // Finally restore webservices if it is a non-local user
                 if (userManager.loggedInStateStorage.userType is UserType.Server) {
                     userManager.restoreWebservices(masterPassword)
                 }
 
-                // TODO: Trigger sync delayed after unlock
+                unlockFinished.emit()
             } catch (e: Exception) {
                 throw UnlockFailedException(e)
             } finally {
