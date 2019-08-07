@@ -63,5 +63,8 @@ interface Synchronization {
      */
     suspend fun synchronize()
 
-    open class SynchronizationFailedException(cause: Throwable? = null) : Exception(cause)
+    open class SynchronizationFailedException(message: String?, cause: Throwable?) : Exception(message, cause) {
+        constructor(message: String): this(message, null)
+        constructor(cause: Throwable): this(null, cause)
+    }
 }
