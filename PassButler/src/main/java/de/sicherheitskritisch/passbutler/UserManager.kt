@@ -291,16 +291,14 @@ data class LoggedInUserResult(val masterPassword: String?)
 private class UserSynchronization(private val localRepository: LocalRepository, private var userWebservice: UserWebservice, private val loggedInUser: User) : Synchronization {
 
     @Throws(Synchronization.SynchronizationFailedException::class)
-    override suspend fun synchronize() = coroutineScope {
+    override suspend fun synchronize() {
         try {
-            L.d("UserSynchronization", "synchronize(): Started")
-
-            synchronizePublicUsersList(this)
-            synchronizeLoggedInUser()
-
-            L.d("UserSynchronization", "synchronize(): Finished successfully")
-
-            // TODO: Exception is not catched and thrown through
+            coroutineScope {
+                L.d("UserSynchronization", "synchronize(): Started")
+                synchronizePublicUsersList(this)
+                synchronizeLoggedInUser()
+                L.d("UserSynchronization", "synchronize(): Finished successfully")
+            }
         } catch (e: Exception) {
             throw Synchronization.SynchronizationFailedException(e)
         }

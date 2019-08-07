@@ -61,7 +61,7 @@ interface Synchronization {
      * Implements actual synchronization code. Code should be called in a `coroutineScope` block
      * to be sure a failed tasks cancel others but does not affect outer coroutine scope.
      */
-    suspend fun synchronize(): Int
+    suspend fun synchronize()
 
     open class SynchronizationFailedException(cause: Throwable? = null) : Exception(cause)
 }
