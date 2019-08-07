@@ -57,10 +57,12 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         get() = binding?.toolbar?.menu?.findItem(R.id.overview_menu_item_sync)
 
     private val unlockedFinishedSignal = signal {
-        // Explicitly dispatch to IO to be independent which dispatcher calls the signal
-        launch(Dispatchers.IO) {
-            delay(500)
-            viewModel.synchronizeData()
+        if (viewModel.userType is UserType.Server) {
+            // Explicitly dispatch to IO to be independent which dispatcher calls the signal
+            launch(Dispatchers.IO) {
+                delay(500)
+                viewModel.synchronizeData()
+            }
         }
     }
 
@@ -125,9 +127,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         toolbar.menu.findItem(R.id.overview_menu_item_sync).apply {
             val menuIconColor = resources.getColor(R.color.white, null)
             icon.applyTint(menuIconColor)
-
-            val shouldBeVisible = !viewModel.isLocalUser
-            isVisible = shouldBeVisible
+            isVisible = viewModel.userType is UserType.Server
         }
     }
 

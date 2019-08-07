@@ -11,8 +11,8 @@ import kotlinx.coroutines.launch
 
 class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
-    val isLocalUser
-        get() = userManager.loggedInStateStorage.userType is UserType.Local
+    val userType
+        get() = userManager.loggedInStateStorage.userType
 
     val synchronizeDataRequestSendingViewModel = DefaultRequestSendingViewModel()
     val logoutRequestSendingViewModel = DefaultRequestSendingViewModel()
