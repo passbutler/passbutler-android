@@ -153,7 +153,7 @@ fun <T : JSONSerializable> JSONObject.getProtectedValueOrNull(name: String): Pro
         val serialized = getJSONObject(name)
         ProtectedValue.Deserializer<T>().deserializeOrNull(serialized)
     } catch (e: JSONException) {
-        L.d("JSON", "getProtectedValueOrNull(): The ProtectedValue with key '$name' could not be deserialized using the following JSON: $this")
+        L.d("JSON", "getProtectedValueOrNull(): The optional ProtectedValue with key '$name' could not be deserialized using the following JSON: $this (${e.message})")
         null
     }
 }

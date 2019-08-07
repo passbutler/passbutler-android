@@ -33,7 +33,7 @@ abstract class JSONSerializableDeserializer<T : JSONSerializable> {
         return try {
             deserialize(jsonObject)
         } catch (e: JSONException) {
-            L.d("JSONSerializableDeserializer", "deserializeOrNull(): The JSONSerializable could not be deserialized using the following JSON: $jsonObject")
+            L.d("JSONSerializableDeserializer", "deserializeOrNull(): The optional JSONSerializable could not be deserialized using the following JSON: $jsonObject (${e.message})")
             null
         }
     }
@@ -46,7 +46,7 @@ abstract class JSONSerializableDeserializer<T : JSONSerializable> {
             val jsonObject = JSONObject(jsonString)
             deserialize(jsonObject)
         } catch (e: JSONException) {
-            L.d("JSONSerializableDeserializer", "deserializeOrNull(): The JSONSerializable could not be deserialized using the following JSON: $jsonString")
+            L.d("JSONSerializableDeserializer", "deserializeOrNull(): The optional JSONSerializable could not be deserialized using the following JSON: $jsonString (${e.message})")
             null
         }
     }
@@ -64,7 +64,7 @@ fun JSONObject.getBooleanOrNull(name: String): Boolean? {
     return try {
         return optBoolean(name)
     } catch (e: JSONException) {
-        L.d("JSON", "getBooleanOrNull(): The boolean value with key '$name' could not be deserialized using the following JSON: $this")
+        L.d("JSON", "getBooleanOrNull(): The optional boolean value with key '$name' could not be deserialized using the following JSON: $this (${e.message})")
         null
     }
 }
@@ -73,7 +73,7 @@ fun JSONObject.getIntOrNull(name: String): Int? {
     return try {
         return getInt(name)
     } catch (e: JSONException) {
-        L.d("JSON", "getIntOrNull(): The integer value with key '$name' could not be deserialized using the following JSON: $this")
+        L.d("JSON", "getIntOrNull(): The optional integer value with key '$name' could not be deserialized using the following JSON: $this (${e.message})")
         null
     }
 }
@@ -82,7 +82,7 @@ fun JSONObject.getLongOrNull(name: String): Long? {
     return try {
         return getLong(name)
     } catch (e: JSONException) {
-        L.d("JSON", "getLongOrNull(): The long value with key '$name' could not be deserialized using the following JSON: $this")
+        L.d("JSON", "getLongOrNull(): The optional long value with key '$name' could not be deserialized using the following JSON: $this (${e.message})")
         null
     }
 }
@@ -91,7 +91,7 @@ fun JSONObject.getStringOrNull(name: String): String? {
     return try {
         return getString(name)
     } catch (e: JSONException) {
-        L.d("JSON", "getStringOrNull(): The string value with key '$name' could not be deserialized using the following JSON: $this")
+        L.d("JSON", "getStringOrNull(): The optional string value with key '$name' could not be deserialized using the following JSON: $this (${e.message})")
         null
     }
 }
@@ -154,7 +154,7 @@ fun <T : JSONSerializable> JSONObject.getJSONSerializableOrNull(name: String, de
         val serialized = getJSONObject(name)
         deserializer.deserializeOrNull(serialized)
     } catch (e: JSONException) {
-        L.d("JSON", "getJSONSerializableOrNull(): The JSONSerializable with key '$name' could not be deserialized using the following JSON: $this")
+        L.d("JSON", "getJSONSerializableOrNull(): The optional JSONSerializable with key '$name' could not be deserialized using the following JSON: $this (${e.message})")
         null
     }
 }
