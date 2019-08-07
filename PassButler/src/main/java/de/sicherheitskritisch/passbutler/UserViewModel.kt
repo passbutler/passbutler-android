@@ -106,7 +106,7 @@ class UserViewModel private constructor(
         coroutineJob.cancel()
     }
 
-    @Throws(UnlockFailedException::class)
+    @Throws(IllegalStateException::class, UnlockFailedException::class)
     suspend fun unlockMasterEncryptionKey(masterPassword: String) {
         // Execute deserialization/decryption on the dispatcher for CPU load
         withContext(Dispatchers.Default) {
@@ -159,13 +159,12 @@ class UserViewModel private constructor(
                 newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation)
                 protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey))
 
-                // First update user on IO dispatcher
                 withContext(Dispatchers.IO) {
                     val user = createUserModel()
                     userManager.updateUser(user)
                 }
 
-                // Finally the auth webservice needs to re-initialized because of master password change
+                // The auth webservice needs to re-initialized because of master password change
                 userManager.initializeAuthWebservice(newMasterPassword)
             } catch (e: Exception) {
                 throw UpdateMasterPasswordFailedException(e)

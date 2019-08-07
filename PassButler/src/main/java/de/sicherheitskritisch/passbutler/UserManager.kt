@@ -182,6 +182,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
                 authToken = authWebservice.requestAuthToken()
                 authTokenHasChanged = true
 
+                // Update and persist token
                 userType.authToken = authToken
                 loggedInStateStorage.persist()
             }
@@ -210,21 +211,20 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     suspend fun updateUser(user: User) {
         L.d("UserManager", "updateUser(): user = $user")
 
-        try {
-            // First update local user before trying update remotely (which can fail)
-            loggedInUser = user
+        // First update local user before trying update remotely
+        loggedInUser = user
+        localRepository.updateUser(user)
 
-            localRepository.updateUser(user)
-
-            if (loggedInStateStorage.userType is UserType.Server) {
+        // Finally try to update user also on remote
+        if (loggedInStateStorage.userType is UserType.Server) {
+            try {
                 userWebservice.updateUser(user)
+            } catch (e: Exception) {
+                L.w("UserManager", "updateUser(): The user could not be updated!", e)
             }
-        } catch (e: Exception) {
-            L.w("UserManager", "updateUser(): The user could not be updated!", e)
         }
     }
 
-    // TODO: Do not throw multiple exceptions
     @Throws(IllegalStateException::class, Synchronization.SynchronizationFailedException::class)
     suspend fun synchronizeUsers() {
         userWebservice?.let { userWebservice ->
@@ -319,9 +319,11 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
                 userWebservice.requestPublicUserList()
             }
 
+            val loggedInUsername = loggedInUser.username
+
             // Only update the public users, not the logged-in user in this step
-            var localUserList = localUserListDeferred.await().filterNot { it.username == loggedInUser.username }
-            val remoteUserList = remoteUserListDeferred.await().filterNot { it.username == loggedInUser.username }
+            var localUserList = localUserListDeferred.await().filterNot { it.username == loggedInUsername }
+            val remoteUserList = remoteUserListDeferred.await().filterNot { it.username == loggedInUsername }
 
             val newLocalUsers = Differentiation.collectNewItems(localUserList, remoteUserList)
             L.d("UserSynchronization", "synchronizePublicUsersList(): New user items for local database: ${newLocalUsers.buildShortUserList()}")
