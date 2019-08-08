@@ -7,11 +7,13 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
 import com.google.android.material.snackbar.Snackbar
 import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
+import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.validateForm
@@ -20,6 +22,7 @@ import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.Keyboard
 import java.lang.ref.WeakReference
+import java.util.concurrent.Executors
 
 class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFragment {
 
@@ -27,6 +30,10 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
     private var binding: FragmentLockedScreenBinding? = null
     private var unlockRequestSendingViewHandler: UnlockRequestSendingViewHandler? = null
+
+    private val biometricCallbackExecutor by lazy {
+        Executors.newSingleThreadExecutor()
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -93,6 +100,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
                 val password = binding.textInputEditTextPassword.text?.toString()
 
                 if (password != null) {
+                    // TODO: Ask user to auth with biometrics instead of password
                     viewModel.unlockScreenWithPassword(password)
                 }
             }
@@ -104,6 +112,25 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
     private fun removeFormFieldsFocus() {
         binding?.constraintLayoutLockedScreenContainer?.requestFocus()
+    }
+
+    private fun showBiometricPrompt() {
+        activity?.let { activity ->
+            val authenticationCallback = BiometricAuthenticationCallback()
+            val biometricPrompt = BiometricPrompt(activity, biometricCallbackExecutor, authenticationCallback)
+
+            // TODO: Set proper infos
+            val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Title")
+                .setSubtitle("Subtitle")
+                .setDescription("Description")
+                .setNegativeButtonText("Cancel")
+                .build()
+
+            // TODO: Use crypto object
+            val cryptoObject: BiometricPrompt.CryptoObject? = null
+            biometricPrompt.authenticate(biometricPromptInfo)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -161,6 +188,20 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
         override fun onRequestFinishedSuccessfully() {
             fragment?.popBackstack()
+        }
+    }
+
+    private class BiometricAuthenticationCallback : BiometricPrompt.AuthenticationCallback() {
+        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+            L.d("LockedScreenFragment", "onAuthenticationError(): errorCode = $errorCode, errString = '$errString'")
+        }
+
+        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+            L.d("LockedScreenFragment", "onAuthenticationSucceeded(): result = $result")
+        }
+
+        override fun onAuthenticationFailed() {
+            L.d("LockedScreenFragment", "onAuthenticationFailed()")
         }
     }
 
