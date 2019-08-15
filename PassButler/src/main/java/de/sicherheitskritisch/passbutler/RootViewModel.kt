@@ -65,6 +65,25 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         }
     }
 
+    fun unlockScreenWithBiometrics() {
+        cryptoResourcesJob?.cancel()
+        cryptoResourcesJob = launch {
+            unlockScreenRequestSendingViewModel.isLoading.postValue(true)
+
+            try {
+                val masterPassword = "TODO"
+                loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
+
+                unlockScreenRequestSendingViewModel.isLoading.postValue(false)
+                unlockScreenRequestSendingViewModel.requestFinishedSuccessfully.emit()
+            } catch (exception: Exception) {
+                L.w("RootViewModel", "unlockScreenWithBiometrics(): The unlock failed with exception!", exception)
+                unlockScreenRequestSendingViewModel.isLoading.postValue(false)
+                unlockScreenRequestSendingViewModel.requestError.postValue(exception)
+            }
+        }
+    }
+
     fun applicationWasPaused() {
         startLockScreenTimer()
     }

@@ -31,6 +31,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
     override val transitionType = AnimatedFragment.TransitionType.FADE
 
+    // TODO: Also check if master password was encrypted with biometrics
     val biometricsButtonVisible: Boolean
         get() = Biometrics.isHardwareCapable && Biometrics.hasEnrolledBiometrics
 
@@ -131,19 +132,25 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     }
 
     private fun showBiometricPrompt() {
-        activity?.let { activity ->
-            val authenticationCallback = BiometricAuthenticationCallback()
-            val biometricPrompt = BiometricPrompt(activity, biometricCallbackExecutor, authenticationCallback)
+        // TODO: Put business logic to viewmodel, also do not block UI thread with IO
+        val masterPasswordEncryptionKeyCipher = Biometrics.obtainEncryptionKeyInstance()
 
-            val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
-                .setTitle(getString(R.string.locked_screen_biometrics_prompt_title))
-                .setSubtitle(getString(R.string.locked_screen_biometrics_prompt_subtitle))
-                .setNegativeButtonText(getString(R.string.locked_screen_biometrics_prompt_cancel_button_text))
-                .build()
+        if (Biometrics.initializeEncryptionKey(masterPasswordEncryptionKeyCipher)) {
+            activity?.let { activity ->
+                val authenticationCallback = BiometricAuthenticationCallback()
+                val biometricPrompt = BiometricPrompt(activity, biometricCallbackExecutor, authenticationCallback)
 
-            // TODO: Use crypto object
-            val cryptoObject: BiometricPrompt.CryptoObject? = null
-            biometricPrompt.authenticate(biometricPromptInfo)
+                val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
+                    .setTitle(getString(R.string.locked_screen_biometrics_prompt_title))
+                    .setSubtitle(getString(R.string.locked_screen_biometrics_prompt_subtitle))
+                    .setNegativeButtonText(getString(R.string.locked_screen_biometrics_prompt_cancel_button_text))
+                    .build()
+
+                val cryptoObject = BiometricPrompt.CryptoObject(masterPasswordEncryptionKeyCipher)
+                biometricPrompt.authenticate(biometricPromptInfo, cryptoObject)
+            }
+        } else {
+            // TODO: error, fingerprint not valid, must be re-added
         }
     }
 
@@ -224,6 +231,9 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
             L.d("LockedScreenFragment", "onAuthenticationSucceeded(): result = $result")
+
+            // TODO: Decrypt master password and unlock
+            val masterPasswordEncryptionKeyCipher = result.cryptoObject?.cipher
         }
 
         override fun onAuthenticationFailed() {
