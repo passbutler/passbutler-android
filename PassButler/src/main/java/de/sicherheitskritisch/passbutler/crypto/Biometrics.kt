@@ -16,6 +16,7 @@ import javax.crypto.SecretKey
 
 object Biometrics {
 
+    // TODO: Encrypt master key instead of master password?
     private const val MASTER_PASSWORD_ENCRYPTION_KEY_NAME = "BiometricsMasterPasswordEncryptionKey"
 
     private val applicationContext

@@ -159,6 +159,8 @@ class UserViewModel private constructor(
                 newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation)
                 protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey))
 
+                // TODO: Update biometrics master password encryption key
+
                 withContext(Dispatchers.IO) {
                     val user = createUserModel()
                     userManager.updateUser(user)

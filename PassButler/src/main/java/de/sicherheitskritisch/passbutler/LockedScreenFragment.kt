@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import java.util.concurrent.Executor
 
+// TODO: Put logic of to dedicated `LockedScreenViewModel` instead of `RootViewModel`?
 class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFragment {
 
     override val transitionType = AnimatedFragment.TransitionType.FADE
@@ -224,6 +225,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         }
     }
 
+    // TODO: Move to ViewModel?
     private class BiometricAuthenticationCallback : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
             L.d("LockedScreenFragment", "onAuthenticationError(): errorCode = $errorCode, errString = '$errString'")
