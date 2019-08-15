@@ -4,6 +4,12 @@
 
     <data>
 
+        <import type="android.view.View" />
+
+        <variable
+            name="fragment"
+            type="de.sicherheitskritisch.passbutler.LockedScreenFragment" />
+
         <variable
             name="viewModel"
             type="de.sicherheitskritisch.passbutler.RootViewModel" />
@@ -132,6 +138,7 @@
                 android:drawableTint="@color/white"
                 android:padding="@dimen/button_icon_padding"
                 android:text="@string/locked_screen_button_biometrics_text"
+                android:visibility="@{fragment.biometricsButtonVisible ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

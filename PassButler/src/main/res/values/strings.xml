@@ -73,6 +73,10 @@
     <string name="locked_screen_button_password_text">Entsperren mit Passwort</string>
     <string name="locked_screen_button_biometrics_text">Biometrisch entsperren</string>
 
+    <string name="locked_screen_biometrics_prompt_title">Pass Butler entsperren</string>
+    <string name="locked_screen_biometrics_prompt_subtitle">Entsperren Sie nun Pass Butler</string>
+    <string name="locked_screen_biometrics_prompt_cancel_button_text">Abbrechen</string>
+
     <string name="locked_screen_unlock_failed_general_title">Entsperren hat leider nicht geklappt</string>
 
 </resources>

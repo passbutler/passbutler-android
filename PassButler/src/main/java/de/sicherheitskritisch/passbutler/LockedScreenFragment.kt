@@ -17,22 +17,28 @@ import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.validateForm
+import de.sicherheitskritisch.passbutler.crypto.Biometrics
 import de.sicherheitskritisch.passbutler.databinding.FragmentLockedScreenBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.Keyboard
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
-import java.util.concurrent.Executors
+import java.util.concurrent.Executor
 
 class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFragment {
 
     override val transitionType = AnimatedFragment.TransitionType.FADE
 
+    val biometricsButtonVisible: Boolean
+        get() = Biometrics.isHardwareCapable && Biometrics.hasEnrolledBiometrics
+
     private var binding: FragmentLockedScreenBinding? = null
     private var unlockRequestSendingViewHandler: UnlockRequestSendingViewHandler? = null
 
     private val biometricCallbackExecutor by lazy {
-        Executors.newSingleThreadExecutor()
+        BiometricAuthenticationCallbackExecutor()
     }
 
     override fun onAttach(context: Context) {
@@ -54,11 +60,13 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate<FragmentLockedScreenBinding>(inflater, R.layout.fragment_locked_screen, container, false).also { binding ->
             binding.lifecycleOwner = this
+            binding.fragment = this
             binding.viewModel = viewModel
 
             restoreSavedInstance(binding, savedInstanceState)
             setupDebugUnlockPresets(binding)
-            setupUnlockButton(binding)
+            setupUnlockWithPasswordButton(binding)
+            setupUnlockWithBiometricsButton(binding)
         }
 
         return binding?.root
@@ -75,7 +83,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         }
     }
 
-    private fun setupUnlockButton(binding: FragmentLockedScreenBinding) {
+    private fun setupUnlockWithPasswordButton(binding: FragmentLockedScreenBinding) {
         binding.buttonUnlockPassword.setOnClickListener {
             unlockWithPasswordClicked(binding)
         }
@@ -109,8 +117,17 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         }
     }
 
-    private fun removeFormFieldsFocus() {
-        binding?.constraintLayoutLockedScreenContainer?.requestFocus()
+    private fun setupUnlockWithBiometricsButton(binding: FragmentLockedScreenBinding) {
+        binding.buttonUnlockBiometrics.setOnClickListener {
+            unlockWithBiometricsClicked()
+        }
+    }
+
+    private fun unlockWithBiometricsClicked() {
+        // Remove focus before unlock to be sure keyboard is hidden
+        removeFormFieldsFocus()
+
+        showBiometricPrompt()
     }
 
     private fun showBiometricPrompt() {
@@ -118,18 +135,20 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
             val authenticationCallback = BiometricAuthenticationCallback()
             val biometricPrompt = BiometricPrompt(activity, biometricCallbackExecutor, authenticationCallback)
 
-            // TODO: Set proper infos
             val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
-                .setTitle("Title")
-                .setSubtitle("Subtitle")
-                .setDescription("Description")
-                .setNegativeButtonText("Cancel")
+                .setTitle(getString(R.string.locked_screen_biometrics_prompt_title))
+                .setSubtitle(getString(R.string.locked_screen_biometrics_prompt_subtitle))
+                .setNegativeButtonText(getString(R.string.locked_screen_biometrics_prompt_cancel_button_text))
                 .build()
 
             // TODO: Use crypto object
             val cryptoObject: BiometricPrompt.CryptoObject? = null
             biometricPrompt.authenticate(biometricPromptInfo)
         }
+    }
+
+    private fun removeFormFieldsFocus() {
+        binding?.constraintLayoutLockedScreenContainer?.requestFocus()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -187,6 +206,14 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
         override fun onRequestFinishedSuccessfully() {
             fragment?.popBackstack()
+        }
+    }
+
+    private inner class BiometricAuthenticationCallbackExecutor : Executor {
+        override fun execute(runnable: Runnable) {
+            launch(Dispatchers.IO) {
+                runnable.run()
+            }
         }
     }
 
