@@ -64,13 +64,14 @@
 
     <!-- Locked screen -->
 
-    <string name="locked_screen_header">PassButler ist gesperrt</string>
-    <string name="locked_screen_description_password">Bitte entsperren Sie PassButler im Folgendem mit Ihrem Passwort:</string>
+    <string name="locked_screen_header">Pass Butler ist gesperrt</string>
+    <string name="locked_screen_description_password">Bitte entsperren Sie Pass Butler mit Ihrem Passwort oder via Biometrie:</string>
 
     <string name="locked_screen_password_hint">Passwort</string>
     <string name="locked_screen_password_validation_error_empty">Passwort nicht ausgefüllt</string>
 
-    <string name="locked_screen_button_text">Entsperren</string>
+    <string name="locked_screen_button_password_text">Entsperren mit Passwort</string>
+    <string name="locked_screen_button_biometrics_text">Biometrisch entsperren</string>
 
     <string name="locked_screen_unlock_failed_general_title">Entsperren hat leider nicht geklappt</string>
 

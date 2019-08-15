@@ -76,7 +76,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     }
 
     private fun setupUnlockButton(binding: FragmentLockedScreenBinding) {
-        binding.buttonUnlock.setOnClickListener {
+        binding.buttonUnlockPassword.setOnClickListener {
             unlockWithPasswordClicked(binding)
         }
     }
@@ -100,7 +100,6 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
                 val password = binding.textInputEditTextPassword.text?.toString()
 
                 if (password != null) {
-                    // TODO: Ask user to auth with biometrics instead of password
                     viewModel.unlockScreenWithPassword(password)
                 }
             }
