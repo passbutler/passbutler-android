@@ -66,7 +66,7 @@
     <style name="PrimaryButton"
            parent="TextAppearance.AppCompat.Button">
         <item name="android:textSize">15sp</item>
-        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:background">@drawable/selector_button_background</item>
         <item name="android:textColor">@color/white</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:ellipsize">end</item>
