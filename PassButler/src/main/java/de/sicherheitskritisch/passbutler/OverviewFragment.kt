@@ -18,7 +18,6 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
-import de.sicherheitskritisch.passbutler.base.createMainDispatcher
 import de.sicherheitskritisch.passbutler.base.signal
 import de.sicherheitskritisch.passbutler.databinding.FragmentOverviewBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
@@ -27,22 +26,14 @@ import de.sicherheitskritisch.passbutler.ui.VisibilityHideMode
 import de.sicherheitskritisch.passbutler.ui.applyTint
 import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
 import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
-import kotlin.coroutines.CoroutineContext
 
-class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment, CoroutineScope {
+class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment {
 
     override val transitionType = AnimatedFragment.TransitionType.SLIDE
-
-    override val coroutineContext: CoroutineContext
-        get() = createMainDispatcher() + coroutineJob
-
-    private val coroutineJob = SupervisorJob()
 
     private var loggedInUserViewModel: UserViewModel? = null
 
@@ -167,7 +158,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         synchronizeDataRequestSendingViewHandler?.unregisterObservers()
         logoutRequestSendingViewHandler?.unregisterObservers()
         loggedInUserViewModel?.unlockFinished?.removeSignal(unlockedFinishedSignal)
-        coroutineJob.cancel()
         super.onDestroy()
     }
 
