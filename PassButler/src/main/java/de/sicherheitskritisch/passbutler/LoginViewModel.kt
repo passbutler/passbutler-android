@@ -2,17 +2,17 @@ package de.sicherheitskritisch.passbutler
 
 import android.app.Application
 import android.net.Uri
-import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
-    val isLocalLogin = MutableLiveData<Boolean>().apply { value = false }
+    val isLocalLogin = NonNullMutableLiveData(false)
 
     val loginRequestSendingViewModel = DefaultRequestSendingViewModel()
 
@@ -27,7 +27,7 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
             loginRequestSendingViewModel.isLoading.postValue(true)
 
             try {
-                if (isLocalLogin.value == true) {
+                if (isLocalLogin.value) {
                     userManager.loginLocalUser(username, masterPassword)
                 } else {
                     val serverUrl = Uri.parse(serverUrlString)
