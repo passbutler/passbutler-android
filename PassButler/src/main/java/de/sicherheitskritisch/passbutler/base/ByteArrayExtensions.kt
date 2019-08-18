@@ -17,6 +17,13 @@ fun ByteArray?.toHexString(): String {
 }
 
 /**
+ * Converts the `ByteArray` to `String` with UTF-8 charset (basically what the `String()` constructor does but in explicit way).
+ */
+fun ByteArray.toUTF8String(): String {
+    return toString(Charsets.UTF_8)
+}
+
+/**
  * Clears out a `ByteArray` for security reasons (for crypto keys etc.).
  */
 fun ByteArray.clear() {

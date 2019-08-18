@@ -7,6 +7,7 @@ import de.sicherheitskritisch.passbutler.base.getByteArray
 import de.sicherheitskritisch.passbutler.base.putByteArray
 import de.sicherheitskritisch.passbutler.base.putJSONSerializable
 import de.sicherheitskritisch.passbutler.base.toHexString
+import de.sicherheitskritisch.passbutler.base.toUTF8String
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -129,13 +130,6 @@ class ProtectedValue<T : JSONSerializable>(
 private fun <T : JSONSerializable> T.toByteArray(): ByteArray {
     val valueAsJsonSerializedString = this.serialize().toString()
     return valueAsJsonSerializedString.toByteArray(Charsets.UTF_8)
-}
-
-/**
- * Converts the `ByteArray` to `String` with UTF-8 charset (basically what the `String()` constructor does but in explicit way).
- */
-private fun ByteArray.toUTF8String(): String {
-    return toString(Charsets.UTF_8)
 }
 
 /**
