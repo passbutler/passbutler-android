@@ -241,6 +241,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
 
     var userType: UserType? = null
+    var encryptedMasterPassword: ByteArray? = null
 
     suspend fun restore() {
         withContext(Dispatchers.IO) {
@@ -253,6 +254,9 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
                 (username != null) -> UserType.Local(username)
                 else -> null
             }
+
+            // TODO: Restore Base 64 string to bytearray
+            encryptedMasterPassword = sharedPreferences.getString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, null)
         }
     }
 
@@ -264,12 +268,17 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
                 putString(SHARED_PREFERENCES_KEY_USERNAME, userType?.username)
                 putString(SHARED_PREFERENCES_KEY_SERVERURL, (userType as? UserType.Server)?.serverUrl?.toString())
                 putString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, (userType as? UserType.Server)?.authToken?.serialize()?.toString())
+
+                // TODO: Persist as Base 64 string from bytearray
+                // TODO: Check if `null` set also gets null when retrieve string via `getString()`
+                putString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, encryptedMasterPassword)
             }.commit()
         }
     }
 
     suspend fun reset() {
         userType = null
+        encryptedMasterPassword = null
         persist()
     }
 
@@ -277,6 +286,7 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
         private const val SHARED_PREFERENCES_KEY_USERNAME = "username"
         private const val SHARED_PREFERENCES_KEY_SERVERURL = "serverUrl"
         private const val SHARED_PREFERENCES_KEY_AUTH_TOKEN = "authToken"
+        private const val SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD = "encryptedMasterPassword"
     }
 }
 

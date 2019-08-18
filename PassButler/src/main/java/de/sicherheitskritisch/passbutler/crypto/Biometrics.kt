@@ -10,18 +10,10 @@ import androidx.core.hardware.fingerprint.FingerprintManagerCompat
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.IOException
-import java.security.InvalidAlgorithmParameterException
 import java.security.InvalidKeyException
 import java.security.KeyStore
-import java.security.KeyStoreException
-import java.security.NoSuchAlgorithmException
-import java.security.NoSuchProviderException
-import java.security.UnrecoverableKeyException
-import java.security.cert.CertificateException
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
-import javax.crypto.NoSuchPaddingException
 import javax.crypto.SecretKey
 
 object Biometrics {
@@ -66,69 +58,114 @@ object Biometrics {
         KeyGenerator.getInstance(KEY_ALGORITHM_AES, "AndroidKeyStore")
     }
 
-    @Throws(NoSuchAlgorithmException::class, NoSuchPaddingException::class)
+    @Throws(ObtainKeyFailedException::class)
     fun obtainKeyInstance(): Cipher {
-        return Cipher.getInstance("$KEY_ALGORITHM_AES/${KeyProperties.BLOCK_MODE_CBC}/${KeyProperties.ENCRYPTION_PADDING_PKCS7}")
+        return try {
+            Cipher.getInstance("$KEY_ALGORITHM_AES/${KeyProperties.BLOCK_MODE_CBC}/${KeyProperties.ENCRYPTION_PADDING_PKCS7}")
+        } catch (e: Exception) {
+            throw ObtainKeyFailedException(e)
+        }
     }
 
-    @Throws(CertificateException::class, InvalidAlgorithmParameterException::class, IOException::class, KeyStoreException::class, NoSuchAlgorithmException::class, NoSuchProviderException::class)
+    @Throws(GenerateKeyFailedException::class)
     suspend fun generateKey(keyName: String) {
         withContext(Dispatchers.IO) {
-            val loadKeyStoreParameter = null
-            androidKeyStore.load(loadKeyStoreParameter)
+            try {
+                val loadKeyStoreParameter = null
+                androidKeyStore.load(loadKeyStoreParameter)
 
-            // The key must only be used for encryption and decryption
-            val keyUsagePurposes = KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                // The key must only be used for encryption and decryption
+                val keyUsagePurposes = KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
 
-            val keyParameterBuilder = KeyGenParameterSpec.Builder(keyName, keyUsagePurposes)
-                .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
-                // Biometric authentication is enforced before key usage:
-                .setUserAuthenticationRequired(true)
-                // The key gets invalidated if Android lock screen is disabled or new biometrics is been enrolled:
-                .setInvalidatedByBiometricEnrollment(true)
+                val keyParameterBuilder = KeyGenParameterSpec.Builder(keyName, keyUsagePurposes)
+                    .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
+                    // Biometric authentication is enforced before key usage:
+                    .setUserAuthenticationRequired(true)
+                    // The key gets invalidated if Android lock screen is disabled or new biometrics is been enrolled:
+                    .setInvalidatedByBiometricEnrollment(true)
 
-            val keyParameters = keyParameterBuilder.build()
-            androidKeyGenerator.init(keyParameters)
+                val keyParameters = keyParameterBuilder.build()
+                androidKeyGenerator.init(keyParameters)
 
-            androidKeyGenerator.generateKey()
+                androidKeyGenerator.generateKey()
+            } catch (e: Exception) {
+                throw GenerateKeyFailedException(e)
+            }
         }
     }
 
-    @Throws(CertificateException::class, InvalidKeyException::class, IOException::class, KeyStoreException::class, NoSuchAlgorithmException::class, UnrecoverableKeyException::class)
-    suspend fun initializeKeyForEncryption(keyName: String, encryptionKeyCipher: Cipher) {
-        initializeKey(keyName, encryptionKeyCipher, Cipher.ENCRYPT_MODE)
+    @Throws(InitializeKeyFailedException::class)
+    suspend fun initializeKeyForEncryption(keyName: String, encryptionKey: Cipher) {
+        initializeKey(keyName, encryptionKey, Cipher.ENCRYPT_MODE)
     }
 
-    @Throws(CertificateException::class, InvalidKeyException::class, IOException::class, KeyStoreException::class, NoSuchAlgorithmException::class, UnrecoverableKeyException::class)
-    suspend fun initializeKeyForDecryption(keyName: String, decryptionKeyCipher: Cipher) {
-        initializeKey(keyName, decryptionKeyCipher, Cipher.DECRYPT_MODE)
+    @Throws(InitializeKeyFailedException::class)
+    suspend fun initializeKeyForDecryption(keyName: String, decryptionKey: Cipher) {
+        initializeKey(keyName, decryptionKey, Cipher.DECRYPT_MODE)
     }
 
-    @Throws(
-        CertificateException::class,
-        IllegalArgumentException::class,
-        InvalidKeyException::class,
-        IOException::class,
-        KeyStoreException::class,
-        NoSuchAlgorithmException::class,
-        UnrecoverableKeyException::class
-    )
-    private suspend fun initializeKey(keyName: String, encryptionKeyCipher: Cipher, cipherMode: Int) {
-        if (cipherMode != Cipher.ENCRYPT_MODE || cipherMode != Cipher.DECRYPT_MODE) {
-            throw IllegalArgumentException("The cipher moce is invalid!")
-        }
-
+    @Throws(InitializeKeyFailedException::class)
+    private suspend fun initializeKey(keyName: String, encryptionKey: Cipher, cipherMode: Int) {
         withContext(Dispatchers.IO) {
-            val loadKeyStoreParameter = null
-            androidKeyStore.load(loadKeyStoreParameter)
+            try {
+                if (cipherMode != Cipher.ENCRYPT_MODE && cipherMode != Cipher.DECRYPT_MODE) {
+                    throw IllegalArgumentException("The cipher mode is invalid!")
+                }
 
-            val secretKey = androidKeyStore.getKey(keyName, null) as? SecretKey ?: throw InvalidKeyException("The key was not found!")
-            encryptionKeyCipher.init(cipherMode, secretKey)
+                val loadKeyStoreParameter = null
+                androidKeyStore.load(loadKeyStoreParameter)
+
+                val secretKey = androidKeyStore.getKey(keyName, null) as? SecretKey ?: throw InvalidKeyException("The key was not found!")
+                encryptionKey.init(cipherMode, secretKey)
+
+            } catch (e: Exception) {
+                throw InitializeKeyFailedException(e)
+            }
         }
     }
 
-    // TODO: deleteKey fun
-    // TODO: encryptData fun
-    // TODO: decryptData fun
+    @Throws(EncryptionFailedException::class)
+    suspend fun encryptData(encryptionKey: Cipher, data: ByteArray): ByteArray? {
+        return withContext(Dispatchers.Default) {
+            try {
+                encryptionKey.doFinal(data)
+            } catch (e: Exception) {
+                throw EncryptionFailedException(e)
+            }
+        }
+    }
+
+
+    @Throws(DecryptionFailedException::class)
+    suspend fun decryptData(decryptionKey: Cipher, data: ByteArray): ByteArray {
+        return withContext(Dispatchers.Default) {
+            try {
+                decryptionKey.doFinal(data)
+            } catch (e: Exception) {
+                throw DecryptionFailedException(e)
+            }
+        }
+    }
+
+    @Throws(RemoveKeyFailedException::class)
+    suspend fun removeKey(keyName: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                val loadKeyStoreParameter = null
+                androidKeyStore.load(loadKeyStoreParameter)
+
+                androidKeyStore.deleteEntry(keyName)
+            } catch (e: Exception) {
+                throw RemoveKeyFailedException(e)
+            }
+        }
+    }
+
+    class ObtainKeyFailedException(cause: Throwable) : Exception(cause)
+    class GenerateKeyFailedException(cause: Throwable) : Exception(cause)
+    class InitializeKeyFailedException(cause: Throwable) : Exception(cause)
+    class EncryptionFailedException(cause: Throwable) : Exception(cause)
+    class DecryptionFailedException(cause: Throwable) : Exception(cause)
+    class RemoveKeyFailedException(cause: Throwable) : Exception(cause)
 }

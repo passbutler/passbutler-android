@@ -22,6 +22,7 @@ import de.sicherheitskritisch.passbutler.base.validateForm
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
 import de.sicherheitskritisch.passbutler.databinding.FragmentLockedScreenBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
+import de.sicherheitskritisch.passbutler.ui.BaseFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.Keyboard
 import kotlinx.coroutines.Dispatchers
@@ -34,12 +35,13 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
     override val transitionType = AnimatedFragment.TransitionType.FADE
 
+    // TODO: LiveData
     val biometricsButtonVisible: Boolean
         get() = Biometrics.isHardwareCapable && Biometrics.isKeyguardSecure && Biometrics.hasEnrolledBiometrics
 
-    // TODO: Also check if master password was encrypted with biometrics
+    // TODO: LiveData
     val biometricsButtonEnabled: Boolean
-        get() = biometricsButtonVisible
+        get() = biometricsButtonVisible && viewModel.userManager.loggedInStateStorage.encryptedMasterPassword != null
 
     private var binding: FragmentLockedScreenBinding? = null
     private var unlockRequestSendingViewHandler: UnlockRequestSendingViewHandler? = null
@@ -115,7 +117,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
                 val password = binding.textInputEditTextPassword.text?.toString()
 
                 if (password != null) {
-                    viewModel.unlockScreen(password)
+                    viewModel.unlockScreenWithPassword(password)
                 }
             }
             is FormValidationResult.Invalid -> {
@@ -141,7 +143,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         launch(Dispatchers.IO) {
             try {
                 val masterPasswordEncryptionKeyCipher = Biometrics.obtainKeyInstance()
-                Biometrics.initializeKeyForEncryption(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, masterPasswordEncryptionKeyCipher)
+                Biometrics.initializeKeyForDecryption(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, masterPasswordEncryptionKeyCipher)
 
                 withContext(Dispatchers.Main) {
                     activity?.let { activity ->
@@ -158,17 +160,15 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
                     }
                 }
             } catch (e: Exception) {
-                if (e is KeyPermanentlyInvalidatedException) {
-                    L.d("LockedScreenFragment", "showBiometricPrompt(): The biometric authentication failed because key is invalidated, disable biometrics unlock!")
+                if (e is Biometrics.InitializeKeyFailedException && e.cause is KeyPermanentlyInvalidatedException) {
+                    L.d("LockedScreenFragment", "showBiometricPrompt(): The biometric authentication failed because key state is invalidated - disable biometrics unlock!")
                     viewModel.loggedInUserViewModel?.disableBiometricsUnlock()
                 } else {
                     L.w("LockedScreenFragment", "showBiometricPrompt(): The biometric authentication failed!", e)
                 }
 
                 withContext(Dispatchers.Main) {
-                    binding?.root?.let {
-                        Snackbar.make(it, getString(R.string.locked_screen_biometrics_unlock_failed_general_title), Snackbar.LENGTH_SHORT).show()
-                    }
+                    showError(binding?.root, getString(R.string.locked_screen_biometrics_unlock_failed_missing_key_title))
                 }
             }
         }
@@ -212,16 +212,25 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     private inner class BiometricAuthenticationCallback : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
             L.d("LockedScreenFragment", "onAuthenticationError(): errorCode = $errorCode, errString = '$errString'")
-            // TODO: Handle error in any way?
+
+            // TODO: Handle error here ok?
+            launch {
+                showError(binding?.root, getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
+            }
         }
 
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
             L.d("LockedScreenFragment", "onAuthenticationSucceeded(): result = $result")
 
-            // TODO: Decrypt master password and unlock
-            val masterPasswordEncryptionKeyCipher = result.cryptoObject?.cipher
-            val masterPassword = "TODO"
-            viewModel.unlockScreen(masterPassword)
+            val masterPasswordDecryptionKey = result.cryptoObject?.cipher
+
+            if (masterPasswordDecryptionKey != null) {
+                viewModel.unlockScreenWithBiometrics(masterPasswordDecryptionKey)
+            } else {
+                launch {
+                    showError(binding?.root, getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
+                }
+            }
         }
 
         override fun onAuthenticationFailed() {
@@ -253,10 +262,8 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         }
 
         override fun onRequestErrorChanged(requestError: Throwable) {
-            binding?.root?.let {
-                resources?.getString(R.string.locked_screen_unlock_failed_general_title)?.let { snackbarMessage ->
-                    Snackbar.make(it, snackbarMessage, Snackbar.LENGTH_SHORT).show()
-                }
+            resources?.getString(R.string.locked_screen_unlock_failed_general_title)?.let { snackbarMessage ->
+                fragment?.showError(binding?.root, snackbarMessage)
             }
         }
 
@@ -269,5 +276,12 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         private const val FORM_FIELD_PASSWORD = "FORM_FIELD_PASSWORD"
 
         fun newInstance() = LockedScreenFragment()
+    }
+}
+
+// TODO: Move to `BaseFragment`?
+fun BaseFragment.showError(rootView: View?, errorMessage: String) {
+    rootView?.let {
+        Snackbar.make(it, errorMessage, Snackbar.LENGTH_SHORT).show()
     }
 }

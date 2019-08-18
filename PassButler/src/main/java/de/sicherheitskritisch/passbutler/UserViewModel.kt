@@ -6,6 +6,7 @@ import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.SignalEmitter
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.optionalContentNotEquals
+import de.sicherheitskritisch.passbutler.crypto.Biometrics
 import de.sicherheitskritisch.passbutler.crypto.Derivation
 import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
@@ -159,7 +160,8 @@ class UserViewModel private constructor(
                 newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation)
                 protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey))
 
-                // TODO: disable biometrics unlock
+                // Disable biometrics because master password re-encryption would require biometrics authentication and made flow more complex
+                disableBiometricsUnlock()
 
                 withContext(Dispatchers.IO) {
                     val user = createUserModel()
@@ -179,18 +181,37 @@ class UserViewModel private constructor(
     suspend fun enableBiometricsUnlock(masterPassword: String) {
         // Execute encryption on the dispatcher for CPU load
         withContext(Dispatchers.Default) {
-            // TODO: delete old key?
-            // TODO: generate key
-            // TODO: init key for encryption
-            // TODO: encrypt masterpassword with key
-            // TODO: store encrypted data in shared preferences?
+
+            try {
+                // TODO: Better remove key before?
+                Biometrics.generateKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
+
+                // TODO: init key for encryption
+                // TODO: encrypt master password with key
+
+                val encryptedMasterPassword = ByteArray(0)
+
+                userManager.loggedInStateStorage.encryptedMasterPassword = encryptedMasterPassword
+                userManager.loggedInStateStorage.persist()
+            } catch (e: Exception) {
+                L.w("UserViewModel", "enableBiometricsUnlock(): The biometric unlock could not be enabled!", e)
+
+                // Try to disable biometrics unlock if anything failed
+                disableBiometricsUnlock()
+            }
         }
     }
 
     suspend fun disableBiometricsUnlock() {
         withContext(Dispatchers.IO) {
-            // TODO: delete old key
-            // TODO: remove encrypted data in shared preferences?
+            try {
+                Biometrics.removeKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
+
+                userManager.loggedInStateStorage.encryptedMasterPassword = null
+                userManager.loggedInStateStorage.persist()
+            } catch (e: Exception) {
+                L.w("UserViewModel", "disableBiometricsUnlock(): The biometric unlock could not be disabled!", e)
+            }
         }
     }
 
