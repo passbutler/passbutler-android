@@ -136,7 +136,6 @@ object Biometrics {
         }
     }
 
-
     @Throws(DecryptionFailedException::class)
     suspend fun decryptData(decryptionKey: Cipher, data: ByteArray): ByteArray {
         return withContext(Dispatchers.Default) {

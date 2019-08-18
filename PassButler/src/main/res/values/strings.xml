@@ -72,8 +72,8 @@
 
     <string name="locked_screen_button_password_text">Entsperren mit Passwort</string>
 
-    <string name="locked_screen_button_biometrics_text">Biometrisch entsperren</string>
-    <string name="locked_screen_button_biometrics_disabled_hint_text">Aktivieren Sie biometrisches Entsperren in den Einstellungen von Pass Butler, um diese Funktion nutzen zu können.</string>
+    <string name="locked_screen_button_biometric_text">Biometrisch entsperren</string>
+    <string name="locked_screen_button_biometric_disabled_hint_text">Aktivieren Sie biometrisches Entsperren in den Einstellungen von Pass Butler, um diese Funktion nutzen zu können.</string>
 
     <string name="locked_screen_biometrics_prompt_title">Pass Butler entsperren</string>
     <string name="locked_screen_biometrics_prompt_subtitle">Entsperren Sie nun Pass Butler</string>

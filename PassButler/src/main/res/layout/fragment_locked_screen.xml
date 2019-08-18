@@ -121,7 +121,7 @@
                 android:drawableTint="@color/white"
                 android:padding="@dimen/button_icon_padding"
                 android:text="@string/locked_screen_button_password_text"
-                app:layout_constraintBottom_toTopOf="@id/button_unlock_biometrics"
+                app:layout_constraintBottom_toTopOf="@id/button_unlock_biometric"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textInputLayout_password"
@@ -129,7 +129,7 @@
                 />
 
             <Button
-                android:id="@+id/button_unlock_biometrics"
+                android:id="@+id/button_unlock_biometric"
                 style="@style/PrimaryButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -140,9 +140,9 @@
                 android:drawableTint="@color/white"
                 android:enabled="@{safeUnbox(userViewModel.biometricUnlockEnabled)}"
                 android:padding="@dimen/button_icon_padding"
-                android:text="@string/locked_screen_button_biometrics_text"
+                android:text="@string/locked_screen_button_biometric_text"
                 android:visibility="@{safeUnbox(userViewModel.biometricUnlockAvailable) ? View.VISIBLE : View.GONE}"
-                app:layout_constraintBottom_toTopOf="@+id/textView_button_unlock_biometrics_disabled_hint"
+                app:layout_constraintBottom_toTopOf="@+id/textView_button_unlock_biometric_disabled_hint"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/button_unlock_password"
@@ -151,7 +151,7 @@
 
             <TextView
                 style="@style/TextPassageSmall"
-                android:id="@+id/textView_button_unlock_biometrics_disabled_hint"
+                android:id="@+id/textView_button_unlock_biometric_disabled_hint"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="64dp"
@@ -161,9 +161,9 @@
                 android:visibility="@{safeUnbox(userViewModel.biometricUnlockEnabled) == false ? View.VISIBLE : View.INVISIBLE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:text="@string/locked_screen_button_biometrics_disabled_hint_text"
+                android:text="@string/locked_screen_button_biometric_disabled_hint_text"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/button_unlock_biometrics"
+                app:layout_constraintTop_toBottomOf="@+id/button_unlock_biometric"
                 app:layout_constraintVertical_chainStyle="packed" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

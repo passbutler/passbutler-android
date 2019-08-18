@@ -169,8 +169,8 @@ class UserViewModel private constructor(
                 newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation)
                 protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey))
 
-                // Disable biometrics because master password re-encryption would require biometrics authentication and made flow more complex
-                disableBiometricsUnlock()
+                // Disable biometric unlock because master password re-encryption would require biometric authentication and made flow more complex
+                disableBiometricUnlock()
 
                 withContext(Dispatchers.IO) {
                     val user = createUserModel()
@@ -187,7 +187,7 @@ class UserViewModel private constructor(
         }
     }
 
-    suspend fun enableBiometricsUnlock(masterPassword: String) {
+    suspend fun enableBiometricUnlock(masterPassword: String) {
         // Execute encryption on the dispatcher for CPU load
         withContext(Dispatchers.Default) {
 
@@ -205,15 +205,15 @@ class UserViewModel private constructor(
 
                 biometricUnlockEnabled.notifyChange()
             } catch (e: Exception) {
-                L.w("UserViewModel", "enableBiometricsUnlock(): The biometric unlock could not be enabled!", e)
+                L.w("UserViewModel", "enableBiometricUnlock(): The biometric unlock could not be enabled!", e)
 
-                // Try to disable biometrics unlock if anything failed
-                disableBiometricsUnlock()
+                // Try to disable biometric unlock if anything failed
+                disableBiometricUnlock()
             }
         }
     }
 
-    suspend fun disableBiometricsUnlock() {
+    suspend fun disableBiometricUnlock() {
         withContext(Dispatchers.IO) {
             try {
                 Biometrics.removeKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
@@ -223,7 +223,7 @@ class UserViewModel private constructor(
 
                 biometricUnlockEnabled.notifyChange()
             } catch (e: Exception) {
-                L.w("UserViewModel", "disableBiometricsUnlock(): The biometric unlock could not be disabled!", e)
+                L.w("UserViewModel", "disableBiometricUnlock(): The biometric unlock could not be disabled!", e)
             }
         }
     }
