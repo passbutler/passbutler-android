@@ -47,7 +47,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         super.onCleared()
     }
 
-    fun unlockScreenWithPassword(masterPassword: String) {
+    fun unlockScreen(masterPassword: String) {
         cryptoResourcesJob?.cancel()
         cryptoResourcesJob = launch {
             unlockScreenRequestSendingViewModel.isLoading.postValue(true)
@@ -58,26 +58,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
                 unlockScreenRequestSendingViewModel.isLoading.postValue(false)
                 unlockScreenRequestSendingViewModel.requestFinishedSuccessfully.emit()
             } catch (exception: Exception) {
-                L.w("RootViewModel", "unlockScreenWithPassword(): The unlock failed with exception!", exception)
-                unlockScreenRequestSendingViewModel.isLoading.postValue(false)
-                unlockScreenRequestSendingViewModel.requestError.postValue(exception)
-            }
-        }
-    }
-
-    fun unlockScreenWithBiometrics() {
-        cryptoResourcesJob?.cancel()
-        cryptoResourcesJob = launch {
-            unlockScreenRequestSendingViewModel.isLoading.postValue(true)
-
-            try {
-                val masterPassword = "TODO"
-                loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
-
-                unlockScreenRequestSendingViewModel.isLoading.postValue(false)
-                unlockScreenRequestSendingViewModel.requestFinishedSuccessfully.emit()
-            } catch (exception: Exception) {
-                L.w("RootViewModel", "unlockScreenWithBiometrics(): The unlock failed with exception!", exception)
+                L.w("RootViewModel", "unlockScreen(): The unlock failed with exception!", exception)
                 unlockScreenRequestSendingViewModel.isLoading.postValue(false)
                 unlockScreenRequestSendingViewModel.requestError.postValue(exception)
             }

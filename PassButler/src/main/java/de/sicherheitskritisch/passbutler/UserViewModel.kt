@@ -159,7 +159,7 @@ class UserViewModel private constructor(
                 newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation)
                 protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey))
 
-                // TODO: Update biometrics master password encryption key
+                // TODO: disable biometrics unlock
 
                 withContext(Dispatchers.IO) {
                     val user = createUserModel()
@@ -173,6 +173,24 @@ class UserViewModel private constructor(
             } finally {
                 newMasterKey?.clear()
             }
+        }
+    }
+
+    suspend fun enableBiometricsUnlock(masterPassword: String) {
+        // Execute encryption on the dispatcher for CPU load
+        withContext(Dispatchers.Default) {
+            // TODO: delete old key?
+            // TODO: generate key
+            // TODO: init key for encryption
+            // TODO: encrypt masterpassword with key
+            // TODO: store encrypted data in shared preferences?
+        }
+    }
+
+    suspend fun disableBiometricsUnlock() {
+        withContext(Dispatchers.IO) {
+            // TODO: delete old key
+            // TODO: remove encrypted data in shared preferences?
         }
     }
 
@@ -257,4 +275,8 @@ class UserViewModel private constructor(
 
     class UnlockFailedException(cause: Exception? = null) : Exception(cause)
     class UpdateMasterPasswordFailedException(cause: Exception? = null) : Exception(cause)
+
+    companion object {
+        const val BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME = "MasterPasswordEncryptionKey"
+    }
 }

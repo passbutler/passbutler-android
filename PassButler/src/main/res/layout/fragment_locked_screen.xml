@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -43,7 +44,8 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.40"
-                app:layout_constraintVertical_chainStyle="packed" />
+                app:layout_constraintVertical_chainStyle="packed"
+                tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/textView_headline"
@@ -136,15 +138,33 @@
                 android:layout_marginTop="@dimen/large_vertical_spacing"
                 android:drawableStart="@drawable/icon_fingerprint_24dp"
                 android:drawableTint="@color/white"
+                android:enabled="@{fragment.biometricsButtonEnabled}"
                 android:padding="@dimen/button_icon_padding"
                 android:text="@string/locked_screen_button_biometrics_text"
                 android:visibility="@{fragment.biometricsButtonVisible ? View.VISIBLE : View.GONE}"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/textView_button_unlock_biometrics_disabled_hint"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/button_unlock_password"
                 app:layout_constraintVertical_chainStyle="packed"
                 />
+
+            <TextView
+                style="@style/TextPassageSmall"
+                android:id="@+id/textView_button_unlock_biometrics_disabled_hint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="64dp"
+                android:layout_marginTop="@dimen/small_vertical_spacing"
+                android:layout_marginStart="64dp"
+                android:textAlignment="center"
+                android:visibility="@{fragment.biometricsButtonEnabled == false ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:text="@string/locked_screen_button_biometrics_disabled_hint_text"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/button_unlock_biometrics"
+                app:layout_constraintVertical_chainStyle="packed" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

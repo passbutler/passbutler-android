@@ -3,6 +3,7 @@ package de.sicherheitskritisch.passbutler
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
+import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import android.view.ViewGroup
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
 import com.google.android.material.snackbar.Snackbar
+import de.sicherheitskritisch.passbutler.UserViewModel.Companion.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME
 import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
@@ -24,17 +26,20 @@ import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.Keyboard
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 import java.util.concurrent.Executor
 
-// TODO: Put logic of to dedicated `LockedScreenViewModel` instead of `RootViewModel`?
 class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFragment {
 
     override val transitionType = AnimatedFragment.TransitionType.FADE
 
-    // TODO: Also check if master password was encrypted with biometrics
     val biometricsButtonVisible: Boolean
-        get() = Biometrics.isHardwareCapable && Biometrics.hasEnrolledBiometrics
+        get() = Biometrics.isHardwareCapable && Biometrics.isKeyguardSecure && Biometrics.hasEnrolledBiometrics
+
+    // TODO: Also check if master password was encrypted with biometrics
+    val biometricsButtonEnabled: Boolean
+        get() = biometricsButtonVisible
 
     private var binding: FragmentLockedScreenBinding? = null
     private var unlockRequestSendingViewHandler: UnlockRequestSendingViewHandler? = null
@@ -110,7 +115,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
                 val password = binding.textInputEditTextPassword.text?.toString()
 
                 if (password != null) {
-                    viewModel.unlockScreenWithPassword(password)
+                    viewModel.unlockScreen(password)
                 }
             }
             is FormValidationResult.Invalid -> {
@@ -133,25 +138,39 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     }
 
     private fun showBiometricPrompt() {
-        // TODO: Put business logic to viewmodel, also do not block UI thread with IO
-        val masterPasswordEncryptionKeyCipher = Biometrics.obtainEncryptionKeyInstance()
+        launch(Dispatchers.IO) {
+            try {
+                val masterPasswordEncryptionKeyCipher = Biometrics.obtainKeyInstance()
+                Biometrics.initializeKeyForEncryption(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, masterPasswordEncryptionKeyCipher)
 
-        if (Biometrics.initializeEncryptionKey(masterPasswordEncryptionKeyCipher)) {
-            activity?.let { activity ->
-                val authenticationCallback = BiometricAuthenticationCallback()
-                val biometricPrompt = BiometricPrompt(activity, biometricCallbackExecutor, authenticationCallback)
+                withContext(Dispatchers.Main) {
+                    activity?.let { activity ->
+                        val biometricAuthenticationCallback = BiometricAuthenticationCallback()
+                        val biometricPrompt = BiometricPrompt(activity, biometricCallbackExecutor, biometricAuthenticationCallback)
+                        val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
+                            .setTitle(getString(R.string.locked_screen_biometrics_prompt_title))
+                            .setSubtitle(getString(R.string.locked_screen_biometrics_prompt_subtitle))
+                            .setNegativeButtonText(getString(R.string.locked_screen_biometrics_prompt_cancel_button_text))
+                            .build()
 
-                val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
-                    .setTitle(getString(R.string.locked_screen_biometrics_prompt_title))
-                    .setSubtitle(getString(R.string.locked_screen_biometrics_prompt_subtitle))
-                    .setNegativeButtonText(getString(R.string.locked_screen_biometrics_prompt_cancel_button_text))
-                    .build()
+                        val cryptoObject = BiometricPrompt.CryptoObject(masterPasswordEncryptionKeyCipher)
+                        biometricPrompt.authenticate(biometricPromptInfo, cryptoObject)
+                    }
+                }
+            } catch (e: Exception) {
+                if (e is KeyPermanentlyInvalidatedException) {
+                    L.d("LockedScreenFragment", "showBiometricPrompt(): The biometric authentication failed because key is invalidated, disable biometrics unlock!")
+                    viewModel.loggedInUserViewModel?.disableBiometricsUnlock()
+                } else {
+                    L.w("LockedScreenFragment", "showBiometricPrompt(): The biometric authentication failed!", e)
+                }
 
-                val cryptoObject = BiometricPrompt.CryptoObject(masterPasswordEncryptionKeyCipher)
-                biometricPrompt.authenticate(biometricPromptInfo, cryptoObject)
+                withContext(Dispatchers.Main) {
+                    binding?.root?.let {
+                        Snackbar.make(it, getString(R.string.locked_screen_biometrics_unlock_failed_general_title), Snackbar.LENGTH_SHORT).show()
+                    }
+                }
             }
-        } else {
-            // TODO: error, fingerprint not valid, must be re-added
         }
     }
 
@@ -182,6 +201,35 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         return true
     }
 
+    private inner class BiometricAuthenticationCallbackExecutor : Executor {
+        override fun execute(runnable: Runnable) {
+            launch(Dispatchers.IO) {
+                runnable.run()
+            }
+        }
+    }
+
+    private inner class BiometricAuthenticationCallback : BiometricPrompt.AuthenticationCallback() {
+        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+            L.d("LockedScreenFragment", "onAuthenticationError(): errorCode = $errorCode, errString = '$errString'")
+            // TODO: Handle error in any way?
+        }
+
+        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+            L.d("LockedScreenFragment", "onAuthenticationSucceeded(): result = $result")
+
+            // TODO: Decrypt master password and unlock
+            val masterPasswordEncryptionKeyCipher = result.cryptoObject?.cipher
+            val masterPassword = "TODO"
+            viewModel.unlockScreen(masterPassword)
+        }
+
+        override fun onAuthenticationFailed() {
+            L.d("LockedScreenFragment", "onAuthenticationFailed()")
+            // Don't do anything more, the prompt shows error
+        }
+    }
+
     private class UnlockRequestSendingViewHandler(
         requestSendingViewModel: RequestSendingViewModel,
         private val fragmentWeakReference: WeakReference<LockedScreenFragment>
@@ -205,7 +253,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         }
 
         override fun onRequestErrorChanged(requestError: Throwable) {
-            binding?.constraintLayoutLockedScreenContainer?.let {
+            binding?.root?.let {
                 resources?.getString(R.string.locked_screen_unlock_failed_general_title)?.let { snackbarMessage ->
                     Snackbar.make(it, snackbarMessage, Snackbar.LENGTH_SHORT).show()
                 }
@@ -214,32 +262,6 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
         override fun onRequestFinishedSuccessfully() {
             fragment?.popBackstack()
-        }
-    }
-
-    private inner class BiometricAuthenticationCallbackExecutor : Executor {
-        override fun execute(runnable: Runnable) {
-            launch(Dispatchers.IO) {
-                runnable.run()
-            }
-        }
-    }
-
-    // TODO: Move to ViewModel?
-    private class BiometricAuthenticationCallback : BiometricPrompt.AuthenticationCallback() {
-        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-            L.d("LockedScreenFragment", "onAuthenticationError(): errorCode = $errorCode, errString = '$errString'")
-        }
-
-        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-            L.d("LockedScreenFragment", "onAuthenticationSucceeded(): result = $result")
-
-            // TODO: Decrypt master password and unlock
-            val masterPasswordEncryptionKeyCipher = result.cryptoObject?.cipher
-        }
-
-        override fun onAuthenticationFailed() {
-            L.d("LockedScreenFragment", "onAuthenticationFailed()")
         }
     }
 
