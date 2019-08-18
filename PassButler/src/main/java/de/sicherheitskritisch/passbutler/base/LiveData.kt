@@ -28,6 +28,13 @@ open class NonNullMutableLiveData<T : Any>(initialValue: T) : MutableLiveData<T>
     }
 }
 
+class ValueGetterLiveData<T : Any>(private val valueGetter: () -> T) : NonNullMutableLiveData<T>(initialValue = valueGetter()) {
+    fun notifyChange() {
+        val newValue = valueGetter()
+        postValue(newValue)
+    }
+}
+
 @MainThread
 fun <T> LiveData<T>.observe(owner: LifecycleOwner, notifyOnRegister: Boolean, observer: Observer<T>) {
     observe(owner, observer)

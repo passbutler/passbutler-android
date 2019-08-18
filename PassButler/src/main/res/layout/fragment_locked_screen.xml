@@ -12,8 +12,8 @@
             type="de.sicherheitskritisch.passbutler.LockedScreenFragment" />
 
         <variable
-            name="viewModel"
-            type="de.sicherheitskritisch.passbutler.RootViewModel" />
+            name="userViewModel"
+            type="de.sicherheitskritisch.passbutler.UserViewModel" />
 
     </data>
 
@@ -138,10 +138,10 @@
                 android:layout_marginTop="@dimen/large_vertical_spacing"
                 android:drawableStart="@drawable/icon_fingerprint_24dp"
                 android:drawableTint="@color/white"
-                android:enabled="@{fragment.biometricsButtonEnabled}"
+                android:enabled="@{safeUnbox(userViewModel.biometricUnlockEnabled)}"
                 android:padding="@dimen/button_icon_padding"
                 android:text="@string/locked_screen_button_biometrics_text"
-                android:visibility="@{fragment.biometricsButtonVisible ? View.VISIBLE : View.GONE}"
+                android:visibility="@{safeUnbox(userViewModel.biometricUnlockAvailable) ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBottom_toTopOf="@+id/textView_button_unlock_biometrics_disabled_hint"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -158,7 +158,7 @@
                 android:layout_marginTop="@dimen/small_vertical_spacing"
                 android:layout_marginStart="64dp"
                 android:textAlignment="center"
-                android:visibility="@{fragment.biometricsButtonEnabled == false ? View.VISIBLE : View.GONE}"
+                android:visibility="@{safeUnbox(userViewModel.biometricUnlockEnabled) == false ? View.VISIBLE : View.INVISIBLE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:text="@string/locked_screen_button_biometrics_disabled_hint_text"

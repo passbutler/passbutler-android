@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.SignalEmitter
+import de.sicherheitskritisch.passbutler.base.ValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.optionalContentNotEquals
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
@@ -44,6 +45,14 @@ class UserViewModel private constructor(
 
     val lockTimeoutSetting = MutableLiveData<Int?>()
     val hidePasswordsSetting = MutableLiveData<Boolean?>()
+
+    val biometricUnlockAvailable = ValueGetterLiveData {
+        Biometrics.isHardwareCapable && Biometrics.isKeyguardSecure && Biometrics.hasEnrolledBiometrics
+    }
+
+    val biometricUnlockEnabled = ValueGetterLiveData {
+        biometricUnlockAvailable.value && userManager.loggedInStateStorage.encryptedMasterPassword != null
+    }
 
     val unlockFinished = SignalEmitter()
 
@@ -193,6 +202,8 @@ class UserViewModel private constructor(
 
                 userManager.loggedInStateStorage.encryptedMasterPassword = encryptedMasterPassword
                 userManager.loggedInStateStorage.persist()
+
+                biometricUnlockEnabled.notifyChange()
             } catch (e: Exception) {
                 L.w("UserViewModel", "enableBiometricsUnlock(): The biometric unlock could not be enabled!", e)
 
@@ -209,6 +220,8 @@ class UserViewModel private constructor(
 
                 userManager.loggedInStateStorage.encryptedMasterPassword = null
                 userManager.loggedInStateStorage.persist()
+
+                biometricUnlockEnabled.notifyChange()
             } catch (e: Exception) {
                 L.w("UserViewModel", "disableBiometricsUnlock(): The biometric unlock could not be disabled!", e)
             }

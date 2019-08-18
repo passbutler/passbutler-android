@@ -35,14 +35,6 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
     override val transitionType = AnimatedFragment.TransitionType.FADE
 
-    // TODO: LiveData
-    val biometricsButtonVisible: Boolean
-        get() = Biometrics.isHardwareCapable && Biometrics.isKeyguardSecure && Biometrics.hasEnrolledBiometrics
-
-    // TODO: LiveData
-    val biometricsButtonEnabled: Boolean
-        get() = biometricsButtonVisible && viewModel.userManager.loggedInStateStorage.encryptedMasterPassword != null
-
     private var binding: FragmentLockedScreenBinding? = null
     private var unlockRequestSendingViewHandler: UnlockRequestSendingViewHandler? = null
 
@@ -70,7 +62,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         binding = DataBindingUtil.inflate<FragmentLockedScreenBinding>(inflater, R.layout.fragment_locked_screen, container, false).also { binding ->
             binding.lifecycleOwner = this
             binding.fragment = this
-            binding.viewModel = viewModel
+            binding.userViewModel = viewModel.loggedInUserViewModel
 
             restoreSavedInstance(binding, savedInstanceState)
             setupDebugUnlockPresets(binding)
