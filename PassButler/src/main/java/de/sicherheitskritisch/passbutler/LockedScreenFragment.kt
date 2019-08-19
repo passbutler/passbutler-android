@@ -103,8 +103,9 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
         when (formValidationResult) {
             is FormValidationResult.Valid -> {
-                // Remove focus before unlock to be sure keyboard is hidden
+                // Remove focus and hide keyboard before unlock
                 removeFormFieldsFocus()
+                Keyboard.hideKeyboard(context, this)
 
                 val password = binding.textInputEditTextPassword.text?.toString()
 
@@ -125,8 +126,9 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     }
 
     private fun unlockWithBiometricsClicked() {
-        // Remove focus before unlock to be sure keyboard is hidden
+        // Remove focus and hide keyboard before unlock
         removeFormFieldsFocus()
+        Keyboard.hideKeyboard(context, this)
 
         showBiometricPrompt()
     }

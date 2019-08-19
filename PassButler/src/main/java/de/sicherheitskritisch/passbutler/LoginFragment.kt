@@ -122,8 +122,9 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
         when (formValidationResult) {
             is FormValidationResult.Valid -> {
-                // Remove focus before login to be sure keyboard is hidden
+                // Remove focus and hide keyboard before unlock
                 removeFormFieldsFocus()
+                Keyboard.hideKeyboard(context, this)
 
                 val serverUrl = binding.textInputEditTextServerurl.text?.toString()
                 val username = binding.textInputEditTextUsername.text?.toString()
