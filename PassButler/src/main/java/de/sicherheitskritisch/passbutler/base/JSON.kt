@@ -3,7 +3,6 @@ package de.sicherheitskritisch.passbutler.base
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.util.*
 
 interface JSONSerializable {
     fun serialize(): JSONObject
@@ -128,14 +127,14 @@ fun JSONObject.putJSONObject(name: String, value: JSONObject?): JSONObject {
 fun JSONObject.getByteArray(name: String): ByteArray {
     val base64EncodedValue = getString(name)
     return try {
-        Base64.getDecoder().decode(base64EncodedValue)
+        base64EncodedValue.toByteArrayFromBase64String()
     } catch (e: IllegalArgumentException) {
         throw JSONException("The value could not be Base64 decoded!")
     }
 }
 
 fun JSONObject.putByteArray(name: String, value: ByteArray): JSONObject {
-    val base64EncodedValue = Base64.getEncoder().encodeToString(value)
+    val base64EncodedValue = value.toBase64String()
     return putString(name, base64EncodedValue)
 }
 

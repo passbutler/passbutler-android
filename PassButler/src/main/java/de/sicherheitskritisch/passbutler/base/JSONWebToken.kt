@@ -15,7 +15,7 @@ object JSONWebToken {
         }
 
         val encodedHeader = splittedJWT[0]
-        val decodedHeader = Base64.getUrlDecoder().decode(encodedHeader).toString(Charsets.UTF_8)
+        val decodedHeader = Base64.getUrlDecoder().decode(encodedHeader).toUTF8String()
         val jwtHeader = JSONObject(decodedHeader)
 
         return Instant.ofEpochSecond(jwtHeader.getLong("exp"))

@@ -9,6 +9,8 @@ import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.byteSize
 import de.sicherheitskritisch.passbutler.base.clear
+import de.sicherheitskritisch.passbutler.base.toBase64String
+import de.sicherheitskritisch.passbutler.base.toByteArrayFromBase64String
 import de.sicherheitskritisch.passbutler.crypto.Derivation
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.crypto.MASTER_KEY_BIT_LENGTH
@@ -255,8 +257,12 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
                 else -> null
             }
 
-            // TODO: Restore Base 64 string to bytearray
-            encryptedMasterPassword = sharedPreferences.getString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, null)
+            encryptedMasterPassword = try {
+                sharedPreferences.getString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, null)?.toByteArrayFromBase64String()
+            } catch (e: Exception) {
+                L.w("LoggedInStateStorage", "restore(): The encrypted master password could not be read as Base64 from string!", e)
+                null
+            }
         }
     }
 
@@ -269,9 +275,8 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
                 putString(SHARED_PREFERENCES_KEY_SERVERURL, (userType as? UserType.Server)?.serverUrl?.toString())
                 putString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, (userType as? UserType.Server)?.authToken?.serialize()?.toString())
 
-                // TODO: Persist as Base 64 string from bytearray
                 // TODO: Check if `null` set also gets null when retrieve string via `getString()`
-                putString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, encryptedMasterPassword)
+                putString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, encryptedMasterPassword?.toBase64String())
             }.commit()
         }
     }

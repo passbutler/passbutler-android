@@ -1,5 +1,7 @@
 package de.sicherheitskritisch.passbutler.base
 
+import java.util.*
+
 fun ByteArray?.optionalContentEquals(other: ByteArray?): Boolean {
     return when {
         this == null && other == null -> true
@@ -21,6 +23,19 @@ fun ByteArray?.toHexString(): String {
  */
 fun ByteArray.toUTF8String(): String {
     return toString(Charsets.UTF_8)
+}
+
+/**
+ * Extensions to convert `ByteArray` to Base64 string and vice versa.
+ */
+
+fun ByteArray.toBase64String(): String {
+    return Base64.getEncoder().encodeToString(this)
+}
+
+@Throws(IllegalArgumentException::class)
+fun String.toByteArrayFromBase64String(): ByteArray {
+    return Base64.getDecoder().decode(this)
 }
 
 /**
