@@ -19,6 +19,7 @@ import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.validateForm
+import de.sicherheitskritisch.passbutler.crypto.BiometricAuthenticationCallbackExecutor
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
 import de.sicherheitskritisch.passbutler.databinding.FragmentLockedScreenBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
@@ -29,7 +30,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
-import java.util.concurrent.Executor
 
 class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFragment {
 
@@ -39,7 +39,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     private var unlockRequestSendingViewHandler: UnlockRequestSendingViewHandler? = null
 
     private val biometricCallbackExecutor by lazy {
-        BiometricAuthenticationCallbackExecutor()
+        BiometricAuthenticationCallbackExecutor(this)
     }
 
     override fun onAttach(context: Context) {
@@ -153,7 +153,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
                 }
             } catch (e: Exception) {
                 if (e is Biometrics.InitializeKeyFailedException && e.cause is KeyPermanentlyInvalidatedException) {
-                    L.d("LockedScreenFragment", "showBiometricPrompt(): The biometric authentication failed because key state is invalidated - disable biometric unlock!")
+                    L.w("LockedScreenFragment", "showBiometricPrompt(): The biometric authentication failed because key state is invalidated - disable biometric unlock!")
                     viewModel.loggedInUserViewModel?.disableBiometricUnlock()
                 } else {
                     L.w("LockedScreenFragment", "showBiometricPrompt(): The biometric authentication failed!", e)
@@ -191,14 +191,6 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     override fun onHandleBackPress(): Boolean {
         // Do not allow pop fragment via backpress
         return true
-    }
-
-    private inner class BiometricAuthenticationCallbackExecutor : Executor {
-        override fun execute(runnable: Runnable) {
-            launch(Dispatchers.IO) {
-                runnable.run()
-            }
-        }
     }
 
     private inner class BiometricAuthenticationCallback : BiometricPrompt.AuthenticationCallback() {
