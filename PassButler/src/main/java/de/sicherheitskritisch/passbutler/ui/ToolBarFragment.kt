@@ -42,7 +42,7 @@ abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragmen
 
         floatingActionButton = rootView.findViewById(R.id.main_fab)
 
-        createContentView(inflater, container, savedInstanceState).let { contentView ->
+        createContentView(inflater, container, savedInstanceState)?.let { contentView ->
             val contentContainer = rootView.findViewById<FrameLayout>(R.id.frameLayout_fragment_toolbar_content_container)
             contentContainer.addView(contentView)
         }
@@ -50,5 +50,5 @@ abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragmen
         return rootView
     }
 
-    abstract fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View
+    abstract fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?
 }
