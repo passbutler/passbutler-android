@@ -214,10 +214,10 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
             L.d("LockedScreenFragment", "onAuthenticationSucceeded(): result = $result")
 
-            val masterPasswordDecryptionKey = result.cryptoObject?.cipher
+            val initializedMasterPasswordDecryptionCipher = result.cryptoObject?.cipher
 
-            if (masterPasswordDecryptionKey != null) {
-                viewModel.unlockScreenWithBiometrics(masterPasswordDecryptionKey)
+            if (initializedMasterPasswordDecryptionCipher != null) {
+                viewModel.unlockScreenWithBiometrics(initializedMasterPasswordDecryptionCipher)
             } else {
                 launch {
                     showError(binding?.root, getString(R.string.locked_screen_biometrics_unlock_failed_general_title))

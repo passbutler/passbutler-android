@@ -68,14 +68,14 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         }
     }
 
-    fun unlockScreenWithBiometrics(masterPasswordDecryptionKey: Cipher) {
+    fun unlockScreenWithBiometrics(initializedMasterPasswordDecryptionCipher: Cipher) {
         cryptoResourcesJob?.cancel()
         cryptoResourcesJob = launch {
             unlockScreenRequestSendingViewModel.isLoading.postValue(true)
 
             try {
                 val encryptedMasterPassword = userManager.loggedInStateStorage.encryptedMasterPassword ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
-                val masterPassword = Biometrics.decryptData(masterPasswordDecryptionKey, encryptedMasterPassword).toUTF8String()
+                val masterPassword = Biometrics.decryptData(initializedMasterPasswordDecryptionCipher, encryptedMasterPassword).toUTF8String()
 
                 loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
 

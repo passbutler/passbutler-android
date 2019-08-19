@@ -96,17 +96,17 @@ object Biometrics {
     }
 
     @Throws(InitializeKeyFailedException::class)
-    suspend fun initializeKeyForEncryption(keyName: String, encryptionKey: Cipher) {
-        initializeKey(keyName, encryptionKey, Cipher.ENCRYPT_MODE)
+    suspend fun initializeKeyForEncryption(keyName: String, encryptionCipher: Cipher) {
+        initializeKey(keyName, encryptionCipher, Cipher.ENCRYPT_MODE)
     }
 
     @Throws(InitializeKeyFailedException::class)
-    suspend fun initializeKeyForDecryption(keyName: String, decryptionKey: Cipher) {
-        initializeKey(keyName, decryptionKey, Cipher.DECRYPT_MODE)
+    suspend fun initializeKeyForDecryption(keyName: String, decryptionCipher: Cipher) {
+        initializeKey(keyName, decryptionCipher, Cipher.DECRYPT_MODE)
     }
 
     @Throws(InitializeKeyFailedException::class)
-    private suspend fun initializeKey(keyName: String, encryptionKey: Cipher, cipherMode: Int) {
+    private suspend fun initializeKey(keyName: String, operationCipher: Cipher, cipherMode: Int) {
         withContext(Dispatchers.IO) {
             try {
                 if (cipherMode != Cipher.ENCRYPT_MODE && cipherMode != Cipher.DECRYPT_MODE) {
@@ -117,8 +117,7 @@ object Biometrics {
                 androidKeyStore.load(loadKeyStoreParameter)
 
                 val secretKey = androidKeyStore.getKey(keyName, null) as? SecretKey ?: throw InvalidKeyException("The key was not found!")
-                encryptionKey.init(cipherMode, secretKey)
-
+                operationCipher.init(cipherMode, secretKey)
             } catch (e: Exception) {
                 throw InitializeKeyFailedException(e)
             }
@@ -126,10 +125,10 @@ object Biometrics {
     }
 
     @Throws(EncryptionFailedException::class)
-    suspend fun encryptData(encryptionKey: Cipher, data: ByteArray): ByteArray? {
+    suspend fun encryptData(encryptionCipher: Cipher, data: ByteArray): ByteArray? {
         return withContext(Dispatchers.Default) {
             try {
-                encryptionKey.doFinal(data)
+                encryptionCipher.doFinal(data)
             } catch (e: Exception) {
                 throw EncryptionFailedException(e)
             }
@@ -137,10 +136,10 @@ object Biometrics {
     }
 
     @Throws(DecryptionFailedException::class)
-    suspend fun decryptData(decryptionKey: Cipher, data: ByteArray): ByteArray {
+    suspend fun decryptData(decryptionCipher: Cipher, data: ByteArray): ByteArray {
         return withContext(Dispatchers.Default) {
             try {
-                decryptionKey.doFinal(data)
+                decryptionCipher.doFinal(data)
             } catch (e: Exception) {
                 throw DecryptionFailedException(e)
             }
