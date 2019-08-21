@@ -86,9 +86,6 @@ dependencies {
     implementation "com.squareup.retrofit2:retrofit:2.5.0"
     implementation "com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2"
 
-    // LeakCanary
-    debugImplementation "com.squareup.leakcanary:leakcanary-android:2.0-alpha-2"
-
     // JUnit 5
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.3.2"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.3.2"
