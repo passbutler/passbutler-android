@@ -18,6 +18,7 @@ import java.util.concurrent.Executor
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
+import javax.crypto.spec.IvParameterSpec
 
 object Biometrics {
 
@@ -98,29 +99,32 @@ object Biometrics {
         }
     }
 
+    // TODO: Ensure AES-256 + better mode than CBC
+
     @Throws(InitializeKeyFailedException::class)
     suspend fun initializeKeyForEncryption(keyName: String, encryptionCipher: Cipher) {
-        initializeKey(keyName, encryptionCipher, Cipher.ENCRYPT_MODE)
-    }
-
-    @Throws(InitializeKeyFailedException::class)
-    suspend fun initializeKeyForDecryption(keyName: String, decryptionCipher: Cipher) {
-        initializeKey(keyName, decryptionCipher, Cipher.DECRYPT_MODE)
-    }
-
-    @Throws(InitializeKeyFailedException::class)
-    private suspend fun initializeKey(keyName: String, operationCipher: Cipher, cipherMode: Int) {
         withContext(Dispatchers.IO) {
             try {
-                if (cipherMode != Cipher.ENCRYPT_MODE && cipherMode != Cipher.DECRYPT_MODE) {
-                    throw IllegalArgumentException("The cipher mode is invalid!")
-                }
-
                 val loadKeyStoreParameter = null
                 androidKeyStore.load(loadKeyStoreParameter)
 
                 val secretKey = androidKeyStore.getKey(keyName, null) as? SecretKey ?: throw InvalidKeyException("The key was not found!")
-                operationCipher.init(cipherMode, secretKey)
+                encryptionCipher.init(Cipher.ENCRYPT_MODE, secretKey)
+            } catch (e: Exception) {
+                throw InitializeKeyFailedException(e)
+            }
+        }
+    }
+
+    @Throws(InitializeKeyFailedException::class)
+    suspend fun initializeKeyForDecryption(keyName: String, decryptionCipher: Cipher, initializationVector: ByteArray) {
+        withContext(Dispatchers.IO) {
+            try {
+                val loadKeyStoreParameter = null
+                androidKeyStore.load(loadKeyStoreParameter)
+
+                val secretKey = androidKeyStore.getKey(keyName, null) as? SecretKey ?: throw InvalidKeyException("The key was not found!")
+                decryptionCipher.init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(initializationVector))
             } catch (e: Exception) {
                 throw InitializeKeyFailedException(e)
             }

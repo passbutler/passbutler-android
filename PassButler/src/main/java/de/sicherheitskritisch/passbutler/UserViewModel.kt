@@ -20,6 +20,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
+import javax.crypto.Cipher
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -51,7 +52,7 @@ class UserViewModel private constructor(
     }
 
     val biometricUnlockEnabled = ValueGetterLiveData {
-        biometricUnlockAvailable.value && userManager.loggedInStateStorage.encryptedMasterPassword != null
+        biometricUnlockAvailable.value && userManager.loggedInStateStorage.encryptedMasterPassword != null && userManager.loggedInStateStorage.encryptedMasterPasswordInitializationVector != null
     }
 
     val unlockFinished = SignalEmitter()
@@ -187,25 +188,21 @@ class UserViewModel private constructor(
         }
     }
 
-    suspend fun enableBiometricUnlock(masterPassword: String) {
+    suspend fun enableBiometricUnlock(initializedMasterPasswordEncryptionCipher: Cipher, masterPassword: String) {
         // Execute encryption on the dispatcher for CPU load
         withContext(Dispatchers.Default) {
-
             try {
-                // TODO: Better remove key before?
-                Biometrics.generateKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
-
-                // TODO: init key for encryption
-                // TODO: encrypt master password with key
-
-                val encryptedMasterPassword = ByteArray(0)
+                // TODO: Test if master password is correct
+                val encryptedMasterPassword = Biometrics.encryptData(initializedMasterPasswordEncryptionCipher, masterPassword.toByteArray())
+                val encryptedMasterPasswordInitializationVector = initializedMasterPasswordEncryptionCipher.iv
 
                 userManager.loggedInStateStorage.encryptedMasterPassword = encryptedMasterPassword
+                userManager.loggedInStateStorage.encryptedMasterPasswordInitializationVector = encryptedMasterPasswordInitializationVector
                 userManager.loggedInStateStorage.persist()
 
                 biometricUnlockEnabled.notifyChange()
             } catch (e: Exception) {
-                L.w("UserViewModel", "enableBiometricUnlock(): The biometric unlock could not be enabled!", e)
+                L.w("UserViewModel", "activateBiometricUnlock(): The biometric unlock could not be enabled!", e)
 
                 // Try to disable biometric unlock if anything failed
                 disableBiometricUnlock()
@@ -219,6 +216,7 @@ class UserViewModel private constructor(
                 Biometrics.removeKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
 
                 userManager.loggedInStateStorage.encryptedMasterPassword = null
+                userManager.loggedInStateStorage.encryptedMasterPasswordInitializationVector = null
                 userManager.loggedInStateStorage.persist()
 
                 biometricUnlockEnabled.notifyChange()

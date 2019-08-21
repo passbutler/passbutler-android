@@ -136,7 +136,8 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         launch(Dispatchers.IO) {
             try {
                 val masterPasswordEncryptionKeyCipher = Biometrics.obtainKeyInstance()
-                Biometrics.initializeKeyForDecryption(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, masterPasswordEncryptionKeyCipher)
+                val encryptedMasterPasswordInitializationVector = viewModel.userManager.loggedInStateStorage.encryptedMasterPasswordInitializationVector ?: throw IllegalStateException("The encrypted master key iV was not found, despite biometric unlock was tried!")
+                Biometrics.initializeKeyForDecryption(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, masterPasswordEncryptionKeyCipher, encryptedMasterPasswordInitializationVector)
 
                 withContext(Dispatchers.Main) {
                     activity?.let { activity ->
@@ -198,7 +199,6 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
             L.d("LockedScreenFragment", "onAuthenticationError(): errorCode = $errorCode, errString = '$errString'")
 
-            // TODO: Handle error here ok?
             launch {
                 showError(getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
             }

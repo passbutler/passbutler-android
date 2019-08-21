@@ -243,7 +243,10 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
 
     var userType: UserType? = null
+
+    // TODO: Combine to one model
     var encryptedMasterPassword: ByteArray? = null
+    var encryptedMasterPasswordInitializationVector: ByteArray? = null
 
     suspend fun restore() {
         withContext(Dispatchers.IO) {
@@ -263,6 +266,13 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
                 L.w("LoggedInStateStorage", "restore(): The encrypted master password could not be read as Base64 from string!", e)
                 null
             }
+
+            encryptedMasterPasswordInitializationVector = try {
+                sharedPreferences.getString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD_IV, null)?.toByteArrayFromBase64String()
+            } catch (e: Exception) {
+                L.w("LoggedInStateStorage", "restore(): The encrypted master password initialization vector could not be read as Base64 from string!", e)
+                null
+            }
         }
     }
 
@@ -277,6 +287,7 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
 
                 // TODO: Check if `null` set also gets null when retrieve string via `getString()`
                 putString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, encryptedMasterPassword?.toBase64String())
+                putString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD_IV, encryptedMasterPasswordInitializationVector?.toBase64String())
             }.commit()
         }
     }
@@ -284,6 +295,7 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
     suspend fun reset() {
         userType = null
         encryptedMasterPassword = null
+        encryptedMasterPasswordInitializationVector = null
         persist()
     }
 
@@ -292,6 +304,7 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
         private const val SHARED_PREFERENCES_KEY_SERVERURL = "serverUrl"
         private const val SHARED_PREFERENCES_KEY_AUTH_TOKEN = "authToken"
         private const val SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD = "encryptedMasterPassword"
+        private const val SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD_IV = "encryptedMasterPasswordInitializationVector"
     }
 }
 
