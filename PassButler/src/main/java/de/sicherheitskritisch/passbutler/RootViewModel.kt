@@ -8,7 +8,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
-import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
 import de.sicherheitskritisch.passbutler.base.toUTF8String
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
@@ -52,40 +52,18 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
     fun unlockScreenWithPassword(masterPassword: String) {
         cryptoResourcesJob?.cancel()
-        cryptoResourcesJob = launch {
-            unlockScreenRequestSendingViewModel.isLoading.postValue(true)
-
-            try {
-                loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
-
-                unlockScreenRequestSendingViewModel.isLoading.postValue(false)
-                unlockScreenRequestSendingViewModel.requestFinishedSuccessfully.emit()
-            } catch (exception: Exception) {
-                L.w("RootViewModel", "unlockScreenWithPassword(): The unlock failed with exception!", exception)
-                unlockScreenRequestSendingViewModel.isLoading.postValue(false)
-                unlockScreenRequestSendingViewModel.requestError.postValue(exception)
-            }
+        cryptoResourcesJob = createRequestSendingJob(unlockScreenRequestSendingViewModel) {
+            loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
         }
     }
 
     fun unlockScreenWithBiometrics(initializedMasterPasswordDecryptionCipher: Cipher) {
         cryptoResourcesJob?.cancel()
-        cryptoResourcesJob = launch {
-            unlockScreenRequestSendingViewModel.isLoading.postValue(true)
+        cryptoResourcesJob = createRequestSendingJob(unlockScreenRequestSendingViewModel) {
+            val encryptedMasterPassword = userManager.loggedInStateStorage.encryptedMasterPassword ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
+            val masterPassword = Biometrics.decryptData(initializedMasterPasswordDecryptionCipher, encryptedMasterPassword).toUTF8String()
 
-            try {
-                val encryptedMasterPassword = userManager.loggedInStateStorage.encryptedMasterPassword ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
-                val masterPassword = Biometrics.decryptData(initializedMasterPasswordDecryptionCipher, encryptedMasterPassword).toUTF8String()
-
-                loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
-
-                unlockScreenRequestSendingViewModel.isLoading.postValue(false)
-                unlockScreenRequestSendingViewModel.requestFinishedSuccessfully.emit()
-            } catch (exception: Exception) {
-                L.w("RootViewModel", "unlockScreenWithPassword(): The unlock failed with exception!", exception)
-                unlockScreenRequestSendingViewModel.isLoading.postValue(false)
-                unlockScreenRequestSendingViewModel.requestError.postValue(exception)
-            }
+            loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
         }
     }
 

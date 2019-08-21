@@ -10,22 +10,21 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
-import com.google.android.material.snackbar.Snackbar
 import de.sicherheitskritisch.passbutler.UserViewModel.Companion.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME
 import de.sicherheitskritisch.passbutler.base.BuildType
+import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
 import de.sicherheitskritisch.passbutler.base.L
-import de.sicherheitskritisch.passbutler.base.RequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.validateForm
 import de.sicherheitskritisch.passbutler.crypto.BiometricAuthenticationCallbackExecutor
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
 import de.sicherheitskritisch.passbutler.databinding.FragmentLockedScreenBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
-import de.sicherheitskritisch.passbutler.ui.BaseFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.Keyboard
+import de.sicherheitskritisch.passbutler.ui.showError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -162,7 +161,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
                 }
 
                 withContext(Dispatchers.Main) {
-                    showError(binding?.root, getString(R.string.locked_screen_biometrics_unlock_failed_missing_key_title))
+                    showError(getString(R.string.locked_screen_biometrics_unlock_failed_missing_key_title))
                 }
             }
         }
@@ -201,7 +200,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
             // TODO: Handle error here ok?
             launch {
-                showError(binding?.root, getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
+                showError(getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
             }
         }
 
@@ -214,44 +213,23 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
                 viewModel.unlockScreenWithBiometrics(initializedMasterPasswordDecryptionCipher)
             } else {
                 launch {
-                    showError(binding?.root, getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
+                    showError(getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
                 }
             }
         }
 
         override fun onAuthenticationFailed() {
-            L.d("LockedScreenFragment", "onAuthenticationFailed()")
             // Don't do anything more, the prompt shows error
+            L.d("LockedScreenFragment", "onAuthenticationFailed()")
         }
     }
 
     private class UnlockRequestSendingViewHandler(
         requestSendingViewModel: RequestSendingViewModel,
-        private val fragmentWeakReference: WeakReference<LockedScreenFragment>
-    ) : RequestSendingViewHandler(requestSendingViewModel) {
+        fragmentWeakReference: WeakReference<LockedScreenFragment>
+    ) : DefaultRequestSendingViewHandler<LockedScreenFragment>(requestSendingViewModel, fragmentWeakReference) {
 
-        private val fragment
-            get() = fragmentWeakReference.get()
-
-        private val binding
-            get() = fragment?.binding
-
-        private val resources
-            get() = fragment?.resources
-
-        override fun onIsLoadingChanged(isLoading: Boolean) {
-            if (isLoading) {
-                fragment?.showProgress()
-            } else {
-                fragment?.hideProgress()
-            }
-        }
-
-        override fun onRequestErrorChanged(requestError: Throwable) {
-            resources?.getString(R.string.locked_screen_unlock_failed_general_title)?.let { snackbarMessage ->
-                fragment?.showError(binding?.root, snackbarMessage)
-            }
-        }
+        override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.locked_screen_unlock_failed_general_title
 
         override fun onRequestFinishedSuccessfully() {
             fragment?.popBackstack()
@@ -262,12 +240,5 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         private const val FORM_FIELD_PASSWORD = "FORM_FIELD_PASSWORD"
 
         fun newInstance() = LockedScreenFragment()
-    }
-}
-
-// TODO: Move to `BaseFragment`?
-fun BaseFragment.showError(rootView: View?, errorMessage: String) {
-    rootView?.let {
-        Snackbar.make(it, errorMessage, Snackbar.LENGTH_SHORT).show()
     }
 }

@@ -3,6 +3,7 @@ package de.sicherheitskritisch.passbutler.ui
 import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
+import com.google.android.material.snackbar.Snackbar
 import de.sicherheitskritisch.passbutler.MainActivity
 import de.sicherheitskritisch.passbutler.RootFragment
 import de.sicherheitskritisch.passbutler.base.createMainDispatcher
@@ -86,5 +87,17 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
         } else {
             false
         }
+    }
+}
+
+fun BaseFragment.showError(errorMessage: String?) {
+    showInformation(errorMessage)
+}
+
+fun BaseFragment.showInformation(message: String?) {
+    val view = view
+
+    if (view != null && message != null) {
+        Snackbar.make(view, message, Snackbar.LENGTH_SHORT).show()
     }
 }

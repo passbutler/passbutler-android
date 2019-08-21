@@ -4,11 +4,10 @@ import android.app.Application
 import android.net.Uri
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
-import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
+import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 
 class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
@@ -23,23 +22,12 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
 
     fun loginUser(serverUrlString: String, username: String, masterPassword: String) {
         loginCoroutineJob?.cancel()
-        loginCoroutineJob = launch {
-            loginRequestSendingViewModel.isLoading.postValue(true)
-
-            try {
-                if (isLocalLogin.value) {
-                    userManager.loginLocalUser(username, masterPassword)
-                } else {
-                    val serverUrl = Uri.parse(serverUrlString)
-                    userManager.loginRemoteUser(username, masterPassword, serverUrl)
-                }
-
-                loginRequestSendingViewModel.isLoading.postValue(false)
-                loginRequestSendingViewModel.requestFinishedSuccessfully.emit()
-            } catch (exception: Exception) {
-                L.w("LoginViewModel", "loginUser(): The login failed with exception!", exception)
-                loginRequestSendingViewModel.isLoading.postValue(false)
-                loginRequestSendingViewModel.requestError.postValue(exception)
+        loginCoroutineJob = createRequestSendingJob(loginRequestSendingViewModel) {
+            if (isLocalLogin.value) {
+                userManager.loginLocalUser(username, masterPassword)
+            } else {
+                val serverUrl = Uri.parse(serverUrlString)
+                userManager.loginRemoteUser(username, masterPassword, serverUrl)
             }
         }
     }

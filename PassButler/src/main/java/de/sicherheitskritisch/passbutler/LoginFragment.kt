@@ -11,12 +11,11 @@ import android.webkit.URLUtil
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import com.google.android.material.snackbar.Snackbar
 import de.sicherheitskritisch.passbutler.base.BuildType
+import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
 import de.sicherheitskritisch.passbutler.base.L
-import de.sicherheitskritisch.passbutler.base.RequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.validateForm
 import de.sicherheitskritisch.passbutler.database.AuthWebservice
@@ -166,41 +165,15 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
     private class LoginRequestSendingViewHandler(
         requestSendingViewModel: RequestSendingViewModel,
-        private val fragmentWeakReference: WeakReference<LoginFragment>
-    ) : RequestSendingViewHandler(requestSendingViewModel) {
+        fragmentWeakReference: WeakReference<LoginFragment>
+    ) : DefaultRequestSendingViewHandler<LoginFragment>(requestSendingViewModel, fragmentWeakReference) {
 
-        private val fragment
-            get() = fragmentWeakReference.get()
+        override fun requestErrorMessageResourceId(requestError: Throwable): Int? {
+            val loginFailedExceptionCause = (requestError as? UserManager.LoginFailedException)?.cause
 
-        private val binding
-            get() = fragment?.binding
-
-        private val resources
-            get() = fragment?.resources
-
-        override fun onIsLoadingChanged(isLoading: Boolean) {
-            if (isLoading) {
-                fragment?.showProgress()
-            } else {
-                fragment?.hideProgress()
-            }
-        }
-
-        override fun onRequestErrorChanged(requestError: Throwable) {
-            binding?.constraintLayoutLoginScreenContainer?.let {
-                val loginFailedExceptionCause = (requestError as? UserManager.LoginFailedException)?.cause
-                val userfacingErrorMessage = when (loginFailedExceptionCause) {
-                    is AuthWebservice.GetAuthTokenFailedException -> {
-                        resources?.getString(R.string.login_failed_unauthorized_title)
-                    }
-                    else -> {
-                        resources?.getString(R.string.login_failed_general_title)
-                    }
-                }
-
-                userfacingErrorMessage?.let { snackbarMessage ->
-                    Snackbar.make(it, snackbarMessage, Snackbar.LENGTH_SHORT).show()
-                }
+            return when (loginFailedExceptionCause) {
+                is AuthWebservice.GetAuthTokenFailedException -> R.string.login_failed_unauthorized_title
+                else -> R.string.login_failed_general_title
             }
         }
 

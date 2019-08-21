@@ -3,6 +3,12 @@ package de.sicherheitskritisch.passbutler.base
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
+import de.sicherheitskritisch.passbutler.ui.BaseFragment
+import de.sicherheitskritisch.passbutler.ui.showError
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import java.lang.ref.WeakReference
 
 interface RequestSendingViewModel {
     val isLoading: MutableLiveData<Boolean>
@@ -16,7 +22,24 @@ open class DefaultRequestSendingViewModel : ViewModel(), RequestSendingViewModel
     override val requestFinishedSuccessfully = SignalEmitter()
 }
 
-abstract class RequestSendingViewHandler(private val requestSendingViewModel: RequestSendingViewModel) {
+fun CoroutineScope.createRequestSendingJob(requestSendingViewModel: RequestSendingViewModel, block: suspend () -> Unit): Job {
+    return launch {
+        requestSendingViewModel.isLoading.postValue(true)
+
+        try {
+            block.invoke()
+
+            requestSendingViewModel.isLoading.postValue(false)
+            requestSendingViewModel.requestFinishedSuccessfully.emit()
+        } catch (e: Exception) {
+            L.w("SettingsViewModel", "createRequestSendingJob(): The operation failed with exception!", e)
+            requestSendingViewModel.isLoading.postValue(false)
+            requestSendingViewModel.requestError.postValue(e)
+        }
+    }
+}
+
+open class RequestSendingViewHandler(private val requestSendingViewModel: RequestSendingViewModel) {
 
     private val isLoadingObserver = Observer<Boolean> { newValue ->
         newValue?.let {
@@ -57,4 +80,34 @@ abstract class RequestSendingViewHandler(private val requestSendingViewModel: Re
     open fun onRequestFinishedSuccessfully() {
         // Override if desired
     }
+}
+
+abstract class DefaultRequestSendingViewHandler<T : BaseFragment>(
+    requestSendingViewModel: RequestSendingViewModel,
+    private val fragmentWeakReference: WeakReference<T>
+): RequestSendingViewHandler(requestSendingViewModel){
+
+    protected val fragment
+        get() = fragmentWeakReference.get()
+
+    protected val resources
+        get() = fragment?.resources
+
+    override fun onIsLoadingChanged(isLoading: Boolean) {
+        if (isLoading) {
+            fragment?.showProgress()
+        } else {
+            fragment?.hideProgress()
+        }
+    }
+
+    override fun onRequestErrorChanged(requestError: Throwable) {
+        requestErrorMessageResourceId(requestError)?.let { errorMessageResourceId ->
+            resources?.getString(errorMessageResourceId)?.let { errorMessage ->
+                fragment?.showError(errorMessage)
+            }
+        }
+    }
+
+    abstract fun requestErrorMessageResourceId(requestError: Throwable): Int?
 }

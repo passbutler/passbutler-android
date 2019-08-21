@@ -15,8 +15,7 @@ import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
-import de.sicherheitskritisch.passbutler.base.RequestSendingViewHandler
+import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.signal
 import de.sicherheitskritisch.passbutler.databinding.FragmentOverviewBinding
@@ -26,6 +25,7 @@ import de.sicherheitskritisch.passbutler.ui.VisibilityHideMode
 import de.sicherheitskritisch.passbutler.ui.applyTint
 import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
 import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
+import de.sicherheitskritisch.passbutler.ui.showInformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -219,17 +219,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
     private class SynchronizeDataRequestSendingViewHandler(
         requestSendingViewModel: RequestSendingViewModel,
-        private val fragmentWeakReference: WeakReference<OverviewFragment>
-    ) : RequestSendingViewHandler(requestSendingViewModel) {
-
-        private val fragment
-            get() = fragmentWeakReference.get()
-
-        private val binding
-            get() = fragment?.binding
-
-        private val resources
-            get() = fragment?.resources
+        fragmentWeakReference: WeakReference<OverviewFragment>
+    ) : DefaultRequestSendingViewHandler<OverviewFragment>(requestSendingViewModel, fragmentWeakReference) {
 
         override fun onIsLoadingChanged(isLoading: Boolean) {
             fragment?.toolbarMenuIconSync?.apply {
@@ -244,55 +235,22 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
                 }
             }
 
-            binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
+            fragment?.binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
         }
 
-        override fun onRequestErrorChanged(requestError: Throwable) {
-            binding?.layoutOverviewContent?.let {
-                resources?.getString(R.string.overview_sync_failed_message)?.let { snackbarMessage ->
-                    Snackbar.make(it.root, snackbarMessage, Snackbar.LENGTH_SHORT).show()
-                }
-            }
-        }
+        override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.overview_sync_failed_message
 
         override fun onRequestFinishedSuccessfully() {
-            binding?.layoutOverviewContent?.let {
-                resources?.getString(R.string.overview_sync_successful_message)?.let { snackbarMessage ->
-                    Snackbar.make(it.root, snackbarMessage, Snackbar.LENGTH_SHORT).show()
-                }
-            }
+            fragment?.showInformation(resources?.getString(R.string.overview_sync_successful_message))
         }
     }
 
     private class LogoutRequestSendingViewHandler(
         requestSendingViewModel: RequestSendingViewModel,
-        private val fragmentWeakReference: WeakReference<OverviewFragment>
-    ) : RequestSendingViewHandler(requestSendingViewModel) {
+        fragmentWeakReference: WeakReference<OverviewFragment>
+    ) : DefaultRequestSendingViewHandler<OverviewFragment>(requestSendingViewModel, fragmentWeakReference) {
 
-        private val fragment
-            get() = fragmentWeakReference.get()
-
-        private val binding
-            get() = fragment?.binding
-
-        private val resources
-            get() = fragment?.resources
-
-        override fun onIsLoadingChanged(isLoading: Boolean) {
-            if (isLoading) {
-                fragment?.showProgress()
-            } else {
-                fragment?.hideProgress()
-            }
-        }
-
-        override fun onRequestErrorChanged(requestError: Throwable) {
-            binding?.layoutOverviewContent?.root?.let {
-                resources?.getString(R.string.overview_logout_failed_title)?.let { snackbarMessage ->
-                    Snackbar.make(it, snackbarMessage, Snackbar.LENGTH_SHORT).show()
-                }
-            }
-        }
+        override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.overview_logout_failed_title
 
         override fun onRequestFinishedSuccessfully() {
             val loginFragment = LoginFragment.newInstance()
