@@ -25,15 +25,15 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
 
         object AES256GCM : EncryptionAlgorithm.Symmetric("AES-256-GCM") {
 
-            private const val AES_KEY_LENGTH = 256
-            private const val GCM_INITIALIZATION_VECTOR_LENGTH = 96
-            private const val GCM_AUTHENTICATION_TAG_LENGTH = 128
+            private const val AES_KEY_BIT_SIZE = 256
+            private const val GCM_INITIALIZATION_VECTOR_BIT_SIZE = 96
+            private const val GCM_AUTHENTICATION_TAG_BIT_SIZE = 128
 
             @Throws(GenerateEncryptionKeyFailedException::class)
             override fun generateEncryptionKey(): ByteArray {
                 return try {
                     val keyGenerator = KeyGenerator.getInstance("AES")
-                    keyGenerator.init(AES_KEY_LENGTH)
+                    keyGenerator.init(AES_KEY_BIT_SIZE)
 
                     val secretKey = keyGenerator.generateKey()
                     secretKey.encoded
@@ -43,23 +43,23 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
             }
 
             override fun generateInitializationVector(): ByteArray {
-                val bytesCount = GCM_INITIALIZATION_VECTOR_LENGTH.byteSize
+                val bytesCount = GCM_INITIALIZATION_VECTOR_BIT_SIZE.byteSize
                 return RandomGenerator.generateRandomBytes(bytesCount)
             }
 
             @Throws(EncryptionFailedException::class)
             override fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray {
                 return try {
-                    if (initializationVector.bitSize != GCM_INITIALIZATION_VECTOR_LENGTH) {
-                        throw IllegalArgumentException("The initialization vector must be 96 bits long!")
+                    if (initializationVector.bitSize != GCM_INITIALIZATION_VECTOR_BIT_SIZE) {
+                        throw IllegalArgumentException("The initialization vector must be $GCM_INITIALIZATION_VECTOR_BIT_SIZE bits long!")
                     }
 
-                    if (encryptionKey.bitSize != AES_KEY_LENGTH) {
-                        throw IllegalArgumentException("The encryption key must be 256 bits long!")
+                    if (encryptionKey.bitSize != AES_KEY_BIT_SIZE) {
+                        throw IllegalArgumentException("The encryption key must be $AES_KEY_BIT_SIZE bits long!")
                     }
 
                     val secretKeySpec = SecretKeySpec(encryptionKey, "AES")
-                    val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_LENGTH, initializationVector)
+                    val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_BIT_SIZE, initializationVector)
 
                     // The GCM is no classic block mode and thus has no padding
                     val encryptCipherInstance = Cipher.getInstance("AES/GCM/NoPadding")
@@ -76,16 +76,16 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
             @Throws(DecryptionFailedException::class)
             override fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray {
                 return try {
-                    if (initializationVector.bitSize != GCM_INITIALIZATION_VECTOR_LENGTH) {
-                        throw IllegalArgumentException("The initialization vector must be 96 bits long!")
+                    if (initializationVector.bitSize != GCM_INITIALIZATION_VECTOR_BIT_SIZE) {
+                        throw IllegalArgumentException("The initialization vector must be $GCM_INITIALIZATION_VECTOR_BIT_SIZE bits long!")
                     }
 
-                    if (encryptionKey.bitSize != AES_KEY_LENGTH) {
-                        throw IllegalArgumentException("The encryption key must be 256 bits long!")
+                    if (encryptionKey.bitSize != AES_KEY_BIT_SIZE) {
+                        throw IllegalArgumentException("The encryption key must be $AES_KEY_BIT_SIZE bits long!")
                     }
 
                     val secretKeySpec = SecretKeySpec(encryptionKey, "AES")
-                    val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_LENGTH, initializationVector)
+                    val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_BIT_SIZE, initializationVector)
 
                     // The GCM is no classic block mode and thus has no padding
                     val encryptCipherInstance = Cipher.getInstance("AES/GCM/NoPadding")
