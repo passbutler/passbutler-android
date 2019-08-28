@@ -2,9 +2,6 @@ package de.sicherheitskritisch.passbutler.crypto
 
 import de.sicherheitskritisch.passbutler.base.bitSize
 import de.sicherheitskritisch.passbutler.base.byteSize
-import de.sicherheitskritisch.passbutler.base.putString
-import org.json.JSONException
-import org.json.JSONObject
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.spec.GCMParameterSpec
@@ -104,24 +101,4 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
     class GenerateEncryptionKeyFailedException(cause: Exception? = null) : Exception(cause)
     class EncryptionFailedException(cause: Exception? = null) : Exception(cause)
     class DecryptionFailedException(cause: Exception? = null) : Exception(cause)
-}
-
-/**
- * Convenience method to put a `EncryptionAlgorithm.Symmetric` value to `JSONObject`.
- */
-@Throws(JSONException::class)
-fun JSONObject.putSymmetricEncryptionAlgorithm(name: String, value: EncryptionAlgorithm.Symmetric): JSONObject {
-    val algorithmStringRepresentation = value.stringRepresentation
-    return putString(name, algorithmStringRepresentation)
-}
-
-/**
- * Convenience method to get a `EncryptionAlgorithm.Symmetric` value from `JSONObject`.
- */
-@Throws(JSONException::class)
-fun JSONObject.getSymmetricEncryptionAlgorithm(name: String): EncryptionAlgorithm.Symmetric {
-    return when (val algorithmStringRepresentation = getString(name)) {
-        EncryptionAlgorithm.Symmetric.AES256GCM.stringRepresentation -> EncryptionAlgorithm.Symmetric.AES256GCM
-        else -> throw JSONException("The EncryptionAlgorithm.Symmetric string representation '$algorithmStringRepresentation' could not be found!")
-    }
 }

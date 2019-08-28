@@ -6,6 +6,7 @@ import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.getByteArray
 import de.sicherheitskritisch.passbutler.base.putByteArray
 import de.sicherheitskritisch.passbutler.base.putJSONSerializable
+import de.sicherheitskritisch.passbutler.base.putString
 import de.sicherheitskritisch.passbutler.base.toHexString
 import de.sicherheitskritisch.passbutler.base.toUTF8String
 import org.json.JSONException
@@ -154,4 +155,24 @@ fun <T : JSONSerializable> JSONObject.getProtectedValueOrNull(name: String): Pro
 
 fun <T : JSONSerializable> JSONObject.putProtectedValue(name: String, value: T?): JSONObject {
     return putJSONSerializable(name, value)
+}
+
+/**
+ * Convenience method to put a `EncryptionAlgorithm.Symmetric` value to `JSONObject`.
+ */
+@Throws(JSONException::class)
+fun JSONObject.putSymmetricEncryptionAlgorithm(name: String, value: EncryptionAlgorithm.Symmetric): JSONObject {
+    val algorithmStringRepresentation = value.stringRepresentation
+    return putString(name, algorithmStringRepresentation)
+}
+
+/**
+ * Convenience method to get a `EncryptionAlgorithm.Symmetric` value from `JSONObject`.
+ */
+@Throws(JSONException::class)
+fun JSONObject.getSymmetricEncryptionAlgorithm(name: String): EncryptionAlgorithm.Symmetric {
+    return when (val algorithmStringRepresentation = getString(name)) {
+        EncryptionAlgorithm.Symmetric.AES256GCM.stringRepresentation -> EncryptionAlgorithm.Symmetric.AES256GCM
+        else -> throw JSONException("The EncryptionAlgorithm.Symmetric string representation '$algorithmStringRepresentation' could not be found!")
+    }
 }
