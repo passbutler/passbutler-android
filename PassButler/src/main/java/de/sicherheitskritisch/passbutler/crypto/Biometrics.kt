@@ -12,8 +12,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.security.InvalidKeyException
 import java.security.KeyStore
+import java.security.NoSuchAlgorithmException
+import java.security.cert.CertificateException
 import java.util.concurrent.Executor
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -75,8 +78,7 @@ object Biometrics {
     suspend fun generateKey(keyName: String) {
         withContext(Dispatchers.IO) {
             try {
-                val loadKeyStoreParameter = null
-                androidKeyStore.load(loadKeyStoreParameter)
+                initializeAndroidKeyStore()
 
                 // The key must only be used for encryption and decryption
                 val keyUsagePurposes = KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
@@ -108,8 +110,7 @@ object Biometrics {
     suspend fun initializeKeyForEncryption(keyName: String, encryptionCipher: Cipher) {
         withContext(Dispatchers.IO) {
             try {
-                val loadKeyStoreParameter = null
-                androidKeyStore.load(loadKeyStoreParameter)
+                initializeAndroidKeyStore()
 
                 val secretKey = androidKeyStore.getKey(keyName, null) as? SecretKey ?: throw InvalidKeyException("The key was not found!")
                 encryptionCipher.init(Cipher.ENCRYPT_MODE, secretKey)
@@ -123,8 +124,7 @@ object Biometrics {
     suspend fun initializeKeyForDecryption(keyName: String, decryptionCipher: Cipher, initializationVector: ByteArray) {
         withContext(Dispatchers.IO) {
             try {
-                val loadKeyStoreParameter = null
-                androidKeyStore.load(loadKeyStoreParameter)
+                initializeAndroidKeyStore()
 
                 val secretKey = androidKeyStore.getKey(keyName, null) as? SecretKey ?: throw InvalidKeyException("The key was not found!")
                 decryptionCipher.init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(initializationVector))
@@ -160,14 +160,19 @@ object Biometrics {
     suspend fun removeKey(keyName: String) {
         withContext(Dispatchers.IO) {
             try {
-                val loadKeyStoreParameter = null
-                androidKeyStore.load(loadKeyStoreParameter)
+                initializeAndroidKeyStore()
 
                 androidKeyStore.deleteEntry(keyName)
             } catch (e: Exception) {
                 throw RemoveKeyFailedException(e)
             }
         }
+    }
+
+    @Throws(CertificateException::class, IOException::class, NoSuchAlgorithmException::class)
+    private fun initializeAndroidKeyStore() {
+        val loadKeyStoreParameter = null
+        androidKeyStore.load(loadKeyStoreParameter)
     }
 
     class ObtainKeyFailedException(cause: Throwable) : Exception(cause)
