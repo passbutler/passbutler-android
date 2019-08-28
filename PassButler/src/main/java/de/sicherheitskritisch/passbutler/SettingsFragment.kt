@@ -32,7 +32,8 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     private var binding: FragmentSettingsBinding? = null
 
     private var generateBiometricsUnlockKeyViewHandler: GenerateBiometricsUnlockKeyViewHandler? = null
-    private var activateBiometricsUnlockKeyViewHandler: ActivateBiometricsUnlockKeyViewHandler? = null
+    private var enableBiometricsUnlockKeyViewHandler: EnableBiometricsUnlockKeyViewHandler? = null
+    private var disableBiometricsUnlockKeyViewHandler: DisableBiometricsUnlockKeyViewHandler? = null
 
     private val biometricCallbackExecutor by lazy {
         BiometricAuthenticationCallbackExecutor(this)
@@ -64,7 +65,11 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             registerObservers()
         }
 
-        activateBiometricsUnlockKeyViewHandler = ActivateBiometricsUnlockKeyViewHandler(viewModel.activateBiometricUnlockKeyViewModel, WeakReference(this)).apply {
+        enableBiometricsUnlockKeyViewHandler = EnableBiometricsUnlockKeyViewHandler(viewModel.enableBiometricUnlockKeyViewModel, WeakReference(this)).apply {
+            registerObservers()
+        }
+
+        disableBiometricsUnlockKeyViewHandler = DisableBiometricsUnlockKeyViewHandler(viewModel.disableBiometricUnlockKeyViewModel, WeakReference(this)).apply {
             registerObservers()
         }
 
@@ -129,7 +134,8 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
     override fun onDestroyView() {
         generateBiometricsUnlockKeyViewHandler?.unregisterObservers()
-        activateBiometricsUnlockKeyViewHandler?.unregisterObservers()
+        enableBiometricsUnlockKeyViewHandler?.unregisterObservers()
+        disableBiometricsUnlockKeyViewHandler?.unregisterObservers()
         super.onDestroyView()
     }
 
@@ -145,7 +151,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         }
     }
 
-    private class ActivateBiometricsUnlockKeyViewHandler(
+    private class EnableBiometricsUnlockKeyViewHandler(
         requestSendingViewModel: RequestSendingViewModel,
         fragmentWeakReference: WeakReference<SettingsFragment>
     ) : DefaultRequestSendingViewHandler<SettingsFragment>(requestSendingViewModel, fragmentWeakReference) {
@@ -154,6 +160,18 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
         override fun onRequestFinishedSuccessfully() {
             fragment?.showInformation(resources?.getString(R.string.settings_setup_biometric_unlock_successful_message))
+        }
+    }
+
+    private class DisableBiometricsUnlockKeyViewHandler(
+        requestSendingViewModel: RequestSendingViewModel,
+        fragmentWeakReference: WeakReference<SettingsFragment>
+    ) : DefaultRequestSendingViewHandler<SettingsFragment>(requestSendingViewModel, fragmentWeakReference) {
+
+        override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.settings_disable_biometric_unlock_failed_general_title
+
+        override fun onRequestFinishedSuccessfully() {
+            fragment?.showInformation(resources?.getString(R.string.settings_disable_biometric_unlock_successful_message))
         }
     }
 
@@ -173,7 +191,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
             if (initializedMasterPasswordEncryptionCipher != null) {
                 // TODO: Remove hardcoded password
-                viewModel.activateBiometricUnlock(initializedMasterPasswordEncryptionCipher, "1234")
+                viewModel.enableBiometricUnlock(initializedMasterPasswordEncryptionCipher, "1234")
             } else {
                 launch {
                     showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))

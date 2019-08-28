@@ -285,7 +285,6 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
                 putString(SHARED_PREFERENCES_KEY_SERVERURL, (userType as? UserType.Server)?.serverUrl?.toString())
                 putString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, (userType as? UserType.Server)?.authToken?.serialize()?.toString())
 
-                // TODO: Check if `null` set also gets null when retrieve string via `getString()`
                 putString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, encryptedMasterPassword?.toBase64String())
                 putString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD_IV, encryptedMasterPasswordInitializationVector?.toBase64String())
             }.commit()

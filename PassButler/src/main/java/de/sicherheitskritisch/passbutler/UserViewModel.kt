@@ -202,7 +202,7 @@ class UserViewModel private constructor(
 
                 biometricUnlockEnabled.notifyChange()
             } catch (e: Exception) {
-                L.w("UserViewModel", "activateBiometricUnlock(): The biometric unlock could not be enabled!", e)
+                L.w("UserViewModel", "enableBiometricUnlock(): The biometric unlock could not be enabled!", e)
 
                 // Try to disable biometric unlock if anything failed
                 disableBiometricUnlock()

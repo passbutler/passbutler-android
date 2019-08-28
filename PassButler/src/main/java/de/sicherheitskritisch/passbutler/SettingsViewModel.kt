@@ -17,7 +17,8 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
         get() = loggedInUserViewModel?.lockTimeoutSetting
 
     val generateBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
-    val activateBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
+    val enableBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
+    val disableBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
 
     private var setupBiometricUnlockKeyJob: Job? = null
 
@@ -29,10 +30,17 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
         }
     }
 
-    fun activateBiometricUnlock(initializedMasterPasswordEncryptionCipher: Cipher, masterPassword: String) {
+    fun enableBiometricUnlock(initializedMasterPasswordEncryptionCipher: Cipher, masterPassword: String) {
         setupBiometricUnlockKeyJob?.cancel()
-        setupBiometricUnlockKeyJob = createRequestSendingJob(activateBiometricUnlockKeyViewModel) {
+        setupBiometricUnlockKeyJob = createRequestSendingJob(enableBiometricUnlockKeyViewModel) {
             loggedInUserViewModel?.enableBiometricUnlock(initializedMasterPasswordEncryptionCipher, masterPassword)
+        }
+    }
+
+    fun disableBiometricUnlock() {
+        setupBiometricUnlockKeyJob?.cancel()
+        setupBiometricUnlockKeyJob = createRequestSendingJob(disableBiometricUnlockKeyViewModel) {
+            loggedInUserViewModel?.disableBiometricUnlock()
         }
     }
 }
