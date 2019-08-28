@@ -172,6 +172,14 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         binding?.constraintLayoutLockedScreenContainer?.requestFocus()
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        // The states may changed when user had the app in the background
+        viewModel.loggedInUserViewModel?.biometricUnlockAvailable?.notifyChange()
+        viewModel.loggedInUserViewModel?.biometricUnlockEnabled?.notifyChange()
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
