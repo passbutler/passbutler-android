@@ -12,12 +12,12 @@ import de.sicherheitskritisch.passbutler.base.putBoolean
 import de.sicherheitskritisch.passbutler.base.putJSONSerializable
 import de.sicherheitskritisch.passbutler.base.putLong
 import de.sicherheitskritisch.passbutler.base.putString
-import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
-import de.sicherheitskritisch.passbutler.crypto.getProtectedValue
-import de.sicherheitskritisch.passbutler.crypto.getProtectedValueOrNull
+import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
+import de.sicherheitskritisch.passbutler.crypto.models.getProtectedValue
+import de.sicherheitskritisch.passbutler.crypto.models.getProtectedValueOrNull
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
-import de.sicherheitskritisch.passbutler.crypto.putProtectedValue
+import de.sicherheitskritisch.passbutler.crypto.models.putProtectedValue
 import de.sicherheitskritisch.passbutler.database.Synchronizable
 import org.json.JSONException
 import org.json.JSONObject

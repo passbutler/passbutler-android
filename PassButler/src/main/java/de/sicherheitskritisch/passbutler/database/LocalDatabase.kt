@@ -12,7 +12,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import androidx.room.Update
-import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
+import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.database.models.ItemKey

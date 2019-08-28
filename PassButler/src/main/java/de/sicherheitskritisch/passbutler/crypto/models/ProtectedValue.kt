@@ -1,4 +1,4 @@
-package de.sicherheitskritisch.passbutler.crypto
+package de.sicherheitskritisch.passbutler.crypto.models
 
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.JSONSerializableDeserializer
@@ -9,6 +9,7 @@ import de.sicherheitskritisch.passbutler.base.putJSONSerializable
 import de.sicherheitskritisch.passbutler.base.putString
 import de.sicherheitskritisch.passbutler.base.toHexString
 import de.sicherheitskritisch.passbutler.base.toUTF8String
+import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import org.json.JSONException
 import org.json.JSONObject
 

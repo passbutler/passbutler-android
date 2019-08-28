@@ -15,7 +15,7 @@ import de.sicherheitskritisch.passbutler.crypto.Derivation
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.crypto.MASTER_KEY_BIT_LENGTH
 import de.sicherheitskritisch.passbutler.crypto.MASTER_KEY_ITERATION_COUNT
-import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
+import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.RandomGenerator
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation

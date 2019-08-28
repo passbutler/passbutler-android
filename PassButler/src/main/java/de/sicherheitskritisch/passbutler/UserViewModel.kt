@@ -9,7 +9,7 @@ import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.optionalContentNotEquals
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
 import de.sicherheitskritisch.passbutler.crypto.Derivation
-import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
+import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.database.models.User

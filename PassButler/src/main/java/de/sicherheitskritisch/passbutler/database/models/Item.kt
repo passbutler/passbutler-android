@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
-import de.sicherheitskritisch.passbutler.crypto.ProtectedValue
+import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.database.Synchronizable
 import org.json.JSONObject
 import java.util.*

@@ -1,10 +1,11 @@
-package de.sicherheitskritisch.passbutler.crypto
+package de.sicherheitskritisch.passbutler.crypto.models
 
 import android.util.Log
 import de.sicherheitskritisch.passbutler.assertJSONObjectEquals
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.JSONSerializableDeserializer
 import de.sicherheitskritisch.passbutler.base.putString
+import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.hexToBytes
 import io.mockk.every
 import io.mockk.mockk
@@ -170,7 +171,7 @@ class ProtectedValueTest {
         val mockAES256GCMAlgorithm = mockk<EncryptionAlgorithm.Symmetric.AES256GCM>()
 
         val dataCaptureSlot = slot<ByteArray>()
-        every { mockAES256GCMAlgorithm.decrypt(initializationVector = any(), encryptionKey = any(), data = capture(dataCaptureSlot)) } answers {
+        every { EncryptionAlgorithm.Symmetric.AES256GCM.decrypt(initializationVector = any(), encryptionKey = any(), data = capture(dataCaptureSlot)) } answers {
             dataCaptureSlot.captured
         }
 
@@ -206,10 +207,10 @@ class ProtectedValueTest {
         private fun createMockAlgorithmAES256GCMWithoutEncryption(generatedInitializationVector: ByteArray, shouldEncryptionFail: Boolean = false): EncryptionAlgorithm.Symmetric.AES256GCM {
             val mockAES256GCMAlgorithm = mockk<EncryptionAlgorithm.Symmetric.AES256GCM>()
             every { mockAES256GCMAlgorithm.stringRepresentation } returns EncryptionAlgorithm.Symmetric.AES256GCM.stringRepresentation
-            every { mockAES256GCMAlgorithm.generateInitializationVector() } returns generatedInitializationVector
+            every { EncryptionAlgorithm.Symmetric.AES256GCM.generateInitializationVector() } returns generatedInitializationVector
 
             val dataCaptureSlot = slot<ByteArray>()
-            every { mockAES256GCMAlgorithm.encrypt(initializationVector = any(), encryptionKey = any(), data = capture(dataCaptureSlot)) } answers {
+            every { EncryptionAlgorithm.Symmetric.AES256GCM.encrypt(initializationVector = any(), encryptionKey = any(), data = capture(dataCaptureSlot)) } answers {
                 if (shouldEncryptionFail) {
                     throw EncryptionAlgorithm.EncryptionFailedException()
                 } else {
