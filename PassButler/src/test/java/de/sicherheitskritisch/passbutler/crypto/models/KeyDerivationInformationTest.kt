@@ -17,7 +17,7 @@ class KeyDerivationInformationTest {
     @BeforeEach
     fun setUp() {
         mockkStatic(Log::class)
-        every { Log.w(any(), any<String>()) } returns 0
+        every { Log.d(any(), any()) } returns 0
     }
 
     @AfterEach

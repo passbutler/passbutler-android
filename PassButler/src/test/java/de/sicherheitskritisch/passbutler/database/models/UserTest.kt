@@ -1,33 +1,16 @@
 package de.sicherheitskritisch.passbutler.database.models
 
-import android.util.Log
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
-import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
+import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.hexToBytes
-import io.mockk.every
 import io.mockk.mockkObject
-import io.mockk.mockkStatic
-import io.mockk.unmockkAll
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.*
 
 class UserTest {
-
-    @BeforeEach
-    fun setUp() {
-        mockkStatic(Log::class)
-        every { Log.w(any(), any<String>()) } returns 0
-    }
-
-    @AfterEach
-    fun unsetUp() {
-        unmockkAll()
-    }
 
     @Test
     fun `Serialize and deserialize a User should result an equal object`() {
