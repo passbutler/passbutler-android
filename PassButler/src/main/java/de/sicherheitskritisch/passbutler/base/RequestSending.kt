@@ -85,7 +85,7 @@ open class RequestSendingViewHandler(private val requestSendingViewModel: Reques
 abstract class DefaultRequestSendingViewHandler<T : BaseFragment>(
     requestSendingViewModel: RequestSendingViewModel,
     private val fragmentWeakReference: WeakReference<T>
-): RequestSendingViewHandler(requestSendingViewModel){
+) : RequestSendingViewHandler(requestSendingViewModel) {
 
     protected val fragment
         get() = fragmentWeakReference.get()
@@ -102,12 +102,12 @@ abstract class DefaultRequestSendingViewHandler<T : BaseFragment>(
     }
 
     override fun onRequestErrorChanged(requestError: Throwable) {
-        requestErrorMessageResourceId(requestError)?.let { errorMessageResourceId ->
-            resources?.getString(errorMessageResourceId)?.let { errorMessage ->
-                fragment?.showError(errorMessage)
-            }
+        val errorMessageResourceId = requestErrorMessageResourceId(requestError)
+
+        resources?.getString(errorMessageResourceId)?.let { errorMessage ->
+            fragment?.showError(errorMessage)
         }
     }
 
-    abstract fun requestErrorMessageResourceId(requestError: Throwable): Int?
+    abstract fun requestErrorMessageResourceId(requestError: Throwable): Int
 }

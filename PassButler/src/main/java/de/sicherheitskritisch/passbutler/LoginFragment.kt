@@ -168,7 +168,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         fragmentWeakReference: WeakReference<LoginFragment>
     ) : DefaultRequestSendingViewHandler<LoginFragment>(requestSendingViewModel, fragmentWeakReference) {
 
-        override fun requestErrorMessageResourceId(requestError: Throwable): Int? {
+        override fun requestErrorMessageResourceId(requestError: Throwable): Int {
             val loginFailedExceptionCause = (requestError as? UserManager.LoginFailedException)?.cause
 
             return when (loginFailedExceptionCause) {
