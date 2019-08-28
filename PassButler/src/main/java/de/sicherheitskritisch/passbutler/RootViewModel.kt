@@ -8,6 +8,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
+import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
 import de.sicherheitskritisch.passbutler.base.toUTF8String
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
@@ -64,6 +65,14 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
             val masterPassword = Biometrics.decryptData(initializedMasterPasswordDecryptionCipher, encryptedMasterPassword).toUTF8String()
 
             loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
+        }
+    }
+
+    suspend fun disableBiometricUnlock() {
+        try {
+            loggedInUserViewModel?.disableBiometricUnlock()
+        } catch (e: Exception) {
+            L.w("RootViewModel", "disableBiometricUnlock(): The biometric unlock could not be disabled!", e)
         }
     }
 

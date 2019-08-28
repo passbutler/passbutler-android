@@ -91,6 +91,7 @@
     <string name="settings_setup_biometric_unlock_biometrics_prompt_cancel_button_text">Abbrechen</string>
 
     <string name="settings_setup_biometric_unlock_failed_general_title">Die Einrichtung des biometrischen Entsperren ist fehlgeschlagen</string>
+    <string name="settings_setup_biometric_unlock_failed_wrong_master_password_title">Das eingegebene Master-Passwort ist nicht korrekt.</string>
     <string name="settings_setup_biometric_unlock_successful_message">Die Einrichtung des biometrischen Entsperren war erfolgreich</string>
 
     <string name="settings_disable_biometric_unlock_failed_general_title">Die Deaktivierung des biometrischen Entsperren ist fehlgeschlagen</string>

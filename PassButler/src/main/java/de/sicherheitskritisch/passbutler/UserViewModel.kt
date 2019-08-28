@@ -117,22 +117,11 @@ class UserViewModel private constructor(
         coroutineJob.cancel()
     }
 
-    @Throws(IllegalStateException::class, UnlockFailedException::class)
+    @Throws(UnlockFailedException::class)
     suspend fun unlockMasterEncryptionKey(masterPassword: String) {
-        // Execute deserialization/decryption on the dispatcher for CPU load
-        withContext(Dispatchers.Default) {
-            var masterKey: ByteArray? = null
-
+        withContext(Dispatchers.IO) {
             try {
-                masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation)
-
-                val decryptedProtectedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer)
-
-                if (decryptedProtectedMasterEncryptionKey != null) {
-                    masterEncryptionKey = decryptedProtectedMasterEncryptionKey.key
-                } else {
-                    throw IllegalStateException("The master encryption key could not be decrypted!")
-                }
+                masterEncryptionKey = decryptMasterEncryptionKey(masterPassword)
 
                 if (userManager.loggedInStateStorage.userType is UserType.Server) {
                     userManager.restoreWebservices(masterPassword)
@@ -141,8 +130,6 @@ class UserViewModel private constructor(
                 unlockFinished.emit()
             } catch (e: Exception) {
                 throw UnlockFailedException(e)
-            } finally {
-                masterKey?.clear()
             }
         }
     }
@@ -155,14 +142,15 @@ class UserViewModel private constructor(
         }
     }
 
-    @Throws(IllegalStateException::class, UpdateMasterPasswordFailedException::class)
+    @Throws(UpdateMasterPasswordFailedException::class)
     suspend fun updateMasterPassword(newMasterPassword: String) {
         // Execute deserialization/decryption on the dispatcher for CPU load
         withContext(Dispatchers.Default) {
-            val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to update the master password!")
             var newMasterKey: ByteArray? = null
 
             try {
+                val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to update the master password!")
+
                 val newLocalMasterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, newMasterPassword)
                 val newServerMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(newLocalMasterPasswordAuthenticationHash)
                 masterPasswordAuthenticationHash = newServerMasterPasswordAuthenticationHash
@@ -188,11 +176,14 @@ class UserViewModel private constructor(
         }
     }
 
+    @Throws(EnableBiometricUnlockFailedException::class)
     suspend fun enableBiometricUnlock(initializedMasterPasswordEncryptionCipher: Cipher, masterPassword: String) {
         // Execute encryption on the dispatcher for CPU load
         withContext(Dispatchers.Default) {
             try {
-                // TODO: Test if master password is correct
+                // Test if master password is correct
+                decryptMasterEncryptionKey(masterPassword)
+
                 val encryptedMasterPassword = Biometrics.encryptData(initializedMasterPasswordEncryptionCipher, masterPassword.toByteArray())
                 val encryptedMasterPasswordInitializationVector = initializedMasterPasswordEncryptionCipher.iv
 
@@ -202,14 +193,15 @@ class UserViewModel private constructor(
 
                 biometricUnlockEnabled.notifyChange()
             } catch (e: Exception) {
-                L.w("UserViewModel", "enableBiometricUnlock(): The biometric unlock could not be enabled!", e)
-
-                // Try to disable biometric unlock if anything failed
+                // Try to rollback biometric unlock setup if anything failed
                 disableBiometricUnlock()
+
+                throw EnableBiometricUnlockFailedException(e)
             }
         }
     }
 
+    @Throws(DisableBiometricUnlockFailedException::class)
     suspend fun disableBiometricUnlock() {
         withContext(Dispatchers.IO) {
             try {
@@ -221,7 +213,26 @@ class UserViewModel private constructor(
 
                 biometricUnlockEnabled.notifyChange()
             } catch (e: Exception) {
-                L.w("UserViewModel", "disableBiometricUnlock(): The biometric unlock could not be disabled!", e)
+                throw DisableBiometricUnlockFailedException(e)
+            }
+        }
+    }
+
+    @Throws(DecryptMasterEncryptionKeyFailedException::class)
+    private suspend fun decryptMasterEncryptionKey(masterPassword: String): ByteArray {
+        // Execute deserialization/decryption on the dispatcher for CPU load
+        return withContext(Dispatchers.Default) {
+            var masterKey: ByteArray? = null
+
+            try {
+                masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation)
+
+                val decryptedProtectedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer)
+                decryptedProtectedMasterEncryptionKey?.key ?: throw IllegalStateException("The decrypted master encryption key is null despite decryption was successful!")
+            } catch (e: Exception) {
+                throw DecryptMasterEncryptionKeyFailedException(e)
+            } finally {
+                masterKey?.clear()
             }
         }
     }
@@ -306,7 +317,10 @@ class UserViewModel private constructor(
     }
 
     class UnlockFailedException(cause: Exception? = null) : Exception(cause)
+    class DecryptMasterEncryptionKeyFailedException(cause: Exception? = null) : Exception(cause)
     class UpdateMasterPasswordFailedException(cause: Exception? = null) : Exception(cause)
+    class EnableBiometricUnlockFailedException(cause: Exception? = null) : Exception(cause)
+    class DisableBiometricUnlockFailedException(cause: Exception? = null) : Exception(cause)
 
     companion object {
         const val BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME = "MasterPasswordEncryptionKey"

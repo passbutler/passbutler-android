@@ -156,7 +156,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
             } catch (e: Exception) {
                 if (e is Biometrics.InitializeKeyFailedException && e.cause is KeyPermanentlyInvalidatedException) {
                     L.w("LockedScreenFragment", "showBiometricPrompt(): The biometric authentication failed because key state is invalidated - disable biometric unlock!")
-                    viewModel.loggedInUserViewModel?.disableBiometricUnlock()
+                    viewModel.disableBiometricUnlock()
                 } else {
                     L.w("LockedScreenFragment", "showBiometricPrompt(): The biometric authentication failed!", e)
                 }

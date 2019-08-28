@@ -156,7 +156,14 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         fragmentWeakReference: WeakReference<SettingsFragment>
     ) : DefaultRequestSendingViewHandler<SettingsFragment>(requestSendingViewModel, fragmentWeakReference) {
 
-        override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.settings_setup_biometric_unlock_failed_general_title
+        override fun requestErrorMessageResourceId(requestError: Throwable): Int {
+            val enableBiometricUnlockFailedExceptionCause = (requestError as? UserViewModel.EnableBiometricUnlockFailedException)?.cause
+
+            return when (enableBiometricUnlockFailedExceptionCause) {
+                is UserViewModel.DecryptMasterEncryptionKeyFailedException -> R.string.settings_setup_biometric_unlock_failed_wrong_master_password_title
+                else -> R.string.settings_setup_biometric_unlock_failed_general_title
+            }
+        }
 
         override fun onRequestFinishedSuccessfully() {
             fragment?.showInformation(resources?.getString(R.string.settings_setup_biometric_unlock_successful_message))
