@@ -80,14 +80,17 @@ object Biometrics {
 
                 // The key must only be used for encryption and decryption
                 val keyUsagePurposes = KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
-
                 val keyParameterBuilder = KeyGenParameterSpec.Builder(keyName, keyUsagePurposes)
                     .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
                     .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
+                    // Do not allow non random IV
+                    .setRandomizedEncryptionRequired(true)
                     // Biometric authentication is enforced before key usage:
                     .setUserAuthenticationRequired(true)
                     // The key gets invalidated if Android lock screen is disabled or new biometrics is been enrolled:
                     .setInvalidatedByBiometricEnrollment(true)
+
+                // TODO: Set `setUnlockedDeviceRequired(true)`?
 
                 val keyParameters = keyParameterBuilder.build()
                 androidKeyGenerator.init(keyParameters)
@@ -132,7 +135,7 @@ object Biometrics {
     }
 
     @Throws(EncryptionFailedException::class)
-    suspend fun encryptData(encryptionCipher: Cipher, data: ByteArray): ByteArray? {
+    suspend fun encryptData(encryptionCipher: Cipher, data: ByteArray): ByteArray {
         return withContext(Dispatchers.Default) {
             try {
                 encryptionCipher.doFinal(data)
