@@ -135,6 +135,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     private fun showBiometricPrompt() {
         launch(Dispatchers.IO) {
             try {
+                // TODO: Move to viewmodel
                 val masterPasswordEncryptionKeyCipher = Biometrics.obtainKeyInstance()
                 val encryptedMasterPasswordInitializationVector = viewModel.userManager.loggedInStateStorage.encryptedMasterPasswordInitializationVector ?: throw IllegalStateException("The encrypted master key iV was not found, despite biometric unlock was tried!")
                 Biometrics.initializeKeyForDecryption(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, masterPasswordEncryptionKeyCipher, encryptedMasterPasswordInitializationVector)
@@ -175,6 +176,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     override fun onResume() {
         super.onResume()
 
+        // TODO: Move to viewmodel
         // The states may changed when user had the app in the background
         viewModel.loggedInUserViewModel?.biometricUnlockAvailable?.notifyChange()
         viewModel.loggedInUserViewModel?.biometricUnlockEnabled?.notifyChange()
