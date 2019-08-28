@@ -5,7 +5,7 @@ import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterF
 import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.asJSONObjectSequence
 import de.sicherheitskritisch.passbutler.base.isHttpsScheme
-import de.sicherheitskritisch.passbutler.database.models.AuthToken
+import de.sicherheitskritisch.passbutler.crypto.models.AuthToken
 import de.sicherheitskritisch.passbutler.database.models.User
 import kotlinx.coroutines.Deferred
 import okhttp3.Credentials

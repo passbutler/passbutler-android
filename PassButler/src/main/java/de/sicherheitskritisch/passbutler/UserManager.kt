@@ -24,10 +24,10 @@ import de.sicherheitskritisch.passbutler.database.Differentiation
 import de.sicherheitskritisch.passbutler.database.LocalRepository
 import de.sicherheitskritisch.passbutler.database.Synchronization
 import de.sicherheitskritisch.passbutler.database.UserWebservice
-import de.sicherheitskritisch.passbutler.database.models.AuthToken
+import de.sicherheitskritisch.passbutler.crypto.models.AuthToken
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
-import de.sicherheitskritisch.passbutler.database.models.isExpired
+import de.sicherheitskritisch.passbutler.crypto.models.isExpired
 import de.sicherheitskritisch.passbutler.database.requestAuthToken
 import de.sicherheitskritisch.passbutler.database.requestPublicUserList
 import de.sicherheitskritisch.passbutler.database.requestUser
