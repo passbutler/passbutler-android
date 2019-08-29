@@ -1,6 +1,7 @@
 package de.sicherheitskritisch.passbutler
 
 import android.app.Application
+import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.text.format.DateUtils
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
@@ -58,19 +59,26 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         }
     }
 
-    fun unlockScreenWithBiometrics(initializedMasterPasswordDecryptionCipher: Cipher) {
-        cryptoResourcesJob?.cancel()
-        cryptoResourcesJob = createRequestSendingJob(unlockScreenRequestSendingViewModel) {
-            val encryptedMasterPassword = userManager.loggedInStateStorage.encryptedMasterPassword?.encryptedValue
-                ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
+    @Throws(InitializeBiometricUnlockCipherFailedException::class)
+    suspend fun initializeBiometricUnlockCipher(): Cipher {
+        return try {
+            val biometricUnlockCipher = Biometrics.obtainKeyInstance()
+            val encryptedMasterPasswordInitializationVector = userManager.loggedInStateStorage.encryptedMasterPassword?.initializationVector
+                ?: throw IllegalStateException("The encrypted master key initialization vector was not found, despite biometric unlock was tried!")
+            Biometrics.initializeKeyForDecryption(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, biometricUnlockCipher, encryptedMasterPasswordInitializationVector)
 
-            val masterPassword = Biometrics.decryptData(initializedMasterPasswordDecryptionCipher, encryptedMasterPassword).toUTF8String()
+            biometricUnlockCipher
+        } catch (e: Exception) {
+            if (e is Biometrics.InitializeKeyFailedException && e.cause is KeyPermanentlyInvalidatedException) {
+                L.w("RootViewModel", "initializeBiometricUnlockCipher(): The biometric authentication failed because key state is invalidated - disable biometric unlock!")
+                disableBiometricUnlock()
+            }
 
-            loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
+            throw InitializeBiometricUnlockCipherFailedException(e)
         }
     }
 
-    suspend fun disableBiometricUnlock() {
+    private suspend fun disableBiometricUnlock() {
         try {
             loggedInUserViewModel?.disableBiometricUnlock()
         } catch (e: Exception) {
@@ -78,10 +86,32 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         }
     }
 
+    fun unlockScreenWithBiometrics(initializedBiometricUnlockCipher: Cipher) {
+        cryptoResourcesJob?.cancel()
+        cryptoResourcesJob = createRequestSendingJob(unlockScreenRequestSendingViewModel) {
+            val encryptedMasterPassword = userManager.loggedInStateStorage.encryptedMasterPassword?.encryptedValue
+                ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
+
+            val masterPassword = Biometrics.decryptData(initializedBiometricUnlockCipher, encryptedMasterPassword).toUTF8String()
+            loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
+        }
+    }
+
+    fun updateBiometricUnlockAvailability() {
+        loggedInUserViewModel?.biometricUnlockAvailable?.notifyChange()
+        loggedInUserViewModel?.biometricUnlockEnabled?.notifyChange()
+    }
+
+    /**
+     * Must be only called by `RootFragment.onPause()`!
+     */
     fun applicationWasPaused() {
         startLockScreenTimer()
     }
 
+    /**
+     * Must be only called by `RootFragment.onResume()`!
+     */
     fun applicationWasResumed() {
         cancelLockScreenTimer()
     }
@@ -144,6 +174,8 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
             }
         }
     }
+
+    class InitializeBiometricUnlockCipherFailedException(cause: Throwable) : Exception(cause)
 }
 
 /**
