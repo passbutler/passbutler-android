@@ -40,7 +40,7 @@ object Biometrics {
     val isKeyguardSecure: Boolean
         get() {
             val keyguardManager = applicationContext.getSystemService(KeyguardManager::class.java)
-            return keyguardManager.isKeyguardSecure
+            return keyguardManager?.isKeyguardSecure ?: false
         }
 
     val hasEnrolledBiometrics: Boolean
@@ -92,7 +92,10 @@ object Biometrics {
                     // The key gets invalidated if Android lock screen is disabled or new biometrics is been enrolled:
                     .setInvalidatedByBiometricEnrollment(true)
 
-                // TODO: Set `setUnlockedDeviceRequired(true)`?
+                // Enable keyguard-bound state if possible
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    keyParameterBuilder.setUnlockedDeviceRequired(true)
+                }
 
                 val keyParameters = keyParameterBuilder.build()
                 androidKeyGenerator.init(keyParameters)
