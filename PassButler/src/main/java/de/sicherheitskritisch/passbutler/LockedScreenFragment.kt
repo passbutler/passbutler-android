@@ -139,6 +139,8 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
                     }
                 }
             } catch (e: Exception) {
+                L.w("LockedScreenFragment", "showBiometricPrompt(): The biometric authentication failed!", e)
+
                 withContext(Dispatchers.Main) {
                     showError(getString(R.string.locked_screen_biometrics_unlock_failed_missing_key_title))
                 }
