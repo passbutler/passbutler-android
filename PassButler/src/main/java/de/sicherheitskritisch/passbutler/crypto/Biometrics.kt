@@ -5,6 +5,8 @@ import android.hardware.biometrics.BiometricManager
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import android.security.keystore.KeyProperties.BLOCK_MODE_GCM
+import android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE
 import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
 import androidx.core.hardware.fingerprint.FingerprintManagerCompat
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
@@ -21,9 +23,12 @@ import java.util.concurrent.Executor
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
-import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.GCMParameterSpec
 
 object Biometrics {
+
+    private const val AES_KEY_BIT_SIZE = 256
+    private const val GCM_AUTHENTICATION_TAG_BIT_SIZE = 128
 
     val isHardwareCapable: Boolean
         get() = if (Build.VERSION.SDK_INT > 28) {
@@ -68,7 +73,7 @@ object Biometrics {
     @Throws(ObtainKeyFailedException::class)
     fun obtainKeyInstance(): Cipher {
         return try {
-            Cipher.getInstance("$KEY_ALGORITHM_AES/${KeyProperties.BLOCK_MODE_CBC}/${KeyProperties.ENCRYPTION_PADDING_PKCS7}")
+            Cipher.getInstance("$KEY_ALGORITHM_AES/${BLOCK_MODE_GCM}/${ENCRYPTION_PADDING_NONE}")
         } catch (e: Exception) {
             throw ObtainKeyFailedException(e)
         }
@@ -83,8 +88,9 @@ object Biometrics {
                 // The key must only be used for encryption and decryption
                 val keyUsagePurposes = KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
                 val keyParameterBuilder = KeyGenParameterSpec.Builder(keyName, keyUsagePurposes)
-                    .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
-                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
+                    .setKeySize(AES_KEY_BIT_SIZE)
+                    .setBlockModes(BLOCK_MODE_GCM)
+                    .setEncryptionPaddings(ENCRYPTION_PADDING_NONE)
                     // Do not allow non random IV
                     .setRandomizedEncryptionRequired(true)
                     // Biometric authentication is enforced before key usage:
@@ -107,15 +113,13 @@ object Biometrics {
         }
     }
 
-    // TODO: Ensure AES-256 + better mode than CBC
-
     @Throws(InitializeKeyFailedException::class)
     suspend fun initializeKeyForEncryption(keyName: String, encryptionCipher: Cipher) {
         withContext(Dispatchers.IO) {
             try {
                 initializeAndroidKeyStore()
 
-                val secretKey = androidKeyStore.getKey(keyName, null) as? SecretKey ?: throw InvalidKeyException("The key was not found!")
+                val secretKey = androidKeyStore.getKey(keyName, null) as? SecretKey ?: throw InvalidKeyException("The key '$keyName' was not found!")
                 encryptionCipher.init(Cipher.ENCRYPT_MODE, secretKey)
             } catch (e: Exception) {
                 throw InitializeKeyFailedException(e)
@@ -129,8 +133,8 @@ object Biometrics {
             try {
                 initializeAndroidKeyStore()
 
-                val secretKey = androidKeyStore.getKey(keyName, null) as? SecretKey ?: throw InvalidKeyException("The key was not found!")
-                decryptionCipher.init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(initializationVector))
+                val secretKey = androidKeyStore.getKey(keyName, null) as? SecretKey ?: throw InvalidKeyException("The key '$keyName' was not found!")
+                decryptionCipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_AUTHENTICATION_TAG_BIT_SIZE, initializationVector))
             } catch (e: Exception) {
                 throw InitializeKeyFailedException(e)
             }
