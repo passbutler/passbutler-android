@@ -10,7 +10,7 @@ import org.json.JSONException
 import org.json.JSONObject
 
 /**
- * Wraps the meta information of a key derivation from a password.
+ * Wraps the meta information of a key derivation from a password in a `JSONSerializable`.
  */
 data class KeyDerivationInformation(val salt: ByteArray, val iterationCount: Int) : JSONSerializable {
 

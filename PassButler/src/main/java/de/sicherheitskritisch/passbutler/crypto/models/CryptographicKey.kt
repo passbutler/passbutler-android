@@ -8,7 +8,7 @@ import org.json.JSONException
 import org.json.JSONObject
 
 /**
- * Wraps a binary cryptographic key to be `JSONSerializable`.
+ * Wraps a binary cryptographic key in a `JSONSerializable`.
  */
 data class CryptographicKey(val key: ByteArray) : JSONSerializable {
 

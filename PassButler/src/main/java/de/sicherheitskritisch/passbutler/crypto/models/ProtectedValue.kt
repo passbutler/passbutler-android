@@ -14,7 +14,7 @@ import org.json.JSONException
 import org.json.JSONObject
 
 /**
- * Wraps a `JSONSerializable` object to store it encrypted.
+ * Wraps a `JSONSerializable` object to store it encrypted as a `JSONSerializable`.
  */
 class ProtectedValue<T : JSONSerializable>(
     initializationVector: ByteArray,

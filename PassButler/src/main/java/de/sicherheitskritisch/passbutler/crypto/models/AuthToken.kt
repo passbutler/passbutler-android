@@ -9,6 +9,9 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.time.Instant
 
+/**
+ * Wraps a auth token string (actually a JSON Web Token) in a `JSONSerializable`.
+ */
 data class AuthToken(
     val token: String
 ) : JSONSerializable {
