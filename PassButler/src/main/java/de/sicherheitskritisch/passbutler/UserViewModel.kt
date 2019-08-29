@@ -9,9 +9,10 @@ import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.optionalContentNotEquals
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
 import de.sicherheitskritisch.passbutler.crypto.Derivation
-import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
+import de.sicherheitskritisch.passbutler.crypto.models.EncryptedValue
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
+import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import kotlinx.coroutines.CoroutineScope
@@ -52,7 +53,7 @@ class UserViewModel private constructor(
     }
 
     val biometricUnlockEnabled = ValueGetterLiveData {
-        biometricUnlockAvailable.value && userManager.loggedInStateStorage.encryptedMasterPassword != null && userManager.loggedInStateStorage.encryptedMasterPasswordInitializationVector != null
+        biometricUnlockAvailable.value && userManager.loggedInStateStorage.encryptedMasterPassword != null
     }
 
     val unlockFinished = SignalEmitter()
@@ -184,11 +185,10 @@ class UserViewModel private constructor(
                 // Test if master password is correct
                 decryptMasterEncryptionKey(masterPassword)
 
-                val encryptedMasterPassword = Biometrics.encryptData(initializedMasterPasswordEncryptionCipher, masterPassword.toByteArray())
                 val encryptedMasterPasswordInitializationVector = initializedMasterPasswordEncryptionCipher.iv
+                val encryptedMasterPassword = Biometrics.encryptData(initializedMasterPasswordEncryptionCipher, masterPassword.toByteArray())
 
-                userManager.loggedInStateStorage.encryptedMasterPassword = encryptedMasterPassword
-                userManager.loggedInStateStorage.encryptedMasterPasswordInitializationVector = encryptedMasterPasswordInitializationVector
+                userManager.loggedInStateStorage.encryptedMasterPassword = EncryptedValue(encryptedMasterPasswordInitializationVector, encryptedMasterPassword)
                 userManager.loggedInStateStorage.persist()
 
                 biometricUnlockEnabled.notifyChange()
@@ -208,7 +208,6 @@ class UserViewModel private constructor(
                 Biometrics.removeKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
 
                 userManager.loggedInStateStorage.encryptedMasterPassword = null
-                userManager.loggedInStateStorage.encryptedMasterPasswordInitializationVector = null
                 userManager.loggedInStateStorage.persist()
 
                 biometricUnlockEnabled.notifyChange()

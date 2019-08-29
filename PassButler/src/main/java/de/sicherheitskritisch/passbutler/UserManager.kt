@@ -9,25 +9,24 @@ import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.byteSize
 import de.sicherheitskritisch.passbutler.base.clear
-import de.sicherheitskritisch.passbutler.base.toBase64String
-import de.sicherheitskritisch.passbutler.base.toByteArrayFromBase64String
 import de.sicherheitskritisch.passbutler.crypto.Derivation
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.crypto.MASTER_KEY_BIT_LENGTH
 import de.sicherheitskritisch.passbutler.crypto.MASTER_KEY_ITERATION_COUNT
-import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.RandomGenerator
+import de.sicherheitskritisch.passbutler.crypto.models.AuthToken
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
+import de.sicherheitskritisch.passbutler.crypto.models.EncryptedValue
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
+import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
+import de.sicherheitskritisch.passbutler.crypto.models.isExpired
 import de.sicherheitskritisch.passbutler.database.AuthWebservice
 import de.sicherheitskritisch.passbutler.database.Differentiation
 import de.sicherheitskritisch.passbutler.database.LocalRepository
 import de.sicherheitskritisch.passbutler.database.Synchronization
 import de.sicherheitskritisch.passbutler.database.UserWebservice
-import de.sicherheitskritisch.passbutler.crypto.models.AuthToken
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
-import de.sicherheitskritisch.passbutler.crypto.models.isExpired
 import de.sicherheitskritisch.passbutler.database.requestAuthToken
 import de.sicherheitskritisch.passbutler.database.requestPublicUserList
 import de.sicherheitskritisch.passbutler.database.requestUser
@@ -243,10 +242,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
 
     var userType: UserType? = null
-
-    // TODO: Combine to one model
-    var encryptedMasterPassword: ByteArray? = null
-    var encryptedMasterPasswordInitializationVector: ByteArray? = null
+    var encryptedMasterPassword: EncryptedValue? = null
 
     suspend fun restore() {
         withContext(Dispatchers.IO) {
@@ -260,19 +256,7 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
                 else -> null
             }
 
-            encryptedMasterPassword = try {
-                sharedPreferences.getString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, null)?.toByteArrayFromBase64String()
-            } catch (e: Exception) {
-                L.w("LoggedInStateStorage", "restore(): The encrypted master password could not be read as Base64 from string!", e)
-                null
-            }
-
-            encryptedMasterPasswordInitializationVector = try {
-                sharedPreferences.getString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD_IV, null)?.toByteArrayFromBase64String()
-            } catch (e: Exception) {
-                L.w("LoggedInStateStorage", "restore(): The encrypted master password initialization vector could not be read as Base64 from string!", e)
-                null
-            }
+            encryptedMasterPassword = sharedPreferences.getString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, null)?.let { EncryptedValue.Deserializer.deserializeOrNull(it) }
         }
     }
 
@@ -284,9 +268,7 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
                 putString(SHARED_PREFERENCES_KEY_USERNAME, userType?.username)
                 putString(SHARED_PREFERENCES_KEY_SERVERURL, (userType as? UserType.Server)?.serverUrl?.toString())
                 putString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, (userType as? UserType.Server)?.authToken?.serialize()?.toString())
-
-                putString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, encryptedMasterPassword?.toBase64String())
-                putString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD_IV, encryptedMasterPasswordInitializationVector?.toBase64String())
+                putString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, encryptedMasterPassword?.serialize()?.toString())
             }.commit()
         }
     }
@@ -294,7 +276,6 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
     suspend fun reset() {
         userType = null
         encryptedMasterPassword = null
-        encryptedMasterPasswordInitializationVector = null
         persist()
     }
 
@@ -303,7 +284,6 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
         private const val SHARED_PREFERENCES_KEY_SERVERURL = "serverUrl"
         private const val SHARED_PREFERENCES_KEY_AUTH_TOKEN = "authToken"
         private const val SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD = "encryptedMasterPassword"
-        private const val SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD_IV = "encryptedMasterPasswordInitializationVector"
     }
 }
 

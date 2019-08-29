@@ -137,7 +137,9 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
             try {
                 // TODO: Move to viewmodel
                 val masterPasswordEncryptionKeyCipher = Biometrics.obtainKeyInstance()
-                val encryptedMasterPasswordInitializationVector = viewModel.userManager.loggedInStateStorage.encryptedMasterPasswordInitializationVector ?: throw IllegalStateException("The encrypted master key iV was not found, despite biometric unlock was tried!")
+                val encryptedMasterPasswordInitializationVector = viewModel.userManager.loggedInStateStorage.encryptedMasterPassword?.initializationVector
+                    ?: throw IllegalStateException("The encrypted master key initialization vector was not found, despite biometric unlock was tried!")
+
                 Biometrics.initializeKeyForDecryption(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, masterPasswordEncryptionKeyCipher, encryptedMasterPasswordInitializationVector)
 
                 withContext(Dispatchers.Main) {
