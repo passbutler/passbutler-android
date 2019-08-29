@@ -13,7 +13,6 @@ import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.crypto.BiometricAuthenticationCallbackExecutor
-import de.sicherheitskritisch.passbutler.crypto.Biometrics
 import de.sicherheitskritisch.passbutler.databinding.FragmentSettingsBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.SimpleOnSeekBarChangeListener
@@ -105,8 +104,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     private fun showBiometricPrompt() {
         launch(Dispatchers.IO) {
             try {
-                val masterPasswordEncryptionKeyCipher = Biometrics.obtainKeyInstance()
-                Biometrics.initializeKeyForEncryption(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, masterPasswordEncryptionKeyCipher)
+               val initializedSetupBiometricUnlockCipher = viewModel.initializeSetupBiometricUnlockCipher()
 
                 withContext(Dispatchers.Main) {
                     activity?.let { activity ->
@@ -118,7 +116,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
                             .setNegativeButtonText(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_cancel_button_text))
                             .build()
 
-                        val cryptoObject = BiometricPrompt.CryptoObject(masterPasswordEncryptionKeyCipher)
+                        val cryptoObject = BiometricPrompt.CryptoObject(initializedSetupBiometricUnlockCipher)
                         biometricPrompt.authenticate(biometricPromptInfo, cryptoObject)
                     }
                 }
@@ -194,11 +192,11 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
             L.d("SettingsFragment", "onAuthenticationSucceeded(): result = $result")
 
-            val initializedMasterPasswordEncryptionCipher = result.cryptoObject?.cipher
+            val initializedSetupBiometricUnlockCipher = result.cryptoObject?.cipher
 
-            if (initializedMasterPasswordEncryptionCipher != null) {
+            if (initializedSetupBiometricUnlockCipher != null) {
                 // TODO: Remove hardcoded password
-                viewModel.enableBiometricUnlock(initializedMasterPasswordEncryptionCipher, "1234")
+                viewModel.enableBiometricUnlock(initializedSetupBiometricUnlockCipher, "1234")
             } else {
                 launch {
                     showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))

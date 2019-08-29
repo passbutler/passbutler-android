@@ -22,6 +22,18 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
     private var setupBiometricUnlockKeyJob: Job? = null
 
+    @Throws(InitializeSetupBiometricUnlockCipherFailedException::class)
+    suspend fun initializeSetupBiometricUnlockCipher(): Cipher {
+        return try {
+            val biometricUnlockCipher = Biometrics.obtainKeyInstance()
+            Biometrics.initializeKeyForEncryption(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, biometricUnlockCipher)
+
+            biometricUnlockCipher
+        } catch (e: Exception) {
+            throw InitializeSetupBiometricUnlockCipherFailedException(e)
+        }
+    }
+
     fun generateBiometricUnlockKey() {
         setupBiometricUnlockKeyJob?.cancel()
         setupBiometricUnlockKeyJob = createRequestSendingJob(generateBiometricUnlockKeyViewModel) {
@@ -31,10 +43,10 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
         }
     }
 
-    fun enableBiometricUnlock(initializedMasterPasswordEncryptionCipher: Cipher, masterPassword: String) {
+    fun enableBiometricUnlock(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String) {
         setupBiometricUnlockKeyJob?.cancel()
         setupBiometricUnlockKeyJob = createRequestSendingJob(enableBiometricUnlockKeyViewModel) {
-            loggedInUserViewModel?.enableBiometricUnlock(initializedMasterPasswordEncryptionCipher, masterPassword)
+            loggedInUserViewModel?.enableBiometricUnlock(initializedSetupBiometricUnlockCipher, masterPassword)
         }
     }
 
@@ -44,4 +56,6 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
             loggedInUserViewModel?.disableBiometricUnlock()
         }
     }
+
+    class InitializeSetupBiometricUnlockCipherFailedException(cause: Throwable) : Exception(cause)
 }

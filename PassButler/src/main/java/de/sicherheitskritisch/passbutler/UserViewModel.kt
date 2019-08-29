@@ -178,15 +178,15 @@ class UserViewModel private constructor(
     }
 
     @Throws(EnableBiometricUnlockFailedException::class)
-    suspend fun enableBiometricUnlock(initializedMasterPasswordEncryptionCipher: Cipher, masterPassword: String) {
+    suspend fun enableBiometricUnlock(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String) {
         // Execute encryption on the dispatcher for CPU load
         withContext(Dispatchers.Default) {
             try {
                 // Test if master password is correct
                 decryptMasterEncryptionKey(masterPassword)
 
-                val encryptedMasterPasswordInitializationVector = initializedMasterPasswordEncryptionCipher.iv
-                val encryptedMasterPassword = Biometrics.encryptData(initializedMasterPasswordEncryptionCipher, masterPassword.toByteArray())
+                val encryptedMasterPasswordInitializationVector = initializedSetupBiometricUnlockCipher.iv
+                val encryptedMasterPassword = Biometrics.encryptData(initializedSetupBiometricUnlockCipher, masterPassword.toByteArray())
 
                 userManager.loggedInStateStorage.encryptedMasterPassword = EncryptedValue(encryptedMasterPasswordInitializationVector, encryptedMasterPassword)
                 userManager.loggedInStateStorage.persist()
