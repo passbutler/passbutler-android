@@ -1,6 +1,5 @@
 package de.sicherheitskritisch.passbutler
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.text.TextUtils
@@ -9,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
-import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
@@ -61,7 +59,6 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
             binding.userViewModel = viewModel.loggedInUserViewModel
 
             restoreSavedInstance(binding, savedInstanceState)
-            setupDebugUnlockPresets(binding)
             setupUnlockWithPasswordButton(binding)
             setupUnlockWithBiometricsButton(binding)
         }
@@ -71,13 +68,6 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
     private fun restoreSavedInstance(binding: FragmentLockedScreenBinding, savedInstanceState: Bundle?) {
         savedInstanceState?.getString(FORM_FIELD_PASSWORD)?.let { binding.textInputEditTextPassword.setText(it) }
-    }
-
-    @SuppressLint("SetTextI18n")
-    private fun setupDebugUnlockPresets(binding: FragmentLockedScreenBinding) {
-        if (BuildType.isDebugBuild) {
-            binding.textInputEditTextPassword.setText("1234")
-        }
     }
 
     private fun setupUnlockWithPasswordButton(binding: FragmentLockedScreenBinding) {
