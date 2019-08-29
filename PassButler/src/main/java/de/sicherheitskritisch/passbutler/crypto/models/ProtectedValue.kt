@@ -10,6 +10,8 @@ import de.sicherheitskritisch.passbutler.base.putString
 import de.sicherheitskritisch.passbutler.base.toHexString
 import de.sicherheitskritisch.passbutler.base.toUTF8String
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
+import de.sicherheitskritisch.passbutler.crypto.models.EncryptedValue.Companion.SERIALIZATION_KEY_ENCRYPTED_VALUE
+import de.sicherheitskritisch.passbutler.crypto.models.EncryptedValue.Companion.SERIALIZATION_KEY_INITIALIZATION_VECTOR
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -18,23 +20,23 @@ import org.json.JSONObject
  */
 class ProtectedValue<T : JSONSerializable>(
     initializationVector: ByteArray,
-    encryptionAlgorithm: EncryptionAlgorithm.Symmetric,
-    encryptedValue: ByteArray
-) : JSONSerializable {
+    encryptedValue: ByteArray,
+    encryptionAlgorithm: EncryptionAlgorithm.Symmetric
+) : BaseEncryptedValue, JSONSerializable {
 
-    var initializationVector = initializationVector
+    override var initializationVector = initializationVector
+        private set
+
+    override var encryptedValue = encryptedValue
         private set
 
     val encryptionAlgorithm = encryptionAlgorithm
 
-    var encryptedValue = encryptedValue
-        private set
-
     override fun serialize(): JSONObject {
         return JSONObject().apply {
             putByteArray(SERIALIZATION_KEY_INITIALIZATION_VECTOR, initializationVector)
-            putSymmetricEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM, encryptionAlgorithm)
             putByteArray(SERIALIZATION_KEY_ENCRYPTED_VALUE, encryptedValue)
+            putSymmetricEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM, encryptionAlgorithm)
         }
     }
 
@@ -79,16 +81,16 @@ class ProtectedValue<T : JSONSerializable>(
         other as ProtectedValue<*>
 
         if (!initializationVector.contentEquals(other.initializationVector)) return false
-        if (encryptionAlgorithm != other.encryptionAlgorithm) return false
         if (!encryptedValue.contentEquals(other.encryptedValue)) return false
+        if (encryptionAlgorithm != other.encryptionAlgorithm) return false
 
         return true
     }
 
     override fun hashCode(): Int {
         var result = initializationVector.contentHashCode()
-        result = 31 * result + encryptionAlgorithm.hashCode()
         result = 31 * result + encryptedValue.contentHashCode()
+        result = 31 * result + encryptionAlgorithm.hashCode()
         return result
     }
 
@@ -101,23 +103,21 @@ class ProtectedValue<T : JSONSerializable>(
         override fun deserialize(jsonObject: JSONObject): ProtectedValue<T> {
             return ProtectedValue(
                 jsonObject.getByteArray(SERIALIZATION_KEY_INITIALIZATION_VECTOR),
-                jsonObject.getSymmetricEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM),
-                jsonObject.getByteArray(SERIALIZATION_KEY_ENCRYPTED_VALUE)
+                jsonObject.getByteArray(SERIALIZATION_KEY_ENCRYPTED_VALUE),
+                jsonObject.getSymmetricEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM)
             )
         }
     }
 
     companion object {
-        const val SERIALIZATION_KEY_INITIALIZATION_VECTOR = "initializationVector"
         const val SERIALIZATION_KEY_ENCRYPTION_ALGORITHM = "encryptionAlgorithm"
-        const val SERIALIZATION_KEY_ENCRYPTED_VALUE = "encryptedValue"
 
         fun <T : JSONSerializable> create(encryptionAlgorithm: EncryptionAlgorithm.Symmetric, encryptionKey: ByteArray, initialValue: T): ProtectedValue<T>? {
             val newInitializationVector = encryptionAlgorithm.generateInitializationVector()
 
             return try {
                 val encryptedValue = encryptionAlgorithm.encrypt(newInitializationVector, encryptionKey, initialValue.toByteArray())
-                ProtectedValue(newInitializationVector, encryptionAlgorithm, encryptedValue)
+                ProtectedValue(newInitializationVector, encryptedValue, encryptionAlgorithm)
             } catch (e: EncryptionAlgorithm.EncryptionFailedException) {
                 L.w("ProtectedValue", "create(): The value could not be created because encryption failed!", e)
                 null

@@ -128,8 +128,8 @@ class ProtectedValueTest {
         val initialEncryptedValue = "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
         val protectedValue = createTestProtectedValue(
             initializationVector = initialInitializationVector,
-            encryptionAlgorithm = mockAES256GCMAlgorithm,
-            encryptedValue = initialEncryptedValue
+            encryptedValue = initialEncryptedValue,
+            encryptionAlgorithm = mockAES256GCMAlgorithm
         )
 
         val unusedEncryptionKey = ByteArray(0)
@@ -150,8 +150,8 @@ class ProtectedValueTest {
         val initialEncryptedValue = "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
         val protectedValue = createTestProtectedValue(
             initializationVector = initialInitializationVector,
-            encryptionAlgorithm = mockAES256GCMAlgorithm,
-            encryptedValue = initialEncryptedValue
+            encryptedValue = initialEncryptedValue,
+            encryptionAlgorithm = mockAES256GCMAlgorithm
         )
 
         val unusedEncryptionKey = ByteArray(0)
@@ -180,8 +180,8 @@ class ProtectedValueTest {
         val encryptedTestJSONSerializable = byteArrayOf(123, 34, 116, 101, 115, 116, 70, 105, 101, 108, 100, 34, 58, 34, 116, 101, 115, 116, 86, 97, 108, 117, 101, 34, 125)
         val protectedValue = ProtectedValue<TestJSONSerializable>(
             initializationVector = unusedInitializationVector,
-            encryptionAlgorithm = mockAES256GCMAlgorithm,
-            encryptedValue = encryptedTestJSONSerializable
+            encryptedValue = encryptedTestJSONSerializable,
+            encryptionAlgorithm = mockAES256GCMAlgorithm
         )
 
         val unusedEncryptionKey = ByteArray(0)
@@ -196,10 +196,10 @@ class ProtectedValueTest {
          */
         private fun createTestProtectedValue(
             initializationVector: ByteArray,
-            encryptionAlgorithm: EncryptionAlgorithm.Symmetric = EncryptionAlgorithm.Symmetric.AES256GCM,
-            encryptedValue: ByteArray
+            encryptedValue: ByteArray,
+            encryptionAlgorithm: EncryptionAlgorithm.Symmetric = EncryptionAlgorithm.Symmetric.AES256GCM
         ): ProtectedValue<JSONSerializable> {
-            return ProtectedValue(initializationVector, encryptionAlgorithm, encryptedValue)
+            return ProtectedValue(initializationVector, encryptedValue, encryptionAlgorithm)
         }
 
         /**
