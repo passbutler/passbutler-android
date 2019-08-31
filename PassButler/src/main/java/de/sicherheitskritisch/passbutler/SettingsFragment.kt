@@ -5,17 +5,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.SeekBar
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
+import androidx.preference.CheckBoxPreference
+import androidx.preference.PreferenceDataStore
+import androidx.preference.PreferenceFragmentCompat
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.crypto.BiometricAuthenticationCallbackExecutor
 import de.sicherheitskritisch.passbutler.databinding.FragmentSettingsBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
-import de.sicherheitskritisch.passbutler.ui.SimpleOnSeekBarChangeListener
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
 import de.sicherheitskritisch.passbutler.ui.showError
 import de.sicherheitskritisch.passbutler.ui.showInformation
@@ -47,18 +48,20 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
         activity?.let {
             val rootViewModel = getRootViewModel(it)
-            viewModel.loggedInUserViewModel = rootViewModel.loggedInUserViewModel
+            viewModel.loggedInUserViewModel = rootViewModel.loggedInUserViewModel!!
         }
     }
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         this.binding = DataBindingUtil.inflate<FragmentSettingsBinding>(inflater, R.layout.fragment_settings, container, false).also { binding ->
             binding.lifecycleOwner = this
-            binding.viewModel = viewModel
-
-            setupLockTimeoutSeekBar(binding)
-            setupBiometricsUnlockSetupButton(binding)
         }
+
+        // TODO: Check if existing instead of replace
+        childFragmentManager
+            .beginTransaction()
+            .replace(R.id.frameLayout_settings_root, SettingsPreferenceFragment.newInstance(viewModel))
+            .commit()
 
         generateBiometricsUnlockKeyViewHandler = GenerateBiometricsUnlockKeyViewHandler(viewModel.generateBiometricUnlockKeyViewModel, WeakReference(this)).apply {
             registerObservers()
@@ -75,36 +78,10 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         return binding?.root
     }
 
-    private fun setupLockTimeoutSeekBar(binding: FragmentSettingsBinding) {
-        binding.seekBarSettingLocktimeout.apply {
-            max = 5
-            progress = viewModel.lockTimeout?.value ?: 0
-
-            setOnSeekBarChangeListener(object : SimpleOnSeekBarChangeListener() {
-                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                    // Manually update value (in this callback, the value is not written to the viewmodel)
-                    binding.textViewSettingLocktimeoutValue.text = progress.toString()
-                }
-
-                override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                    seekBar?.progress?.let { newProgress ->
-                        viewModel.lockTimeout?.value = newProgress
-                    }
-                }
-            })
-        }
-    }
-
-    private fun setupBiometricsUnlockSetupButton(binding: FragmentSettingsBinding) {
-        binding.buttonSetupBiometricUnlock.setOnClickListener {
-            viewModel.generateBiometricUnlockKey()
-        }
-    }
-
     private fun showBiometricPrompt() {
         launch(Dispatchers.IO) {
             try {
-               val initializedSetupBiometricUnlockCipher = viewModel.initializeSetupBiometricUnlockCipher()
+                val initializedSetupBiometricUnlockCipher = viewModel.initializeSetupBiometricUnlockCipher()
 
                 withContext(Dispatchers.Main) {
                     activity?.let { activity ->
@@ -214,3 +191,51 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         fun newInstance() = SettingsFragment()
     }
 }
+
+class SettingsPreferenceFragment : PreferenceFragmentCompat() {
+
+    private lateinit var settingsViewModel: SettingsViewModel
+
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        preferenceManager.preferenceDataStore = SettingsPreferenceDataStore()
+        preferenceScreen = preferenceManager.createPreferenceScreen(context)
+
+        val checkBoxPreference = CheckBoxPreference(context).apply {
+            key = PreferenceKeys.HIDE_PASSWORDS.key
+            title = getString(R.string.settings_hide_passwords_setting_title)
+            summary = getString(R.string.settings_hide_passwords_setting_summary)
+        }
+
+        preferenceScreen.addPreference(checkBoxPreference)
+    }
+
+    private enum class PreferenceKeys(val key: String) {
+        HIDE_PASSWORDS("hidePasswordsSetting")
+    }
+
+    private inner class SettingsPreferenceDataStore : PreferenceDataStore() {
+        override fun getBoolean(key: String?, defValue: Boolean): Boolean {
+            L.d("SettingsPreferenceDataStore", "getBoolean(): key = $key")
+
+            return when (key) {
+                PreferenceKeys.HIDE_PASSWORDS.key -> settingsViewModel.hidePasswordsSetting.value ?: false
+                else -> false
+            }
+        }
+
+        override fun putBoolean(key: String?, value: Boolean) {
+            L.d("SettingsPreferenceDataStore", "putBoolean(): key = $key; value = $value")
+
+            when (key) {
+                PreferenceKeys.HIDE_PASSWORDS.key -> settingsViewModel.hidePasswordsSetting.value = value
+            }
+        }
+    }
+
+    companion object {
+        fun newInstance(viewModel: SettingsViewModel) = SettingsPreferenceFragment().apply {
+            settingsViewModel = viewModel
+        }
+    }
+}
+

@@ -1,92 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools">
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <data>
+    <data />
 
-        <variable
-            name="viewModel"
-            type="de.sicherheitskritisch.passbutler.SettingsViewModel" />
-
-    </data>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <FrameLayout
+        android:id="@+id/frameLayout_settings_root"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent" />
 
-        <TextView
-            android:id="@+id/textView_header"
-            style="@style/Headline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/default_margin_horizontal"
-            android:layout_marginStart="@dimen/default_margin_horizontal"
-            android:layout_marginTop="@dimen/default_margin_vertical"
-            android:text="@string/settings_header"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/textView_setting_locktimeout_label"
-            style="@style/HeadlineSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/default_margin_horizontal"
-            android:layout_marginStart="@dimen/default_margin_horizontal"
-            android:layout_marginTop="@dimen/default_margin_vertical"
-            android:text="@string/settings_setting_locktimeout_label"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView_header" />
-
-        <SeekBar
-            android:id="@+id/seekBar_setting_locktimeout"
-            style="@style/SeekBarDiscrete"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/default_margin_horizontal"
-            android:layout_marginStart="@dimen/default_margin_horizontal"
-            android:layout_marginTop="@dimen/small_vertical_spacing"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView_setting_locktimeout_label"
-            tools:max="5"
-            tools:progress="3" />
-
-        <TextView
-            android:id="@+id/textView_setting_locktimeout_value"
-            style="@style/TextPassage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/default_margin_horizontal"
-            android:layout_marginStart="@dimen/default_margin_horizontal"
-            android:layout_marginTop="@dimen/small_vertical_spacing"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/seekBar_setting_locktimeout"
-            tools:text="Nach 2 Minuten" />
-
-        <Button
-            android:id="@+id/button_setup_biometric_unlock"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:text="@string/settings_setting_setup_biometric_unlock_button_text"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView_setting_locktimeout_value"
-            app:layout_constraintVertical_bias="0.0" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

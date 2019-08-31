@@ -11,10 +11,14 @@ import javax.crypto.Cipher
 
 class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
-    var loggedInUserViewModel: UserViewModel? = null
+    // For the `SettingsViewModel` it is guaranteed that a `UserViewModel` is set, so lateinit is not problem
+    lateinit var loggedInUserViewModel: UserViewModel
 
-    val lockTimeout: MutableLiveData<Int?>?
-        get() = loggedInUserViewModel?.lockTimeoutSetting
+    val lockTimeout: MutableLiveData<Int?>
+        get() = loggedInUserViewModel.lockTimeoutSetting
+
+    val hidePasswordsSetting: MutableLiveData<Boolean?>
+        get() = loggedInUserViewModel.hidePasswordsSetting
 
     val generateBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
     val enableBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
@@ -46,14 +50,14 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
     fun enableBiometricUnlock(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String) {
         setupBiometricUnlockKeyJob?.cancel()
         setupBiometricUnlockKeyJob = createRequestSendingJob(enableBiometricUnlockKeyViewModel) {
-            loggedInUserViewModel?.enableBiometricUnlock(initializedSetupBiometricUnlockCipher, masterPassword)
+            loggedInUserViewModel.enableBiometricUnlock(initializedSetupBiometricUnlockCipher, masterPassword)
         }
     }
 
     fun disableBiometricUnlock() {
         setupBiometricUnlockKeyJob?.cancel()
         setupBiometricUnlockKeyJob = createRequestSendingJob(disableBiometricUnlockKeyViewModel) {
-            loggedInUserViewModel?.disableBiometricUnlock()
+            loggedInUserViewModel.disableBiometricUnlock()
         }
     }
 

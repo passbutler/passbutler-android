@@ -81,10 +81,8 @@
 
     <string name="settings_title">Einstellungen</string>
 
-    <string name="settings_header">Einstellungen</string>
-    <string name="settings_setting_locktimeout_label">Automatische Sperre</string>
-
-    <string name="settings_setting_setup_biometric_unlock_button_text">Biometrisches Entsperren einrichten</string>
+    <string name="settings_hide_passwords_setting_title">Passwörter ausblenden</string>
+    <string name="settings_hide_passwords_setting_summary">Passwörter standardmäßig ausblenden</string>
 
     <string name="settings_setup_biometric_unlock_biometrics_prompt_title">Biometrisches Entsperren einrichten</string>
     <string name="settings_setup_biometric_unlock_biometrics_prompt_subtitle">Entsperren Sie Pass Butler durch Biometrie</string>
