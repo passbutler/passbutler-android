@@ -12,6 +12,7 @@ open class NonNullMutableLiveData<T : Any>(initialValue: T) : MutableLiveData<T>
     }
 
     override fun getValue(): T {
+        // Because non-null type is enforced by Kotlin the double-bang is okay
         return super.getValue()!!
     }
 
