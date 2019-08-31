@@ -14,6 +14,8 @@
 
     <dimen name="fab_margin">16dp</dimen>
 
+    <dimen name="dialog_margin_horizontal">20dp</dimen>
+
     <!-- Login -->
     <dimen name="login_margin_horizontal">32dp</dimen>
 

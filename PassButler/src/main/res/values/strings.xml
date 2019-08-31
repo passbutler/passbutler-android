@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">Pass Butler</string>
 
+
+    <!-- General -->
+    <string name="general_okay">OK</string>
+    <string name="general_cancel">Abbrechen</string>
+
     <!-- Login -->
 
     <string name="login_serverurl_hint">Server URL</string>
@@ -24,10 +29,10 @@
     <!-- Locked screen -->
 
     <string name="locked_screen_header">Pass Butler ist gesperrt</string>
-    <string name="locked_screen_description_password">Bitte entsperren Sie Pass Butler mit Ihrem Passwort oder via Biometrie:</string>
+    <string name="locked_screen_description_password">Bitte entsperren Sie Pass Butler mit Ihrem Master-Passwort oder biometrisch:</string>
 
-    <string name="locked_screen_password_hint">Passwort</string>
-    <string name="locked_screen_password_validation_error_empty">Passwort nicht ausgefüllt</string>
+    <string name="locked_screen_password_hint">Master-Passwort</string>
+    <string name="locked_screen_password_validation_error_empty">Master-Passwort nicht ausgefüllt</string>
 
     <string name="locked_screen_button_password_text">Entsperren mit Passwort</string>
 
@@ -96,6 +101,8 @@
 
     <string name="settings_biometric_unlock_setting_title">Biometrisches Entsperren</string>
     <string name="settings_biometric_unlock_setting_summary">Biometrisches Entsperren verwenden</string>
+
+    <string name="settings_setup_biometric_unlock_master_password_dialog_title">Master-Passwort eingeben</string>
 
     <string name="settings_setup_biometric_unlock_biometrics_prompt_title">Biometrisches Entsperren einrichten</string>
     <string name="settings_setup_biometric_unlock_biometrics_prompt_subtitle">Entsperren Sie Pass Butler durch Biometrie</string>

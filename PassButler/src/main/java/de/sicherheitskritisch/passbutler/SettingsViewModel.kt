@@ -58,6 +58,18 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
         }
     }
 
+    fun cancelBiometricUnlockSetup() {
+        // TODO: Specific `RequestSendingViewModel` for the operation + specific view handler?
+        setupBiometricUnlockKeyJob?.cancel()
+        setupBiometricUnlockKeyJob = createRequestSendingJob(enableBiometricUnlockKeyViewModel) {
+            val masterPasswordEncryptionKeyName = UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME
+            Biometrics.removeKey(masterPasswordEncryptionKeyName)
+
+            // Throw exception to be sure it is shown that the operation failed
+            throw EnableBiometricUnlockCanceledException()
+        }
+    }
+
     fun disableBiometricUnlock() {
         setupBiometricUnlockKeyJob?.cancel()
         setupBiometricUnlockKeyJob = createRequestSendingJob(disableBiometricUnlockKeyViewModel) {
@@ -66,4 +78,6 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
     }
 
     class InitializeSetupBiometricUnlockCipherFailedException(cause: Throwable) : Exception(cause)
+    class EnableBiometricUnlockCanceledException : Exception()
+
 }

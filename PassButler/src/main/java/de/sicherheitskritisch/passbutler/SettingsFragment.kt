@@ -1,10 +1,15 @@
 package de.sicherheitskritisch.passbutler
 
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.FrameLayout
+import androidx.appcompat.app.AlertDialog
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
@@ -27,6 +32,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
+import javax.crypto.Cipher
 
 class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
@@ -37,6 +43,8 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     private var generateBiometricsUnlockKeyViewHandler: GenerateBiometricsUnlockKeyViewHandler? = null
     private var enableBiometricsUnlockKeyViewHandler: EnableBiometricsUnlockKeyViewHandler? = null
     private var disableBiometricsUnlockKeyViewHandler: DisableBiometricsUnlockKeyViewHandler? = null
+
+    private var masterPasswordInputDialog: AlertDialog? = null
 
     private val biometricCallbackExecutor by lazy {
         BiometricAuthenticationCallbackExecutor(this)
@@ -110,6 +118,13 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         }
     }
 
+    override fun onPause() {
+        // Be sure the dialog is closed and operation is cancelled to avoid dialog is shown on locked screen
+        masterPasswordInputDialog?.cancelBiometricUnlockSetup()
+
+        super.onPause()
+    }
+
     override fun onDestroyView() {
         generateBiometricsUnlockKeyViewHandler?.unregisterObservers()
         enableBiometricsUnlockKeyViewHandler?.unregisterObservers()
@@ -163,10 +178,11 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     private inner class BiometricAuthenticationCallback : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
             L.d("SettingsFragment", "onAuthenticationError(): errorCode = $errorCode, errString = '$errString'")
+            showSetupBiometricUnlockFailedError()
+        }
 
-            launch {
-                showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))
-            }
+        private fun showSetupBiometricUnlockFailedError() = launch {
+            showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))
         }
 
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
@@ -175,21 +191,53 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             val initializedSetupBiometricUnlockCipher = result.cryptoObject?.cipher
 
             if (initializedSetupBiometricUnlockCipher != null) {
-                // TODO: Remove hardcoded password
-                viewModel.enableBiometricUnlock(initializedSetupBiometricUnlockCipher, "1234")
+                showMasterPasswordInputDialog(initializedSetupBiometricUnlockCipher)
             } else {
                 showSetupBiometricUnlockFailedError()
             }
         }
 
-        private fun showSetupBiometricUnlockFailedError() = launch {
-            showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))
+        private fun showMasterPasswordInputDialog(initializedSetupBiometricUnlockCipher: Cipher) = launch {
+            context?.let { fragmentContext ->
+                val builder = AlertDialog.Builder(fragmentContext)
+                builder.setTitle(getString(R.string.settings_setup_biometric_unlock_master_password_dialog_title))
+
+                val editText = EditText(fragmentContext).apply {
+                    inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
+                    layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                        marginStart = resources.getDimensionPixelSize(R.dimen.dialog_margin_horizontal)
+                        marginEnd = resources.getDimensionPixelSize(R.dimen.dialog_margin_horizontal)
+                    }
+                }
+
+                val editTextContainer = FrameLayout(fragmentContext).also {
+                    it.addView(editText)
+                }
+
+                builder.setView(editTextContainer)
+
+                builder.setPositiveButton(getString(R.string.general_okay)) { _, _ ->
+                    val masterPassword = editText.text.toString()
+                    viewModel.enableBiometricUnlock(initializedSetupBiometricUnlockCipher, masterPassword)
+                }
+
+                builder.setNegativeButton(getString(R.string.general_cancel)) { dialog, _ ->
+                    dialog.cancelBiometricUnlockSetup()
+                }
+
+                masterPasswordInputDialog = builder.show()
+            }
         }
 
         override fun onAuthenticationFailed() {
             // Don't do anything more, the prompt shows error
             L.d("SettingsFragment", "onAuthenticationFailed()")
         }
+    }
+
+    private fun DialogInterface.cancelBiometricUnlockSetup() {
+        dismiss()
+        viewModel.cancelBiometricUnlockSetup()
     }
 
     companion object {
