@@ -9,6 +9,8 @@ import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.CheckBoxPreference
+import androidx.preference.ListPreference
+import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceDataStore
 import androidx.preference.PreferenceFragmentCompat
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
@@ -200,39 +202,80 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         preferenceManager.preferenceDataStore = SettingsPreferenceDataStore()
         preferenceScreen = preferenceManager.createPreferenceScreen(context)
 
-        val checkBoxPreference = CheckBoxPreference(context).apply {
-            key = PreferenceKeys.HIDE_PASSWORDS.key
-            title = getString(R.string.settings_hide_passwords_setting_title)
-            summary = getString(R.string.settings_hide_passwords_setting_summary)
-        }
-
-        preferenceScreen.addPreference(checkBoxPreference)
+        setupSecuritySettingsSection()
     }
 
-    private enum class PreferenceKeys(val key: String) {
-        HIDE_PASSWORDS("hidePasswordsSetting")
+    private fun setupSecuritySettingsSection() {
+        preferenceScreen.addPreference(PreferenceCategory(context).apply {
+            title = getString(R.string.settings_category_security_title)
+        })
+
+        preferenceScreen.addPreference(CheckBoxPreference(context).apply {
+            key = SETTING_HIDE_PASSWORDS
+            title = getString(R.string.settings_hide_passwords_setting_title)
+            summary = getString(R.string.settings_hide_passwords_setting_summary)
+        })
+
+        preferenceScreen.addPreference(ListPreference(context).apply {
+            key = SETTING_LOCK_TIMEOUT
+            title = getString(R.string.settings_lock_timeout_setting_title)
+            summary = getString(R.string.settings_lock_timeout_setting_summary)
+            entries = arrayOf(
+                getString(R.string.settings_lock_timeout_setting_value_0s),
+                getString(R.string.settings_lock_timeout_setting_value_15s),
+                getString(R.string.settings_lock_timeout_setting_value_30s),
+                getString(R.string.settings_lock_timeout_setting_value_60s)
+            )
+            entryValues = arrayOf(
+                "0",
+                "15",
+                "30",
+                "60"
+            )
+        })
     }
 
     private inner class SettingsPreferenceDataStore : PreferenceDataStore() {
         override fun getBoolean(key: String?, defValue: Boolean): Boolean {
-            L.d("SettingsPreferenceDataStore", "getBoolean(): key = $key")
-
             return when (key) {
-                PreferenceKeys.HIDE_PASSWORDS.key -> settingsViewModel.hidePasswordsSetting.value ?: false
+                SETTING_HIDE_PASSWORDS -> settingsViewModel.hidePasswordsSetting.value ?: false
                 else -> false
             }
         }
 
         override fun putBoolean(key: String?, value: Boolean) {
-            L.d("SettingsPreferenceDataStore", "putBoolean(): key = $key; value = $value")
-
             when (key) {
-                PreferenceKeys.HIDE_PASSWORDS.key -> settingsViewModel.hidePasswordsSetting.value = value
+                SETTING_HIDE_PASSWORDS -> settingsViewModel.hidePasswordsSetting.value = value
             }
+        }
+
+        override fun getInt(key: String?, defValue: Int): Int {
+            return when (key) {
+                SETTING_LOCK_TIMEOUT -> settingsViewModel.lockTimeout.value ?: 0
+                else -> 0
+            }
+        }
+
+        override fun putInt(key: String?, value: Int) {
+            when (key) {
+                SETTING_LOCK_TIMEOUT -> settingsViewModel.lockTimeout.value = value
+            }
+        }
+
+        override fun getString(key: String?, defValue: String?): String? {
+            L.w("SettingsFragment", "getString(): key = $key")
+            return ""
+        }
+
+        override fun putString(key: String?, value: String?) {
+            L.w("SettingsFragment", "putString(): key = $key, value = $value")
         }
     }
 
     companion object {
+        private const val SETTING_HIDE_PASSWORDS = "hidePasswordsSetting"
+        private const val SETTING_LOCK_TIMEOUT = "lockTimeoutSetting"
+
         fun newInstance(viewModel: SettingsViewModel) = SettingsPreferenceFragment().apply {
             settingsViewModel = viewModel
         }
