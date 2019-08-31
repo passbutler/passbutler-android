@@ -94,6 +94,9 @@
     <string name="settings_lock_timeout_setting_value_30s">Nach 30 Sekunden</string>
     <string name="settings_lock_timeout_setting_value_60s">Nach 1 Minute</string>
 
+    <string name="settings_biometric_unlock_setting_title">Biometrisches Entsperren</string>
+    <string name="settings_biometric_unlock_setting_summary">Biometrisches Entsperren verwenden</string>
+
     <string name="settings_setup_biometric_unlock_biometrics_prompt_title">Biometrisches Entsperren einrichten</string>
     <string name="settings_setup_biometric_unlock_biometrics_prompt_subtitle">Entsperren Sie Pass Butler durch Biometrie</string>
     <string name="settings_setup_biometric_unlock_biometrics_prompt_cancel_button_text">Abbrechen</string>

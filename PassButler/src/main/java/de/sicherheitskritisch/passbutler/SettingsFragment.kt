@@ -13,6 +13,7 @@ import androidx.preference.ListPreference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceDataStore
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SwitchPreferenceCompat
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
@@ -177,10 +178,12 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
                 // TODO: Remove hardcoded password
                 viewModel.enableBiometricUnlock(initializedSetupBiometricUnlockCipher, "1234")
             } else {
-                launch {
-                    showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))
-                }
+                showSetupBiometricUnlockFailedError()
             }
+        }
+
+        private fun showSetupBiometricUnlockFailedError() = launch {
+            showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))
         }
 
         override fun onAuthenticationFailed() {
@@ -210,12 +213,6 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
             title = getString(R.string.settings_category_security_title)
         })
 
-        preferenceScreen.addPreference(CheckBoxPreference(context).apply {
-            key = SETTING_HIDE_PASSWORDS
-            title = getString(R.string.settings_hide_passwords_setting_title)
-            summary = getString(R.string.settings_hide_passwords_setting_summary)
-        })
-
         preferenceScreen.addPreference(ListPreference(context).apply {
             key = SETTING_LOCK_TIMEOUT
             title = getString(R.string.settings_lock_timeout_setting_title)
@@ -232,6 +229,29 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
                 "30",
                 "60"
             )
+        })
+
+        preferenceScreen.addPreference(CheckBoxPreference(context).apply {
+            key = SETTING_HIDE_PASSWORDS
+            title = getString(R.string.settings_hide_passwords_setting_title)
+            summary = getString(R.string.settings_hide_passwords_setting_summary)
+        })
+
+        preferenceScreen.addPreference(SwitchPreferenceCompat(context).apply {
+            key = SETTING_ENABLE_BIOMETRIC_UNLOCK
+            title = getString(R.string.settings_biometric_unlock_setting_title)
+            summary = getString(R.string.settings_biometric_unlock_setting_summary)
+
+            setOnPreferenceChangeListener { _, newValue ->
+                if (newValue == true) {
+                    settingsViewModel.generateBiometricUnlockKey()
+                } else {
+                    settingsViewModel.disableBiometricUnlock()
+                }
+
+                // TODO: Must be set true after success
+                false
+            }
         })
     }
 
@@ -275,6 +295,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
     companion object {
         private const val SETTING_HIDE_PASSWORDS = "hidePasswordsSetting"
         private const val SETTING_LOCK_TIMEOUT = "lockTimeoutSetting"
+        private const val SETTING_ENABLE_BIOMETRIC_UNLOCK = "enableBiometricUnlock"
 
         fun newInstance(viewModel: SettingsViewModel) = SettingsPreferenceFragment().apply {
             settingsViewModel = viewModel

@@ -3,6 +3,7 @@ package de.sicherheitskritisch.passbutler
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
+import de.sicherheitskritisch.passbutler.base.ValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
@@ -19,6 +20,9 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
     val hidePasswordsSetting: MutableLiveData<Boolean?>
         get() = loggedInUserViewModel.hidePasswordsSetting
+
+    val biometricUnlockEnabled: ValueGetterLiveData<Boolean>
+        get() = loggedInUserViewModel.biometricUnlockEnabled
 
     val generateBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
     val enableBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
