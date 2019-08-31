@@ -1,7 +1,6 @@
 package de.sicherheitskritisch.passbutler
 
 import android.app.Application
-import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.text.format.DateUtils
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
@@ -69,10 +68,8 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
             biometricUnlockCipher
         } catch (e: Exception) {
-            if (e is Biometrics.InitializeKeyFailedException && e.cause is KeyPermanentlyInvalidatedException) {
-                L.w("RootViewModel", "initializeBiometricUnlockCipher(): The biometric authentication failed because key state is invalidated - disable biometric unlock!")
-                disableBiometricUnlock()
-            }
+            L.w("RootViewModel", "initializeBiometricUnlockCipher(): The biometric authentication failed because key could not be initialized - disable biometric unlock!")
+            disableBiometricUnlock()
 
             throw InitializeBiometricUnlockCipherFailedException(e)
         }
