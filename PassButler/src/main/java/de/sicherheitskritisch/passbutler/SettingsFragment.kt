@@ -1,7 +1,6 @@
 package de.sicherheitskritisch.passbutler
 
 import android.content.Context
-import android.content.DialogInterface
 import android.os.Bundle
 import android.text.InputType
 import android.view.LayoutInflater
@@ -68,7 +67,6 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             binding.lifecycleOwner = this
         }
 
-        // TODO: Check if existing instead of replace
         childFragmentManager
             .beginTransaction()
             .replace(R.id.frameLayout_settings_root, SettingsPreferenceFragment.newInstance(viewModel))
@@ -120,9 +118,23 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
     override fun onPause() {
         // Be sure the dialog is closed and operation is cancelled to avoid dialog is shown on locked screen
-        masterPasswordInputDialog?.cancelBiometricUnlockSetup()
+        cancelMasterPasswordInputDialog()
 
         super.onPause()
+    }
+
+    private fun confirmMasterPasswordInputDialog(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String) {
+        viewModel.enableBiometricUnlock(initializedSetupBiometricUnlockCipher, masterPassword)
+        masterPasswordInputDialog = null
+    }
+
+    private fun cancelMasterPasswordInputDialog() {
+        masterPasswordInputDialog?.let {
+            it.dismiss()
+            viewModel.cancelBiometricUnlockSetup()
+        }
+
+        masterPasswordInputDialog = null
     }
 
     override fun onDestroyView() {
@@ -218,11 +230,11 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
                 builder.setPositiveButton(getString(R.string.general_okay)) { _, _ ->
                     val masterPassword = editText.text.toString()
-                    viewModel.enableBiometricUnlock(initializedSetupBiometricUnlockCipher, masterPassword)
+                    confirmMasterPasswordInputDialog(initializedSetupBiometricUnlockCipher, masterPassword)
                 }
 
-                builder.setNegativeButton(getString(R.string.general_cancel)) { dialog, _ ->
-                    dialog.cancelBiometricUnlockSetup()
+                builder.setNegativeButton(getString(R.string.general_cancel)) { _, _ ->
+                    cancelMasterPasswordInputDialog()
                 }
 
                 masterPasswordInputDialog = builder.show()
@@ -233,11 +245,6 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             // Don't do anything more, the prompt shows error
             L.d("SettingsFragment", "onAuthenticationFailed()")
         }
-    }
-
-    private fun DialogInterface.cancelBiometricUnlockSetup() {
-        dismiss()
-        viewModel.cancelBiometricUnlockSetup()
     }
 
     companion object {
