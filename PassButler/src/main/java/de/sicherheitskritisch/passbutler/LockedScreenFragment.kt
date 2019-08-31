@@ -185,10 +185,11 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     private inner class BiometricAuthenticationCallback : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
             L.d("LockedScreenFragment", "onAuthenticationError(): errorCode = $errorCode, errString = '$errString'")
+            showBiometricUnlockFailedError()
+        }
 
-            launch {
-                showError(getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
-            }
+        private fun showBiometricUnlockFailedError() = launch {
+            showError(getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
         }
 
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
@@ -199,9 +200,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
             if (initializedBiometricUnlockCipher != null) {
                 viewModel.unlockScreenWithBiometrics(initializedBiometricUnlockCipher)
             } else {
-                launch {
-                    showError(getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
-                }
+                showBiometricUnlockFailedError()
             }
         }
 
