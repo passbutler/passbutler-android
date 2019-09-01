@@ -10,6 +10,7 @@ import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
+import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
@@ -193,7 +194,11 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     private inner class BiometricAuthenticationCallback : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
             L.d("SettingsFragment", "onAuthenticationError(): errorCode = $errorCode, errString = '$errString'")
-            showSetupBiometricUnlockFailedError()
+
+            // If user canceled the operation, do not show error
+            if (errorCode != ERROR_USER_CANCELED) {
+                showSetupBiometricUnlockFailedError()
+            }
         }
 
         private fun showSetupBiometricUnlockFailedError() = launch {

@@ -6,6 +6,7 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.biometric.BiometricConstants
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
@@ -185,7 +186,11 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     private inner class BiometricAuthenticationCallback : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
             L.d("LockedScreenFragment", "onAuthenticationError(): errorCode = $errorCode, errString = '$errString'")
-            showBiometricUnlockFailedError()
+
+            // If user canceled the operation, do not show error
+            if (errorCode != BiometricConstants.ERROR_USER_CANCELED) {
+                showBiometricUnlockFailedError()
+            }
         }
 
         private fun showBiometricUnlockFailedError() = launch {
