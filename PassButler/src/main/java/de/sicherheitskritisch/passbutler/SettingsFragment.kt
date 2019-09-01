@@ -10,6 +10,7 @@ import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
+import androidx.biometric.BiometricConstants.ERROR_CANCELED
 import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
@@ -126,8 +127,8 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     }
 
     override fun onPause() {
-        // Be sure the dialog is closed and operation is cancelled to avoid dialog is shown on locked screen
-        cancelMasterPasswordInputDialog()
+        // Be sure the dialog is dismissed to avoid dialog is shown on locked screen
+        dismissMasterPasswordInputDialog()
 
         super.onPause()
     }
@@ -137,11 +138,11 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         masterPasswordInputDialog = null
     }
 
-    private fun cancelMasterPasswordInputDialog() {
-        L.d("SettingsFragment", "cancelMasterPasswordInputDialog()")
-
+    private fun dismissMasterPasswordInputDialog() {
         masterPasswordInputDialog?.let {
             it.dismiss()
+
+            L.d("SettingsFragment", "dismissMasterPasswordInputDialog(): The master password dialog was dismissed, cancel setup.")
             viewModel.cancelBiometricUnlockSetup()
         }
 
@@ -215,8 +216,12 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
             L.d("SettingsFragment", "onAuthenticationError(): errorCode = $errorCode, errString = '$errString'")
 
-            // If user canceled the operation, do not show error
-            if (errorCode != ERROR_USER_CANCELED) {
+            // If the operation failed, try to roll-back to avoid an uncompleted state
+            L.d("SettingsFragment", "onAuthenticationError(): The biometric setup failed, cancel setup.")
+            viewModel.cancelBiometricUnlockSetup()
+
+            // If user canceled the biometric dialog or if the dialog was dismissed via on pause, do not show error
+            if (errorCode != ERROR_USER_CANCELED && errorCode != ERROR_CANCELED) {
                 showSetupBiometricUnlockFailedError()
             }
         }
@@ -262,11 +267,11 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
                 }
 
                 builder.setNegativeButton(getString(R.string.general_cancel)) { _, _ ->
-                    cancelMasterPasswordInputDialog()
+                    dismissMasterPasswordInputDialog()
                 }
 
                 builder.setOnDismissListener {
-                    cancelMasterPasswordInputDialog()
+                    dismissMasterPasswordInputDialog()
                 }
 
                 masterPasswordInputDialog = builder.create().also {
