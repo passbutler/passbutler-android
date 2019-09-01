@@ -17,6 +17,8 @@ import org.json.JSONObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -87,15 +89,18 @@ class ProtectedValueTest {
      */
 
     @Test
-    fun `Create a protected value returns null if the encryption failed`() {
+    fun `Create a protected value throws an exception if the encryption failed`() {
         val initializationVector = "aaaaaaaaaaaaaaaaaaaaaaaa".hexToBytes()
         val mockAES256GCMAlgorithm = createMockAlgorithmAES256GCMWithoutEncryption(initializationVector, true)
 
         val unusedEncryptionKey = ByteArray(0)
         val testJSONSerializable = TestJSONSerializable("testValue")
 
-        val protectedValue = ProtectedValue.create(mockAES256GCMAlgorithm, unusedEncryptionKey, testJSONSerializable)
-        assertEquals(null, protectedValue)
+        val exception = assertThrows(ProtectedValue.CreateFailedException::class.java) {
+            ProtectedValue.create(mockAES256GCMAlgorithm, unusedEncryptionKey, testJSONSerializable)
+        }
+
+        assertTrue(exception.cause is EncryptionAlgorithm.EncryptionFailedException)
     }
 
     @Test
@@ -106,7 +111,7 @@ class ProtectedValueTest {
         val unusedEncryptionKey = ByteArray(0)
         val testJSONSerializable = TestJSONSerializable("testValue")
 
-        val protectedValue = ProtectedValue.create(mockAES256GCMAlgorithm, unusedEncryptionKey, testJSONSerializable)!!
+        val protectedValue = ProtectedValue.create(mockAES256GCMAlgorithm, unusedEncryptionKey, testJSONSerializable)
 
         assertArrayEquals(initializationVector, protectedValue.initializationVector)
         assertEquals(mockAES256GCMAlgorithm, protectedValue.encryptionAlgorithm)
@@ -142,7 +147,7 @@ class ProtectedValueTest {
     }
 
     @Test
-    fun `If it fails to update a protected value, the initialization vector and updated encrypted value are not changed`() {
+    fun `If it fails to update a protected value an exception is thrown and the initialization vector and updated encrypted value are not changed`() {
         val updatedInitializationVector = "bbbbbbbbbbbbbbbbbbbbbbbb".hexToBytes()
         val mockAES256GCMAlgorithm = createMockAlgorithmAES256GCMWithoutEncryption(updatedInitializationVector, true)
 
@@ -156,7 +161,12 @@ class ProtectedValueTest {
 
         val unusedEncryptionKey = ByteArray(0)
         val updatedJSONSerializable = TestJSONSerializable("testValue")
-        protectedValue.update(unusedEncryptionKey, updatedJSONSerializable)
+
+        val exception = assertThrows(ProtectedValue.UpdateFailedException::class.java) {
+            protectedValue.update(unusedEncryptionKey, updatedJSONSerializable)
+        }
+
+        assertTrue(exception.cause is EncryptionAlgorithm.EncryptionFailedException)
 
         assertArrayEquals(initialInitializationVector, protectedValue.initializationVector)
         assertEquals(mockAES256GCMAlgorithm, protectedValue.encryptionAlgorithm)
@@ -187,7 +197,7 @@ class ProtectedValueTest {
         val unusedEncryptionKey = ByteArray(0)
         val decryptedTestJSONSerializable = protectedValue.decrypt(unusedEncryptionKey, TestJSONSerializable.Deserializer)
 
-        assertEquals("testValue", decryptedTestJSONSerializable?.testField)
+        assertEquals("testValue", decryptedTestJSONSerializable.testField)
     }
 
     companion object {

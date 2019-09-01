@@ -98,25 +98,20 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
             val userSettings = UserSettings()
             val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, userSettings)
+            val currentDate = Date()
 
-            val localUser = if (protectedMasterEncryptionKey != null && protectedUserSettings != null) {
-                val currentDate = Date()
-
-                User(
-                    username,
-                    serverMasterPasswordAuthenticationHash,
-                    masterKeyDerivationInformation,
-                    protectedMasterEncryptionKey,
-                    itemEncryptionPublicKey,
-                    itemEncryptionSecretKey,
-                    protectedUserSettings,
-                    false,
-                    currentDate,
-                    currentDate
-                )
-            } else {
-                throw UserCreationFailedException("The local user could not be created because protected values creation failed!")
-            }
+            val localUser = User(
+                username,
+                serverMasterPasswordAuthenticationHash,
+                masterKeyDerivationInformation,
+                protectedMasterEncryptionKey,
+                itemEncryptionPublicKey,
+                itemEncryptionSecretKey,
+                protectedUserSettings,
+                false,
+                currentDate,
+                currentDate
+            )
 
             localRepository.insertUser(localUser)
 
@@ -235,7 +230,6 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         userSynchronization.synchronize()
     }
 
-    class UserCreationFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
     class LoginFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
 }
 

@@ -227,7 +227,7 @@ class UserViewModel private constructor(
                 masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation)
 
                 val decryptedProtectedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer)
-                decryptedProtectedMasterEncryptionKey?.key ?: throw IllegalStateException("The decrypted master encryption key is null despite decryption was successful!")
+                decryptedProtectedMasterEncryptionKey.key
             } catch (e: Exception) {
                 throw DecryptMasterEncryptionKeyFailedException(e)
             } finally {
