@@ -4,6 +4,7 @@ import de.sicherheitskritisch.passbutler.base.bitSize
 import de.sicherheitskritisch.passbutler.base.toHexString
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import java.text.Normalizer
+import java.util.*
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 
@@ -26,13 +27,8 @@ object Derivation {
      */
     @Throws(IllegalArgumentException::class, DerivationFailedException::class)
     fun deriveLocalAuthenticationHash(username: String, password: String): String {
-        if (username.isBlank()) {
-            throw IllegalArgumentException("The username must not be empty!")
-        }
-
-        if (password.isBlank()) {
-            throw IllegalArgumentException("The password must not be empty!")
-        }
+        require(!username.isBlank()) { "The username must not be empty!" }
+        require(!password.isBlank()) { "The password must not be empty!" }
 
         return try {
             val preparedPassword = normalizeString(trimString(password))
@@ -53,9 +49,7 @@ object Derivation {
      */
     @Throws(IllegalArgumentException::class, DerivationFailedException::class)
     fun deriveServerAuthenticationHash(password: String): String {
-        if (password.isBlank()) {
-            throw IllegalArgumentException("The password must not be empty!")
-        }
+        require(!password.isBlank()) { "The password must not be empty!" }
 
         return try {
             val saltString = RandomGenerator.generateRandomString(SERVER_AUTHENTICATION_HASH_SALT_LENGTH, SERVER_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS)
@@ -63,7 +57,7 @@ object Derivation {
 
             val iterationCount = SERVER_AUTHENTICATION_HASH_ITERATION_COUNT
             val hashBytes = performPBKDFWithSHA256(password, saltBytes, iterationCount, SERVER_AUTHENTICATION_HASH_BIT_LENGTH)
-            val hashString = hashBytes.toHexString().toLowerCase()
+            val hashString = hashBytes.toHexString().toLowerCase(Locale.getDefault())
 
             "pbkdf2:sha256:$iterationCount\$$saltString\$$hashString"
         } catch (e: Exception) {
@@ -76,14 +70,10 @@ object Derivation {
      */
     @Throws(IllegalArgumentException::class, DerivationFailedException::class)
     fun deriveMasterKey(password: String, keyDerivationInformation: KeyDerivationInformation): ByteArray {
-        if (password.isBlank()) {
-            throw IllegalArgumentException("The password must not be empty!")
-        }
+        require(!password.isBlank()) { "The password must not be empty!" }
 
         // The salt should have the same size as the derived key
-        if (keyDerivationInformation.salt.bitSize != MASTER_KEY_BIT_LENGTH) {
-            throw IllegalArgumentException("The salt must be 256 bits long!")
-        }
+        require(keyDerivationInformation.salt.bitSize == MASTER_KEY_BIT_LENGTH) { "The salt must be 256 bits long!" }
 
         return try {
             val preparedPassword = normalizeString(trimString(password))
