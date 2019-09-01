@@ -6,6 +6,7 @@ import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
@@ -241,7 +242,13 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
                     cancelMasterPasswordInputDialog()
                 }
 
-                masterPasswordInputDialog = builder.show()
+                masterPasswordInputDialog = builder.create().also {
+                    // Enforce the keyboard to show up if any view requests focus
+                    it.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
+                    it.show()
+
+                    editText.requestFocus()
+                }
             }
         }
 
