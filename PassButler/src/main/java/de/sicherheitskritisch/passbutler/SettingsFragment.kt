@@ -306,6 +306,13 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
             title = getString(R.string.settings_category_security_title)
         })
 
+        addLockTimeoutSetting()
+        addHidePasswordsSetting()
+        addBiometricUnlockSetting()
+    }
+
+    private fun addLockTimeoutSetting() {
+        // TODO: Hide dialog if fragment is paused
         preferenceScreen.addPreference(ListPreference(context).apply {
             key = SETTING_LOCK_TIMEOUT
             title = getString(R.string.settings_lock_timeout_setting_title)
@@ -323,17 +330,22 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
                 "60"
             )
         })
+    }
 
+    private fun addHidePasswordsSetting() {
         preferenceScreen.addPreference(CheckBoxPreference(context).apply {
             key = SETTING_HIDE_PASSWORDS
             title = getString(R.string.settings_hide_passwords_setting_title)
             summary = getString(R.string.settings_hide_passwords_setting_summary)
         })
+    }
 
+    private fun addBiometricUnlockSetting() {
         preferenceScreen.addPreference(SwitchPreferenceCompat(context).apply {
             key = SETTING_ENABLE_BIOMETRIC_UNLOCK
             title = getString(R.string.settings_biometric_unlock_setting_title)
             summary = getString(R.string.settings_biometric_unlock_setting_summary)
+            isVisible = settingsViewModel.loggedInUserViewModel.biometricUnlockAvailable.value
 
             setOnPreferenceChangeListener { _, newValue ->
                 if (newValue == true) {
@@ -348,6 +360,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         })
     }
 
+    // TODO: Do not manually handle this
     private inner class SettingsPreferenceDataStore : PreferenceDataStore() {
         override fun getBoolean(key: String?, defValue: Boolean): Boolean {
             return when (key) {
