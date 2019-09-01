@@ -220,7 +220,14 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         fragmentWeakReference: WeakReference<LockedScreenFragment>
     ) : DefaultRequestSendingViewHandler<LockedScreenFragment>(requestSendingViewModel, fragmentWeakReference) {
 
-        override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.locked_screen_unlock_failed_general_title
+        override fun requestErrorMessageResourceId(requestError: Throwable): Int {
+            val unlockFailedExceptionCause = (requestError as? UserViewModel.UnlockFailedException)?.cause
+
+            return when (unlockFailedExceptionCause) {
+                is UserViewModel.DecryptMasterEncryptionKeyFailedException -> R.string.locked_screen_unlock_failed_wrong_master_password_title
+                else -> R.string.locked_screen_unlock_failed_general_title
+            }
+        }
 
         override fun onRequestFinishedSuccessfully() {
             fragment?.popBackstack()
