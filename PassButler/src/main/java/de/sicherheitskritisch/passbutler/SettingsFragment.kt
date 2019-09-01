@@ -2,13 +2,9 @@ package de.sicherheitskritisch.passbutler
 
 import android.content.Context
 import android.os.Bundle
-import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
-import android.widget.EditText
-import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.biometric.BiometricConstants.ERROR_CANCELED
 import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
@@ -28,6 +24,7 @@ import de.sicherheitskritisch.passbutler.crypto.BiometricAuthenticationCallbackE
 import de.sicherheitskritisch.passbutler.databinding.FragmentSettingsBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
+import de.sicherheitskritisch.passbutler.ui.showEditTextDialog
 import de.sicherheitskritisch.passbutler.ui.showError
 import de.sicherheitskritisch.passbutler.ui.showInformation
 import kotlinx.coroutines.Dispatchers
@@ -243,45 +240,16 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         }
 
         private fun showMasterPasswordInputDialog(initializedSetupBiometricUnlockCipher: Cipher) = launch {
-            context?.let { fragmentContext ->
-                val builder = AlertDialog.Builder(fragmentContext)
-                builder.setTitle(getString(R.string.settings_setup_biometric_unlock_master_password_dialog_title))
-
-                val editText = EditText(fragmentContext).apply {
-                    inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                    layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                        marginStart = resources.getDimensionPixelSize(R.dimen.dialog_margin_horizontal)
-                        marginEnd = resources.getDimensionPixelSize(R.dimen.dialog_margin_horizontal)
-                    }
-                }
-
-                val editTextContainer = FrameLayout(fragmentContext).also {
-                    it.addView(editText)
-                }
-
-                builder.setView(editTextContainer)
-
-                builder.setPositiveButton(getString(R.string.general_okay)) { _, _ ->
+            masterPasswordInputDialog = showEditTextDialog(
+                title = getString(R.string.settings_setup_biometric_unlock_master_password_dialog_title),
+                positiveClickListener = { editText ->
                     val masterPassword = editText.text.toString()
                     confirmMasterPasswordInputDialog(initializedSetupBiometricUnlockCipher, masterPassword)
-                }
-
-                builder.setNegativeButton(getString(R.string.general_cancel)) { _, _ ->
+                },
+                negativeClickListener = {
                     dismissMasterPasswordInputDialog()
                 }
-
-                builder.setOnDismissListener {
-                    dismissMasterPasswordInputDialog()
-                }
-
-                masterPasswordInputDialog = builder.create().also {
-                    // Enforce the keyboard to show up if any view requests focus
-                    it.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
-                    it.show()
-
-                    editText.requestFocus()
-                }
-            }
+            )
         }
 
         override fun onAuthenticationFailed() {
