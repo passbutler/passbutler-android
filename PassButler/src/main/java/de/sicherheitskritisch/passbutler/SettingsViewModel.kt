@@ -46,9 +46,7 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
     fun generateBiometricUnlockKey() {
         setupBiometricUnlockKeyJob?.cancel()
         setupBiometricUnlockKeyJob = createRequestSendingJob(generateBiometricUnlockKeyViewModel) {
-            val masterPasswordEncryptionKeyName = UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME
-            Biometrics.removeKey(masterPasswordEncryptionKeyName)
-            Biometrics.generateKey(masterPasswordEncryptionKeyName)
+            Biometrics.generateKey(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
         }
     }
 
@@ -62,8 +60,8 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
     fun cancelBiometricUnlockSetup() {
         setupBiometricUnlockKeyJob?.cancel()
         setupBiometricUnlockKeyJob = createRequestSendingJob(cancelSetupBiometricUnlockKeyViewModel) {
-            val masterPasswordEncryptionKeyName = UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME
-            Biometrics.removeKey(masterPasswordEncryptionKeyName)
+            // Discard all generated keys and persisted data if the setup is canceled to avoid incomplete setup state
+            loggedInUserViewModel.disableBiometricUnlock()
         }
     }
 
