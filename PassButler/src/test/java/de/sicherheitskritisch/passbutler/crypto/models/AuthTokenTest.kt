@@ -2,7 +2,6 @@ package de.sicherheitskritisch.passbutler.crypto.models
 
 import android.util.Log
 import de.sicherheitskritisch.passbutler.assertJSONObjectEquals
-import de.sicherheitskritisch.passbutler.crypto.models.AuthToken
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
