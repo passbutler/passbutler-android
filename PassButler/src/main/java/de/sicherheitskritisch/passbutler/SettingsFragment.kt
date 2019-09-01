@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.biometric.BiometricConstants.ERROR_CANCELED
+import androidx.biometric.BiometricConstants.ERROR_NEGATIVE_BUTTON
 import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
@@ -217,8 +218,8 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             L.d("SettingsFragment", "onAuthenticationError(): The biometric setup failed, cancel setup.")
             viewModel.cancelBiometricUnlockSetup()
 
-            // If user canceled the biometric dialog or if the dialog was dismissed via on pause, do not show error
-            if (errorCode != ERROR_USER_CANCELED && errorCode != ERROR_CANCELED) {
+            // If the user canceled or dismissed the dialog or if the dialog was dismissed via on pause, do not show error
+            if (errorCode != ERROR_NEGATIVE_BUTTON && errorCode != ERROR_USER_CANCELED && errorCode != ERROR_CANCELED) {
                 showSetupBiometricUnlockFailedError()
             }
         }
