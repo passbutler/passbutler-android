@@ -237,6 +237,10 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
                     cancelMasterPasswordInputDialog()
                 }
 
+                builder.setOnDismissListener {
+                    cancelMasterPasswordInputDialog()
+                }
+
                 masterPasswordInputDialog = builder.show()
             }
         }
