@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -30,8 +30,7 @@
             android:layout_height="wrap_content"
             android:background="@color/white"
             android:clickable="true"
-            android:focusableInTouchMode="true"
-            >
+            android:focusableInTouchMode="true">
 
             <ImageView
                 android:id="@+id/imageView_lock_icon"
@@ -52,9 +51,9 @@
                 style="@style/Headline"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="64dp"
                 android:layout_marginStart="64dp"
                 android:layout_marginTop="@dimen/default_margin_vertical"
+                android:layout_marginEnd="64dp"
                 android:text="@string/locked_screen_header"
                 android:textAlignment="center"
                 app:layout_constraintBottom_toTopOf="@+id/textView_description"
@@ -69,9 +68,9 @@
                 style="@style/TextPassage"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="64dp"
                 android:layout_marginStart="64dp"
                 android:layout_marginTop="@dimen/default_margin_vertical"
+                android:layout_marginEnd="64dp"
                 android:text="@string/locked_screen_description_password"
                 android:textAlignment="center"
                 app:layout_constraintBottom_toTopOf="@+id/textInputLayout_password"
@@ -86,15 +85,14 @@
                 style="@style/TextInputLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="64dp"
                 android:layout_marginStart="64dp"
                 android:layout_marginTop="15dp"
+                android:layout_marginEnd="64dp"
                 app:layout_constraintBottom_toTopOf="@+id/button_unlock_password"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView_description"
-                app:layout_constraintVertical_bias="0.0"
-                >
+                app:layout_constraintVertical_bias="0.0">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/textInputEditText_password"
@@ -114,9 +112,9 @@
                 style="@style/PrimaryButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="64dp"
                 android:layout_marginStart="64dp"
                 android:layout_marginTop="@dimen/small_vertical_spacing"
+                android:layout_marginEnd="64dp"
                 android:drawableStart="@drawable/icon_more_horiz_24dp"
                 android:drawableTint="@color/white"
                 android:padding="@dimen/button_icon_padding"
@@ -125,17 +123,16 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textInputLayout_password"
-                app:layout_constraintVertical_chainStyle="packed"
-                />
+                app:layout_constraintVertical_chainStyle="packed" />
 
             <Button
                 android:id="@+id/button_unlock_biometric"
                 style="@style/PrimaryButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="64dp"
                 android:layout_marginStart="64dp"
                 android:layout_marginTop="@dimen/large_vertical_spacing"
+                android:layout_marginEnd="64dp"
                 android:drawableStart="@drawable/icon_fingerprint_24dp"
                 android:drawableTint="@color/white"
                 android:enabled="@{safeUnbox(userViewModel.biometricUnlockEnabled)}"
@@ -146,22 +143,21 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/button_unlock_password"
-                app:layout_constraintVertical_chainStyle="packed"
-                />
+                app:layout_constraintVertical_chainStyle="packed" />
 
             <TextView
-                style="@style/TextPassageSmall"
                 android:id="@+id/textView_button_unlock_biometric_disabled_hint"
+                style="@style/TextPassageSmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="64dp"
-                android:layout_marginTop="@dimen/small_vertical_spacing"
                 android:layout_marginStart="64dp"
+                android:layout_marginTop="@dimen/small_vertical_spacing"
+                android:layout_marginEnd="64dp"
+                android:text="@string/locked_screen_button_biometric_disabled_hint_text"
                 android:textAlignment="center"
                 android:visibility="@{safeUnbox(userViewModel.biometricUnlockAvailable) &amp;&amp; safeUnbox(userViewModel.biometricUnlockEnabled) == false ? View.VISIBLE : View.INVISIBLE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:text="@string/locked_screen_button_biometric_disabled_hint_text"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/button_unlock_biometric"
                 app:layout_constraintVertical_chainStyle="packed" />

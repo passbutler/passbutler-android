@@ -1,7 +1,6 @@
 <resources>
 
-    <style name="AppTheme"
-           parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -13,14 +12,11 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay"
-           parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    <style name="AppTheme.PopupOverlay"
-           parent="ThemeOverlay.AppCompat.Light" />
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
-    <style name="Headline"
-           parent="TextAppearance.AppCompat.Headline">
+    <style name="Headline" parent="TextAppearance.AppCompat.Headline">
         <item name="android:textSize">24sp</item>
         <item name="android:lineSpacingExtra">6sp</item>
         <item name="android:textColorHint">@color/colorHeadline</item>
@@ -31,8 +27,7 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="HeadlineSmall"
-           parent="TextAppearance.AppCompat.Headline">
+    <style name="HeadlineSmall" parent="TextAppearance.AppCompat.Headline">
         <item name="android:textSize">15sp</item>
         <item name="android:lineSpacingExtra">6sp</item>
         <item name="android:textColorHint">@color/colorHeadline</item>
@@ -43,8 +38,7 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="TextPassage"
-           parent="TextAppearance.AppCompat.Medium">
+    <style name="TextPassage" parent="TextAppearance.AppCompat.Medium">
         <item name="android:textSize">15sp</item>
         <item name="android:textColorHint">@color/colorTextPassage</item>
         <item name="android:textColor">@color/colorTextPassage</item>
@@ -53,8 +47,7 @@
         <item name="android:ellipsize">end</item>
     </style>
 
-    <style name="TextPassageSmall"
-           parent="TextAppearance.AppCompat.Small">
+    <style name="TextPassageSmall" parent="TextAppearance.AppCompat.Small">
         <item name="android:textSize">12sp</item>
         <item name="android:textColorHint">@color/colorTextPassageSmall</item>
         <item name="android:textColor">@color/colorTextPassageSmall</item>
@@ -63,8 +56,7 @@
         <item name="android:ellipsize">end</item>
     </style>
 
-    <style name="PrimaryButton"
-           parent="TextAppearance.AppCompat.Button">
+    <style name="PrimaryButton" parent="TextAppearance.AppCompat.Button">
         <item name="android:textSize">15sp</item>
         <item name="android:background">@drawable/selector_button_background</item>
         <item name="android:textColor">@color/white</item>
@@ -72,33 +64,28 @@
         <item name="android:ellipsize">end</item>
     </style>
 
-    <style name="TextInputLayout"
-           parent="Widget.Design.TextInputLayout">
+    <style name="TextInputLayout" parent="Widget.Design.TextInputLayout">
         <!-- Manually set hint color to avoid on-click color change caused by clickability of parent layout: -->
         <item name="android:textColorHint">@color/colorTextEditTextHint</item>
     </style>
 
-    <style name="SeekBarDiscrete"
-           parent="Widget.AppCompat.SeekBar.Discrete">
+    <style name="SeekBarDiscrete" parent="Widget.AppCompat.SeekBar.Discrete">
         <item name="android:paddingStart">10dp</item>
         <item name="android:paddingEnd">10dp</item>
     </style>
 
-    <style name="ProgressBarHorizontal"
-           parent="Widget.AppCompat.ProgressBar.Horizontal">
+    <style name="ProgressBarHorizontal" parent="Widget.AppCompat.ProgressBar.Horizontal">
         <item name="android:minHeight">8dp</item>
         <item name="android:maxHeight">8dp</item>
     </style>
 
-    <style name="Checkbox"
-           parent="Widget.AppCompat.CompoundButton.CheckBox">
+    <style name="Checkbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
         <item name="android:textSize">15sp</item>
     </style>
 
     <!-- Special styles -->
 
-    <style name="TextPassageBlack"
-           parent="TextPassage">
+    <style name="TextPassageBlack" parent="TextPassage">
         <item name="android:textColorHint">@color/black</item>
         <item name="android:textColor">@color/black</item>
         <item name="android:textColorHighlight">@color/black</item>
