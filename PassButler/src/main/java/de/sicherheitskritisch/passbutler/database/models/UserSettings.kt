@@ -31,7 +31,7 @@ data class UserSettings(
     }
 
     companion object {
-        private const val DEFAULT_LOCK_TIMEOUT = 2
+        private const val DEFAULT_LOCK_TIMEOUT = 0
         private const val DEFAULT_HIDE_PASSWORDS = true
 
         private const val SERIALIZATION_KEY_LOCK_TIMEOUT = "lockTimeoutSetting"
