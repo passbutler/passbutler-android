@@ -60,9 +60,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
         activity?.let {
             val rootViewModel = getRootViewModel(it)
-
-            // TODO: Check crash if app is resume from standby
-            viewModel.loggedInUserViewModel = rootViewModel.loggedInUserViewModel!!
+            viewModel.loggedInUserViewModel = rootViewModel.loggedInUserViewModel
         }
     }
 

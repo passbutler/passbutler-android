@@ -12,17 +12,16 @@ import javax.crypto.Cipher
 
 class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
-    // For the `SettingsViewModel` it is guaranteed that a `UserViewModel` is set, so lateinit is not problem
-    lateinit var loggedInUserViewModel: UserViewModel
+    var loggedInUserViewModel: UserViewModel? = null
 
-    val lockTimeout: MutableLiveData<Int?>
+    val lockTimeout: MutableLiveData<Int?>?
         get() = loggedInUserViewModel.lockTimeoutSetting
 
-    val hidePasswordsSetting: MutableLiveData<Boolean?>
-        get() = loggedInUserViewModel.hidePasswordsSetting
+    val hidePasswordsSetting: MutableLiveData<Boolean>?
+        get() = loggedInUserViewModel?.hidePasswordsSetting
 
-    val biometricUnlockEnabled: ValueGetterLiveData<Boolean>
-        get() = loggedInUserViewModel.biometricUnlockEnabled
+    val biometricUnlockEnabled: ValueGetterLiveData<Boolean>?
+        get() = loggedInUserViewModel?.biometricUnlockEnabled
 
     val generateBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
     val cancelSetupBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
@@ -53,7 +52,7 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
     fun enableBiometricUnlock(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String) {
         setupBiometricUnlockKeyJob?.cancel()
         setupBiometricUnlockKeyJob = createRequestSendingJob(enableBiometricUnlockKeyViewModel) {
-            loggedInUserViewModel.enableBiometricUnlock(initializedSetupBiometricUnlockCipher, masterPassword)
+            loggedInUserViewModel?.enableBiometricUnlock(initializedSetupBiometricUnlockCipher, masterPassword)
         }
     }
 
@@ -61,14 +60,14 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
         setupBiometricUnlockKeyJob?.cancel()
         setupBiometricUnlockKeyJob = createRequestSendingJob(cancelSetupBiometricUnlockKeyViewModel) {
             // Discard all generated keys and persisted data if the setup is canceled to avoid incomplete setup state
-            loggedInUserViewModel.disableBiometricUnlock()
+            loggedInUserViewModel?.disableBiometricUnlock()
         }
     }
 
     fun disableBiometricUnlock() {
         setupBiometricUnlockKeyJob?.cancel()
         setupBiometricUnlockKeyJob = createRequestSendingJob(disableBiometricUnlockKeyViewModel) {
-            loggedInUserViewModel.disableBiometricUnlock()
+            loggedInUserViewModel?.disableBiometricUnlock()
         }
     }
 
