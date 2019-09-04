@@ -23,11 +23,12 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
     fun loginUser(serverUrlString: String, username: String, masterPassword: String) {
         loginCoroutineJob?.cancel()
         loginCoroutineJob = createRequestSendingJob(loginRequestSendingViewModel) {
-            if (isLocalLogin.value) {
-                userManager.loginLocalUser(username, masterPassword)
-            } else {
-                val serverUrl = Uri.parse(serverUrlString)
-                userManager.loginRemoteUser(username, masterPassword, serverUrl)
+            when (isLocalLogin.value) {
+                true -> userManager.loginLocalUser(username, masterPassword)
+                false -> {
+                    val serverUrl = Uri.parse(serverUrlString)
+                    userManager.loginRemoteUser(username, masterPassword, serverUrl)
+                }
             }
         }
     }

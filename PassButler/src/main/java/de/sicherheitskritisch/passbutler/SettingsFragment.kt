@@ -173,7 +173,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     ) : DefaultRequestSendingViewHandler<SettingsFragment>(requestSendingViewModel, fragmentWeakReference) {
 
         override fun onIsLoadingChanged(isLoading: Boolean) {
-            // Do nothing
+            // Do not show any loading progress for cancel operation
         }
 
         override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.settings_setup_biometric_unlock_failed_general_title
