@@ -75,6 +75,7 @@ open class RequestSendingViewHandler(private val requestSendingViewModel: Reques
         // Override if desired
     }
 
+    // TODO: Dispatch on UI thread + also check child implementations?
     open fun onRequestFinishedSuccessfully() {
         // Override if desired
     }

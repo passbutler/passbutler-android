@@ -11,6 +11,8 @@ import androidx.biometric.BiometricConstants.ERROR_NEGATIVE_BUTTON
 import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
@@ -21,6 +23,7 @@ import androidx.preference.SwitchPreferenceCompat
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
+import de.sicherheitskritisch.passbutler.base.observe
 import de.sicherheitskritisch.passbutler.crypto.BiometricAuthenticationCallbackExecutor
 import de.sicherheitskritisch.passbutler.databinding.FragmentSettingsBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
@@ -39,13 +42,13 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     override val transitionType = AnimatedFragment.TransitionType.MODAL
 
     private var binding: FragmentSettingsBinding? = null
+    private var settingsPreferenceFragment: SettingsPreferenceFragment? = null
+    private var masterPasswordInputDialog: AlertDialog? = null
 
     private var generateBiometricsUnlockKeyViewHandler: GenerateBiometricsUnlockKeyViewHandler? = null
     private var cancelSetupBiometricUnlockKeyViewHandler: CancelSetupBiometricsUnlockKeyViewHandler? = null
     private var enableBiometricsUnlockKeyViewHandler: EnableBiometricsUnlockKeyViewHandler? = null
     private var disableBiometricsUnlockKeyViewHandler: DisableBiometricsUnlockKeyViewHandler? = null
-
-    private var masterPasswordInputDialog: AlertDialog? = null
 
     private val biometricCallbackExecutor by lazy {
         BiometricAuthenticationCallbackExecutor(this)
@@ -65,14 +68,16 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     }
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        this.binding = DataBindingUtil.inflate<FragmentSettingsBinding>(inflater, R.layout.fragment_settings, container, false).also { binding ->
+        binding = DataBindingUtil.inflate<FragmentSettingsBinding>(inflater, R.layout.fragment_settings, container, false).also { binding ->
             binding.lifecycleOwner = this
         }
 
-        childFragmentManager
-            .beginTransaction()
-            .replace(R.id.frameLayout_settings_root, SettingsPreferenceFragment.newInstance(viewModel))
-            .commit()
+        settingsPreferenceFragment = SettingsPreferenceFragment.newInstance(viewModel).also { settingsPreferenceFragment ->
+            childFragmentManager
+                .beginTransaction()
+                .replace(R.id.frameLayout_settings_root, settingsPreferenceFragment)
+                .commit()
+        }
 
         generateBiometricsUnlockKeyViewHandler = GenerateBiometricsUnlockKeyViewHandler(viewModel.generateBiometricUnlockKeyViewModel, WeakReference(this)).apply {
             registerObservers()
@@ -88,6 +93,12 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
         disableBiometricsUnlockKeyViewHandler = DisableBiometricsUnlockKeyViewHandler(viewModel.disableBiometricUnlockKeyViewModel, WeakReference(this)).apply {
             registerObservers()
+        }
+
+        viewModel.biometricUnlockEnabled?.observe(this) { newValue ->
+            newValue?.let {
+                settingsPreferenceFragment?.enableBiometricUnlockPreference?.isChecked = it
+            }
         }
 
         return binding?.root
@@ -161,7 +172,9 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.settings_setup_biometric_unlock_failed_general_title
 
         override fun onRequestFinishedSuccessfully() {
-            fragment?.showBiometricPrompt()
+            fragment?.launch {
+                fragment?.showBiometricPrompt()
+            }
         }
     }
 
@@ -192,7 +205,9 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         }
 
         override fun onRequestFinishedSuccessfully() {
-            fragment?.showInformation(resources?.getString(R.string.settings_setup_biometric_unlock_successful_message))
+            fragment?.launch {
+                fragment?.showInformation(resources?.getString(R.string.settings_setup_biometric_unlock_successful_message))
+            }
         }
     }
 
@@ -204,7 +219,9 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.settings_disable_biometric_unlock_failed_general_title
 
         override fun onRequestFinishedSuccessfully() {
-            fragment?.showInformation(resources?.getString(R.string.settings_disable_biometric_unlock_successful_message))
+            fragment?.launch {
+                fragment?.showInformation(resources?.getString(R.string.settings_disable_biometric_unlock_successful_message))
+            }
         }
     }
 
@@ -264,6 +281,9 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
 class SettingsPreferenceFragment : PreferenceFragmentCompat() {
 
+    var enableBiometricUnlockPreference: SwitchPreferenceCompat? = null
+        private set
+
     private lateinit var settingsViewModel: SettingsViewModel
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -286,7 +306,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
     private fun addLockTimeoutSetting() {
         // TODO: Hide dialog if fragment is paused
         preferenceScreen.addPreference(ListPreference(context).apply {
-            key = SETTING_LOCK_TIMEOUT
+            key = SettingKey.LOCK_TIMEOUT.name
             title = getString(R.string.settings_lock_timeout_setting_title)
             summary = getString(R.string.settings_lock_timeout_setting_summary)
             entries = arrayOf(
@@ -306,78 +326,102 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
 
     private fun addHidePasswordsSetting() {
         preferenceScreen.addPreference(CheckBoxPreference(context).apply {
-            key = SETTING_HIDE_PASSWORDS
+            key = SettingKey.HIDE_PASSWORDS.name
             title = getString(R.string.settings_hide_passwords_setting_title)
             summary = getString(R.string.settings_hide_passwords_setting_summary)
         })
     }
 
     private fun addBiometricUnlockSetting() {
-        preferenceScreen.addPreference(SwitchPreferenceCompat(context).apply {
-            key = SETTING_ENABLE_BIOMETRIC_UNLOCK
+        enableBiometricUnlockPreference = SwitchPreferenceCompat(context).apply {
+            key = SettingKey.BIOMETRIC_UNLOCK.name
             title = getString(R.string.settings_biometric_unlock_setting_title)
             summary = getString(R.string.settings_biometric_unlock_setting_summary)
-            isVisible = settingsViewModel.loggedInUserViewModel.biometricUnlockAvailable.value
+            isVisible = settingsViewModel.loggedInUserViewModel?.biometricUnlockAvailable?.value ?: false
 
             setOnPreferenceChangeListener { _, newValue ->
-                if (newValue == true) {
-                    settingsViewModel.generateBiometricUnlockKey()
-                } else {
-                    settingsViewModel.disableBiometricUnlock()
+                when (newValue) {
+                    true -> settingsViewModel.generateBiometricUnlockKey()
+                    false -> settingsViewModel.disableBiometricUnlock()
                 }
 
-                // TODO: Must be set true after success
+                // Never update the preference value on switch change (this will be done programmatically after setup)
                 false
             }
-        })
+        }.also {
+            preferenceScreen.addPreference(it)
+        }
     }
 
-    // TODO: Do not manually handle this
     private inner class SettingsPreferenceDataStore : PreferenceDataStore() {
+
+        private val settingsMapping = mapOf(
+            SettingKey.HIDE_PASSWORDS to Setting.Boolean(settingsViewModel.hidePasswordsSetting),
+            SettingKey.LOCK_TIMEOUT to Setting.String(settingsViewModel.lockTimeoutSetting),
+            SettingKey.BIOMETRIC_UNLOCK to Setting.Boolean(settingsViewModel.biometricUnlockEnabled)
+        )
+
         override fun getBoolean(key: String?, defValue: Boolean): Boolean {
-            return when (key) {
-                SETTING_HIDE_PASSWORDS -> settingsViewModel.hidePasswordsSetting.value ?: false
-                else -> false
+            val settingKey = key?.let { SettingKey.valueOf(it) }
+            val settingLiveData = (settingsMapping[settingKey] as? Setting.Boolean)?.liveData
+
+            return settingLiveData?.value ?: run {
+                if (settingLiveData == null) {
+                    L.w("SettingsPreferenceDataStore", "getBoolean(): The setting with key = '$key' is not mapped - thus default value is returned!")
+                } else {
+                    L.w("SettingsPreferenceDataStore", "getBoolean(): The value of the setting with key = '$key' is null - thus default value is returned!")
+                }
+                false
             }
         }
 
         override fun putBoolean(key: String?, value: Boolean) {
-            when (key) {
-                SETTING_HIDE_PASSWORDS -> settingsViewModel.hidePasswordsSetting.value = value
-            }
-        }
+            val settingKey = key?.let { SettingKey.valueOf(it) }
 
-        override fun getInt(key: String?, defValue: Int): Int {
-            return when (key) {
-                SETTING_LOCK_TIMEOUT -> settingsViewModel.lockTimeout.value ?: 0
-                else -> 0
-            }
-        }
-
-        override fun putInt(key: String?, value: Int) {
-            when (key) {
-                SETTING_LOCK_TIMEOUT -> settingsViewModel.lockTimeout.value = value
+            // Only persist value if mapped setting exists for type and `MutableLiveData` is given
+            ((settingsMapping[settingKey] as? Setting.Boolean)?.liveData as? MutableLiveData<Boolean?>)?.postValue(value) ?: run {
+                L.w("SettingsPreferenceDataStore", "putBoolean(): The setting with key = '$key' is not mapped for writing - thus the value is not persisted!")
             }
         }
 
         override fun getString(key: String?, defValue: String?): String? {
-            L.w("SettingsFragment", "getString(): key = $key")
-            return ""
+            val settingKey = key?.let { SettingKey.valueOf(it) }
+            val settingLiveData = (settingsMapping[settingKey] as? Setting.String)?.liveData
+
+            return settingLiveData?.value ?: run {
+                if (settingLiveData == null) {
+                    L.w("SettingsPreferenceDataStore", "getString(): The setting with key = '$key' is not mapped - thus default value is returned!")
+                } else {
+                    L.w("SettingsPreferenceDataStore", "getString(): The value of the setting with key = '$key' is null - thus default value is returned!")
+                }
+                null
+            }
         }
 
         override fun putString(key: String?, value: String?) {
-            L.w("SettingsFragment", "putString(): key = $key, value = $value")
+            val settingKey = key?.let { SettingKey.valueOf(it) }
+
+            // Only persist value if mapped setting exists for type and `MutableLiveData` is given
+            ((settingsMapping[settingKey] as? Setting.String)?.liveData as? MutableLiveData<String?>)?.postValue(value) ?: run {
+                L.w("SettingsPreferenceDataStore", "putString(): The setting with key = '$key' is not mapped for writing - thus the value is not persisted!")
+            }
         }
     }
 
-    companion object {
-        private const val SETTING_HIDE_PASSWORDS = "hidePasswordsSetting"
-        private const val SETTING_LOCK_TIMEOUT = "lockTimeoutSetting"
-        private const val SETTING_ENABLE_BIOMETRIC_UNLOCK = "enableBiometricUnlock"
+    private enum class SettingKey {
+        HIDE_PASSWORDS,
+        LOCK_TIMEOUT,
+        BIOMETRIC_UNLOCK
+    }
 
+    private sealed class Setting {
+        class Boolean(val liveData: LiveData<kotlin.Boolean?>?) : Setting()
+        class String(val liveData: LiveData<kotlin.String?>?) : Setting()
+    }
+
+    companion object {
         fun newInstance(viewModel: SettingsViewModel) = SettingsPreferenceFragment().apply {
             settingsViewModel = viewModel
         }
     }
 }
-

@@ -48,12 +48,12 @@ class UserViewModel private constructor(
     val lockTimeoutSetting = MutableLiveData<Int?>()
     val hidePasswordsSetting = MutableLiveData<Boolean?>()
 
-    val biometricUnlockAvailable = ValueGetterLiveData {
+    val biometricUnlockAvailable = ValueGetterLiveData<Boolean?> {
         Biometrics.isHardwareCapable && Biometrics.isKeyguardSecure && Biometrics.hasEnrolledBiometrics
     }
 
-    val biometricUnlockEnabled = ValueGetterLiveData {
-        biometricUnlockAvailable.value && userManager.loggedInStateStorage.encryptedMasterPassword != null
+    val biometricUnlockEnabled = ValueGetterLiveData<Boolean?> {
+        (biometricUnlockAvailable.value ?: false) && userManager.loggedInStateStorage.encryptedMasterPassword != null
     }
 
     val unlockFinished = SignalEmitter()

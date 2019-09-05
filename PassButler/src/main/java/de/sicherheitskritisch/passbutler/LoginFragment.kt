@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
@@ -17,6 +16,7 @@ import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
+import de.sicherheitskritisch.passbutler.base.observe
 import de.sicherheitskritisch.passbutler.base.validateForm
 import de.sicherheitskritisch.passbutler.database.AuthWebservice
 import de.sicherheitskritisch.passbutler.databinding.FragmentLoginBinding
@@ -84,10 +84,10 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
     }
 
     private fun setupLocalLoginCheckbox(binding: FragmentLoginBinding) {
-        viewModel.isLocalLogin.observe(this, Observer { isLocalLoginValue ->
-            val shouldShowServerUrl = isLocalLoginValue == false
+        viewModel.isLocalLogin.observe(this) { isLocalLoginValue ->
+            val shouldShowServerUrl = !isLocalLoginValue
             binding.textInputLayoutServerurl.showFadeInOutAnimation(shouldShowServerUrl, VisibilityHideMode.INVISIBLE)
-        })
+        }
     }
 
     private fun setupLoginButton(binding: FragmentLoginBinding) {

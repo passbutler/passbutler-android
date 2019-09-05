@@ -3,6 +3,7 @@ package de.sicherheitskritisch.passbutler
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
+import de.sicherheitskritisch.passbutler.base.TransformingMutableLiveData
 import de.sicherheitskritisch.passbutler.base.ValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
@@ -14,13 +15,23 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
     var loggedInUserViewModel: UserViewModel? = null
 
-    val lockTimeout: MutableLiveData<Int?>?
-        get() = loggedInUserViewModel.lockTimeoutSetting
+    // TODO: Add string/internal/stored mapping to convert more safe
 
-    val hidePasswordsSetting: MutableLiveData<Boolean>?
+    val lockTimeoutSetting by lazy {
+        // Lazy initialisation because `loggedInUserViewModel` is lately set by `SettingsFragment`
+        loggedInUserViewModel?.lockTimeoutSetting?.let { lockTimeoutSettingLiveData ->
+            TransformingMutableLiveData(
+                source = lockTimeoutSettingLiveData,
+                toDestinationConverter = { it?.toString() },
+                toSourceConverter = { it?.toIntOrNull() }
+            )
+        }
+    }
+
+    val hidePasswordsSetting: MutableLiveData<Boolean?>?
         get() = loggedInUserViewModel?.hidePasswordsSetting
 
-    val biometricUnlockEnabled: ValueGetterLiveData<Boolean>?
+    val biometricUnlockEnabled: ValueGetterLiveData<Boolean?>?
         get() = loggedInUserViewModel?.biometricUnlockEnabled
 
     val generateBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()

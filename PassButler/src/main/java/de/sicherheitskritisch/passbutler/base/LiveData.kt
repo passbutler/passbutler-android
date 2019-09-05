@@ -6,7 +6,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 
-open class NonNullMutableLiveData<T : Any>(initialValue: T) : MutableLiveData<T>() {
+/**
+ * A `MutableLiveData<T>` that only excepts non-null values.
+ */
+class NonNullMutableLiveData<T : Any>(initialValue: T) : MutableLiveData<T>() {
     init {
         value = initialValue
     }
@@ -29,46 +32,70 @@ open class NonNullMutableLiveData<T : Any>(initialValue: T) : MutableLiveData<T>
     }
 }
 
-class ValueGetterLiveData<T : Any>(private val valueGetter: () -> T) : NonNullMutableLiveData<T>(initialValue = valueGetter()) {
+class ValueGetterLiveData<T>(private val valueGetter: () -> T) : LiveData<T>() {
+    init {
+        value = valueGetter()
+    }
+
     fun notifyChange() {
         val newValue = valueGetter()
         postValue(newValue)
     }
 }
 
-@MainThread
-fun <T> LiveData<T>.observe(owner: LifecycleOwner, notifyOnRegister: Boolean, observer: Observer<T>) {
-    observe(owner, observer)
+class TransformingMutableLiveData<SourceType, DestinationType>(
+    private val source: MutableLiveData<SourceType>,
+    private val toDestinationConverter: (SourceType?) -> DestinationType?,
+    private val toSourceConverter: (DestinationType?) -> SourceType?
+) : MutableLiveData<DestinationType>() {
 
-    if (notifyOnRegister) {
-        observer.onChanged(value)
+    private val sourceObserver = Observer<SourceType> { sourceValue ->
+        // Call super method to avoid infinite notification loop
+        super.postValue(toDestinationConverter(sourceValue))
+    }
+
+    init {
+        value = toDestinationConverter(source.value)
+    }
+
+    override fun onActive() {
+        source.observeForever(sourceObserver)
+    }
+
+    override fun onInactive() {
+        source.removeObserver(sourceObserver)
+    }
+
+    override fun setValue(value: DestinationType?) {
+        super.setValue(value)
+        source.value = toSourceConverter(value)
+    }
+
+    override fun postValue(value: DestinationType?) {
+        super.postValue(value)
+        source.postValue(toSourceConverter(value))
     }
 }
 
+/**
+ * Extension to observe a `LiveData<T>` with more convenient lambda instead of `Observer<T>` instance.
+ */
 @MainThread
-fun <T> LiveData<T>.observeForever(notifyOnRegister: Boolean, observer: Observer<T>) {
-    observeForever(observer)
-
-    if (notifyOnRegister) {
-        observer.onChanged(value)
-    }
-}
-
-@MainThread
-fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observer<T>) {
-    observe(lifecycleOwner, object : Observer<T> {
-        override fun onChanged(t: T?) {
-            observer.onChanged(t)
-            removeObserver(this)
-        }
+fun <T> LiveData<T>.observe(owner: LifecycleOwner, observer: (T) -> Unit) {
+    observe(owner, Observer<T> { newValue ->
+        observer(newValue)
     })
 }
 
+/**
+ * Extension to observe a `LiveData<T>`. Once it got notified about value change, it deregister itself automatically.
+ */
 @MainThread
-fun <T> LiveData<T>.observeForeverNotifyForNonNullValues(observer: (T) -> Unit) {
-    observeForever {
-        if (it != null) {
-            observer(it)
+fun <T> LiveData<T>.observeOnce(owner: LifecycleOwner, observer: (T) -> Unit) {
+    observe(owner, object : Observer<T> {
+        override fun onChanged(newValue: T) {
+            observer(newValue)
+            removeObserver(this)
         }
-    }
+    })
 }

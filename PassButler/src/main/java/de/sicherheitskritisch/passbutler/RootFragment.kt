@@ -5,8 +5,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
 import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.observe
 import de.sicherheitskritisch.passbutler.base.observeOnce
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
@@ -41,15 +41,15 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
         L.d("RootFragment", "onViewCreated(): savedInstanceState = $savedInstanceState")
 
-        viewModel.rootScreenState.observeOnce(this, Observer {
+        viewModel.rootScreenState.observeOnce(this) {
             setupRootScreen()
-        })
+        }
 
-        viewModel.lockScreenState.observe(this, Observer {
-            if (it == RootViewModel.LockScreenState.Locked) {
+        viewModel.lockScreenState.observe(this) { newLockScreenState ->
+            if (newLockScreenState == RootViewModel.LockScreenState.Locked) {
                 showLockedScreen()
             }
-        })
+        }
     }
 
     private fun setupRootScreen() {
