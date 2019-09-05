@@ -17,19 +17,19 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
     // TODO: Add string/internal/stored mapping to convert more safe
 
-    val lockTimeoutSetting by lazy {
+    val automaticLockTimeoutSetting by lazy {
         // Lazy initialisation because `loggedInUserViewModel` is lately set by `SettingsFragment`
-        loggedInUserViewModel?.lockTimeoutSetting?.let { lockTimeoutSettingLiveData ->
+        loggedInUserViewModel?.automaticLockTimeout?.let { automaticLockTimeoutLiveData ->
             TransformingMutableLiveData(
-                source = lockTimeoutSettingLiveData,
+                source = automaticLockTimeoutLiveData,
                 toDestinationConverter = { it?.toString() },
                 toSourceConverter = { it?.toIntOrNull() }
             )
         }
     }
 
-    val hidePasswordsSetting: MutableLiveData<Boolean?>?
-        get() = loggedInUserViewModel?.hidePasswordsSetting
+    val hidePasswordsEnabledSetting: MutableLiveData<Boolean?>?
+        get() = loggedInUserViewModel?.hidePasswordsEnabled
 
     val biometricUnlockEnabled: ValueGetterLiveData<Boolean?>?
         get() = loggedInUserViewModel?.biometricUnlockEnabled

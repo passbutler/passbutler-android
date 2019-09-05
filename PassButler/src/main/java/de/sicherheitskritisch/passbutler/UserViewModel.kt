@@ -45,8 +45,8 @@ class UserViewModel private constructor(
     val username
         get() = user.username
 
-    val lockTimeoutSetting = MutableLiveData<Int?>()
-    val hidePasswordsSetting = MutableLiveData<Boolean?>()
+    val automaticLockTimeout = MutableLiveData<Int?>()
+    val hidePasswordsEnabled = MutableLiveData<Boolean?>()
 
     val biometricUnlockAvailable = ValueGetterLiveData<Boolean?> {
         Biometrics.isHardwareCapable && Biometrics.isKeyguardSecure && Biometrics.hasEnrolledBiometrics
@@ -58,8 +58,8 @@ class UserViewModel private constructor(
 
     val unlockFinished = SignalEmitter()
 
-    private val lockTimeoutSettingChangedObserver: (Int?) -> Unit = { applyUserSettings() }
-    private val hidePasswordsSettingChangedObserver: (Boolean?) -> Unit = { applyUserSettings() }
+    private val automaticLockTimeoutChangedObserver: (Int?) -> Unit = { applyUserSettings() }
+    private val hidePasswordsEnabledChangedObserver: (Boolean?) -> Unit = { applyUserSettings() }
 
     private var masterEncryptionKey: ByteArray? = null
         set(newMasterEncryptionKey) {
@@ -243,8 +243,8 @@ class UserViewModel private constructor(
             L.d("UserViewModel", "decryptUserSettings(): The master encryption key was set, decrypt and update user settings...")
 
             settings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer)
-            lockTimeoutSetting.postValue(settings?.lockTimeout)
-            hidePasswordsSetting.postValue(settings?.hidePasswords)
+            automaticLockTimeout.postValue(settings?.automaticLockTimeout)
+            hidePasswordsEnabled.postValue(settings?.hidePasswords)
 
             // Register observers after field initialisations to avoid initial observer calls
             registerObservers()
@@ -255,33 +255,33 @@ class UserViewModel private constructor(
             unregisterObservers()
 
             settings = null
-            lockTimeoutSetting.postValue(null)
-            hidePasswordsSetting.postValue(null)
+            automaticLockTimeout.postValue(null)
+            hidePasswordsEnabled.postValue(null)
         }
     }
 
     private fun registerObservers() {
         // The `LiveData` observe calls must be done on main thread
         launch(Dispatchers.Main) {
-            lockTimeoutSetting.observeForever(lockTimeoutSettingChangedObserver)
-            hidePasswordsSetting.observeForever(hidePasswordsSettingChangedObserver)
+            automaticLockTimeout.observeForever(automaticLockTimeoutChangedObserver)
+            hidePasswordsEnabled.observeForever(hidePasswordsEnabledChangedObserver)
         }
     }
 
     private fun unregisterObservers() {
         // The `LiveData` remove observer calls must be done on main thread
         launch(Dispatchers.Main) {
-            lockTimeoutSetting.removeObserver(lockTimeoutSettingChangedObserver)
-            hidePasswordsSetting.removeObserver(hidePasswordsSettingChangedObserver)
+            automaticLockTimeout.removeObserver(automaticLockTimeoutChangedObserver)
+            hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
         }
     }
 
     private fun applyUserSettings() {
-        val newLockTimeoutSetting = lockTimeoutSetting.value
-        val newHidePasswordsSetting = hidePasswordsSetting.value
+        val automaticLockTimeoutValue = automaticLockTimeout.value
+        val hidePasswordsEnabledValue = hidePasswordsEnabled.value
 
-        if (newLockTimeoutSetting != null && newHidePasswordsSetting != null) {
-            settings = UserSettings(newLockTimeoutSetting, newHidePasswordsSetting)
+        if (automaticLockTimeoutValue != null && hidePasswordsEnabledValue != null) {
+            settings = UserSettings(automaticLockTimeoutValue, hidePasswordsEnabledValue)
         }
     }
 

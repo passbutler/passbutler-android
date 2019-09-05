@@ -92,13 +92,13 @@
 
     <string name="settings_category_security_title">Sicherheit</string>
 
-    <string name="settings_lock_timeout_setting_title">Automatische Sperre</string>
-    <string name="settings_lock_timeout_setting_summary">Zeitspanne nach dem Pass Butler automatisch gesperrt wird, um unbefugten Zugriff zu vermeiden</string>
+    <string name="settings_automatic_lock_timeout_setting_title">Automatische Sperre</string>
+    <string name="settings_automatic_lock_timeout_setting_summary">Zeitspanne nach dem Pass Butler automatisch gesperrt wird, um unbefugten Zugriff zu vermeiden</string>
 
-    <string name="settings_lock_timeout_setting_value_0s">Sofort</string>
-    <string name="settings_lock_timeout_setting_value_15s">Nach 15 Sekunden</string>
-    <string name="settings_lock_timeout_setting_value_30s">Nach 30 Sekunden</string>
-    <string name="settings_lock_timeout_setting_value_60s">Nach 1 Minute</string>
+    <string name="settings_automatic_lock_timeout_setting_value_0s">Sofort</string>
+    <string name="settings_automatic_lock_timeout_setting_value_15s">Nach 15 Sekunden</string>
+    <string name="settings_automatic_lock_timeout_setting_value_30s">Nach 30 Sekunden</string>
+    <string name="settings_automatic_lock_timeout_setting_value_60s">Nach 1 Minute</string>
 
     <string name="settings_biometric_unlock_setting_title">Biometrisches Entsperren</string>
     <string name="settings_biometric_unlock_setting_summary">Biometrisches Entsperren verwenden</string>

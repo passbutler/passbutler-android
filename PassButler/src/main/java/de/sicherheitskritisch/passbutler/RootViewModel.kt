@@ -115,7 +115,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
     private fun startLockScreenTimer() {
         // The lock timer must be only started if the user is logged in and unlocked (lock timeout available)
-        loggedInUserViewModel?.lockTimeoutSetting?.value?.let { lockTimeout ->
+        loggedInUserViewModel?.automaticLockTimeout?.value?.let { lockTimeout ->
             launch {
                 lockScreenTimerJob?.cancelAndJoin()
                 lockScreenTimerJob = launch {

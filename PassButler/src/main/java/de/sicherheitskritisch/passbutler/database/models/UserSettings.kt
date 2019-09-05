@@ -9,13 +9,13 @@ import org.json.JSONObject
 
 // TODO: Add unit tests for serialization/deserialization
 data class UserSettings(
-    val lockTimeout: Int = DEFAULT_LOCK_TIMEOUT,
-    val hidePasswords: Boolean = DEFAULT_HIDE_PASSWORDS
+    val automaticLockTimeout: Int = 0,
+    val hidePasswords: Boolean = true
 ) : JSONSerializable {
 
     override fun serialize(): JSONObject {
         return JSONObject().apply {
-            putInt(SERIALIZATION_KEY_LOCK_TIMEOUT, lockTimeout)
+            putInt(SERIALIZATION_KEY_AUTOMATIC_LOCK_TIMEOUT, automaticLockTimeout)
             putBoolean(SERIALIZATION_KEY_HIDE_PASSWORDS, hidePasswords)
         }
     }
@@ -24,17 +24,14 @@ data class UserSettings(
         @Throws(JSONException::class)
         override fun deserialize(jsonObject: JSONObject): UserSettings {
             return UserSettings(
-                jsonObject.getInt(SERIALIZATION_KEY_LOCK_TIMEOUT),
+                jsonObject.getInt(SERIALIZATION_KEY_AUTOMATIC_LOCK_TIMEOUT),
                 jsonObject.getBoolean(SERIALIZATION_KEY_HIDE_PASSWORDS)
             )
         }
     }
 
     companion object {
-        private const val DEFAULT_LOCK_TIMEOUT = 0
-        private const val DEFAULT_HIDE_PASSWORDS = true
-
-        private const val SERIALIZATION_KEY_LOCK_TIMEOUT = "lockTimeoutSetting"
+        private const val SERIALIZATION_KEY_AUTOMATIC_LOCK_TIMEOUT = "automaticLockTimeout"
         private const val SERIALIZATION_KEY_HIDE_PASSWORDS = "hidePasswords"
     }
 }

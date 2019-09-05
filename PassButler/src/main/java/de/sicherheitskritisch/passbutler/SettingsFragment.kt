@@ -298,22 +298,22 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
             title = getString(R.string.settings_category_security_title)
         })
 
-        addLockTimeoutSetting()
+        addAutomaticLockTimeoutSetting()
         addHidePasswordsSetting()
         addBiometricUnlockSetting()
     }
 
-    private fun addLockTimeoutSetting() {
+    private fun addAutomaticLockTimeoutSetting() {
         // TODO: Hide dialog if fragment is paused
         preferenceScreen.addPreference(ListPreference(context).apply {
-            key = SettingKey.LOCK_TIMEOUT.name
-            title = getString(R.string.settings_lock_timeout_setting_title)
-            summary = getString(R.string.settings_lock_timeout_setting_summary)
+            key = SettingKey.AUTOMATIC_LOCK_TIMEOUT.name
+            title = getString(R.string.settings_automatic_lock_timeout_setting_title)
+            summary = getString(R.string.settings_automatic_lock_timeout_setting_summary)
             entries = arrayOf(
-                getString(R.string.settings_lock_timeout_setting_value_0s),
-                getString(R.string.settings_lock_timeout_setting_value_15s),
-                getString(R.string.settings_lock_timeout_setting_value_30s),
-                getString(R.string.settings_lock_timeout_setting_value_60s)
+                getString(R.string.settings_automatic_lock_timeout_setting_value_0s),
+                getString(R.string.settings_automatic_lock_timeout_setting_value_15s),
+                getString(R.string.settings_automatic_lock_timeout_setting_value_30s),
+                getString(R.string.settings_automatic_lock_timeout_setting_value_60s)
             )
             entryValues = arrayOf(
                 "0",
@@ -326,7 +326,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
 
     private fun addHidePasswordsSetting() {
         preferenceScreen.addPreference(CheckBoxPreference(context).apply {
-            key = SettingKey.HIDE_PASSWORDS.name
+            key = SettingKey.HIDE_PASSWORDS_ENABLED.name
             title = getString(R.string.settings_hide_passwords_setting_title)
             summary = getString(R.string.settings_hide_passwords_setting_summary)
         })
@@ -334,7 +334,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
 
     private fun addBiometricUnlockSetting() {
         enableBiometricUnlockPreference = SwitchPreferenceCompat(context).apply {
-            key = SettingKey.BIOMETRIC_UNLOCK.name
+            key = SettingKey.BIOMETRIC_UNLOCK_ENABLED.name
             title = getString(R.string.settings_biometric_unlock_setting_title)
             summary = getString(R.string.settings_biometric_unlock_setting_summary)
             isVisible = settingsViewModel.loggedInUserViewModel?.biometricUnlockAvailable?.value ?: false
@@ -356,9 +356,9 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
     private inner class SettingsPreferenceDataStore : PreferenceDataStore() {
 
         private val settingsMapping = mapOf(
-            SettingKey.HIDE_PASSWORDS to Setting.Boolean(settingsViewModel.hidePasswordsSetting),
-            SettingKey.LOCK_TIMEOUT to Setting.String(settingsViewModel.lockTimeoutSetting),
-            SettingKey.BIOMETRIC_UNLOCK to Setting.Boolean(settingsViewModel.biometricUnlockEnabled)
+            SettingKey.HIDE_PASSWORDS_ENABLED to Setting.Boolean(settingsViewModel.hidePasswordsEnabledSetting),
+            SettingKey.AUTOMATIC_LOCK_TIMEOUT to Setting.String(settingsViewModel.automaticLockTimeoutSetting),
+            SettingKey.BIOMETRIC_UNLOCK_ENABLED to Setting.Boolean(settingsViewModel.biometricUnlockEnabled)
         )
 
         override fun getBoolean(key: String?, defValue: Boolean): Boolean {
@@ -409,9 +409,9 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
     }
 
     private enum class SettingKey {
-        HIDE_PASSWORDS,
-        LOCK_TIMEOUT,
-        BIOMETRIC_UNLOCK
+        HIDE_PASSWORDS_ENABLED,
+        AUTOMATIC_LOCK_TIMEOUT,
+        BIOMETRIC_UNLOCK_ENABLED
     }
 
     private sealed class Setting {
