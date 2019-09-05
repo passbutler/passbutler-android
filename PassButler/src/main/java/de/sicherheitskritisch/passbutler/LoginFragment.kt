@@ -26,6 +26,7 @@ import de.sicherheitskritisch.passbutler.ui.Keyboard
 import de.sicherheitskritisch.passbutler.ui.VisibilityHideMode
 import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
 import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment {
@@ -178,8 +179,10 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         }
 
         override fun onRequestFinishedSuccessfully() {
-            val overviewFragment = OverviewFragment.newInstance()
-            fragment?.showFragmentAsFirstScreen(overviewFragment)
+            fragment?.launch {
+                val overviewFragment = OverviewFragment.newInstance()
+                fragment?.showFragmentAsFirstScreen(overviewFragment)
+            }
         }
     }
 

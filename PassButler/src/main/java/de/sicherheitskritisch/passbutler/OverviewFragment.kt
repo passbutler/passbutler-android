@@ -241,7 +241,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.overview_sync_failed_message
 
         override fun onRequestFinishedSuccessfully() {
-            fragment?.showInformation(resources?.getString(R.string.overview_sync_successful_message))
+            fragment?.launch {
+                fragment?.showInformation(resources?.getString(R.string.overview_sync_successful_message))
+            }
         }
     }
 
@@ -253,8 +255,10 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.overview_logout_failed_title
 
         override fun onRequestFinishedSuccessfully() {
-            val loginFragment = LoginFragment.newInstance()
-            fragment?.showFragmentAsFirstScreen(loginFragment)
+            fragment?.launch {
+                val loginFragment = LoginFragment.newInstance()
+                fragment?.showFragmentAsFirstScreen(loginFragment)
+            }
         }
     }
 

@@ -1,5 +1,7 @@
 package de.sicherheitskritisch.passbutler.base
 
+import androidx.annotation.AnyThread
+import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -67,15 +69,26 @@ open class RequestSendingViewHandler(private val requestSendingViewModel: Reques
         requestSendingViewModel.requestFinishedSuccessfully.removeSignal(requestFinishedSuccessfullySignal)
     }
 
+    /**
+     * Called if progress state changes. Will be called on main thread.
+     */
+    @MainThread
     open fun onIsLoadingChanged(isLoading: Boolean) {
         // Override if desired
     }
 
+    /**
+     * Called if a request error occurs. Will be called on main thread.
+     */
+    @MainThread
     open fun onRequestErrorChanged(requestError: Throwable) {
         // Override if desired
     }
 
-    // TODO: Dispatch on UI thread + also check child implementations?
+    /**
+     * Called if the request was finished successfully. Will be called on any thread.
+     */
+    @AnyThread
     open fun onRequestFinishedSuccessfully() {
         // Override if desired
     }
