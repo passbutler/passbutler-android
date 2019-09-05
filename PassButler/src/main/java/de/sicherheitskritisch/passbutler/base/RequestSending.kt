@@ -11,13 +11,13 @@ import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 interface RequestSendingViewModel {
-    val isLoading: MutableLiveData<Boolean>
+    val isLoading: NonNullMutableLiveData<Boolean>
     val requestError: MutableLiveData<Throwable?>
     val requestFinishedSuccessfully: SignalEmitter
 }
 
 open class DefaultRequestSendingViewModel : ViewModel(), RequestSendingViewModel {
-    override val isLoading = MutableLiveData<Boolean>().apply { value = false }
+    override val isLoading = NonNullMutableLiveData(false)
     override val requestError = MutableLiveData<Throwable?>()
     override val requestFinishedSuccessfully = SignalEmitter()
 }
@@ -42,9 +42,7 @@ fun CoroutineScope.createRequestSendingJob(requestSendingViewModel: RequestSendi
 open class RequestSendingViewHandler(private val requestSendingViewModel: RequestSendingViewModel) {
 
     private val isLoadingObserver = Observer<Boolean> { newValue ->
-        newValue?.let {
-            onIsLoadingChanged(it)
-        }
+        onIsLoadingChanged(newValue)
     }
 
     private val requestErrorObserver = Observer<Throwable?> { newValue ->
