@@ -11,6 +11,7 @@ import androidx.biometric.BiometricConstants.ERROR_NEGATIVE_BUTTON
 import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProviders
@@ -134,10 +135,17 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     }
 
     override fun onPause() {
-        // Be sure the dialog is dismissed to avoid dialog is shown on locked screen
+        // Be sure all dialogs are dismissed to avoid they are shown on locked screen
+        dismissPreferenceDialog()
         dismissMasterPasswordInputDialog()
 
         super.onPause()
+    }
+
+    private fun dismissPreferenceDialog() {
+        // Dirty approach to dismiss the visible preference dialog fragment (fragment tag copied from `PreferenceFragmentCompat.DIALOG_FRAGMENT_TAG`):
+        val preferenceDialogFragmentTag = "androidx.preference.PreferenceFragment.DIALOG"
+        (settingsPreferenceFragment?.fragmentManager?.findFragmentByTag(preferenceDialogFragmentTag) as? DialogFragment)?.dismiss()
     }
 
     private fun confirmMasterPasswordInputDialog(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String) {
@@ -304,7 +312,6 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
     }
 
     private fun addAutomaticLockTimeoutSetting() {
-        // TODO: Hide dialog if fragment is paused
         preferenceScreen.addPreference(ListPreference(context).apply {
             key = SettingKey.AUTOMATIC_LOCK_TIMEOUT.name
             title = getString(R.string.settings_automatic_lock_timeout_setting_title)
