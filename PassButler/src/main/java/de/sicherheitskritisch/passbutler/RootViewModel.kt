@@ -13,7 +13,6 @@ import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
 import de.sicherheitskritisch.passbutler.base.toUTF8String
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
-import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
@@ -178,9 +177,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 /**
  * Convenience method to obtain the `RootViewModel` from activity.
  */
-// Extension should be only available for specific `Fragment` type
-@Suppress("unused")
-fun BaseViewModelFragment<*>.getRootViewModel(activity: FragmentActivity): RootViewModel {
+fun getRootViewModel(activity: FragmentActivity): RootViewModel {
     // The `RootViewModel` must be received via activity to be sure it is the same for multiple fragment lifecycles
     return ViewModelProviders.of(activity).get(RootViewModel::class.java)
 }

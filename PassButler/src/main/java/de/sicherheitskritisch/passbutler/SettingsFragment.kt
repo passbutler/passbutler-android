@@ -60,9 +60,10 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
-        viewModel = ViewModelProviders.of(this).get(SettingsViewModel::class.java)
-
         activity?.let {
+            // Retrieve viewmodel from activity to provide nested fragment the same instance
+            viewModel = ViewModelProviders.of(it).get(SettingsViewModel::class.java)
+
             val rootViewModel = getRootViewModel(it)
             viewModel.loggedInUserViewModel = rootViewModel.loggedInUserViewModel
         }
@@ -73,7 +74,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             binding.lifecycleOwner = this
         }
 
-        settingsPreferenceFragment = SettingsPreferenceFragment.newInstance(viewModel).also { settingsPreferenceFragment ->
+        settingsPreferenceFragment = SettingsPreferenceFragment.newInstance().also { settingsPreferenceFragment ->
             childFragmentManager
                 .beginTransaction()
                 .replace(R.id.frameLayout_settings_root, settingsPreferenceFragment)
@@ -294,6 +295,18 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
 
     private lateinit var settingsViewModel: SettingsViewModel
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        activity?.let {
+            // Retrieve viewmodel from activity to use same instance as the parent fragment
+            settingsViewModel = ViewModelProviders.of(it).get(SettingsViewModel::class.java)
+
+            val rootViewModel = getRootViewModel(it)
+            settingsViewModel.loggedInUserViewModel = rootViewModel.loggedInUserViewModel
+        }
+    }
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         preferenceManager.preferenceDataStore = SettingsPreferenceDataStore()
         preferenceScreen = preferenceManager.createPreferenceScreen(context)
@@ -427,8 +440,6 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
     }
 
     companion object {
-        fun newInstance(viewModel: SettingsViewModel) = SettingsPreferenceFragment().apply {
-            settingsViewModel = viewModel
-        }
+        fun newInstance() = SettingsPreferenceFragment()
     }
 }
