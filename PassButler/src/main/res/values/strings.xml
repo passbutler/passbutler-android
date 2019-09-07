@@ -93,7 +93,7 @@
     <string name="settings_category_security_title">Sicherheit</string>
 
     <string name="settings_automatic_lock_timeout_setting_title">Automatische Sperre</string>
-    <string name="settings_automatic_lock_timeout_setting_summary">Zeitspanne nach dem Pass Butler im Hintergrund automatisch gesperrt wird, um unbefugten Zugriff zu vermeiden</string>
+    <string name="settings_automatic_lock_timeout_setting_summary">Zeitspanne nach der Pass Butler automatisch gesperrt wird, wenn sich die App im Hintergrund befindet (zur Vermeidung von unbefugtem Zugriff)</string>
 
     <string name="settings_automatic_lock_timeout_setting_value_0s">Sofort</string>
     <string name="settings_automatic_lock_timeout_setting_value_15s">Nach 15 Sekunden</string>
@@ -106,7 +106,7 @@
     <string name="settings_setup_biometric_unlock_master_password_dialog_title">Master-Passwort eingeben</string>
 
     <string name="settings_setup_biometric_unlock_biometrics_prompt_title">Biometrisches Entsperren einrichten</string>
-    <string name="settings_setup_biometric_unlock_biometrics_prompt_description">Richten Sie Biometrisches Entsperren von Pass Butler nun ein</string>
+    <string name="settings_setup_biometric_unlock_biometrics_prompt_description">Richten Sie Biometrisches Entsperren nun ein</string>
     <string name="settings_setup_biometric_unlock_biometrics_prompt_cancel_button_text">Abbrechen</string>
 
     <string name="settings_setup_biometric_unlock_failed_general_title">Einrichtung hat nicht geklappt</string>
