@@ -107,6 +107,7 @@ class UserViewModel private constructor(
                 try {
                     unlockMasterEncryptionKey(masterPassword)
                 } catch (e: UnlockFailedException) {
+                    // TODO: This also occurs if the user settings could not be deserialized or webservice initialisation and should not crash the app on login
                     throw IllegalStateException("The unlock of the master encryption key failed despite the master password was supplied from login!", e)
                 }
             }
