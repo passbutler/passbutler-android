@@ -411,7 +411,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
     }
 
     /*
-     * Only accept `LiveData<T : Any>` because it is seen as an illegal state if a setting has no value at this state.
+     * Only accept `LiveData<T : Any>` because at this point a setting without value can't be used in view.
      */
     private sealed class Setting {
         class Boolean(val liveData: LiveData<kotlin.Boolean>?) : Setting()

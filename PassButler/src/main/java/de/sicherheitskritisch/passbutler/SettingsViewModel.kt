@@ -17,11 +17,16 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
     val automaticLockTimeoutSetting: MutableLiveData<String>? by lazy {
         loggedInUserViewModel?.automaticLockTimeout?.let { automaticLockTimeoutLiveData ->
-            // Transforms `LiveData<Int?>` to `LiveData<String>`
+            // Transforms `MutableLiveData<Int?>` to `MutableLiveData<String>`
             NonNullTransformingMutableLiveData(
                 source = automaticLockTimeoutLiveData,
-                toDestinationConverter = { automaticLockTimeoutSettingValues.toListPreferenceValue(it) ?: "" },
-                toSourceConverter = { automaticLockTimeoutSettingValues.toInternalValue(it) }
+                transformToTarget = { internalValue ->
+                    val listPreferenceValueFallback = ""
+                    automaticLockTimeoutSettingValues.firstOrNull { it.internalValue == internalValue }?.listPreferenceValue ?: listPreferenceValueFallback
+                },
+                transformToSource = { listPreferenceValue ->
+                    automaticLockTimeoutSettingValues.firstOrNull { it.listPreferenceValue == listPreferenceValue }?.internalValue
+                }
             )
         }
     }
@@ -35,14 +40,14 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
     val hidePasswordsEnabledSetting: MutableLiveData<Boolean>? by lazy {
         loggedInUserViewModel?.hidePasswordsEnabled?.let { hidePasswordsEnabledLiveData ->
-            // Transforms `LiveData<Boolean?>` to `LiveData<Boolean>`
+            // Transforms `MutableLiveData<Boolean?>` to `MutableLiveData<Boolean>`
             NonNullTransformingMutableLiveData(
                 source = hidePasswordsEnabledLiveData,
-                toDestinationConverter = { sourceValue ->
+                transformToTarget = { sourceValue ->
                     sourceValue ?: false
                 },
-                toSourceConverter = { destinationValue ->
-                    destinationValue
+                transformToSource = { targetValue ->
+                    targetValue
                 }
             )
         }
@@ -118,11 +123,3 @@ fun <ItemType : Any, MappingType : ListPreferenceMapping<ItemType>> List<Mapping
 
 val <ItemType : Any, MappingType : ListPreferenceMapping<ItemType>> List<MappingType>.listPreferenceEntryValues: Array<String>
     get() = this.map { it.listPreferenceValue }.toTypedArray()
-
-private fun <ItemType : Any, MappingType : ListPreferenceMapping<ItemType>> List<MappingType>.toInternalValue(listPreferenceValue: String): ItemType? {
-    return this.firstOrNull { it.listPreferenceValue == listPreferenceValue }?.internalValue
-}
-
-private fun <ItemType : Any, MappingType : ListPreferenceMapping<ItemType>> List<MappingType>.toListPreferenceValue(internalValue: ItemType?): String? {
-    return this.firstOrNull { it.internalValue == internalValue }?.listPreferenceValue
-}

@@ -52,29 +52,51 @@ class NonNullValueGetterLiveData<T : Any>(private val valueGetter: () -> T) : Li
     }
 }
 
-class NonNullTransformingMutableLiveData<SourceType, DestinationType : Any>(
+/**
+ * A `MutableLiveData<T>` that transforms between the value of a given source `MutableLiveData<SourceType>` and its own `TargetType` value.
+ * Only initially the value of the `source` is transformed to `TargetType` and set. If a new value is set, it will be transformed and set to `source`.
+ */
+class NonNullTransformingMutableLiveData<SourceType, TargetType : Any>(
     private val source: MutableLiveData<SourceType>,
-    private val toDestinationConverter: (SourceType?) -> DestinationType,
-    private val toSourceConverter: (DestinationType) -> SourceType
-) : MutableLiveData<DestinationType>() {
+    private val transformToTarget: (SourceType?) -> TargetType,
+    private val transformToSource: (TargetType) -> SourceType?
+) : MutableLiveData<TargetType>() {
 
     init {
-        val convertedValue = toDestinationConverter(source.value)
-        setValue(convertedValue)
+        val transformedTargetValue = transformToTarget(source.value)
+
+        // Call super method to avoid infinite update cycle
+        super.setValue(transformedTargetValue)
     }
 
-    override fun setValue(value: DestinationType) {
-        super.setValue(value)
-
-        val convertedValue = toSourceConverter(value)
-        source.value = convertedValue
+    override fun getValue(): TargetType {
+        // Because non-null type is enforced by Kotlin the double-bang is okay
+        return super.getValue()!!
     }
 
-    override fun postValue(value: DestinationType) {
-        super.postValue(value)
+    override fun setValue(value: TargetType) {
+        transformToSourceValue(value) { transformedSourceValue ->
+            super.setValue(value)
+            source.setValue(transformedSourceValue)
+        }
+    }
 
-        val convertedValue = toSourceConverter(value)
-        source.postValue(convertedValue)
+    override fun postValue(value: TargetType) {
+        transformToSourceValue(value) { transformedSourceValue ->
+            super.postValue(value)
+            source.postValue(transformedSourceValue)
+        }
+    }
+
+    private fun transformToSourceValue(value: TargetType, applyValueBlock: (transformedSourceValue: SourceType) -> Unit) {
+        val transformedSourceValue = transformToSource(value)
+
+        // Only apply a value which source value transformation resulted a value (do not set null to `source` because of an invalid target value)
+        if (transformedSourceValue != null) {
+            applyValueBlock(transformedSourceValue)
+        } else {
+            L.w("NonNullTransformingMutableLiveData", "transformToSourceValue(): The given value '$value' could not be transformed to a source value, thus it was skipped!")
+        }
     }
 }
 
