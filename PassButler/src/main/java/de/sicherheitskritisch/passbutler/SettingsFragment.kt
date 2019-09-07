@@ -115,7 +115,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
                         val biometricPrompt = BiometricPrompt(activity, biometricCallbackExecutor, biometricAuthenticationCallback)
                         val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
                             .setTitle(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_title))
-                            .setSubtitle(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_subtitle))
+                            .setDescription(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_description))
                             .setNegativeButtonText(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_cancel_button_text))
                             .build()
 

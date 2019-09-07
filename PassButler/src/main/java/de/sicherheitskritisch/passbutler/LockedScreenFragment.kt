@@ -133,7 +133,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
                         val biometricPrompt = BiometricPrompt(activity, biometricCallbackExecutor, biometricAuthenticationCallback)
                         val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
                             .setTitle(getString(R.string.locked_screen_biometrics_prompt_title))
-                            .setSubtitle(getString(R.string.locked_screen_biometrics_prompt_subtitle))
+                            .setDescription(getString(R.string.locked_screen_biometrics_prompt_description))
                             .setNegativeButtonText(getString(R.string.locked_screen_biometrics_prompt_cancel_button_text))
                             .build()
 
