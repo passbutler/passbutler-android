@@ -173,6 +173,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
             val loginFailedExceptionCause = (requestError as? UserManager.LoginFailedException)?.cause
 
             return when (loginFailedExceptionCause) {
+                // TODO: Show unauthorized error only if unauthorized and not a general request failed exception
                 is AuthWebservice.GetAuthTokenFailedException -> R.string.login_failed_unauthorized_title
                 else -> R.string.login_failed_general_title
             }

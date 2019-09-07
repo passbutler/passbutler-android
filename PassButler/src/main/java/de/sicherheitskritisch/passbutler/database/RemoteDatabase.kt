@@ -30,7 +30,7 @@ import java.lang.reflect.Type
 typealias OkHttpResponse = okhttp3.Response
 
 private val Response<*>?.technicalErrorDescription
-    get() = "(HTTP status code ${this?.code()}): ${this?.errorBody()?.string()}"
+    get() = "(HTTP status code ${this?.code()}): ${this?.errorBody()?.string()?.trim()?.replace("\n", "")}"
 
 interface AuthWebservice {
     @GET("/token")
@@ -79,6 +79,7 @@ suspend fun AuthWebservice?.requestAuthToken(): AuthToken {
         val getTokenResponse = getTokenRequest?.await()
         val authToken = getTokenResponse?.body()
 
+        // TODO: Add proper unauthorized exception handling
         if (getTokenResponse?.isSuccessful != true || authToken == null) {
             throw Exception("The auth token could not be get ${getTokenResponse.technicalErrorDescription}")
         }
