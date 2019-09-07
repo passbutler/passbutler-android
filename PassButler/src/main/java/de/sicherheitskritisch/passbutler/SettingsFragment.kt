@@ -327,18 +327,8 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
             key = SettingKey.AUTOMATIC_LOCK_TIMEOUT.name
             title = getString(R.string.settings_automatic_lock_timeout_setting_title)
             summary = getString(R.string.settings_automatic_lock_timeout_setting_summary)
-            entries = arrayOf(
-                getString(R.string.settings_automatic_lock_timeout_setting_value_0s),
-                getString(R.string.settings_automatic_lock_timeout_setting_value_15s),
-                getString(R.string.settings_automatic_lock_timeout_setting_value_30s),
-                getString(R.string.settings_automatic_lock_timeout_setting_value_60s)
-            )
-            entryValues = arrayOf(
-                "0",
-                "15",
-                "30",
-                "60"
-            )
+            entries = settingsViewModel.automaticLockTimeoutSettingValues.userFacingStrings { getString(it) }
+            entryValues = settingsViewModel.automaticLockTimeoutSettingValues.listPreferenceEntryValues
         })
     }
 
@@ -381,14 +371,8 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
 
         override fun getBoolean(key: String?, defValue: Boolean): Boolean {
             val settingKey = key?.let { SettingKey.valueOf(it) }
-            val settingLiveData = (settingsMapping[settingKey] as? Setting.Boolean)?.liveData
-
-            return settingLiveData?.value ?: run {
-                if (settingLiveData == null) {
-                    L.w("SettingsPreferenceDataStore", "getBoolean(): The setting with key = '$key' is not mapped - thus default value is returned!")
-                } else {
-                    L.w("SettingsPreferenceDataStore", "getBoolean(): The value of the setting with key = '$key' is null - thus default value is returned!")
-                }
+            return (settingsMapping[settingKey] as? Setting.Boolean)?.liveData?.value ?: run {
+                L.w("SettingsPreferenceDataStore", "getBoolean(): The setting with key = '$key' is not mapped - return default value!")
                 false
             }
         }
@@ -397,21 +381,15 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
             val settingKey = key?.let { SettingKey.valueOf(it) }
 
             // Only persist value if mapped setting exists for type and `MutableLiveData` is given
-            ((settingsMapping[settingKey] as? Setting.Boolean)?.liveData as? MutableLiveData<Boolean?>)?.postValue(value) ?: run {
+            ((settingsMapping[settingKey] as? Setting.Boolean)?.liveData as? MutableLiveData<Boolean>)?.postValue(value) ?: run {
                 L.w("SettingsPreferenceDataStore", "putBoolean(): The setting with key = '$key' is not mapped for writing - thus the value is not persisted!")
             }
         }
 
         override fun getString(key: String?, defValue: String?): String? {
             val settingKey = key?.let { SettingKey.valueOf(it) }
-            val settingLiveData = (settingsMapping[settingKey] as? Setting.String)?.liveData
-
-            return settingLiveData?.value ?: run {
-                if (settingLiveData == null) {
-                    L.w("SettingsPreferenceDataStore", "getString(): The setting with key = '$key' is not mapped - thus default value is returned!")
-                } else {
-                    L.w("SettingsPreferenceDataStore", "getString(): The value of the setting with key = '$key' is null - thus default value is returned!")
-                }
+            return (settingsMapping[settingKey] as? Setting.String)?.liveData?.value ?: run {
+                L.w("SettingsPreferenceDataStore", "getString(): The setting with key = '$key' is not mapped - return default value!")
                 null
             }
         }
@@ -420,7 +398,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
             val settingKey = key?.let { SettingKey.valueOf(it) }
 
             // Only persist value if mapped setting exists for type and `MutableLiveData` is given
-            ((settingsMapping[settingKey] as? Setting.String)?.liveData as? MutableLiveData<String?>)?.postValue(value) ?: run {
+            ((settingsMapping[settingKey] as? Setting.String)?.liveData as? MutableLiveData<String>)?.postValue(value) ?: run {
                 L.w("SettingsPreferenceDataStore", "putString(): The setting with key = '$key' is not mapped for writing - thus the value is not persisted!")
             }
         }
@@ -432,9 +410,12 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         BIOMETRIC_UNLOCK_ENABLED
     }
 
+    /*
+     * Only accept `LiveData<T : Any>` because it is seen as an illegal state if a setting has no value at this state.
+     */
     private sealed class Setting {
-        class Boolean(val liveData: LiveData<kotlin.Boolean?>?) : Setting()
-        class String(val liveData: LiveData<kotlin.String?>?) : Setting()
+        class Boolean(val liveData: LiveData<kotlin.Boolean>?) : Setting()
+        class String(val liveData: LiveData<kotlin.String>?) : Setting()
     }
 
     companion object {

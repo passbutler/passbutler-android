@@ -3,7 +3,7 @@ package de.sicherheitskritisch.passbutler
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
-import de.sicherheitskritisch.passbutler.base.TransformingMutableLiveData
+import de.sicherheitskritisch.passbutler.base.NonNullTransformingMutableLiveData
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
@@ -15,21 +15,38 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
     var loggedInUserViewModel: UserViewModel? = null
 
-    // TODO: Add string/internal/stored mapping to convert more safe
-
-    val automaticLockTimeoutSetting by lazy {
-        // Lazy initialisation because `loggedInUserViewModel` is lately set by `SettingsFragment`
+    val automaticLockTimeoutSetting: MutableLiveData<String>? by lazy {
         loggedInUserViewModel?.automaticLockTimeout?.let { automaticLockTimeoutLiveData ->
-            TransformingMutableLiveData(
+            // Transforms `LiveData<Int?>` to `LiveData<String>`
+            NonNullTransformingMutableLiveData(
                 source = automaticLockTimeoutLiveData,
-                toDestinationConverter = { it?.toString() },
-                toSourceConverter = { it?.toIntOrNull() }
+                toDestinationConverter = { automaticLockTimeoutSettingValues.toListPreferenceValue(it) ?: "" },
+                toSourceConverter = { automaticLockTimeoutSettingValues.toInternalValue(it) }
             )
         }
     }
 
-    val hidePasswordsEnabledSetting: MutableLiveData<Boolean?>?
-        get() = loggedInUserViewModel?.hidePasswordsEnabled
+    val automaticLockTimeoutSettingValues = listOf(
+        AutomaticLockTimeoutSettingMapping(R.string.settings_automatic_lock_timeout_setting_value_0s, 0),
+        AutomaticLockTimeoutSettingMapping(R.string.settings_automatic_lock_timeout_setting_value_15s, 15),
+        AutomaticLockTimeoutSettingMapping(R.string.settings_automatic_lock_timeout_setting_value_30s, 30),
+        AutomaticLockTimeoutSettingMapping(R.string.settings_automatic_lock_timeout_setting_value_60s, 60)
+    )
+
+    val hidePasswordsEnabledSetting: MutableLiveData<Boolean>? by lazy {
+        loggedInUserViewModel?.hidePasswordsEnabled?.let { hidePasswordsEnabledLiveData ->
+            // Transforms `LiveData<Boolean?>` to `LiveData<Boolean>`
+            NonNullTransformingMutableLiveData(
+                source = hidePasswordsEnabledLiveData,
+                toDestinationConverter = { sourceValue ->
+                    sourceValue ?: false
+                },
+                toSourceConverter = { destinationValue ->
+                    destinationValue
+                }
+            )
+        }
+    }
 
     val biometricUnlockEnabled: NonNullValueGetterLiveData<Boolean>?
         get() = loggedInUserViewModel?.biometricUnlockEnabled
@@ -83,4 +100,29 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
     }
 
     class InitializeSetupBiometricUnlockCipherFailedException(cause: Throwable) : Exception(cause)
+}
+
+class AutomaticLockTimeoutSettingMapping(
+    userFacingStringResource: Int,
+    internalValue: Int
+) : ListPreferenceMapping<Int>(userFacingStringResource, internalValue, { internalValue.toString() })
+
+open class ListPreferenceMapping<T : Any>(val userFacingStringResource: Int, val internalValue: T, private val listPreferenceValueConverter: (T) -> String) {
+    val listPreferenceValue: String
+        get() = listPreferenceValueConverter(internalValue)
+}
+
+fun <ItemType : Any, MappingType : ListPreferenceMapping<ItemType>> List<MappingType>.userFacingStrings(stringResourceResolver: (Int) -> String): Array<String> {
+    return this.map { stringResourceResolver(it.userFacingStringResource) }.toTypedArray()
+}
+
+val <ItemType : Any, MappingType : ListPreferenceMapping<ItemType>> List<MappingType>.listPreferenceEntryValues: Array<String>
+    get() = this.map { it.listPreferenceValue }.toTypedArray()
+
+private fun <ItemType : Any, MappingType : ListPreferenceMapping<ItemType>> List<MappingType>.toInternalValue(listPreferenceValue: String): ItemType? {
+    return this.firstOrNull { it.listPreferenceValue == listPreferenceValue }?.internalValue
+}
+
+private fun <ItemType : Any, MappingType : ListPreferenceMapping<ItemType>> List<MappingType>.toListPreferenceValue(internalValue: ItemType?): String? {
+    return this.firstOrNull { it.internalValue == internalValue }?.listPreferenceValue
 }

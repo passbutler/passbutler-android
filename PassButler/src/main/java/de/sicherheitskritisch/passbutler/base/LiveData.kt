@@ -52,37 +52,29 @@ class NonNullValueGetterLiveData<T : Any>(private val valueGetter: () -> T) : Li
     }
 }
 
-class TransformingMutableLiveData<SourceType, DestinationType>(
+class NonNullTransformingMutableLiveData<SourceType, DestinationType : Any>(
     private val source: MutableLiveData<SourceType>,
-    private val toDestinationConverter: (SourceType?) -> DestinationType?,
-    private val toSourceConverter: (DestinationType?) -> SourceType?
+    private val toDestinationConverter: (SourceType?) -> DestinationType,
+    private val toSourceConverter: (DestinationType) -> SourceType
 ) : MutableLiveData<DestinationType>() {
 
-    private val sourceObserver = Observer<SourceType> { sourceValue ->
-        // Call super method to avoid infinite notification loop
-        super.postValue(toDestinationConverter(sourceValue))
-    }
-
     init {
-        value = toDestinationConverter(source.value)
+        val convertedValue = toDestinationConverter(source.value)
+        setValue(convertedValue)
     }
 
-    override fun onActive() {
-        source.observeForever(sourceObserver)
-    }
-
-    override fun onInactive() {
-        source.removeObserver(sourceObserver)
-    }
-
-    override fun setValue(value: DestinationType?) {
+    override fun setValue(value: DestinationType) {
         super.setValue(value)
-        source.value = toSourceConverter(value)
+
+        val convertedValue = toSourceConverter(value)
+        source.value = convertedValue
     }
 
-    override fun postValue(value: DestinationType?) {
+    override fun postValue(value: DestinationType) {
         super.postValue(value)
-        source.postValue(toSourceConverter(value))
+
+        val convertedValue = toSourceConverter(value)
+        source.postValue(convertedValue)
     }
 }
 
