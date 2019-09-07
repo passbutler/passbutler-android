@@ -29,7 +29,7 @@ import java.lang.reflect.Type
 
 typealias OkHttpResponse = okhttp3.Response
 
-val Response<*>?.technicalErrorDescription
+private val Response<*>?.technicalErrorDescription
     get() = "(HTTP status code ${this?.code()}): ${this?.errorBody()?.string()}"
 
 interface AuthWebservice {
@@ -52,9 +52,7 @@ interface AuthWebservice {
 
     companion object {
         fun create(serverUrl: Uri, username: String, password: String): AuthWebservice {
-            if (BuildType.isReleaseBuild && !serverUrl.isHttpsScheme) {
-                throw IllegalArgumentException("For release build, only TLS server URL are accepted!")
-            }
+            require(!(BuildType.isReleaseBuild && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
 
             val okHttpClient = OkHttpClient.Builder()
                 .addInterceptor(PasswordAuthenticationInterceptor(username, password))
@@ -136,9 +134,7 @@ interface UserWebservice {
 
     companion object {
         fun create(serverUrl: Uri, authToken: String): UserWebservice {
-            if (BuildType.isReleaseBuild && !serverUrl.isHttpsScheme) {
-                throw IllegalArgumentException("For release build, only TLS server URL are accepted!")
-            }
+            require(!(BuildType.isReleaseBuild && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
 
             val okHttpClient = OkHttpClient.Builder()
                 .addInterceptor(TokenAuthenticationInterceptor(authToken))
