@@ -3,8 +3,8 @@ package de.sicherheitskritisch.passbutler
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.SignalEmitter
-import de.sicherheitskritisch.passbutler.base.ValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.optionalContentNotEquals
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
@@ -48,12 +48,12 @@ class UserViewModel private constructor(
     val automaticLockTimeout = MutableLiveData<Int?>()
     val hidePasswordsEnabled = MutableLiveData<Boolean?>()
 
-    val biometricUnlockAvailable = ValueGetterLiveData<Boolean?> {
+    val biometricUnlockAvailable = NonNullValueGetterLiveData {
         Biometrics.isHardwareCapable && Biometrics.isKeyguardSecure && Biometrics.hasEnrolledBiometrics
     }
 
-    val biometricUnlockEnabled = ValueGetterLiveData<Boolean?> {
-        (biometricUnlockAvailable.value ?: false) && userManager.loggedInStateStorage.encryptedMasterPassword != null
+    val biometricUnlockEnabled = NonNullValueGetterLiveData {
+        biometricUnlockAvailable.value && userManager.loggedInStateStorage.encryptedMasterPassword != null
     }
 
     val unlockFinished = SignalEmitter()

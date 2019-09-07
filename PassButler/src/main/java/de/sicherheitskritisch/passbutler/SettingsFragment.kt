@@ -98,9 +98,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         }
 
         viewModel.biometricUnlockEnabled?.observe(this) { newValue ->
-            newValue?.let {
-                settingsPreferenceFragment?.enableBiometricUnlockPreference?.isChecked = it
-            }
+            settingsPreferenceFragment?.enableBiometricUnlockPreference?.isChecked = newValue
         }
 
         return binding?.root

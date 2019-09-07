@@ -32,9 +32,18 @@ class NonNullMutableLiveData<T : Any>(initialValue: T) : MutableLiveData<T>() {
     }
 }
 
-class ValueGetterLiveData<T>(private val valueGetter: () -> T) : LiveData<T>() {
+/**
+ * A non-null value enforcing `LiveData<T>` that retrieves its value via lambda.
+ * On a known change of values used in the lambda, `notifyChange()` must be called!
+ */
+class NonNullValueGetterLiveData<T : Any>(private val valueGetter: () -> T) : LiveData<T>() {
     init {
         value = valueGetter()
+    }
+
+    override fun getValue(): T {
+        // Because non-null type is enforced by Kotlin the double-bang is okay
+        return super.getValue()!!
     }
 
     fun notifyChange() {
