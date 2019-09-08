@@ -26,11 +26,10 @@ import retrofit2.http.Path
 import java.io.IOException
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import java.net.HttpURLConnection.HTTP_FORBIDDEN
+import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
 
 typealias OkHttpResponse = okhttp3.Response
-
-private val Response<*>?.technicalErrorDescription
-    get() = "(HTTP status code ${this?.code()}): ${this?.errorBody()?.string()?.trim()?.replace("\n", "")}"
 
 interface AuthWebservice {
     @GET("/token")
@@ -77,14 +76,7 @@ suspend fun AuthWebservice?.requestAuthToken(): AuthToken {
     return try {
         val getTokenRequest = this?.getTokenAsync()
         val getTokenResponse = getTokenRequest?.await()
-        val authToken = getTokenResponse?.body()
-
-        // TODO: Add proper unauthorized exception handling
-        if (getTokenResponse?.isSuccessful != true || authToken == null) {
-            throw Exception("The auth token could not be get ${getTokenResponse.technicalErrorDescription}")
-        }
-
-        authToken
+        getTokenResponse.completeRequestWithResult()
     } catch (e: Exception) {
         throw AuthWebservice.GetAuthTokenFailedException(e)
     }
@@ -163,13 +155,7 @@ suspend fun UserWebservice?.requestPublicUserList(): List<User> {
     return try {
         val getUsersListRequest = this?.getUsersAsync()
         val getUsersListResponse = getUsersListRequest?.await()
-        val usersList = getUsersListResponse?.body()
-
-        if (getUsersListResponse?.isSuccessful != true || usersList == null) {
-            throw Exception("The public users list could not be get ${getUsersListResponse.technicalErrorDescription}")
-        }
-
-        usersList
+        getUsersListResponse.completeRequestWithResult()
     } catch (e: Exception) {
         throw UserWebservice.GetUsersFailedException(e)
     }
@@ -180,13 +166,7 @@ suspend fun UserWebservice?.requestUser(username: String): User {
     return try {
         val getUserDetailsRequest = this?.getUserDetailsAsync(username)
         val getUserDetailsResponse = getUserDetailsRequest?.await()
-        val user = getUserDetailsResponse?.body()
-
-        if (getUserDetailsResponse?.isSuccessful != true || user == null) {
-            throw Exception("The user details could not be get ${getUserDetailsResponse.technicalErrorDescription}")
-        }
-
-        user
+        getUserDetailsResponse.completeRequestWithResult()
     } catch (e: Exception) {
         throw UserWebservice.GetUserDetailsFailedException(e)
     }
@@ -197,10 +177,7 @@ suspend fun UserWebservice?.updateUser(user: User) {
     try {
         val setUserDetailsRequest = this?.setUserDetailsAsync(user.username, user)
         val setUserDetailsResponse = setUserDetailsRequest?.await()
-
-        if (setUserDetailsResponse?.isSuccessful != true) {
-            throw Exception("The user details could not be set ${setUserDetailsResponse.technicalErrorDescription})")
-        }
+        setUserDetailsResponse.completeRequestWithoutResult()
     } catch (e: Exception) {
         throw UserWebservice.SetUserDetailsFailedException(e)
     }
@@ -244,3 +221,39 @@ class UnitConverterFactory : Converter.Factory() {
         return if (type == Unit::class) unitConverter else null
     }
 }
+
+@Throws(RequestUnauthorizedException::class, RequestFailedException::class)
+private fun <T> Response<T>?.completeRequestWithResult(): T {
+    val responseResult = this?.body()
+
+    return when {
+        this?.isSuccessful == true && responseResult != null -> responseResult
+        this?.code() == HTTP_UNAUTHORIZED -> throw RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}")
+        this?.code() == HTTP_FORBIDDEN -> throw RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}")
+        else -> throw RequestFailedException("The request result could not be get ${this.technicalErrorDescription}")
+    }
+}
+
+@Throws(RequestUnauthorizedException::class, RequestFailedException::class)
+private fun <T> Response<T>?.completeRequestWithoutResult() {
+    when {
+        this?.isSuccessful == true -> Unit
+        this?.code() == HTTP_UNAUTHORIZED -> throw RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}")
+        this?.code() == HTTP_FORBIDDEN -> throw RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}")
+        else -> throw RequestFailedException("The request result could not be get ${this.technicalErrorDescription}")
+    }
+}
+
+private val Response<*>?.technicalErrorDescription
+    get() = "(HTTP status code ${this?.code()}): ${this?.errorBody()?.string()?.minimized()}"
+
+private fun String.minimized(): String {
+    return this
+        .trim()
+        .replace("\n", "")
+        .replace(" ", "")
+}
+
+class RequestUnauthorizedException(message: String? = null) : Exception(message)
+class RequestForbiddenException(message: String? = null) : Exception(message)
+class RequestFailedException(message: String? = null) : Exception(message)

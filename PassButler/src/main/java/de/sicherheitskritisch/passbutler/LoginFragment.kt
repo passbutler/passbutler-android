@@ -18,7 +18,7 @@ import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.observe
 import de.sicherheitskritisch.passbutler.base.validateForm
-import de.sicherheitskritisch.passbutler.database.AuthWebservice
+import de.sicherheitskritisch.passbutler.database.RequestUnauthorizedException
 import de.sicherheitskritisch.passbutler.databinding.FragmentLoginBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
@@ -171,10 +171,10 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
         override fun requestErrorMessageResourceId(requestError: Throwable): Int {
             val loginFailedExceptionCause = (requestError as? UserManager.LoginFailedException)?.cause
+            val subOperationExceptionCause = loginFailedExceptionCause?.cause
 
-            return when (loginFailedExceptionCause) {
-                // TODO: Show unauthorized error only if unauthorized and not a general request failed exception
-                is AuthWebservice.GetAuthTokenFailedException -> R.string.login_failed_unauthorized_title
+            return when (subOperationExceptionCause) {
+                is RequestUnauthorizedException -> R.string.login_failed_unauthorized_title
                 else -> R.string.login_failed_general_title
             }
         }
