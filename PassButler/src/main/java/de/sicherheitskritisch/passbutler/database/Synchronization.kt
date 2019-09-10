@@ -18,9 +18,7 @@ object Differentiation {
      */
     @Throws(IllegalStateException::class)
     fun <T : Synchronizable> collectModifiedItems(currentItems: List<T>, updatedItems: List<T>): List<T> {
-        if (currentItems.size != updatedItems.size) {
-            throw IllegalArgumentException("The current user list and updated user list size must be the same!")
-        }
+        require(currentItems.size == updatedItems.size) { "The current user list and updated user list size must be the same!" }
 
         val sortedCurrentItems = currentItems.sortedBy { it.primaryField }
         val sortedUpdatedItems = updatedItems.sortedBy { it.primaryField }

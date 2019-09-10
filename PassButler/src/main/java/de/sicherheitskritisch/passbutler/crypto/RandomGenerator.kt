@@ -21,10 +21,7 @@ object RandomGenerator {
      */
     fun generateRandomString(length: Int, allowedCharacters: String): String {
         val allowedCharactersLength = allowedCharacters.length
-
-        if (allowedCharactersLength == 0) {
-            throw IllegalArgumentException("The allowed characters string must not be empty!")
-        }
+        require(allowedCharactersLength != 0) { "The allowed characters string must not be empty!" }
 
         return createRandomInstance().let { nonBlockingSecureRandomInstance ->
             (1..length)

@@ -31,10 +31,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        // Work on local copy of list
-        val onBackPressedListenerStack = onBackPressedListener.reversed()
+        // Work on local copy of list to avoid concurrent modification issues
+        val onBackPressedListenerCopy = onBackPressedListener.toList()
 
         // Only the top fragment on the stack (the one which is shown to user) handles the backpress
+        val onBackPressedListenerStack = onBackPressedListenerCopy.reversed()
         val topFragmentHandlesBackpress = onBackPressedListenerStack.firstOrNull()?.onHandleBackPress() ?: false
 
         if (!topFragmentHandlesBackpress) {

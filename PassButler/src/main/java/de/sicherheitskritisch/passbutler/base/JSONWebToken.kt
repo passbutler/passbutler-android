@@ -9,10 +9,7 @@ object JSONWebToken {
     @Throws(IllegalArgumentException::class, JSONException::class)
     fun getExpiration(jwt: String): Instant {
         val splittedJWT = jwt.split(".")
-
-        if (splittedJWT.size != 3) {
-            throw IllegalArgumentException("Invalid JSON Web Token!")
-        }
+        require(splittedJWT.size == 3) { "Invalid JSON Web Token!" }
 
         val encodedHeader = splittedJWT[0]
         val decodedHeader = Base64.getUrlDecoder().decode(encodedHeader).toUTF8String()
