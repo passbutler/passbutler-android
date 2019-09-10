@@ -26,7 +26,6 @@ import de.sicherheitskritisch.passbutler.ui.applyTint
 import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
 import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
 import de.sicherheitskritisch.passbutler.ui.showInformation
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
@@ -49,8 +48,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
     private val unlockedFinishedSignal = signal {
         if (viewModel.userType is UserType.Server) {
-            // Explicitly dispatch to IO to be independent which dispatcher calls the signal
-            launch(Dispatchers.IO) {
+            launch {
+                // Start sync a bit delayed after unlock to made progress UI better visible
                 delay(500)
                 viewModel.synchronizeData()
             }
