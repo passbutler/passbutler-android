@@ -139,8 +139,7 @@ class UserViewModel private constructor(
     }
 
     suspend fun clearMasterEncryptionKey() {
-        // Execute on the same dispatcher as the `unlockMasterEncryptionKey` for uniformity reasons
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             masterEncryptionKey?.clear()
             masterEncryptionKey = null
         }
@@ -148,7 +147,6 @@ class UserViewModel private constructor(
 
     @Throws(UpdateMasterPasswordFailedException::class)
     suspend fun updateMasterPassword(newMasterPassword: String) {
-        // Execute deserialization/decryption on the dispatcher for CPU load
         withContext(Dispatchers.Default) {
             var newMasterKey: ByteArray? = null
 
@@ -182,7 +180,6 @@ class UserViewModel private constructor(
 
     @Throws(EnableBiometricUnlockFailedException::class)
     suspend fun enableBiometricUnlock(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String) {
-        // Execute encryption on the dispatcher for CPU load
         withContext(Dispatchers.Default) {
             try {
                 // Test if master password is correct
@@ -222,7 +219,6 @@ class UserViewModel private constructor(
 
     @Throws(DecryptMasterEncryptionKeyFailedException::class)
     private suspend fun decryptMasterEncryptionKey(masterPassword: String): ByteArray {
-        // Execute deserialization/decryption on the dispatcher for CPU load
         return withContext(Dispatchers.Default) {
             var masterKey: ByteArray? = null
 
@@ -289,7 +285,6 @@ class UserViewModel private constructor(
     }
 
     private fun persistUserSettings() {
-        // Execute encryption on the dispatcher for CPU load
         launch(Dispatchers.Default) {
             val masterEncryptionKey = masterEncryptionKey
             val settings = settings
@@ -298,7 +293,6 @@ class UserViewModel private constructor(
             if (masterEncryptionKey != null && settings != null) {
                 protectedSettings.update(masterEncryptionKey, settings)
 
-                // Switch back on IO dispatcher
                 withContext(Dispatchers.IO) {
                     val user = createUserModel()
                     userManager.updateUser(user)
