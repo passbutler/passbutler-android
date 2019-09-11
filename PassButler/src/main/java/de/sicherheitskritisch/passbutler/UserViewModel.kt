@@ -291,7 +291,11 @@ class UserViewModel private constructor(
 
             // Only persist if master encryption key and settings are set (user logged-in and state unlocked)
             if (masterEncryptionKey != null && settings != null) {
-                protectedSettings.update(masterEncryptionKey, settings)
+                try {
+                    protectedSettings.update(masterEncryptionKey, settings)
+                } catch (e: Exception) {
+                    L.w("UserViewModel", "persistUserSettings(): The user settings could not be updated!", e)
+                }
 
                 withContext(Dispatchers.IO) {
                     val user = createUserModel()
