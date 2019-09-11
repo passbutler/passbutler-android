@@ -6,7 +6,6 @@ import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.SignalEmitter
 import de.sicherheitskritisch.passbutler.base.clear
-import de.sicherheitskritisch.passbutler.base.optionalContentNotEquals
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
 import de.sicherheitskritisch.passbutler.crypto.Derivation
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
@@ -62,12 +61,6 @@ class UserViewModel private constructor(
     private val hidePasswordsEnabledChangedObserver: (Boolean?) -> Unit = { applyUserSettings() }
 
     private var masterEncryptionKey: ByteArray? = null
-        set(newMasterEncryptionKey) {
-            if (field.optionalContentNotEquals(newMasterEncryptionKey)) {
-                field = newMasterEncryptionKey
-                decryptUserSettings()
-            }
-        }
 
     private var settings: UserSettings? = null
         set(newSettingsValue) {
@@ -124,8 +117,11 @@ class UserViewModel private constructor(
     @Throws(UnlockFailedException::class)
     suspend fun unlockMasterEncryptionKey(masterPassword: String) {
         withContext(Dispatchers.IO) {
+            L.d("UserViewModel", "unlockMasterEncryptionKey()")
+
             try {
                 masterEncryptionKey = decryptMasterEncryptionKey(masterPassword)
+                decryptUserSettings()
 
                 if (userManager.loggedInStateStorage.userType is UserType.Server) {
                     userManager.restoreWebservices(masterPassword)
@@ -138,10 +134,51 @@ class UserViewModel private constructor(
         }
     }
 
+    // TODO: Add throws annotation
+    private fun decryptUserSettings() {
+        val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to decrypt the user settings!")
+
+        settings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer).also {
+            automaticLockTimeout.postValue(it.automaticLockTimeout)
+            hidePasswordsEnabled.postValue(it.hidePasswords)
+        }
+
+        // Register observers after field initialisations to avoid initial observer calls
+        registerSettingsChangedObservers()
+    }
+
+    private fun registerSettingsChangedObservers() {
+        // The `LiveData` observe calls must be done on main thread
+        launch(Dispatchers.Main) {
+            automaticLockTimeout.observeForever(automaticLockTimeoutChangedObserver)
+            hidePasswordsEnabled.observeForever(hidePasswordsEnabledChangedObserver)
+        }
+    }
+
     suspend fun clearMasterEncryptionKey() {
         withContext(Dispatchers.IO) {
+            L.d("UserViewModel", "clearMasterEncryptionKey()")
+
             masterEncryptionKey?.clear()
             masterEncryptionKey = null
+            clearUserSettings()
+        }
+    }
+
+    private fun clearUserSettings() {
+        // Unregister observers before setting field reset to avoid unnecessary observer calls
+        unregisterSettingsChangedObservers()
+
+        settings = null
+        automaticLockTimeout.postValue(null)
+        hidePasswordsEnabled.postValue(null)
+    }
+
+    private fun unregisterSettingsChangedObservers() {
+        // The `LiveData` remove observer calls must be done on main thread
+        launch(Dispatchers.Main) {
+            automaticLockTimeout.removeObserver(automaticLockTimeoutChangedObserver)
+            hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
         }
     }
 
@@ -232,46 +269,6 @@ class UserViewModel private constructor(
             } finally {
                 masterKey?.clear()
             }
-        }
-    }
-
-    private fun decryptUserSettings() {
-        val masterEncryptionKey = masterEncryptionKey
-
-        if (masterEncryptionKey != null) {
-            L.d("UserViewModel", "decryptUserSettings(): The master encryption key was set, decrypt and update user settings...")
-
-            settings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer)
-            automaticLockTimeout.postValue(settings?.automaticLockTimeout)
-            hidePasswordsEnabled.postValue(settings?.hidePasswords)
-
-            // Register observers after field initialisations to avoid initial observer calls
-            registerObservers()
-        } else {
-            L.d("UserViewModel", "decryptUserSettings(): The master encryption key was reset, clear user settings...")
-
-            // Unregister observers before setting field reset to avoid unnecessary observer calls
-            unregisterObservers()
-
-            settings = null
-            automaticLockTimeout.postValue(null)
-            hidePasswordsEnabled.postValue(null)
-        }
-    }
-
-    private fun registerObservers() {
-        // The `LiveData` observe calls must be done on main thread
-        launch(Dispatchers.Main) {
-            automaticLockTimeout.observeForever(automaticLockTimeoutChangedObserver)
-            hidePasswordsEnabled.observeForever(hidePasswordsEnabledChangedObserver)
-        }
-    }
-
-    private fun unregisterObservers() {
-        // The `LiveData` remove observer calls must be done on main thread
-        launch(Dispatchers.Main) {
-            automaticLockTimeout.removeObserver(automaticLockTimeoutChangedObserver)
-            hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
         }
     }
 
