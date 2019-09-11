@@ -216,7 +216,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             try {
                 userWebservice.updateUser(user)
             } catch (e: Exception) {
-                L.w("UserManager", "updateUser(): The user could not be updated!", e)
+                L.w("UserManager", "updateUser(): The user could not be updated on webservice!", e)
             }
         }
     }
