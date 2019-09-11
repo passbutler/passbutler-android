@@ -138,15 +138,19 @@ class UserViewModel private constructor(
         }
     }
 
-    // TODO: Add throws annotation
+    @Throws(DecryptUserSettingsFailedException::class)
     private fun decryptUserSettings(masterEncryptionKey: ByteArray) {
-        settings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer).also {
-            automaticLockTimeout.postValue(it.automaticLockTimeout)
-            hidePasswordsEnabled.postValue(it.hidePasswords)
-        }
+        try {
+            settings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer).also {
+                automaticLockTimeout.postValue(it.automaticLockTimeout)
+                hidePasswordsEnabled.postValue(it.hidePasswords)
+            }
 
-        // Register observers after field initialisations to avoid initial observer calls
-        registerSettingsChangedObservers()
+            // Register observers after field initialisations to avoid initial observer calls
+            registerSettingsChangedObservers()
+        } catch (e: Exception) {
+            throw DecryptUserSettingsFailedException(e)
+        }
     }
 
     private fun registerSettingsChangedObservers() {
@@ -317,6 +321,7 @@ class UserViewModel private constructor(
 
     class UnlockFailedException(cause: Exception? = null) : Exception(cause)
     class DecryptMasterEncryptionKeyFailedException(cause: Exception? = null) : Exception(cause)
+    class DecryptUserSettingsFailedException(cause: Exception? = null) : Exception(cause)
     class UpdateMasterPasswordFailedException(cause: Exception? = null) : Exception(cause)
     class EnableBiometricUnlockFailedException(cause: Exception? = null) : Exception(cause)
     class DisableBiometricUnlockFailedException(cause: Exception? = null) : Exception(cause)
