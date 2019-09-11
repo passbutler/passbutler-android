@@ -118,8 +118,9 @@ class UserViewModel private constructor(
             L.d("UserViewModel", "unlockMasterEncryptionKey()")
 
             try {
-                masterEncryptionKey = decryptMasterEncryptionKey(masterPassword)
-                decryptUserSettings()
+                masterEncryptionKey = decryptMasterEncryptionKey(masterPassword).also {
+                    decryptUserSettings(it)
+                }
 
                 if (userManager.loggedInStateStorage.userType is UserType.Server) {
                     userManager.restoreWebservices(masterPassword)
@@ -133,9 +134,7 @@ class UserViewModel private constructor(
     }
 
     // TODO: Add throws annotation
-    private fun decryptUserSettings() {
-        val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to decrypt the user settings!")
-
+    private fun decryptUserSettings(masterEncryptionKey: ByteArray) {
         settings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer).also {
             automaticLockTimeout.postValue(it.automaticLockTimeout)
             hidePasswordsEnabled.postValue(it.hidePasswords)
