@@ -1,6 +1,5 @@
 package de.sicherheitskritisch.passbutler
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
@@ -253,8 +252,6 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
         }
     }
 
-    // Use blocking `commit()` because we are in suspending function
-    @SuppressLint("ApplySharedPref")
     suspend fun persist() {
         withContext(Dispatchers.IO) {
             sharedPreferences.edit().apply {
