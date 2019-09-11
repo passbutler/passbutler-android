@@ -144,7 +144,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     suspend fun restoreLoggedInUser() {
         L.d("UserManager", "restoreLoggedInUser()")
 
-        // Restore logged in state storage first
+        // Restore logged-in state storage first to be able to access its data
         loggedInStateStorage.restore()
 
         val restoredLoggedInUser = loggedInStateStorage.userType?.username?.let { loggedInUsername ->
@@ -207,11 +207,9 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     suspend fun updateUser(user: User) {
         L.d("UserManager", "updateUser(): user = $user")
 
-        // First update local user before trying update remotely
         loggedInUser = user
         localRepository.updateUser(user)
 
-        // Finally try to update user also on remote
         if (loggedInStateStorage.userType is UserType.Server) {
             try {
                 userWebservice.updateUser(user)
