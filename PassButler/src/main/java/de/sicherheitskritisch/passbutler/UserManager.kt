@@ -40,13 +40,14 @@ import java.util.*
 
 class UserManager(applicationContext: Context, private val localRepository: LocalRepository) {
 
-    var loggedInUser: User? = null
     val loggedInUserResult = MutableLiveData<LoggedInUserResult?>()
 
     val loggedInStateStorage by lazy {
         val sharedPreferences = applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
         LoggedInStateStorage(sharedPreferences)
     }
+
+    private var loggedInUser: User? = null
 
     private var authWebservice: AuthWebservice? = null
     private var userWebservice: UserWebservice? = null
@@ -68,7 +69,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             loggedInStateStorage.persist()
 
             loggedInUser = remoteUser
-            loggedInUserResult.postValue(LoggedInUserResult(masterPassword))
+            loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(remoteUser, masterPassword))
         } catch (exception: Exception) {
             throw LoginFailedException("The remote login failed with an exception!", exception)
         }
@@ -120,7 +121,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             loggedInStateStorage.persist()
 
             loggedInUser = localUser
-            loggedInUserResult.postValue(LoggedInUserResult(masterPassword))
+            loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(localUser, masterPassword))
         } catch (exception: Exception) {
             throw LoginFailedException("The local login failed with an exception!", exception)
         } finally {
@@ -153,7 +154,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
         if (restoredLoggedInUser != null) {
             loggedInUser = restoredLoggedInUser
-            loggedInUserResult.postValue(LoggedInUserResult(null))
+            loggedInUserResult.postValue(LoggedInUserResult.RestoredLogin(restoredLoggedInUser))
         } else {
             loggedInUser = null
             loggedInUserResult.postValue(null)
@@ -284,7 +285,10 @@ sealed class UserType(val username: String) {
     class Server(username: String, val serverUrl: Uri, var authToken: AuthToken) : UserType(username)
 }
 
-data class LoggedInUserResult(val masterPassword: String?)
+sealed class LoggedInUserResult(val loggedInUser: User) {
+    class PerformedLogin(loggedInUser: User, val masterPassword: String) : LoggedInUserResult(loggedInUser)
+    class RestoredLogin(loggedInUser: User) : LoggedInUserResult(loggedInUser)
+}
 
 private class UserSynchronization(private val localRepository: LocalRepository, private var userWebservice: UserWebservice, private val loggedInUser: User) : Synchronization {
 

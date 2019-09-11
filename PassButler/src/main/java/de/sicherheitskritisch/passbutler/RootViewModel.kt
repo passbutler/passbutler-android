@@ -150,23 +150,27 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
     private inner class LoggedInUserResultObserver : Observer<LoggedInUserResult?> {
         override fun onChanged(loggedInUserResult: LoggedInUserResult?) {
-            val loggedInUser = userManager.loggedInUser
+            when (loggedInUserResult) {
+                is LoggedInUserResult.PerformedLogin -> {
+                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.loggedInUser, loggedInUserResult.masterPassword)
 
-            if (loggedInUserResult != null && loggedInUser != null) {
-                // Create new logged-in user first
-                loggedInUserViewModel = UserViewModel(userManager, loggedInUser, loggedInUserResult.masterPassword)
+                    rootScreenState.value = RootScreenState.LoggedIn
+                    lockScreenState.value = LockScreenState.Unlocked
+                }
+                is LoggedInUserResult.RestoredLogin -> {
+                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.loggedInUser, null)
 
-                rootScreenState.value = RootScreenState.LoggedIn
+                    rootScreenState.value = RootScreenState.LoggedIn
+                    lockScreenState.value = LockScreenState.Locked
+                }
+                else -> {
+                    rootScreenState.value = RootScreenState.LoggedOut
+                    lockScreenState.value = null
 
-                // The master password is only contained in `LoggedInUserResult` directly after the login
-                lockScreenState.value = if (loggedInUserResult.masterPassword == null) LockScreenState.Locked else LockScreenState.Unlocked
-            } else {
-                rootScreenState.value = RootScreenState.LoggedOut
-                lockScreenState.value = null
-
-                // Finally reset logged-in user related jobs
-                loggedInUserViewModel?.cancelJobs()
-                loggedInUserViewModel = null
+                    // Finally reset logged-in user related jobs
+                    loggedInUserViewModel?.cancelJobs()
+                    loggedInUserViewModel = null
+                }
             }
         }
     }
