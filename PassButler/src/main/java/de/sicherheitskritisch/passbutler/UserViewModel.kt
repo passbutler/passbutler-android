@@ -1,5 +1,6 @@
 package de.sicherheitskritisch.passbutler
 
+import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.base.L
@@ -123,28 +124,6 @@ class UserViewModel private constructor(
         }
     }
 
-    @Throws(DecryptUserSettingsFailedException::class)
-    private suspend fun decryptUserSettings(masterEncryptionKey: ByteArray) {
-        try {
-            val decryptedSettings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer)
-            automaticLockTimeout.postValue(decryptedSettings.automaticLockTimeout)
-            hidePasswordsEnabled.postValue(decryptedSettings.hidePasswords)
-
-            // Register observers after field initialisations to avoid initial observer calls
-            withContext(Dispatchers.Main) {
-                registerSettingsChangedObservers()
-            }
-        } catch (e: Exception) {
-            throw DecryptUserSettingsFailedException(e)
-        }
-    }
-
-    @MainThread
-    private fun registerSettingsChangedObservers() {
-        automaticLockTimeout.observeForever(automaticLockTimeoutChangedObserver)
-        hidePasswordsEnabled.observeForever(hidePasswordsEnabledChangedObserver)
-    }
-
     suspend fun clearMasterEncryptionKey() {
         withContext(Dispatchers.IO) {
             L.d("UserViewModel", "clearMasterEncryptionKey()")
@@ -153,22 +132,6 @@ class UserViewModel private constructor(
             masterEncryptionKey = null
             clearUserSettings()
         }
-    }
-
-    private suspend fun clearUserSettings() {
-        // Unregister observers before setting field reset to avoid unnecessary observer calls
-        withContext(Dispatchers.Main) {
-            unregisterSettingsChangedObservers()
-        }
-
-        automaticLockTimeout.postValue(null)
-        hidePasswordsEnabled.postValue(null)
-    }
-
-    @MainThread
-    private fun unregisterSettingsChangedObservers() {
-        automaticLockTimeout.removeObserver(automaticLockTimeoutChangedObserver)
-        hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
     }
 
     @Throws(UpdateMasterPasswordFailedException::class)
@@ -259,6 +222,44 @@ class UserViewModel private constructor(
                 masterKey?.clear()
             }
         }
+    }
+
+    @Throws(DecryptUserSettingsFailedException::class)
+    private suspend fun decryptUserSettings(masterEncryptionKey: ByteArray) {
+        try {
+            val decryptedSettings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer)
+            automaticLockTimeout.postValue(decryptedSettings.automaticLockTimeout)
+            hidePasswordsEnabled.postValue(decryptedSettings.hidePasswords)
+
+            // Register observers after field initialisations to avoid initial observer calls
+            withContext(Dispatchers.Main) {
+                registerSettingsChangedObservers()
+            }
+        } catch (e: Exception) {
+            throw DecryptUserSettingsFailedException(e)
+        }
+    }
+
+    @MainThread
+    private fun registerSettingsChangedObservers() {
+        automaticLockTimeout.observeForever(automaticLockTimeoutChangedObserver)
+        hidePasswordsEnabled.observeForever(hidePasswordsEnabledChangedObserver)
+    }
+
+    private suspend fun clearUserSettings() {
+        // Unregister observers before setting field reset to avoid unnecessary observer calls
+        withContext(Dispatchers.Main) {
+            unregisterSettingsChangedObservers()
+        }
+
+        automaticLockTimeout.postValue(null)
+        hidePasswordsEnabled.postValue(null)
+    }
+
+    @MainThread
+    private fun unregisterSettingsChangedObservers() {
+        automaticLockTimeout.removeObserver(automaticLockTimeoutChangedObserver)
+        hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
     }
 
     private fun applyUserSettings() {
