@@ -10,6 +10,8 @@ import kotlinx.coroutines.delay
 
 class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
+    var loggedInUserViewModel: UserViewModel? = null
+
     val userType
         get() = userManager.loggedInStateStorage.userType
 
@@ -25,7 +27,7 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
     fun synchronizeData() {
         synchronizeDataCoroutineJob?.cancel()
         synchronizeDataCoroutineJob = createRequestSendingJob(synchronizeDataRequestSendingViewModel) {
-            userManager.synchronizeUsers()
+            loggedInUserViewModel?.synchronizeData()
         }
     }
 

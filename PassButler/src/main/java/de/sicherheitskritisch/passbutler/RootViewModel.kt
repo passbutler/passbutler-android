@@ -152,13 +152,13 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         override fun onChanged(loggedInUserResult: LoggedInUserResult?) {
             when (loggedInUserResult) {
                 is LoggedInUserResult.PerformedLogin -> {
-                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.loggedInUser, loggedInUserResult.masterPassword)
+                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.newLoggedInUser, loggedInUserResult.masterPassword)
 
                     rootScreenState.value = RootScreenState.LoggedIn
                     lockScreenState.value = LockScreenState.Unlocked
                 }
                 is LoggedInUserResult.RestoredLogin -> {
-                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.loggedInUser, null)
+                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.newLoggedInUser, null)
 
                     rootScreenState.value = RootScreenState.LoggedIn
                     lockScreenState.value = LockScreenState.Locked

@@ -34,8 +34,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
     override val transitionType = AnimatedFragment.TransitionType.SLIDE
 
-    private var loggedInUserViewModel: UserViewModel? = null
-
     private var synchronizeDataRequestSendingViewHandler: SynchronizeDataRequestSendingViewHandler? = null
     private var logoutRequestSendingViewHandler: LogoutRequestSendingViewHandler? = null
 
@@ -63,7 +61,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
         activity?.let {
             val rootViewModel = getRootViewModel(it)
-            loggedInUserViewModel = rootViewModel.loggedInUserViewModel
+            viewModel.loggedInUserViewModel = rootViewModel.loggedInUserViewModel
         }
     }
 
@@ -78,7 +76,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             registerObservers()
         }
 
-        loggedInUserViewModel?.unlockFinished?.addSignal(unlockedFinishedSignal)
+        viewModel.loggedInUserViewModel?.unlockFinished?.addSignal(unlockedFinishedSignal)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -140,7 +138,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
         navigationHeaderView = binding.navigationView.inflateHeaderView(R.layout.main_drawer_header)
         navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_subtitle)?.also { subtitleView ->
-            subtitleView.text = loggedInUserViewModel?.username
+            subtitleView.text = viewModel.loggedInUserViewModel?.username
         }
     }
 
@@ -156,7 +154,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     override fun onDestroy() {
         synchronizeDataRequestSendingViewHandler?.unregisterObservers()
         logoutRequestSendingViewHandler?.unregisterObservers()
-        loggedInUserViewModel?.unlockFinished?.removeSignal(unlockedFinishedSignal)
+        viewModel.loggedInUserViewModel?.unlockFinished?.removeSignal(unlockedFinishedSignal)
         super.onDestroy()
     }
 

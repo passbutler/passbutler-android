@@ -46,8 +46,6 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         LoggedInStateStorage(sharedPreferences)
     }
 
-    private var loggedInUser: User? = null
-
     private var authWebservice: AuthWebservice? = null
     private var userWebservice: UserWebservice? = null
 
@@ -67,9 +65,9 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             loggedInStateStorage.userType = UserType.Server(remoteUser.username, serverUrl, authToken)
             loggedInStateStorage.persist()
 
-            loggedInUser = remoteUser
             loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(remoteUser, masterPassword))
         } catch (exception: Exception) {
+            // TODO: Rollback every state
             throw LoginFailedException("The remote login failed with an exception!", exception)
         }
     }
@@ -119,9 +117,9 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             loggedInStateStorage.userType = UserType.Local(localUser.username)
             loggedInStateStorage.persist()
 
-            loggedInUser = localUser
             loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(localUser, masterPassword))
         } catch (exception: Exception) {
+            // TODO: Rollback every state
             throw LoginFailedException("The local login failed with an exception!", exception)
         } finally {
             // Always active clear all sensible data before returning method
@@ -152,10 +150,8 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         }
 
         if (restoredLoggedInUser != null) {
-            loggedInUser = restoredLoggedInUser
             loggedInUserResult.postValue(LoggedInUserResult.RestoredLogin(restoredLoggedInUser))
         } else {
-            loggedInUser = null
             loggedInUserResult.postValue(null)
         }
     }
@@ -207,7 +203,6 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     suspend fun updateUser(user: User) {
         L.d("UserManager", "updateUser(): user = $user")
 
-        loggedInUser = user
         localRepository.updateUser(user)
 
         if (loggedInStateStorage.userType is UserType.Server) {
@@ -219,11 +214,9 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         }
     }
 
-    @Throws(IllegalStateException::class, Synchronization.SynchronizationFailedException::class)
-    suspend fun synchronizeUsers() {
+    @Throws(Synchronization.SynchronizationFailedException::class)
+    suspend fun synchronizeUsers(loggedInUser: User) {
         val userWebservice = userWebservice ?: throw Synchronization.SynchronizationFailedException("The user webservice is not initialized!")
-        val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is null despite it was tried to synchronize user!")
-
         val userSynchronization = UserSynchronization(localRepository, userWebservice, loggedInUser)
         userSynchronization.synchronize()
     }
@@ -282,9 +275,9 @@ sealed class UserType(val username: String) {
     class Server(username: String, val serverUrl: Uri, var authToken: AuthToken) : UserType(username)
 }
 
-sealed class LoggedInUserResult(val loggedInUser: User) {
-    class PerformedLogin(loggedInUser: User, val masterPassword: String) : LoggedInUserResult(loggedInUser)
-    class RestoredLogin(loggedInUser: User) : LoggedInUserResult(loggedInUser)
+sealed class LoggedInUserResult(val newLoggedInUser: User) {
+    class PerformedLogin(newLoggedInUser: User, val masterPassword: String) : LoggedInUserResult(newLoggedInUser)
+    class RestoredLogin(newLoggedInUser: User) : LoggedInUserResult(newLoggedInUser)
 }
 
 private class UserSynchronization(private val localRepository: LocalRepository, private var userWebservice: UserWebservice, private val loggedInUser: User) : Synchronization {

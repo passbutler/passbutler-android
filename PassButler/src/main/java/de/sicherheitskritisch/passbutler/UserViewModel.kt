@@ -134,6 +134,16 @@ class UserViewModel private constructor(
         }
     }
 
+    @Throws(SynchronizeDataFailedException::class)
+    suspend fun synchronizeData() {
+        try {
+            val user = createUserModel()
+            userManager.synchronizeUsers(user)
+        } catch (e: Exception) {
+            throw SynchronizeDataFailedException(e)
+        }
+    }
+
     @Throws(UpdateMasterPasswordFailedException::class)
     suspend fun updateMasterPassword(newMasterPassword: String) {
         withContext(Dispatchers.Default) {
@@ -306,6 +316,7 @@ class UserViewModel private constructor(
     class UnlockFailedException(cause: Exception? = null) : Exception(cause)
     class DecryptMasterEncryptionKeyFailedException(cause: Exception? = null) : Exception(cause)
     class DecryptUserSettingsFailedException(cause: Exception? = null) : Exception(cause)
+    class SynchronizeDataFailedException(cause: Exception? = null) : Exception(cause)
     class UpdateMasterPasswordFailedException(cause: Exception? = null) : Exception(cause)
     class EnableBiometricUnlockFailedException(cause: Exception? = null) : Exception(cause)
     class DisableBiometricUnlockFailedException(cause: Exception? = null) : Exception(cause)
