@@ -62,19 +62,6 @@ class UserViewModel private constructor(
 
     private var masterEncryptionKey: ByteArray? = null
 
-    private var settings: UserSettings? = null
-        set(newSettingsValue) {
-            if (newSettingsValue != field) {
-                val fieldWasUninitialized = (field == null)
-                field = newSettingsValue
-
-                // Do not persist the first time (if field was uninitialized) because it is unnecessary
-                if (!fieldWasUninitialized) {
-                    persistUserSettings()
-                }
-            }
-        }
-
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default + coroutineJob
 
@@ -141,10 +128,9 @@ class UserViewModel private constructor(
     @Throws(DecryptUserSettingsFailedException::class)
     private fun decryptUserSettings(masterEncryptionKey: ByteArray) {
         try {
-            settings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer).also {
-                automaticLockTimeout.postValue(it.automaticLockTimeout)
-                hidePasswordsEnabled.postValue(it.hidePasswords)
-            }
+            val decryptedSettings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer)
+            automaticLockTimeout.postValue(decryptedSettings.automaticLockTimeout)
+            hidePasswordsEnabled.postValue(decryptedSettings.hidePasswords)
 
             // Register observers after field initialisations to avoid initial observer calls
             registerSettingsChangedObservers()
@@ -283,17 +269,17 @@ class UserViewModel private constructor(
         val hidePasswordsEnabledValue = hidePasswordsEnabled.value
 
         if (automaticLockTimeoutValue != null && hidePasswordsEnabledValue != null) {
-            settings = UserSettings(automaticLockTimeoutValue, hidePasswordsEnabledValue)
+            val updatedSettings = UserSettings(automaticLockTimeoutValue, hidePasswordsEnabledValue)
+            persistUserSettings(updatedSettings)
         }
     }
 
-    private fun persistUserSettings() {
+    private fun persistUserSettings(settings: UserSettings) {
         launch(Dispatchers.Default) {
             val masterEncryptionKey = masterEncryptionKey
-            val settings = settings
 
-            // Only persist if master encryption key and settings are set (user logged-in and state unlocked)
-            if (masterEncryptionKey != null && settings != null) {
+            // Only persist if master encryption key is set (user logged-in and state unlocked)
+            if (masterEncryptionKey != null) {
                 try {
                     protectedSettings.update(masterEncryptionKey, settings)
 
