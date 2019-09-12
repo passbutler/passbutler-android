@@ -105,8 +105,8 @@ class UserViewModel private constructor(
             L.d("UserViewModel", "unlockMasterEncryptionKey()")
 
             try {
-                masterEncryptionKey = decryptMasterEncryptionKey(masterPassword).also {
-                    decryptUserSettings(it)
+                masterEncryptionKey = decryptMasterEncryptionKey(masterPassword).also { decryptedMasterEncryptionKey ->
+                    decryptUserSettings(decryptedMasterEncryptionKey)
                 }
 
                 if (userManager.loggedInStateStorage.userType is UserType.Server) {
