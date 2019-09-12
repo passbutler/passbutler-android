@@ -126,25 +126,25 @@ class UserViewModel private constructor(
     }
 
     @Throws(DecryptUserSettingsFailedException::class)
-    private fun decryptUserSettings(masterEncryptionKey: ByteArray) {
+    private suspend fun decryptUserSettings(masterEncryptionKey: ByteArray) {
         try {
             val decryptedSettings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer)
             automaticLockTimeout.postValue(decryptedSettings.automaticLockTimeout)
             hidePasswordsEnabled.postValue(decryptedSettings.hidePasswords)
 
             // Register observers after field initialisations to avoid initial observer calls
-            registerSettingsChangedObservers()
+            withContext(Dispatchers.Main) {
+                registerSettingsChangedObservers()
+            }
         } catch (e: Exception) {
             throw DecryptUserSettingsFailedException(e)
         }
     }
 
+    @MainThread
     private fun registerSettingsChangedObservers() {
-        // The `LiveData` observe calls must be done on main thread
-        launch(Dispatchers.Main) {
-            automaticLockTimeout.observeForever(automaticLockTimeoutChangedObserver)
-            hidePasswordsEnabled.observeForever(hidePasswordsEnabledChangedObserver)
-        }
+        automaticLockTimeout.observeForever(automaticLockTimeoutChangedObserver)
+        hidePasswordsEnabled.observeForever(hidePasswordsEnabledChangedObserver)
     }
 
     suspend fun clearMasterEncryptionKey() {
@@ -157,21 +157,20 @@ class UserViewModel private constructor(
         }
     }
 
-    private fun clearUserSettings() {
+    private suspend fun clearUserSettings() {
         // Unregister observers before setting field reset to avoid unnecessary observer calls
-        unregisterSettingsChangedObservers()
+        withContext(Dispatchers.Main) {
+            unregisterSettingsChangedObservers()
+        }
 
-        settings = null
         automaticLockTimeout.postValue(null)
         hidePasswordsEnabled.postValue(null)
     }
 
+    @MainThread
     private fun unregisterSettingsChangedObservers() {
-        // The `LiveData` remove observer calls must be done on main thread
-        launch(Dispatchers.Main) {
-            automaticLockTimeout.removeObserver(automaticLockTimeoutChangedObserver)
-            hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
-        }
+        automaticLockTimeout.removeObserver(automaticLockTimeoutChangedObserver)
+        hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
     }
 
     @Throws(UpdateMasterPasswordFailedException::class)
