@@ -115,10 +115,8 @@ class UserViewModel private constructor(
 
                 unlockFinished.emit()
             } catch (e: Exception) {
-                // If the operation failed, reset all touched fields to avoid having inconsistent state
-                masterEncryptionKey?.clear()
-                masterEncryptionKey = null
-                clearUserSettings()
+                // If the operation failed, reset everything that may was done to avoid a dirty state
+                clearMasterEncryptionKey()
 
                 throw UnlockFailedException(e)
             }
