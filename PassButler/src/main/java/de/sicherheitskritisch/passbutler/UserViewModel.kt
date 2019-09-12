@@ -272,6 +272,7 @@ class UserViewModel private constructor(
         hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
     }
 
+    // TODO: This is called twice per setting change
     private fun applyUserSettings() {
         val automaticLockTimeoutValue = automaticLockTimeout.value
         val hidePasswordsEnabledValue = hidePasswordsEnabled.value
