@@ -71,7 +71,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate<FragmentSettingsBinding>(inflater, R.layout.fragment_settings, container, false).also { binding ->
-            binding.lifecycleOwner = this
+            binding.lifecycleOwner = viewLifecycleOwner
         }
 
         settingsPreferenceFragment = SettingsPreferenceFragment.newInstance().also { settingsPreferenceFragment ->
@@ -97,7 +97,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             registerObservers()
         }
 
-        viewModel.biometricUnlockEnabled?.observe(this) { newValue ->
+        viewModel.biometricUnlockEnabled?.observe(viewLifecycleOwner) { newValue ->
             settingsPreferenceFragment?.enableBiometricUnlockPreference?.isChecked = newValue
         }
 

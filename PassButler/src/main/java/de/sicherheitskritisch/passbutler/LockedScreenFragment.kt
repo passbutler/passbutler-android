@@ -57,7 +57,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate<FragmentLockedScreenBinding>(inflater, R.layout.fragment_locked_screen, container, false).also { binding ->
-            binding.lifecycleOwner = this
+            binding.lifecycleOwner = viewLifecycleOwner
             binding.fragment = this
             binding.userViewModel = viewModel.loggedInUserViewModel
 

@@ -41,11 +41,11 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
         L.d("RootFragment", "onViewCreated(): savedInstanceState = $savedInstanceState")
 
-        viewModel.rootScreenState.observeOnce(this) {
+        viewModel.rootScreenState.observeOnce(viewLifecycleOwner) {
             setupRootScreen()
         }
 
-        viewModel.lockScreenState.observe(this) { newLockScreenState ->
+        viewModel.lockScreenState.observe(viewLifecycleOwner) { newLockScreenState ->
             if (newLockScreenState == RootViewModel.LockScreenState.Locked) {
                 showLockedScreen()
             }

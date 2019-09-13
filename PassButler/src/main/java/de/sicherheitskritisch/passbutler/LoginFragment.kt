@@ -53,7 +53,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate<FragmentLoginBinding>(inflater, R.layout.fragment_login, container, false).also { binding ->
-            binding.lifecycleOwner = this
+            binding.lifecycleOwner = viewLifecycleOwner
             binding.viewModel = viewModel
 
             restoreSavedInstance(binding, savedInstanceState)
@@ -85,7 +85,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
     }
 
     private fun setupLocalLoginCheckbox(binding: FragmentLoginBinding) {
-        viewModel.isLocalLogin.observe(this) { isLocalLoginValue ->
+        viewModel.isLocalLogin.observe(viewLifecycleOwner) { isLocalLoginValue ->
             val shouldShowServerUrl = !isLocalLoginValue
             binding.textInputLayoutServerurl.showFadeInOutAnimation(shouldShowServerUrl, VisibilityHideMode.INVISIBLE)
         }
