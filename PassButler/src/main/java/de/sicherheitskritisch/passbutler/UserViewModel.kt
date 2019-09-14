@@ -2,6 +2,7 @@ package de.sicherheitskritisch.passbutler
 
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
@@ -58,8 +59,8 @@ class UserViewModel private constructor(
 
     val unlockFinished = SignalEmitter()
 
-    private val automaticLockTimeoutChangedObserver: (Int?) -> Unit = { applyUserSettings() }
-    private val hidePasswordsEnabledChangedObserver: (Boolean?) -> Unit = { applyUserSettings() }
+    private val automaticLockTimeoutChangedObserver = Observer<Int?> { applyUserSettings() }
+    private val hidePasswordsEnabledChangedObserver = Observer<Boolean?> { applyUserSettings() }
 
     private var masterEncryptionKey: ByteArray? = null
 
