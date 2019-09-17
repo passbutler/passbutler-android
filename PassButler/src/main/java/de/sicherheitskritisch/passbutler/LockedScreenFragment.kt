@@ -32,6 +32,8 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
     override val transitionType = AnimatedFragment.TransitionType.FADE
 
+    private var formPassword: String? = null
+
     private var binding: FragmentLockedScreenBinding? = null
     private var unlockRequestSendingViewHandler: UnlockRequestSendingViewHandler? = null
 
@@ -50,6 +52,8 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        formPassword = savedInstanceState?.getString(FORM_FIELD_PASSWORD)
+
         unlockRequestSendingViewHandler = UnlockRequestSendingViewHandler(viewModel.unlockScreenRequestSendingViewModel, WeakReference(this)).apply {
             registerObservers()
         }
@@ -61,7 +65,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
             binding.fragment = this
             binding.userViewModel = viewModel.loggedInUserViewModel
 
-            restoreSavedInstance(binding, savedInstanceState)
+            applyRestoredViewStates(binding)
             setupUnlockWithPasswordButton(binding)
             setupUnlockWithBiometricsButton(binding)
         }
@@ -69,8 +73,8 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         return binding?.root
     }
 
-    private fun restoreSavedInstance(binding: FragmentLockedScreenBinding, savedInstanceState: Bundle?) {
-        savedInstanceState?.getString(FORM_FIELD_PASSWORD)?.let { binding.textInputEditTextPassword.setText(it) }
+    private fun applyRestoredViewStates(binding: FragmentLockedScreenBinding) {
+        formPassword?.let { binding.textInputEditTextPassword.setText(it) }
     }
 
     private fun setupUnlockWithPasswordButton(binding: FragmentLockedScreenBinding) {
@@ -115,7 +119,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     }
 
     private fun unlockWithBiometricsClicked() {
-        // Remove focus and hide keyboard before unlock
+        // Remove focus and hide keyboard before showing biometrics prompt
         removeFormFieldsFocus()
         Keyboard.hideKeyboard(context, this)
 
@@ -163,11 +167,8 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString(FORM_FIELD_PASSWORD, binding?.textInputEditTextPassword?.text?.toString())
         super.onSaveInstanceState(outState)
-
-        binding?.let {
-            outState.putString(FORM_FIELD_PASSWORD, it.textInputEditTextPassword.text?.toString())
-        }
     }
 
     override fun onDestroyView() {

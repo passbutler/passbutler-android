@@ -33,6 +33,10 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
     override val transitionType = AnimatedFragment.TransitionType.SLIDE
 
+    private var formServerUrl: String? = null
+    private var formUsername: String? = null
+    private var formPassword: String? = null
+
     private var binding: FragmentLoginBinding? = null
     private var loginRequestSendingViewHandler: LoginRequestSendingViewHandler? = null
 
@@ -49,6 +53,10 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         loginRequestSendingViewHandler = LoginRequestSendingViewHandler(viewModel.loginRequestSendingViewModel, WeakReference(this)).apply {
             registerObservers()
         }
+
+        formServerUrl = savedInstanceState?.getString(FORM_FIELD_SERVERURL)
+        formUsername = savedInstanceState?.getString(FORM_FIELD_USERNAME)
+        formPassword = savedInstanceState?.getString(FORM_FIELD_PASSWORD)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -56,7 +64,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
             binding.lifecycleOwner = viewLifecycleOwner
             binding.viewModel = viewModel
 
-            restoreSavedInstance(binding, savedInstanceState)
+            applyRestoredViewStates(binding)
             setupDebugLoginPresetsButton(binding)
             setupLocalLoginCheckbox(binding)
             setupLoginButton(binding)
@@ -65,10 +73,10 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         return binding?.root
     }
 
-    private fun restoreSavedInstance(binding: FragmentLoginBinding, savedInstanceState: Bundle?) {
-        savedInstanceState?.getString(FORM_FIELD_SERVERURL)?.let { binding.textInputEditTextServerurl.setText(it) }
-        savedInstanceState?.getString(FORM_FIELD_USERNAME)?.let { binding.textInputEditTextUsername.setText(it) }
-        savedInstanceState?.getString(FORM_FIELD_PASSWORD)?.let { binding.textInputEditTextPassword.setText(it) }
+    private fun applyRestoredViewStates(binding: FragmentLoginBinding) {
+        formServerUrl?.let { binding.textInputEditTextServerurl.setText(it) }
+        formUsername?.let { binding.textInputEditTextUsername.setText(it) }
+        formPassword?.let { binding.textInputEditTextPassword.setText(it) }
     }
 
     @SuppressLint("SetTextI18n")
@@ -145,13 +153,11 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
+        outState.putString(FORM_FIELD_SERVERURL, binding?.textInputEditTextServerurl?.text?.toString())
+        outState.putString(FORM_FIELD_USERNAME, binding?.textInputEditTextUsername?.text?.toString())
+        outState.putString(FORM_FIELD_PASSWORD, binding?.textInputEditTextPassword?.text?.toString())
 
-        binding?.let {
-            outState.putString(FORM_FIELD_SERVERURL, it.textInputEditTextServerurl.text?.toString())
-            outState.putString(FORM_FIELD_USERNAME, it.textInputEditTextUsername.text?.toString())
-            outState.putString(FORM_FIELD_PASSWORD, it.textInputEditTextPassword.text?.toString())
-        }
+        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroyView() {
