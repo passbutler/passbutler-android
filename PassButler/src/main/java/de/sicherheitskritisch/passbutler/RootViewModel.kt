@@ -14,7 +14,6 @@ import de.sicherheitskritisch.passbutler.base.toUTF8String
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.crypto.Cipher
@@ -109,14 +108,12 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     private fun startLockScreenTimer() {
-        // The lock timer must be only started if the user is logged in and unlocked (lock timeout available)
+        // The lock timer must be only started if the user is logged-in and unlocked (lock timeout available)
         loggedInUserViewModel?.automaticLockTimeout?.value?.let { lockTimeout ->
-            launch {
-                lockScreenTimerJob?.cancelAndJoin()
-                lockScreenTimerJob = launch {
-                    delay(lockTimeout * DateUtils.SECOND_IN_MILLIS)
-                    lockScreen()
-                }
+            lockScreenTimerJob?.cancel()
+            lockScreenTimerJob = launch {
+                delay(lockTimeout * DateUtils.SECOND_IN_MILLIS)
+                lockScreen()
             }
         }
     }
