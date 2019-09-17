@@ -224,9 +224,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     ) : DefaultRequestSendingViewHandler<LockedScreenFragment>(requestSendingViewModel, fragmentWeakReference) {
 
         override fun requestErrorMessageResourceId(requestError: Throwable): Int {
-            val unlockFailedExceptionCause = (requestError as? UserViewModel.UnlockFailedException)?.cause
-
-            return when (unlockFailedExceptionCause) {
+            return when ((requestError as? UserViewModel.UnlockFailedException)?.cause) {
                 is UserViewModel.DecryptMasterEncryptionKeyFailedException -> R.string.locked_screen_unlock_failed_wrong_master_password_title
                 else -> R.string.locked_screen_unlock_failed_general_title
             }

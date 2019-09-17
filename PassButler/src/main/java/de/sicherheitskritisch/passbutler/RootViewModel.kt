@@ -98,17 +98,13 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         loggedInUserViewModel?.biometricUnlockEnabled?.notifyChange()
     }
 
-    /**
-     * Must be only called by `RootFragment.onPause()`!
-     */
-    fun applicationWasPaused() {
+    fun rootFragmentWasPaused() {
+        L.d("RootViewModel", "rootFragmentWasPaused()")
         startLockScreenTimer()
     }
 
-    /**
-     * Must be only called by `RootFragment.onResume()`!
-     */
-    fun applicationWasResumed() {
+    fun rootFragmentWasResumed() {
+        L.d("RootViewModel", "rootFragmentWasResumed()")
         cancelLockScreenTimer()
     }
 
@@ -132,7 +128,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     private fun lockScreen() {
         cryptoResourcesJob?.cancel()
         cryptoResourcesJob = launch {
-            // First show lock screen, than clear crypto resources
+            // Be sure all UI is hidden behind the lock screen before clear crypto resources
             lockScreenState.postValue(LockScreenState.Locked)
             loggedInUserViewModel?.clearMasterEncryptionKey()
         }

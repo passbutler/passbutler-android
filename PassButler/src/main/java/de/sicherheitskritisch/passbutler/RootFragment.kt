@@ -94,12 +94,12 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.applicationWasResumed()
+        viewModel.rootFragmentWasResumed()
     }
 
     override fun onPause() {
         super.onPause()
-        viewModel.applicationWasPaused()
+        viewModel.rootFragmentWasPaused()
     }
 
     companion object {
