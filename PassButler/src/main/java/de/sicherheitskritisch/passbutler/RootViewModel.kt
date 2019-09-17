@@ -107,11 +107,6 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         startLockScreenTimer()
     }
 
-    fun rootFragmentWasResumed() {
-        L.d("RootViewModel", "rootFragmentWasResumed()")
-        cancelLockScreenTimer()
-    }
-
     private fun startLockScreenTimer() {
         // The lock timer must be only started if the user is logged-in and unlocked (lock timeout available)
         loggedInUserViewModel?.automaticLockTimeout?.value?.let { lockTimeout ->
@@ -123,10 +118,6 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         }
     }
 
-    private fun cancelLockScreenTimer() {
-        lockScreenTimerJob?.cancel()
-    }
-
     private fun lockScreen() {
         cryptoResourcesJob?.cancel()
         cryptoResourcesJob = launch {
@@ -134,6 +125,15 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
             lockScreenState.postValue(LockScreenState.Locked)
             loggedInUserViewModel?.clearMasterEncryptionKey()
         }
+    }
+
+    fun rootFragmentWasResumed() {
+        L.d("RootViewModel", "rootFragmentWasResumed()")
+        cancelLockScreenTimer()
+    }
+
+    private fun cancelLockScreenTimer() {
+        lockScreenTimerJob?.cancel()
     }
 
     sealed class RootScreenState {
