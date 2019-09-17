@@ -44,17 +44,20 @@ fun CoroutineScope.createRequestSendingJob(requestSendingViewModel: RequestSendi
 open class RequestSendingViewHandler(private val requestSendingViewModel: RequestSendingViewModel) {
 
     private val isLoadingObserver = Observer<Boolean> { newValue ->
-        onIsLoadingChanged(newValue)
+        handleIsLoadingChanged(newValue)
     }
 
     private val requestErrorObserver = Observer<Throwable?> { newValue ->
         newValue?.let {
-            onRequestErrorChanged(it)
+            handleRequestError(it)
+
+            // After the request error was handled, reset it
+            requestSendingViewModel.requestError.value = null
         }
     }
 
     private val requestFinishedSuccessfullySignal = signal {
-        onRequestFinishedSuccessfully()
+        handleRequestFinishedSuccessfully()
     }
 
     fun registerObservers() {
@@ -73,7 +76,7 @@ open class RequestSendingViewHandler(private val requestSendingViewModel: Reques
      * Called if progress state changes. Will be called on main thread.
      */
     @MainThread
-    open fun onIsLoadingChanged(isLoading: Boolean) {
+    open fun handleIsLoadingChanged(isLoading: Boolean) {
         // Override if desired
     }
 
@@ -81,7 +84,7 @@ open class RequestSendingViewHandler(private val requestSendingViewModel: Reques
      * Called if a request error occurs. Will be called on main thread.
      */
     @MainThread
-    open fun onRequestErrorChanged(requestError: Throwable) {
+    open fun handleRequestError(requestError: Throwable) {
         // Override if desired
     }
 
@@ -89,7 +92,7 @@ open class RequestSendingViewHandler(private val requestSendingViewModel: Reques
      * Called if the request was finished successfully. Will be called on any thread.
      */
     @AnyThread
-    open fun onRequestFinishedSuccessfully() {
+    open fun handleRequestFinishedSuccessfully() {
         // Override if desired
     }
 }
@@ -105,7 +108,7 @@ abstract class DefaultRequestSendingViewHandler<T : BaseFragment>(
     protected val resources
         get() = fragment?.resources
 
-    override fun onIsLoadingChanged(isLoading: Boolean) {
+    override fun handleIsLoadingChanged(isLoading: Boolean) {
         if (isLoading) {
             fragment?.showProgress()
         } else {
@@ -113,7 +116,7 @@ abstract class DefaultRequestSendingViewHandler<T : BaseFragment>(
         }
     }
 
-    override fun onRequestErrorChanged(requestError: Throwable) {
+    override fun handleRequestError(requestError: Throwable) {
         val errorMessageResourceId = requestErrorMessageResourceId(requestError)
 
         resources?.getString(errorMessageResourceId)?.let { errorMessage ->

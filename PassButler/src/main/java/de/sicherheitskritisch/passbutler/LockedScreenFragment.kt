@@ -232,7 +232,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
             }
         }
 
-        override fun onRequestFinishedSuccessfully() {
+        override fun handleRequestFinishedSuccessfully() {
             fragment?.launch {
                 fragment?.popBackstack()
             }

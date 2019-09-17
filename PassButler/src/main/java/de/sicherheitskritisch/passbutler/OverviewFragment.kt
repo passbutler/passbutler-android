@@ -219,7 +219,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         fragmentWeakReference: WeakReference<OverviewFragment>
     ) : DefaultRequestSendingViewHandler<OverviewFragment>(requestSendingViewModel, fragmentWeakReference) {
 
-        override fun onIsLoadingChanged(isLoading: Boolean) {
+        override fun handleIsLoadingChanged(isLoading: Boolean) {
             fragment?.toolbarMenuIconSync?.apply {
                 isEnabled = !isLoading
 
@@ -237,7 +237,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
         override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.overview_sync_failed_message
 
-        override fun onRequestFinishedSuccessfully() {
+        override fun handleRequestFinishedSuccessfully() {
             fragment?.launch {
                 fragment?.showInformation(resources?.getString(R.string.overview_sync_successful_message))
             }
@@ -251,7 +251,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
         override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.overview_logout_failed_title
 
-        override fun onRequestFinishedSuccessfully() {
+        override fun handleRequestFinishedSuccessfully() {
             fragment?.launch {
                 val loginFragment = LoginFragment.newInstance()
                 fragment?.showFragmentAsFirstScreen(loginFragment)

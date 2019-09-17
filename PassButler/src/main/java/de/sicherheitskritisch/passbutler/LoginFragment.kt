@@ -185,7 +185,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
             }
         }
 
-        override fun onRequestFinishedSuccessfully() {
+        override fun handleRequestFinishedSuccessfully() {
             fragment?.launch {
                 val overviewFragment = OverviewFragment.newInstance()
                 fragment?.showFragmentAsFirstScreen(overviewFragment)

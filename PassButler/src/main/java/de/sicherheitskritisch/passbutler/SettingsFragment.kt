@@ -178,7 +178,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
         override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.settings_setup_biometric_unlock_failed_general_title
 
-        override fun onRequestFinishedSuccessfully() {
+        override fun handleRequestFinishedSuccessfully() {
             fragment?.launch {
                 fragment?.showBiometricPrompt()
             }
@@ -190,7 +190,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         fragmentWeakReference: WeakReference<SettingsFragment>
     ) : DefaultRequestSendingViewHandler<SettingsFragment>(requestSendingViewModel, fragmentWeakReference) {
 
-        override fun onIsLoadingChanged(isLoading: Boolean) {
+        override fun handleIsLoadingChanged(isLoading: Boolean) {
             // Do not show any loading progress for cancel operation
         }
 
@@ -211,7 +211,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             }
         }
 
-        override fun onRequestFinishedSuccessfully() {
+        override fun handleRequestFinishedSuccessfully() {
             fragment?.launch {
                 fragment?.showInformation(resources?.getString(R.string.settings_setup_biometric_unlock_successful_message))
             }
@@ -225,7 +225,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
         override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.settings_disable_biometric_unlock_failed_general_title
 
-        override fun onRequestFinishedSuccessfully() {
+        override fun handleRequestFinishedSuccessfully() {
             fragment?.launch {
                 fragment?.showInformation(resources?.getString(R.string.settings_disable_biometric_unlock_successful_message))
             }
