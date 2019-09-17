@@ -53,10 +53,6 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         super.onCreate(savedInstanceState)
 
         formPassword = savedInstanceState?.getString(FORM_FIELD_PASSWORD)
-
-        unlockRequestSendingViewHandler = UnlockRequestSendingViewHandler(viewModel.unlockScreenRequestSendingViewModel, WeakReference(this)).apply {
-            registerObservers()
-        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -66,15 +62,26 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
             binding.userViewModel = viewModel.loggedInUserViewModel
 
             applyRestoredViewStates(binding)
-            setupUnlockWithPasswordButton(binding)
-            setupUnlockWithBiometricsButton(binding)
         }
+
+        unlockRequestSendingViewHandler = UnlockRequestSendingViewHandler(viewModel.unlockScreenRequestSendingViewModel, WeakReference(this))
 
         return binding?.root
     }
 
     private fun applyRestoredViewStates(binding: FragmentLockedScreenBinding) {
         formPassword?.let { binding.textInputEditTextPassword.setText(it) }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        binding?.let {
+            setupUnlockWithPasswordButton(it)
+            setupUnlockWithBiometricsButton(it)
+        }
+
+        unlockRequestSendingViewHandler?.registerObservers()
     }
 
     private fun setupUnlockWithPasswordButton(binding: FragmentLockedScreenBinding) {
@@ -166,19 +173,19 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         viewModel.updateBiometricUnlockAvailability()
     }
 
+    override fun onStop() {
+        unlockRequestSendingViewHandler?.unregisterObservers()
+
+        // Always hide keyboard if fragment gets stopped
+        Keyboard.hideKeyboard(context, this)
+
+        super.onStop()
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString(FORM_FIELD_PASSWORD, binding?.textInputEditTextPassword?.text?.toString())
+
         super.onSaveInstanceState(outState)
-    }
-
-    override fun onDestroyView() {
-        Keyboard.hideKeyboard(context, this)
-        super.onDestroyView()
-    }
-
-    override fun onDestroy() {
-        unlockRequestSendingViewHandler?.unregisterObservers()
-        super.onDestroy()
     }
 
     override fun onHandleBackPress(): Boolean {
