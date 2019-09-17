@@ -34,7 +34,7 @@ fun CoroutineScope.createRequestSendingJob(requestSendingViewModel: RequestSendi
             requestSendingViewModel.isLoading.postValue(false)
             requestSendingViewModel.requestFinishedSuccessfully.emit()
         } catch (e: Exception) {
-            L.w("SettingsViewModel", "createRequestSendingJob(): The operation failed with exception!", e)
+            L.w("RequestSending", "createRequestSendingJob(): The operation failed with exception!", e)
             requestSendingViewModel.isLoading.postValue(false)
             requestSendingViewModel.requestError.postValue(e)
         }
