@@ -82,10 +82,8 @@ class NonNullTransformingMutableLiveData<SourceType, TargetType : Any>(
     }
 
     override fun postValue(value: TargetType) {
-        transformToSourceValue(value) { transformedSourceValue ->
-            super.postValue(value)
-            source.postValue(transformedSourceValue)
-        }
+        // Do not use `postValue()` because it schedules a `setValue()` call on main thread, which causes `source` value change again
+        throw NotImplementedError("The method postValue() is not possible!")
     }
 
     private fun transformToSourceValue(value: TargetType, applyValueBlock: (transformedSourceValue: SourceType) -> Unit) {

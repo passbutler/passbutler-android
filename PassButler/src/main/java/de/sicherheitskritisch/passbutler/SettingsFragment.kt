@@ -381,7 +381,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
             val settingKey = key?.let { SettingKey.valueOf(it) }
 
             // Only persist value if mapped setting exists for type and `MutableLiveData` is given
-            ((settingsMapping[settingKey] as? Setting.Boolean)?.liveData as? MutableLiveData<Boolean>)?.postValue(value) ?: run {
+            ((settingsMapping[settingKey] as? Setting.Boolean)?.liveData as? MutableLiveData<Boolean>)?.setValue(value) ?: run {
                 L.w("SettingsPreferenceDataStore", "putBoolean(): The setting with key = '$key' is not mapped for writing - thus the value is not persisted!")
             }
         }
@@ -398,7 +398,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
             val settingKey = key?.let { SettingKey.valueOf(it) }
 
             // Only persist value if mapped setting exists for type and `MutableLiveData` is given
-            ((settingsMapping[settingKey] as? Setting.String)?.liveData as? MutableLiveData<String>)?.postValue(value) ?: run {
+            ((settingsMapping[settingKey] as? Setting.String)?.liveData as? MutableLiveData<String>)?.setValue(value) ?: run {
                 L.w("SettingsPreferenceDataStore", "putString(): The setting with key = '$key' is not mapped for writing - thus the value is not persisted!")
             }
         }
