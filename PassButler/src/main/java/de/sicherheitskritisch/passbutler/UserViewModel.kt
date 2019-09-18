@@ -239,11 +239,12 @@ class UserViewModel private constructor(
     private suspend fun decryptUserSettings(masterEncryptionKey: ByteArray) {
         try {
             val decryptedSettings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer)
-            automaticLockTimeout.postValue(decryptedSettings.automaticLockTimeout)
-            hidePasswordsEnabled.postValue(decryptedSettings.hidePasswords)
 
-            // Register observers after field initialisations to avoid initial observer calls
             withContext(Dispatchers.Main) {
+                automaticLockTimeout.value = decryptedSettings.automaticLockTimeout
+                hidePasswordsEnabled.value = decryptedSettings.hidePasswords
+
+                // Register observers after field initialisations to avoid initial observer calls (but actually `LiveData` notifies observer nevertheless)
                 registerSettingsChangedObservers()
             }
         } catch (e: Exception) {
@@ -258,13 +259,13 @@ class UserViewModel private constructor(
     }
 
     private suspend fun clearUserSettings() {
-        // Unregister observers before setting field reset to avoid unnecessary observer calls
         withContext(Dispatchers.Main) {
+            // Unregister observers before setting field reset to avoid unnecessary observer calls
             unregisterSettingsChangedObservers()
-        }
 
-        automaticLockTimeout.postValue(null)
-        hidePasswordsEnabled.postValue(null)
+            automaticLockTimeout.value = null
+            hidePasswordsEnabled.value = null
+        }
     }
 
     @MainThread
