@@ -12,8 +12,6 @@ import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
@@ -306,7 +304,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        preferenceManager.preferenceDataStore = SettingsPreferenceDataStore()
+        preferenceManager.preferenceDataStore = SettingsPreferenceDataStore(settingsViewModel)
         preferenceScreen = preferenceManager.createPreferenceScreen(context)
 
         setupSecuritySettingsSection()
@@ -361,17 +359,26 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private inner class SettingsPreferenceDataStore : PreferenceDataStore() {
+    private class SettingsPreferenceDataStore(settingsViewModel: SettingsViewModel) : PreferenceDataStore() {
 
         private val settingsMapping = mapOf(
-            SettingKey.HIDE_PASSWORDS_ENABLED to Setting.Boolean(settingsViewModel.hidePasswordsEnabledSetting),
-            SettingKey.AUTOMATIC_LOCK_TIMEOUT to Setting.String(settingsViewModel.automaticLockTimeoutSetting),
-            SettingKey.BIOMETRIC_UNLOCK_ENABLED to Setting.Boolean(settingsViewModel.biometricUnlockEnabled)
+            SettingKey.HIDE_PASSWORDS_ENABLED to Setting.Boolean(
+                getter = { settingsViewModel.hidePasswordsEnabledSetting },
+                setter = { settingsViewModel.hidePasswordsEnabledSetting = it }
+            ),
+            SettingKey.AUTOMATIC_LOCK_TIMEOUT to Setting.String(
+                getter = { settingsViewModel.automaticLockTimeoutSetting },
+                setter = { settingsViewModel.automaticLockTimeoutSetting = it }
+            ),
+            SettingKey.BIOMETRIC_UNLOCK_ENABLED to Setting.Boolean(
+                getter = { settingsViewModel.biometricUnlockEnabledSetting },
+                setter = null
+            )
         )
 
         override fun getBoolean(key: String?, defValue: Boolean): Boolean {
             val settingKey = key?.let { SettingKey.valueOf(it) }
-            return (settingsMapping[settingKey] as? Setting.Boolean)?.liveData?.value ?: run {
+            return (settingsMapping[settingKey] as? Setting.Boolean)?.getter?.invoke() ?: run {
                 L.w("SettingsPreferenceDataStore", "getBoolean(): The setting with key = '$key' is not mapped - return default value!")
                 false
             }
@@ -380,15 +387,15 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         override fun putBoolean(key: String?, value: Boolean) {
             val settingKey = key?.let { SettingKey.valueOf(it) }
 
-            // Only persist value if mapped setting exists for type and `MutableLiveData` is given
-            ((settingsMapping[settingKey] as? Setting.Boolean)?.liveData as? MutableLiveData<Boolean>)?.setValue(value) ?: run {
+            // Only persist value if mapped setting exists for type and setter is given
+            (settingsMapping[settingKey] as? Setting.Boolean)?.setter?.invoke(value) ?: run {
                 L.w("SettingsPreferenceDataStore", "putBoolean(): The setting with key = '$key' is not mapped for writing - thus the value is not persisted!")
             }
         }
 
         override fun getString(key: String?, defValue: String?): String? {
             val settingKey = key?.let { SettingKey.valueOf(it) }
-            return (settingsMapping[settingKey] as? Setting.String)?.liveData?.value ?: run {
+            return (settingsMapping[settingKey] as? Setting.String)?.getter?.invoke() ?: run {
                 L.w("SettingsPreferenceDataStore", "getString(): The setting with key = '$key' is not mapped - return default value!")
                 null
             }
@@ -397,9 +404,11 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         override fun putString(key: String?, value: String?) {
             val settingKey = key?.let { SettingKey.valueOf(it) }
 
-            // Only persist value if mapped setting exists for type and `MutableLiveData` is given
-            ((settingsMapping[settingKey] as? Setting.String)?.liveData as? MutableLiveData<String>)?.setValue(value) ?: run {
-                L.w("SettingsPreferenceDataStore", "putString(): The setting with key = '$key' is not mapped for writing - thus the value is not persisted!")
+            if (value != null) {
+                // Only persist value if mapped setting exists for type and setter is given
+                (settingsMapping[settingKey] as? Setting.String)?.setter?.invoke(value) ?: run {
+                    L.w("SettingsPreferenceDataStore", "putString(): The setting with key = '$key' is not mapped for writing - thus the value is not persisted!")
+                }
             }
         }
     }
@@ -410,12 +419,9 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         BIOMETRIC_UNLOCK_ENABLED
     }
 
-    /*
-     * Only accept `LiveData<T : Any>` because at this point a setting without value can't be used in view.
-     */
     private sealed class Setting {
-        class Boolean(val liveData: LiveData<kotlin.Boolean>?) : Setting()
-        class String(val liveData: LiveData<kotlin.String>?) : Setting()
+        class Boolean(val getter: () -> kotlin.Boolean, val setter: ((kotlin.Boolean) -> Unit)?) : Setting()
+        class String(val getter: () -> kotlin.String, val setter: ((kotlin.String) -> Unit)?) : Setting()
     }
 
     companion object {

@@ -1,9 +1,7 @@
 package de.sicherheitskritisch.passbutler
 
 import android.app.Application
-import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
-import de.sicherheitskritisch.passbutler.base.NonNullTransformingMutableLiveData
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
@@ -15,21 +13,17 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
     var loggedInUserViewModel: UserViewModel? = null
 
-    val automaticLockTimeoutSetting: MutableLiveData<String>? by lazy {
-        loggedInUserViewModel?.automaticLockTimeout?.let { automaticLockTimeoutLiveData ->
-            // Transforms `MutableLiveData<Int?>` to `MutableLiveData<String>`
-            NonNullTransformingMutableLiveData(
-                source = automaticLockTimeoutLiveData,
-                transformToTarget = { internalValue ->
-                    val listPreferenceValueFallback = ""
-                    automaticLockTimeoutSettingValues.firstOrNull { it.internalValue == internalValue }?.listPreferenceValue ?: listPreferenceValueFallback
-                },
-                transformToSource = { listPreferenceValue ->
-                    automaticLockTimeoutSettingValues.firstOrNull { it.listPreferenceValue == listPreferenceValue }?.internalValue
-                }
-            )
+    var automaticLockTimeoutSetting: String
+        get() {
+            val internalValue = loggedInUserViewModel?.automaticLockTimeout?.value
+            return automaticLockTimeoutSettingValues.firstOrNull { it.internalValue == internalValue }?.listPreferenceValue ?: ""
         }
-    }
+        set(value) {
+            // Do not set `null` if setting value had no result
+            automaticLockTimeoutSettingValues.firstOrNull { it.listPreferenceValue == value }?.internalValue?.let { internalValue ->
+                loggedInUserViewModel?.automaticLockTimeout?.value = internalValue
+            }
+        }
 
     val automaticLockTimeoutSettingValues = listOf(
         AutomaticLockTimeoutSettingMapping(R.string.settings_automatic_lock_timeout_setting_value_0s, 0),
@@ -38,23 +32,19 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
         AutomaticLockTimeoutSettingMapping(R.string.settings_automatic_lock_timeout_setting_value_60s, 60)
     )
 
-    val hidePasswordsEnabledSetting: MutableLiveData<Boolean>? by lazy {
-        loggedInUserViewModel?.hidePasswordsEnabled?.let { hidePasswordsEnabledLiveData ->
-            // Transforms `MutableLiveData<Boolean?>` to `MutableLiveData<Boolean>`
-            NonNullTransformingMutableLiveData(
-                source = hidePasswordsEnabledLiveData,
-                transformToTarget = { sourceValue ->
-                    sourceValue ?: false
-                },
-                transformToSource = { targetValue ->
-                    targetValue
-                }
-            )
+    var hidePasswordsEnabledSetting: Boolean
+        get() {
+            return loggedInUserViewModel?.hidePasswordsEnabled?.value ?: false
         }
-    }
+        set(value) {
+            loggedInUserViewModel?.hidePasswordsEnabled?.value = value
+        }
 
     val biometricUnlockEnabled: NonNullValueGetterLiveData<Boolean>?
         get() = loggedInUserViewModel?.biometricUnlockEnabled
+
+    val biometricUnlockEnabledSetting: Boolean
+        get() = biometricUnlockEnabled?.value ?: false
 
     val generateBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
     val cancelSetupBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
