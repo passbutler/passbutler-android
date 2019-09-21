@@ -8,6 +8,8 @@ import de.sicherheitskritisch.passbutler.base.isHttpsScheme
 import de.sicherheitskritisch.passbutler.crypto.models.AuthToken
 import de.sicherheitskritisch.passbutler.database.models.User
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.Credentials
 import okhttp3.Interceptor
 import okhttp3.MediaType
@@ -73,12 +75,15 @@ interface AuthWebservice {
 
 @Throws(AuthWebservice.GetAuthTokenFailedException::class)
 suspend fun AuthWebservice?.requestAuthToken(): AuthToken {
-    return try {
-        val getTokenRequest = this?.getTokenAsync()
-        val getTokenResponse = getTokenRequest?.await()
-        getTokenResponse.completeRequestWithResult()
-    } catch (e: Exception) {
-        throw AuthWebservice.GetAuthTokenFailedException(e)
+    val authWebservice = this
+    return withContext(Dispatchers.IO) {
+        try {
+            val getTokenRequest = authWebservice?.getTokenAsync()
+            val getTokenResponse = getTokenRequest?.await()
+            getTokenResponse.completeRequestWithResult()
+        } catch (e: Exception) {
+            throw AuthWebservice.GetAuthTokenFailedException(e)
+        }
     }
 }
 
@@ -152,34 +157,43 @@ interface UserWebservice {
 
 @Throws(UserWebservice.GetUsersFailedException::class)
 suspend fun UserWebservice?.requestPublicUserList(): List<User> {
-    return try {
-        val getUsersListRequest = this?.getUsersAsync()
-        val getUsersListResponse = getUsersListRequest?.await()
-        getUsersListResponse.completeRequestWithResult()
-    } catch (e: Exception) {
-        throw UserWebservice.GetUsersFailedException(e)
+    val userWebservice = this
+    return withContext(Dispatchers.IO) {
+        try {
+            val getUsersListRequest = userWebservice?.getUsersAsync()
+            val getUsersListResponse = getUsersListRequest?.await()
+            getUsersListResponse.completeRequestWithResult()
+        } catch (e: Exception) {
+            throw UserWebservice.GetUsersFailedException(e)
+        }
     }
 }
 
 @Throws(UserWebservice.GetUserDetailsFailedException::class)
 suspend fun UserWebservice?.requestUser(username: String): User {
-    return try {
-        val getUserDetailsRequest = this?.getUserDetailsAsync(username)
-        val getUserDetailsResponse = getUserDetailsRequest?.await()
-        getUserDetailsResponse.completeRequestWithResult()
-    } catch (e: Exception) {
-        throw UserWebservice.GetUserDetailsFailedException(e)
+    val userWebservice = this
+    return withContext(Dispatchers.IO) {
+        try {
+            val getUserDetailsRequest = userWebservice?.getUserDetailsAsync(username)
+            val getUserDetailsResponse = getUserDetailsRequest?.await()
+            getUserDetailsResponse.completeRequestWithResult()
+        } catch (e: Exception) {
+            throw UserWebservice.GetUserDetailsFailedException(e)
+        }
     }
 }
 
 @Throws(UserWebservice.SetUserDetailsFailedException::class)
 suspend fun UserWebservice?.updateUser(user: User) {
-    try {
-        val setUserDetailsRequest = this?.setUserDetailsAsync(user.username, user)
-        val setUserDetailsResponse = setUserDetailsRequest?.await()
-        setUserDetailsResponse.completeRequestWithoutResult()
-    } catch (e: Exception) {
-        throw UserWebservice.SetUserDetailsFailedException(e)
+    val userWebservice = this
+    withContext(Dispatchers.IO) {
+        try {
+            val setUserDetailsRequest = userWebservice?.setUserDetailsAsync(user.username, user)
+            val setUserDetailsResponse = setUserDetailsRequest?.await()
+            setUserDetailsResponse.completeRequestWithoutResult()
+        } catch (e: Exception) {
+            throw UserWebservice.SetUserDetailsFailedException(e)
+        }
     }
 }
 
