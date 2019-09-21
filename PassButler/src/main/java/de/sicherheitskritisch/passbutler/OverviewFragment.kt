@@ -44,13 +44,11 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     private val toolbarMenuIconSync
         get() = binding?.toolbar?.menu?.findItem(R.id.overview_menu_item_sync)
 
-    private val unlockedFinishedSignal = signal {
-        if (viewModel.userType is UserType.Server) {
-            launch {
-                // Start sync a bit delayed after unlock to made progress UI better visible
-                delay(500)
-                viewModel.synchronizeData()
-            }
+    private val webserviceRestoredSignal = signal {
+        launch {
+            // Start sync a bit delayed after unlock to made progress UI better visible
+            delay(500)
+            viewModel.synchronizeData()
         }
     }
 
@@ -61,6 +59,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
         activity?.let {
             val rootViewModel = getRootViewModel(it)
+            viewModel.rootViewModel = rootViewModel
             viewModel.loggedInUserViewModel = rootViewModel.loggedInUserViewModel
         }
     }
@@ -76,7 +75,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             registerObservers()
         }
 
-        viewModel.loggedInUserViewModel?.unlockFinished?.addSignal(unlockedFinishedSignal)
+        viewModel.rootViewModel?.webserviceRestored?.addSignal(webserviceRestoredSignal)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -154,7 +153,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     override fun onDestroy() {
         synchronizeDataRequestSendingViewHandler?.unregisterObservers()
         logoutRequestSendingViewHandler?.unregisterObservers()
-        viewModel.loggedInUserViewModel?.unlockFinished?.removeSignal(unlockedFinishedSignal)
+        viewModel.rootViewModel?.webserviceRestored?.removeSignal(webserviceRestoredSignal)
         super.onDestroy()
     }
 

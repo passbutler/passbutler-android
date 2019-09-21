@@ -6,7 +6,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
-import de.sicherheitskritisch.passbutler.base.SignalEmitter
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
 import de.sicherheitskritisch.passbutler.crypto.Derivation
@@ -57,8 +56,6 @@ class UserViewModel private constructor(
         biometricUnlockAvailable.value && userManager.loggedInStateStorage.encryptedMasterPassword != null
     }
 
-    val unlockFinished = SignalEmitter()
-
     private val automaticLockTimeoutChangedObserver = Observer<Int?> { applyUserSettings() }
     private val hidePasswordsEnabledChangedObserver = Observer<Boolean?> { applyUserSettings() }
 
@@ -89,7 +86,7 @@ class UserViewModel private constructor(
                 try {
                     unlockMasterEncryptionKey(masterPassword)
                 } catch (e: UnlockFailedException) {
-                    // TODO: This also occurs if the user settings could not be deserialized or webservice initialisation and should not crash the app on login
+                    // TODO: This also occurs if the user settings could not be deserialized and should not crash the app on login
                     throw IllegalStateException("The unlock of the master encryption key failed despite the master password was supplied from login!", e)
                 }
             }
@@ -110,12 +107,6 @@ class UserViewModel private constructor(
                 masterEncryptionKey = decryptMasterEncryptionKey(masterPassword).also { decryptedMasterEncryptionKey ->
                     decryptUserSettings(decryptedMasterEncryptionKey)
                 }
-
-                if (userManager.loggedInStateStorage.userType is UserType.Server) {
-                    userManager.restoreWebservices(masterPassword)
-                }
-
-                unlockFinished.emit()
             } catch (e: Exception) {
                 // If the operation failed, reset everything that may was done to avoid a dirty state
                 clearMasterEncryptionKey()

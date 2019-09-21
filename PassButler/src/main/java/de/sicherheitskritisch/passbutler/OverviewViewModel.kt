@@ -10,6 +10,7 @@ import kotlinx.coroutines.delay
 
 class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
+    var rootViewModel: RootViewModel? = null
     var loggedInUserViewModel: UserViewModel? = null
 
     val userType

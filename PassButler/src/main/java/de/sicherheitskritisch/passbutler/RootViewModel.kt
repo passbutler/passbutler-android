@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProviders
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.SignalEmitter
 import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
 import de.sicherheitskritisch.passbutler.base.toUTF8String
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
@@ -26,6 +27,8 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     val lockScreenState = MutableLiveData<LockScreenState?>()
 
     val unlockScreenRequestSendingViewModel = DefaultRequestSendingViewModel()
+
+    val webserviceRestored = SignalEmitter()
 
     val userManager
         get() = getApplication<AbstractPassButlerApplication>().userManager
@@ -53,6 +56,11 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         cryptoResourcesJob?.cancel()
         cryptoResourcesJob = createRequestSendingJob(unlockScreenRequestSendingViewModel) {
             loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
+
+            // Restore webservices asynchronously to avoid slow network is blocking unlock
+            launch {
+                restoreWebservices(masterPassword)
+            }
         }
     }
 
@@ -89,6 +97,19 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
             val masterPassword = Biometrics.decryptData(initializedBiometricUnlockCipher, encryptedMasterPassword).toUTF8String()
             loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
+
+            // Restore webservices asynchronously to avoid slow network is blocking unlock
+            launch {
+                restoreWebservices(masterPassword)
+            }
+        }
+    }
+
+    private suspend fun restoreWebservices(masterPassword: String) {
+        userManager.restoreWebservices(masterPassword)
+
+        if (userManager.loggedInStateStorage.userType is UserType.Server) {
+            webserviceRestored.emit()
         }
     }
 

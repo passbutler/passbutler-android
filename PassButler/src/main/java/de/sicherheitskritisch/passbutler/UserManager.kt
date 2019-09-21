@@ -156,34 +156,41 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         }
     }
 
-    @Throws(IllegalStateException::class)
     suspend fun restoreWebservices(masterPassword: String) {
-        L.d("UserManager", "restoreWebservices()")
+        when (val userType = loggedInStateStorage.userType) {
+            is UserType.Server -> {
+                L.d("UserManager", "restoreWebservices(): Restore the remote webservices")
 
-        val userType = loggedInStateStorage.userType as? UserType.Server ?: throw IllegalStateException("The user is a local kind despite it was tried to restore webservices!")
+                try {
+                    if (authWebservice == null) {
+                        initializeAuthWebservice(masterPassword)
+                    }
 
-        try {
-            if (authWebservice == null) {
-                initializeAuthWebservice(masterPassword)
+                    var authToken = userType.authToken
+                    var authTokenHasChanged = false
+
+                    if (authToken.isExpired) {
+                        authToken = authWebservice.requestAuthToken()
+                        authTokenHasChanged = true
+
+                        // Update and persist token
+                        userType.authToken = authToken
+                        loggedInStateStorage.persist()
+                    }
+
+                    if (userWebservice == null || authTokenHasChanged) {
+                        userWebservice = UserWebservice.create(userType.serverUrl, authToken.token)
+                    }
+                } catch (e: Exception) {
+                    L.w("UserManager", "restoreWebservices(): The webservices could not be restored!", e)
+                }
             }
-
-            var authToken = userType.authToken
-            var authTokenHasChanged = false
-
-            if (authToken.isExpired) {
-                authToken = authWebservice.requestAuthToken()
-                authTokenHasChanged = true
-
-                // Update and persist token
-                userType.authToken = authToken
-                loggedInStateStorage.persist()
+            is UserType.Local -> {
+                L.d("UserManager", "restoreWebservices(): The user type is local, no need to restore the remote webservices")
             }
-
-            if (userWebservice == null || authTokenHasChanged) {
-                userWebservice = UserWebservice.create(userType.serverUrl, authToken.token)
+            null -> {
+                L.e("UserManager", "restoreWebservices(): The user type is null - this is an illegal state!")
             }
-        } catch (e: Exception) {
-            L.w("UserManager", "restoreWebservices(): The webservices could not be restored!", e)
         }
     }
 
