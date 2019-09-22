@@ -154,10 +154,8 @@ class UserViewModel private constructor(
                 // Disable biometric unlock because master password re-encryption would require biometric authentication and made flow more complex
                 disableBiometricUnlock()
 
-                withContext(Dispatchers.IO) {
-                    val user = createUserModel()
-                    userManager.updateUser(user)
-                }
+                val user = createUserModel()
+                userManager.updateUser(user)
 
                 // The auth webservice needs to re-initialized because of master password change
                 userManager.initializeAuthWebservice(newMasterPassword)
@@ -173,7 +171,7 @@ class UserViewModel private constructor(
     suspend fun enableBiometricUnlock(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String) {
         withContext(Dispatchers.Default) {
             try {
-                // Test if master password is correct
+                // Test if master password is correct via thrown exception
                 decryptMasterEncryptionKey(masterPassword)
 
                 val encryptedMasterPasswordInitializationVector = initializedSetupBiometricUnlockCipher.iv
@@ -284,10 +282,8 @@ class UserViewModel private constructor(
                 try {
                     protectedSettings.update(masterEncryptionKey, settings)
 
-                    withContext(Dispatchers.IO) {
-                        val user = createUserModel()
-                        userManager.updateUser(user)
-                    }
+                    val user = createUserModel()
+                    userManager.updateUser(user)
                 } catch (e: Exception) {
                     L.w("UserViewModel", "persistUserSettings(): The user settings could not be updated!", e)
                 }
