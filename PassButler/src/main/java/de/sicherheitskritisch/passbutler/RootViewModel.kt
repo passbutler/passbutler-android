@@ -32,7 +32,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
     val webserviceRestored = SignalEmitter()
 
-    val userManager
+    private val userManager
         get() = getApplication<AbstractPassButlerApplication>().userManager
 
     private val loggedInUserResultObserver = LoggedInUserResultObserver()
@@ -72,7 +72,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     suspend fun initializeBiometricUnlockCipher(): Cipher {
         return try {
             val biometricUnlockCipher = Biometrics.obtainKeyInstance()
-            val encryptedMasterPasswordInitializationVector = userManager.loggedInStateStorage.encryptedMasterPassword?.initializationVector
+            val encryptedMasterPasswordInitializationVector = loggedInUserViewModel?.encryptedMasterPassword?.initializationVector
                 ?: throw IllegalStateException("The encrypted master key initialization vector was not found, despite biometric unlock was tried!")
             Biometrics.initializeKeyForDecryption(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, biometricUnlockCipher, encryptedMasterPasswordInitializationVector)
 
@@ -96,7 +96,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     fun unlockScreenWithBiometrics(initializedBiometricUnlockCipher: Cipher) {
         cryptoResourcesJob?.cancel()
         cryptoResourcesJob = createRequestSendingJob(unlockScreenRequestSendingViewModel) {
-            val encryptedMasterPassword = userManager.loggedInStateStorage.encryptedMasterPassword?.encryptedValue
+            val encryptedMasterPassword = loggedInUserViewModel?.encryptedMasterPassword?.encryptedValue
                 ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
 
             val masterPassword = Biometrics.decryptData(initializedBiometricUnlockCipher, encryptedMasterPassword).toUTF8String()
@@ -113,9 +113,8 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     private suspend fun restoreWebservices(masterPassword: String) {
-        userManager.restoreWebservices(masterPassword)
-
-        if (userManager.loggedInStateStorage.userType is UserType.Server) {
+        if (loggedInUserViewModel?.userType is UserType.Server) {
+            userManager.restoreWebservices(masterPassword)
             webserviceRestored.emit()
         }
     }

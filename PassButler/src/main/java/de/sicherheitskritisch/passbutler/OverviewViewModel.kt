@@ -13,17 +13,11 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
     var rootViewModel: RootViewModel? = null
     var loggedInUserViewModel: UserViewModel? = null
 
-    val userType
-        get() = userManager.loggedInStateStorage.userType
-
     val synchronizeDataRequestSendingViewModel = DefaultRequestSendingViewModel()
     val logoutRequestSendingViewModel = DefaultRequestSendingViewModel()
 
     private var synchronizeDataCoroutineJob: Job? = null
     private var logoutCoroutineJob: Job? = null
-
-    private val userManager
-        get() = getApplication<AbstractPassButlerApplication>().userManager
 
     fun synchronizeData() {
         synchronizeDataCoroutineJob?.cancel()

@@ -42,6 +42,12 @@ class UserViewModel private constructor(
     masterPassword: String?
 ) : ViewModel(), CoroutineScope {
 
+    val userType
+        get() = userManager.loggedInStateStorage.userType
+
+    val encryptedMasterPassword
+        get() = userManager.loggedInStateStorage.encryptedMasterPassword
+
     val username
         get() = user.username
 

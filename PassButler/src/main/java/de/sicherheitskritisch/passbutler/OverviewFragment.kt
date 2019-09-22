@@ -112,7 +112,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         toolbar.menu.findItem(R.id.overview_menu_item_sync).apply {
             val menuIconColor = resources.getColor(R.color.white, null)
             icon.applyTint(menuIconColor)
-            isVisible = viewModel.userType is UserType.Server
+            isVisible = viewModel.loggedInUserViewModel?.userType is UserType.Server
         }
     }
 
