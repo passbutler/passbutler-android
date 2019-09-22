@@ -56,6 +56,7 @@ class UserViewModel private constructor(
         biometricUnlockAvailable.value && userManager.loggedInStateStorage.encryptedMasterPassword != null
     }
 
+    // TODO: Avoid initial observer calls on register
     private val automaticLockTimeoutChangedObserver = Observer<Int?> { applyUserSettings() }
     private val hidePasswordsEnabledChangedObserver = Observer<Boolean?> { applyUserSettings() }
 
