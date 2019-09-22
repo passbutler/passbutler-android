@@ -128,7 +128,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     fun rootFragmentWasPaused() {
         L.d("RootViewModel", "rootFragmentWasPaused()")
 
-        // Always cancel possible running unlock job to avoid it's running in the background when it is not handled by the UI (the view unregisters itself a bit later in `onStop()`)
+        // Always cancel possible running unlock job, because view of `LockedScreenFragment` will be disconnected in `onStop()`, thus event can't be handled
         cryptoResourcesJob?.cancel()
 
         // Than start screen locking timer
