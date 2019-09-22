@@ -30,9 +30,7 @@ import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
 import de.sicherheitskritisch.passbutler.ui.showEditTextDialog
 import de.sicherheitskritisch.passbutler.ui.showError
 import de.sicherheitskritisch.passbutler.ui.showInformation
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 import javax.crypto.Cipher
 
@@ -103,30 +101,25 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     }
 
     private fun showBiometricPrompt() {
-        launch(Dispatchers.IO) {
+        launch {
             try {
                 val initializedSetupBiometricUnlockCipher = viewModel.initializeSetupBiometricUnlockCipher()
 
-                withContext(Dispatchers.Main) {
-                    activity?.let { activity ->
-                        val biometricAuthenticationCallback = BiometricAuthenticationCallback()
-                        val biometricPrompt = BiometricPrompt(activity, biometricCallbackExecutor, biometricAuthenticationCallback)
-                        val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
-                            .setTitle(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_title))
-                            .setDescription(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_description))
-                            .setNegativeButtonText(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_cancel_button_text))
-                            .build()
+                activity?.let { activity ->
+                    val biometricAuthenticationCallback = BiometricAuthenticationCallback()
+                    val biometricPrompt = BiometricPrompt(activity, biometricCallbackExecutor, biometricAuthenticationCallback)
+                    val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
+                        .setTitle(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_title))
+                        .setDescription(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_description))
+                        .setNegativeButtonText(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_cancel_button_text))
+                        .build()
 
-                        val cryptoObject = BiometricPrompt.CryptoObject(initializedSetupBiometricUnlockCipher)
-                        biometricPrompt.authenticate(biometricPromptInfo, cryptoObject)
-                    }
+                    val cryptoObject = BiometricPrompt.CryptoObject(initializedSetupBiometricUnlockCipher)
+                    biometricPrompt.authenticate(biometricPromptInfo, cryptoObject)
                 }
             } catch (e: Exception) {
                 L.w("SettingsFragment", "showBiometricPrompt(): The biometric authentication failed!", e)
-
-                withContext(Dispatchers.Main) {
-                    showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))
-                }
+                showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))
             }
         }
     }
