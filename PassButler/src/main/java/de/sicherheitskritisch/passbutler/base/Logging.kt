@@ -13,6 +13,7 @@ object Logger {
     fun w(tag: String, message: String) = Log.w(tag, buildLogString(message))
     fun w(tag: String, message: String, throwable: Throwable) = Log.w(tag, buildLogString(message, throwable))
     fun e(tag: String, message: String) = Log.e(tag, buildLogString(message))
+    fun e(tag: String, message: String, throwable: Throwable) = Log.e(tag, buildLogString(message, throwable))
 }
 
 private fun buildLogString(message: String, throwable: Throwable? = null): String {
