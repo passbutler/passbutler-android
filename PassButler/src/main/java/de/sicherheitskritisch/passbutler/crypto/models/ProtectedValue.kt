@@ -43,6 +43,8 @@ class ProtectedValue<T : JSONSerializable>(
     @Throws(DecryptFailedException::class)
     fun decrypt(encryptionKey: ByteArray, deserializer: JSONSerializableDeserializer<T>): T {
         return try {
+            require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
+
             encryptionAlgorithm.decrypt(initializationVector, encryptionKey, encryptedValue).let { decryptedBytes ->
                 val jsonSerializedString = decryptedBytes.toUTF8String()
                 deserializer.deserialize(jsonSerializedString)
@@ -57,6 +59,8 @@ class ProtectedValue<T : JSONSerializable>(
     @Throws(UpdateFailedException::class)
     fun update(encryptionKey: ByteArray, updatedValue: T) {
         try {
+            require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
+
             val newInitializationVector = encryptionAlgorithm.generateInitializationVector()
             val encryptedValue = encryptionAlgorithm.encrypt(newInitializationVector, encryptionKey, updatedValue.toByteArray())
 
@@ -114,6 +118,8 @@ class ProtectedValue<T : JSONSerializable>(
         @Throws(CreateFailedException::class)
         fun <T : JSONSerializable> create(encryptionAlgorithm: EncryptionAlgorithm.Symmetric, encryptionKey: ByteArray, initialValue: T): ProtectedValue<T> {
             return try {
+                require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
+
                 val newInitializationVector = encryptionAlgorithm.generateInitializationVector()
                 val encryptedValue = encryptionAlgorithm.encrypt(newInitializationVector, encryptionKey, initialValue.toByteArray())
                 ProtectedValue(newInitializationVector, encryptedValue, encryptionAlgorithm)
