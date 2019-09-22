@@ -1,6 +1,6 @@
 package de.sicherheitskritisch.passbutler
 
-import androidx.annotation.MainThread
+import androidx.annotation.WorkerThread
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -83,7 +83,7 @@ class UserViewModel private constructor(
     init {
         // If the master password was supplied (only on login), directly unlock resources
         if (masterPassword != null) {
-            launch {
+            launch(Dispatchers.Default) {
                 try {
                     unlockMasterEncryptionKey(masterPassword)
                 } catch (e: UnlockFailedException) {
@@ -100,31 +100,30 @@ class UserViewModel private constructor(
     }
 
     @Throws(UnlockFailedException::class)
-    suspend fun unlockMasterEncryptionKey(masterPassword: String) {
-        withContext(Dispatchers.IO) {
-            L.d("UserViewModel", "unlockMasterEncryptionKey()")
+    @WorkerThread
+    fun unlockMasterEncryptionKey(masterPassword: String) {
+        L.d("UserViewModel", "unlockMasterEncryptionKey()")
 
-            try {
-                masterEncryptionKey = decryptMasterEncryptionKey(masterPassword).also { decryptedMasterEncryptionKey ->
-                    decryptUserSettings(decryptedMasterEncryptionKey)
-                }
-            } catch (e: Exception) {
-                // If the operation failed, reset everything that may was done to avoid a dirty state
-                clearMasterEncryptionKey()
-
-                throw UnlockFailedException(e)
+        try {
+            masterEncryptionKey = decryptMasterEncryptionKey(masterPassword).also { decryptedMasterEncryptionKey ->
+                decryptUserSettings(decryptedMasterEncryptionKey)
             }
+        } catch (e: Exception) {
+            // If the operation failed, reset everything that may was done to avoid a dirty state
+            clearMasterEncryptionKey()
+
+            throw UnlockFailedException(e)
         }
     }
 
-    suspend fun clearMasterEncryptionKey() {
-        withContext(Dispatchers.IO) {
-            L.d("UserViewModel", "clearMasterEncryptionKey()")
+    fun clearMasterEncryptionKey() {
+        L.d("UserViewModel", "clearMasterEncryptionKey()")
 
-            masterEncryptionKey?.clear()
-            masterEncryptionKey = null
-            clearUserSettings()
-        }
+        // Clear settings before unset master encryption key because settings depend on it
+        clearUserSettings()
+
+        masterEncryptionKey?.clear()
+        masterEncryptionKey = null
     }
 
     @Throws(SynchronizeDataFailedException::class)
@@ -208,60 +207,50 @@ class UserViewModel private constructor(
     }
 
     @Throws(DecryptMasterEncryptionKeyFailedException::class)
-    private suspend fun decryptMasterEncryptionKey(masterPassword: String): ByteArray {
-        return withContext(Dispatchers.Default) {
-            var masterKey: ByteArray? = null
+    @WorkerThread
+    private fun decryptMasterEncryptionKey(masterPassword: String): ByteArray {
+        var masterKey: ByteArray? = null
 
-            try {
-                masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation)
+        return try {
+            masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation)
 
-                val decryptedProtectedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer)
-                decryptedProtectedMasterEncryptionKey.key
-            } catch (e: Exception) {
-                throw DecryptMasterEncryptionKeyFailedException(e)
-            } finally {
-                masterKey?.clear()
-            }
+            val decryptedProtectedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer)
+            decryptedProtectedMasterEncryptionKey.key
+        } catch (e: Exception) {
+            throw DecryptMasterEncryptionKeyFailedException(e)
+        } finally {
+            masterKey?.clear()
         }
     }
 
     @Throws(DecryptUserSettingsFailedException::class)
-    private suspend fun decryptUserSettings(masterEncryptionKey: ByteArray) {
+    @WorkerThread
+    private fun decryptUserSettings(masterEncryptionKey: ByteArray) {
         try {
             val decryptedSettings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer)
 
-            withContext(Dispatchers.Main) {
+            launch(Dispatchers.Main) {
                 automaticLockTimeout.value = decryptedSettings.automaticLockTimeout
                 hidePasswordsEnabled.value = decryptedSettings.hidePasswords
 
                 // Register observers after field initialisations to avoid initial observer calls (but actually `LiveData` notifies observer nevertheless)
-                registerSettingsChangedObservers()
+                automaticLockTimeout.observeForever(automaticLockTimeoutChangedObserver)
+                hidePasswordsEnabled.observeForever(hidePasswordsEnabledChangedObserver)
             }
         } catch (e: Exception) {
             throw DecryptUserSettingsFailedException(e)
         }
     }
 
-    @MainThread
-    private fun registerSettingsChangedObservers() {
-        automaticLockTimeout.observeForever(automaticLockTimeoutChangedObserver)
-        hidePasswordsEnabled.observeForever(hidePasswordsEnabledChangedObserver)
-    }
-
-    private suspend fun clearUserSettings() {
-        withContext(Dispatchers.Main) {
+    private fun clearUserSettings() {
+        launch(Dispatchers.Main) {
             // Unregister observers before setting field reset to avoid unnecessary observer calls
-            unregisterSettingsChangedObservers()
+            automaticLockTimeout.removeObserver(automaticLockTimeoutChangedObserver)
+            hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
 
             automaticLockTimeout.value = null
             hidePasswordsEnabled.value = null
         }
-    }
-
-    @MainThread
-    private fun unregisterSettingsChangedObservers() {
-        automaticLockTimeout.removeObserver(automaticLockTimeoutChangedObserver)
-        hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
     }
 
     private fun applyUserSettings() {

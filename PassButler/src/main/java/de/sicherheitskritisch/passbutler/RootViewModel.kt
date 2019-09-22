@@ -14,9 +14,11 @@ import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
 import de.sicherheitskritisch.passbutler.base.toUTF8String
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.crypto.Cipher
 
 class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
@@ -55,7 +57,9 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     fun unlockScreenWithPassword(masterPassword: String) {
         cryptoResourcesJob?.cancel()
         cryptoResourcesJob = createRequestSendingJob(unlockScreenRequestSendingViewModel) {
-            loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
+            withContext(Dispatchers.Default) {
+                loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
+            }
 
             // Restore webservices asynchronously to avoid slow network is blocking unlock
             launch {
@@ -96,7 +100,10 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
                 ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
 
             val masterPassword = Biometrics.decryptData(initializedBiometricUnlockCipher, encryptedMasterPassword).toUTF8String()
-            loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
+
+            withContext(Dispatchers.Default) {
+                loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
+            }
 
             // Restore webservices asynchronously to avoid slow network is blocking unlock
             launch {
@@ -186,8 +193,8 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
                     rootScreenState.value = RootScreenState.LoggedOut
                     lockScreenState.value = null
 
-                    // TODO: Also clear master key before
-                    // Finally reset logged-in user related jobs
+                    // Finally clear crypto resources and reset related jobs
+                    loggedInUserViewModel?.clearMasterEncryptionKey()
                     loggedInUserViewModel?.cancelJobs()
                     loggedInUserViewModel = null
                 }
