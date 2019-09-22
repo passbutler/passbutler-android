@@ -35,7 +35,7 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
     fun logoutUser() {
         logoutCoroutineJob?.cancel()
         logoutCoroutineJob = createRequestSendingJob(logoutRequestSendingViewModel) {
-            userManager.logoutUser()
+            loggedInUserViewModel?.logout()
 
             // Some artificial delay to look flow more natural
             delay(1000)

@@ -206,6 +206,10 @@ class UserViewModel private constructor(
         }
     }
 
+    suspend fun logout() {
+        userManager.logoutUser()
+    }
+
     @Throws(DecryptMasterEncryptionKeyFailedException::class)
     @WorkerThread
     private fun decryptMasterEncryptionKey(masterPassword: String): ByteArray {
