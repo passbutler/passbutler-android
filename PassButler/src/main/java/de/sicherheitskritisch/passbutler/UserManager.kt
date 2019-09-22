@@ -67,7 +67,9 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
             loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(remoteUser, masterPassword))
         } catch (exception: Exception) {
-            // TODO: Rollback every state
+            // If the operation failed, reset all states to avoid a dirty state
+            resetLoggedInUser()
+
             throw LoginFailedException("The remote login failed with an exception!", exception)
         }
     }
@@ -119,7 +121,9 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
             loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(localUser, masterPassword))
         } catch (exception: Exception) {
-            // TODO: Rollback every state
+            // If the operation failed, reset all states to avoid a dirty state
+            resetLoggedInUser()
+
             throw LoginFailedException("The local login failed with an exception!", exception)
         } finally {
             // Always active clear all sensible data before returning method
@@ -131,11 +135,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     suspend fun logoutUser() {
         L.d("UserManager", "logoutUser()")
 
-        authWebservice = null
-        userWebservice = null
-
-        localRepository.reset()
-        loggedInStateStorage.reset()
+        resetLoggedInUser()
         loggedInUserResult.postValue(null)
     }
 
@@ -226,6 +226,14 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         val userWebservice = userWebservice ?: throw Synchronization.SynchronizationFailedException("The user webservice is not initialized!")
         val userSynchronization = UserSynchronization(localRepository, userWebservice, loggedInUser)
         userSynchronization.synchronize()
+    }
+
+    private suspend fun resetLoggedInUser() {
+        authWebservice = null
+        userWebservice = null
+
+        localRepository.reset()
+        loggedInStateStorage.reset()
     }
 
     class LoginFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
