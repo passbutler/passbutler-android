@@ -79,13 +79,11 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val binding = DataBindingUtil.inflate<FragmentOverviewBinding>(inflater, R.layout.fragment_overview, container, false).also { binding ->
+        this.binding = DataBindingUtil.inflate<FragmentOverviewBinding>(inflater, R.layout.fragment_overview, container, false).also { binding ->
             binding.lifecycleOwner = viewLifecycleOwner
 
             setupToolBar(binding)
             setupDrawerLayout(binding)
-
-            this.binding = binding
         }
 
         return binding?.root
