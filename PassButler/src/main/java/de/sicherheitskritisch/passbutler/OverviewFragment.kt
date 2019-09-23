@@ -24,7 +24,6 @@ import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.VisibilityHideMode
 import de.sicherheitskritisch.passbutler.ui.applyTint
 import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
-import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
 import de.sicherheitskritisch.passbutler.ui.showInformation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -58,24 +57,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         viewModel = ViewModelProviders.of(this).get(OverviewViewModel::class.java)
 
         activity?.let {
-            val rootViewModel = getRootViewModel(it)
-            viewModel.rootViewModel = rootViewModel
-            viewModel.loggedInUserViewModel = rootViewModel.loggedInUserViewModel
+            viewModel.rootViewModel = getRootViewModel(it)
         }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        synchronizeDataRequestSendingViewHandler = SynchronizeDataRequestSendingViewHandler(viewModel.synchronizeDataRequestSendingViewModel, WeakReference(this)).apply {
-            registerObservers()
-        }
-
-        logoutRequestSendingViewHandler = LogoutRequestSendingViewHandler(viewModel.logoutRequestSendingViewModel, WeakReference(this)).apply {
-            registerObservers()
-        }
-
-        viewModel.rootViewModel?.webserviceRestored?.addSignal(webserviceRestoredSignal)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -85,6 +68,11 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             setupToolBar(binding)
             setupDrawerLayout(binding)
         }
+
+        synchronizeDataRequestSendingViewHandler = SynchronizeDataRequestSendingViewHandler(viewModel.synchronizeDataRequestSendingViewModel, WeakReference(this))
+        logoutRequestSendingViewHandler = LogoutRequestSendingViewHandler(viewModel.rootViewModel.loginRequestSendingViewModel, WeakReference(this))
+
+        viewModel.rootViewModel.webserviceRestored.addSignal(webserviceRestoredSignal)
 
         return binding?.root
     }
@@ -139,6 +127,26 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+
+        synchronizeDataRequestSendingViewHandler?.registerObservers()
+        logoutRequestSendingViewHandler?.registerObservers()
+    }
+
+    override fun onStop() {
+        synchronizeDataRequestSendingViewHandler?.unregisterObservers()
+        logoutRequestSendingViewHandler?.unregisterObservers()
+
+        super.onStop()
+    }
+
+    override fun onDestroyView() {
+        viewModel.rootViewModel.webserviceRestored.removeSignal(webserviceRestoredSignal)
+
+        super.onDestroyView()
+    }
+
     override fun onHandleBackPress(): Boolean {
         return if (binding?.drawerLayout?.isDrawerOpen(GravityCompat.START) == true) {
             binding?.drawerLayout?.closeDrawer(GravityCompat.START)
@@ -146,13 +154,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         } else {
             super.onHandleBackPress()
         }
-    }
-
-    override fun onDestroy() {
-        synchronizeDataRequestSendingViewHandler?.unregisterObservers()
-        logoutRequestSendingViewHandler?.unregisterObservers()
-        viewModel.rootViewModel?.webserviceRestored?.removeSignal(webserviceRestoredSignal)
-        super.onDestroy()
     }
 
     private inner class NavigationItemSelectedListener : NavigationView.OnNavigationItemSelectedListener {
@@ -172,7 +173,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
                     true
                 }
                 R.id.drawer_menu_item_logout -> {
-                    viewModel.logoutUser()
+                    viewModel.rootViewModel.logoutUser()
                     true
                 }
                 R.id.drawer_menu_item_homepage -> {
@@ -247,13 +248,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     ) : DefaultRequestSendingViewHandler<OverviewFragment>(requestSendingViewModel, fragmentWeakReference) {
 
         override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.overview_logout_failed_title
-
-        override fun handleRequestFinishedSuccessfully() {
-            fragment?.launch {
-                val loginFragment = LoginFragment.newInstance()
-                fragment?.showFragmentAsFirstScreen(loginFragment)
-            }
-        }
     }
 
     companion object {

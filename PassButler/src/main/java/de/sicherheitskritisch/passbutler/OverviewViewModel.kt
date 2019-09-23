@@ -1,38 +1,26 @@
 package de.sicherheitskritisch.passbutler
 
 import android.app.Application
-import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 
 class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
-    var rootViewModel: RootViewModel? = null
-    var loggedInUserViewModel: UserViewModel? = null
+    lateinit var rootViewModel: RootViewModel
+
+    val loggedInUserViewModel
+        get() = rootViewModel.loggedInUserViewModel
 
     val synchronizeDataRequestSendingViewModel = DefaultRequestSendingViewModel()
-    val logoutRequestSendingViewModel = DefaultRequestSendingViewModel()
 
     private var synchronizeDataCoroutineJob: Job? = null
-    private var logoutCoroutineJob: Job? = null
 
     fun synchronizeData() {
         synchronizeDataCoroutineJob?.cancel()
         synchronizeDataCoroutineJob = createRequestSendingJob(synchronizeDataRequestSendingViewModel) {
             loggedInUserViewModel?.synchronizeData()
-        }
-    }
-
-    fun logoutUser() {
-        logoutCoroutineJob?.cancel()
-        logoutCoroutineJob = createRequestSendingJob(logoutRequestSendingViewModel) {
-            loggedInUserViewModel?.logout()
-
-            // Some artificial delay to look flow more natural
-            delay(1000)
         }
     }
 }

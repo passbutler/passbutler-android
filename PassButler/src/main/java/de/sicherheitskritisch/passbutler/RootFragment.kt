@@ -7,13 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.observe
-import de.sicherheitskritisch.passbutler.base.observeOnce
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
 import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
 import java.lang.ref.WeakReference
 
 class RootFragment : BaseViewModelFragment<RootViewModel>() {
+
+    private var viewWasInitialized = false
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -32,17 +33,20 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
         }
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        L.d("RootFragment", "onCreate(): savedInstanceState = $savedInstanceState")
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_root, container, false)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onStart() {
+        super.onStart()
 
-        L.d("RootFragment", "onViewCreated(): savedInstanceState = $savedInstanceState")
-
-        viewModel.rootScreenState.observeOnce(viewLifecycleOwner) {
-            setupRootScreen()
+        viewModel.rootScreenState.observe(viewLifecycleOwner) {
+            showRootScreen()
         }
 
         viewModel.lockScreenState.observe(viewLifecycleOwner) { newLockScreenState ->
@@ -52,42 +56,49 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
         }
     }
 
-    private fun setupRootScreen() {
+    private fun showRootScreen() {
         val rootScreenState = viewModel.rootScreenState.value
-        L.d("RootFragment", "setupRootScreen(): rootScreenState = $rootScreenState")
+        L.d("RootFragment", "showRootScreen(): rootScreenState = $rootScreenState")
 
         when (rootScreenState) {
-            is RootViewModel.RootScreenState.LoggedIn -> setupLoggedInState()
-            is RootViewModel.RootScreenState.LoggedOut -> setupLoggedOutState()
+            is RootViewModel.RootScreenState.LoggedIn -> showLoggedInState()
+            is RootViewModel.RootScreenState.LoggedOut -> showLoggedOutState()
         }
+
+        viewWasInitialized = true
     }
 
-    private fun setupLoggedInState() {
+    private fun showLoggedInState() {
         if (!isFragmentShown(OverviewFragment::class.java)) {
-            // The animation are disabled on app initialisation
+            L.d("RootFragment", "showLoggedInState()")
+
             showFragmentAsFirstScreen(
                 fragment = OverviewFragment.newInstance(),
-                animated = false
+                animated = viewWasInitialized
             )
         }
     }
 
-    private fun setupLoggedOutState() {
+    private fun showLoggedOutState() {
         if (!isFragmentShown(LoginFragment::class.java)) {
-            // The animation are disabled on app initialisation
+            L.d("RootFragment", "showLoggedOutState()")
+
             showFragmentAsFirstScreen(
                 fragment = LoginFragment.newInstance(),
-                animated = false
+                animated = viewWasInitialized
             )
         }
     }
 
     private fun showLockedScreen() {
         if (!isFragmentShown(LockedScreenFragment::class.java)) {
+            L.d("RootFragment", "showLockedScreen()")
+
             // The debounce check must be disabled because on app initialisation the fragment stack is artificially created
             showFragment(
                 fragment = LockedScreenFragment.newInstance(),
-                debounce = false
+                debounce = false,
+                animated = viewWasInitialized
             )
         }
     }
@@ -95,6 +106,11 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
     override fun onResume() {
         super.onResume()
         viewModel.rootFragmentWasResumed()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        viewModel.rootFragmentWasStopped()
     }
 
     override fun onPause() {

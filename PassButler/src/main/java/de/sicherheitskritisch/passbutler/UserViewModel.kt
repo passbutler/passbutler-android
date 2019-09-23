@@ -1,6 +1,5 @@
 package de.sicherheitskritisch.passbutler
 
-import androidx.annotation.WorkerThread
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -93,8 +92,8 @@ class UserViewModel private constructor(
                 try {
                     unlockMasterEncryptionKey(masterPassword)
                 } catch (e: UnlockFailedException) {
-                    // TODO: This also occurs if the user settings could not be deserialized and should not crash the app on login
-                    throw IllegalStateException("The unlock of the master encryption key failed despite the master password was supplied from login!", e)
+                    L.w("UserViewModel", "init(): The initial unlock of the resources after login failed - logout user because of unusable state!", e)
+                    logout()
                 }
             }
         }
@@ -106,7 +105,6 @@ class UserViewModel private constructor(
     }
 
     @Throws(UnlockFailedException::class)
-    @WorkerThread
     fun unlockMasterEncryptionKey(masterPassword: String) {
         L.d("UserViewModel", "unlockMasterEncryptionKey()")
 
@@ -115,7 +113,7 @@ class UserViewModel private constructor(
                 decryptUserSettings(decryptedMasterEncryptionKey)
             }
         } catch (e: Exception) {
-            // If the operation failed, reset everything that may was done to avoid a dirty state
+            // If the operation failed, reset everything to avoid a dirty state
             clearMasterEncryptionKey()
 
             throw UnlockFailedException(e)
@@ -217,7 +215,6 @@ class UserViewModel private constructor(
     }
 
     @Throws(DecryptMasterEncryptionKeyFailedException::class)
-    @WorkerThread
     private fun decryptMasterEncryptionKey(masterPassword: String): ByteArray {
         var masterKey: ByteArray? = null
 
@@ -234,7 +231,6 @@ class UserViewModel private constructor(
     }
 
     @Throws(DecryptUserSettingsFailedException::class)
-    @WorkerThread
     private fun decryptUserSettings(masterEncryptionKey: ByteArray) {
         try {
             val decryptedSettings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer)

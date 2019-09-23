@@ -61,16 +61,3 @@ fun <T> LiveData<T>.observe(owner: LifecycleOwner, observer: (T) -> Unit) {
         observer(newValue)
     })
 }
-
-/**
- * Extension to observe a `LiveData<T>`. Once it got notified about value change, it deregister itself automatically.
- */
-@MainThread
-fun <T> LiveData<T>.observeOnce(owner: LifecycleOwner, observer: (T) -> Unit) {
-    observe(owner, object : Observer<T> {
-        override fun onChanged(newValue: T) {
-            observer(newValue)
-            removeObserver(this)
-        }
-    })
-}

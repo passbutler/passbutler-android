@@ -1,6 +1,7 @@
 package de.sicherheitskritisch.passbutler
 
 import android.app.Application
+import android.net.Uri
 import android.text.format.DateUtils
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
@@ -28,6 +29,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     val rootScreenState = MutableLiveData<RootScreenState?>()
     val lockScreenState = MutableLiveData<LockScreenState?>()
 
+    val loginRequestSendingViewModel = DefaultRequestSendingViewModel()
     val unlockScreenRequestSendingViewModel = DefaultRequestSendingViewModel()
 
     val webserviceRestored = SignalEmitter()
@@ -37,6 +39,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
     private val loggedInUserResultObserver = LoggedInUserResultObserver()
 
+    private var loginCoroutineJob: Job? = null
     private var cryptoResourcesJob: Job? = null
     private var lockScreenTimerJob: Job? = null
 
@@ -54,6 +57,29 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         super.onCleared()
     }
 
+    fun loginUser(serverUrlString: String?, username: String, masterPassword: String) {
+        loginCoroutineJob?.cancel()
+        loginCoroutineJob = createRequestSendingJob(loginRequestSendingViewModel) {
+            when (serverUrlString) {
+                null -> userManager.loginLocalUser(username, masterPassword)
+                else -> {
+                    val serverUrl = Uri.parse(serverUrlString)
+                    userManager.loginRemoteUser(username, masterPassword, serverUrl)
+                }
+            }
+        }
+    }
+
+    fun logoutUser() {
+        loginCoroutineJob?.cancel()
+        loginCoroutineJob = createRequestSendingJob(loginRequestSendingViewModel) {
+            // Some artificial delay to look flow more natural
+            delay(500)
+
+            loggedInUserViewModel?.logout()
+        }
+    }
+
     fun unlockScreenWithPassword(masterPassword: String) {
         cryptoResourcesJob?.cancel()
         cryptoResourcesJob = createRequestSendingJob(unlockScreenRequestSendingViewModel) {
@@ -68,6 +94,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         }
     }
 
+    // TODO: Make non-suspend
     @Throws(InitializeBiometricUnlockCipherFailedException::class)
     suspend fun initializeBiometricUnlockCipher(): Cipher {
         return try {
@@ -82,14 +109,6 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
             disableBiometricUnlock()
 
             throw InitializeBiometricUnlockCipherFailedException(e)
-        }
-    }
-
-    private suspend fun disableBiometricUnlock() {
-        try {
-            loggedInUserViewModel?.disableBiometricUnlock()
-        } catch (e: Exception) {
-            L.w("RootViewModel", "disableBiometricUnlock(): The biometric unlock could not be disabled!", e)
         }
     }
 
@@ -112,6 +131,32 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         }
     }
 
+    fun updateBiometricUnlockAvailability() {
+        loggedInUserViewModel?.biometricUnlockAvailable?.notifyChange()
+        loggedInUserViewModel?.biometricUnlockEnabled?.notifyChange()
+    }
+
+    fun rootFragmentWasStopped() {
+        // Always cancel possible running unlock job, because view of `LockedScreenFragment` will be disconnected in `onStop()`, thus event can't be handled
+        cryptoResourcesJob?.cancel()
+    }
+
+    fun rootFragmentWasPaused() {
+        startLockScreenTimer()
+    }
+
+    fun rootFragmentWasResumed() {
+        cancelLockScreenTimer()
+    }
+
+    private suspend fun disableBiometricUnlock() {
+        try {
+            loggedInUserViewModel?.disableBiometricUnlock()
+        } catch (e: Exception) {
+            L.w("RootViewModel", "disableBiometricUnlock(): The biometric unlock could not be disabled!", e)
+        }
+    }
+
     private suspend fun restoreWebservices(masterPassword: String) {
         if (loggedInUserViewModel?.userType is UserType.Server) {
             userManager.restoreWebservices(masterPassword)
@@ -119,24 +164,11 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         }
     }
 
-    fun updateBiometricUnlockAvailability() {
-        loggedInUserViewModel?.biometricUnlockAvailable?.notifyChange()
-        loggedInUserViewModel?.biometricUnlockEnabled?.notifyChange()
-    }
-
-    fun rootFragmentWasPaused() {
-        L.d("RootViewModel", "rootFragmentWasPaused()")
-
-        // Always cancel possible running unlock job, because view of `LockedScreenFragment` will be disconnected in `onStop()`, thus event can't be handled
-        cryptoResourcesJob?.cancel()
-
-        // Than start screen locking timer
-        startLockScreenTimer()
-    }
-
     private fun startLockScreenTimer() {
         // The lock timer must be only started if the user is logged-in and unlocked (lock timeout available)
         loggedInUserViewModel?.automaticLockTimeout?.value?.let { lockTimeout ->
+            L.d("RootViewModel", "startLockScreenTimer()")
+
             lockScreenTimerJob?.cancel()
             lockScreenTimerJob = launch {
                 delay(lockTimeout * DateUtils.SECOND_IN_MILLIS)
@@ -146,6 +178,8 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     private fun lockScreen() {
+        L.d("RootViewModel", "lockScreen()")
+
         cryptoResourcesJob?.cancel()
         cryptoResourcesJob = launch {
             // Be sure all UI is hidden behind the lock screen before clear crypto resources
@@ -154,12 +188,8 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         }
     }
 
-    fun rootFragmentWasResumed() {
-        L.d("RootViewModel", "rootFragmentWasResumed()")
-        cancelLockScreenTimer()
-    }
-
     private fun cancelLockScreenTimer() {
+        L.d("RootViewModel", "cancelLockScreenTimer()")
         lockScreenTimerJob?.cancel()
     }
 
