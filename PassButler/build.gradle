@@ -60,7 +60,7 @@ dependencies {
     // Kotlin Coroutines for Android
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.1.1"
 
-    implementation "androidx.appcompat:appcompat:1.0.2"
+    implementation "androidx.appcompat:appcompat:1.1.0"
     implementation "androidx.recyclerview:recyclerview:1.0.0"
 
     // Default Google views like `Snackbar`
@@ -70,19 +70,19 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout:1.1.3"
 
     // Android Lifecycle and ViewModel components
-    implementation "androidx.lifecycle:lifecycle-extensions:2.0.0"
-    kapt "androidx.lifecycle:lifecycle-compiler:2.0.0"
+    implementation "androidx.lifecycle:lifecycle-extensions:2.1.0"
+    kapt "androidx.lifecycle:lifecycle-compiler:2.1.0"
 
     // Android Room components (including Kotlin Coroutine support)
-    implementation "androidx.room:room-runtime:2.1.0-beta01"
-    implementation "androidx.room:room-ktx:2.1.0-beta01"
-    kapt "androidx.room:room-compiler:2.1.0-beta01"
+    implementation "androidx.room:room-runtime:2.2.0-rc01"
+    implementation "androidx.room:room-ktx:2.2.0-rc01"
+    kapt "androidx.room:room-compiler:2.2.0-rc01"
 
     // Android Biometrics framework
-    implementation 'androidx.biometric:biometric:1.0.0-alpha04'
+    implementation 'androidx.biometric:biometric:1.0.0-beta02'
 
     // Android Preference framework
-    implementation 'androidx.preference:preference:1.1.0-rc01'
+    implementation 'androidx.preference:preference:1.1.0'
 
     // RetroFit 2 + Kotlin Coroutine Adapter
     implementation "com.squareup.retrofit2:retrofit:2.5.0"
