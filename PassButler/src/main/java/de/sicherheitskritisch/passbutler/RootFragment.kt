@@ -5,8 +5,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
 import de.sicherheitskritisch.passbutler.base.L
-import de.sicherheitskritisch.passbutler.base.observe
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
 import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
@@ -15,6 +15,16 @@ import java.lang.ref.WeakReference
 class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
     private var viewWasInitialized = false
+
+    private val rootScreenStateObserver = Observer<RootViewModel.RootScreenState?> {
+        showRootScreen()
+    }
+
+    private val lockScreenStateObserver = Observer<RootViewModel.LockScreenState?> { newLockScreenState ->
+        if (newLockScreenState == RootViewModel.LockScreenState.Locked) {
+            showLockedScreen()
+        }
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -45,15 +55,8 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
     override fun onStart() {
         super.onStart()
 
-        viewModel.rootScreenState.observe(viewLifecycleOwner) {
-            showRootScreen()
-        }
-
-        viewModel.lockScreenState.observe(viewLifecycleOwner) { newLockScreenState ->
-            if (newLockScreenState == RootViewModel.LockScreenState.Locked) {
-                showLockedScreen()
-            }
-        }
+        viewModel.rootScreenState.observe(viewLifecycleOwner, rootScreenStateObserver)
+        viewModel.lockScreenState.observe(viewLifecycleOwner, lockScreenStateObserver)
     }
 
     private fun showRootScreen() {

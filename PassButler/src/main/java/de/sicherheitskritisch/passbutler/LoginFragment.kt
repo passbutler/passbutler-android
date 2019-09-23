@@ -9,13 +9,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
-import de.sicherheitskritisch.passbutler.base.observe
 import de.sicherheitskritisch.passbutler.base.validateForm
 import de.sicherheitskritisch.passbutler.database.RequestUnauthorizedException
 import de.sicherheitskritisch.passbutler.databinding.FragmentLoginBinding
@@ -36,6 +36,11 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
     private var binding: FragmentLoginBinding? = null
     private var loginRequestSendingViewHandler: LoginRequestSendingViewHandler? = null
+
+    private val isLocalLoginObserver = Observer<Boolean> { isLocalLoginValue ->
+        val shouldShowServerUrl = !isLocalLoginValue
+        binding?.textInputLayoutServerurl?.showFadeInOutAnimation(shouldShowServerUrl, VisibilityHideMode.INVISIBLE)
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -80,7 +85,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
 
         binding?.let {
             setupDebugLoginPresetsButton(it)
-            setupLocalLoginCheckbox(it)
+            setupLocalLoginCheckbox()
             setupLoginButton(it)
         }
 
@@ -100,11 +105,8 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         }
     }
 
-    private fun setupLocalLoginCheckbox(binding: FragmentLoginBinding) {
-        viewModel.isLocalLogin.observe(viewLifecycleOwner) { isLocalLoginValue ->
-            val shouldShowServerUrl = !isLocalLoginValue
-            binding.textInputLayoutServerurl.showFadeInOutAnimation(shouldShowServerUrl, VisibilityHideMode.INVISIBLE)
-        }
+    private fun setupLocalLoginCheckbox() {
+        viewModel.isLocalLogin.observe(viewLifecycleOwner, isLocalLoginObserver)
     }
 
     private fun setupLoginButton(binding: FragmentLoginBinding) {

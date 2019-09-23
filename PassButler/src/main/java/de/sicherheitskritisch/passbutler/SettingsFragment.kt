@@ -12,6 +12,7 @@ import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
@@ -22,7 +23,6 @@ import androidx.preference.SwitchPreferenceCompat
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
-import de.sicherheitskritisch.passbutler.base.observe
 import de.sicherheitskritisch.passbutler.crypto.BiometricAuthenticationCallbackExecutor
 import de.sicherheitskritisch.passbutler.databinding.FragmentSettingsBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
@@ -46,6 +46,10 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     private var cancelSetupBiometricUnlockKeyViewHandler: CancelSetupBiometricsUnlockKeyViewHandler? = null
     private var enableBiometricsUnlockKeyViewHandler: EnableBiometricsUnlockKeyViewHandler? = null
     private var disableBiometricsUnlockKeyViewHandler: DisableBiometricsUnlockKeyViewHandler? = null
+
+    private val biometricUnlockEnabledObserver = Observer<Boolean> { newValue ->
+        settingsPreferenceFragment?.enableBiometricUnlockPreference?.isChecked = newValue
+    }
 
     private val biometricCallbackExecutor by lazy {
         BiometricAuthenticationCallbackExecutor(this)
@@ -93,9 +97,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             registerObservers()
         }
 
-        viewModel.biometricUnlockEnabled?.observe(viewLifecycleOwner) { newValue ->
-            settingsPreferenceFragment?.enableBiometricUnlockPreference?.isChecked = newValue
-        }
+        viewModel.biometricUnlockEnabled?.observe(viewLifecycleOwner, biometricUnlockEnabledObserver)
 
         return binding?.root
     }
