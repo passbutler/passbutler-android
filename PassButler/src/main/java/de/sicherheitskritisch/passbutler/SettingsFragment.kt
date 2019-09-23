@@ -81,25 +81,40 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
                 .commit()
         }
 
-        generateBiometricsUnlockKeyViewHandler = GenerateBiometricsUnlockKeyViewHandler(viewModel.generateBiometricUnlockKeyViewModel, WeakReference(this)).apply {
-            registerObservers()
-        }
-
-        cancelSetupBiometricUnlockKeyViewHandler = CancelSetupBiometricsUnlockKeyViewHandler(viewModel.cancelSetupBiometricUnlockKeyViewModel, WeakReference(this)).apply {
-            registerObservers()
-        }
-
-        enableBiometricsUnlockKeyViewHandler = EnableBiometricsUnlockKeyViewHandler(viewModel.enableBiometricUnlockKeyViewModel, WeakReference(this)).apply {
-            registerObservers()
-        }
-
-        disableBiometricsUnlockKeyViewHandler = DisableBiometricsUnlockKeyViewHandler(viewModel.disableBiometricUnlockKeyViewModel, WeakReference(this)).apply {
-            registerObservers()
-        }
-
-        viewModel.biometricUnlockEnabled?.observe(viewLifecycleOwner, biometricUnlockEnabledObserver)
+        generateBiometricsUnlockKeyViewHandler = GenerateBiometricsUnlockKeyViewHandler(viewModel.generateBiometricUnlockKeyViewModel, WeakReference(this))
+        cancelSetupBiometricUnlockKeyViewHandler = CancelSetupBiometricsUnlockKeyViewHandler(viewModel.cancelSetupBiometricUnlockKeyViewModel, WeakReference(this))
+        enableBiometricsUnlockKeyViewHandler = EnableBiometricsUnlockKeyViewHandler(viewModel.enableBiometricUnlockKeyViewModel, WeakReference(this))
+        disableBiometricsUnlockKeyViewHandler = DisableBiometricsUnlockKeyViewHandler(viewModel.disableBiometricUnlockKeyViewModel, WeakReference(this))
 
         return binding?.root
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        generateBiometricsUnlockKeyViewHandler?.registerObservers()
+        cancelSetupBiometricUnlockKeyViewHandler?.registerObservers()
+        enableBiometricsUnlockKeyViewHandler?.registerObservers()
+        disableBiometricsUnlockKeyViewHandler?.registerObservers()
+
+        viewModel.biometricUnlockEnabled?.observe(viewLifecycleOwner, biometricUnlockEnabledObserver)
+    }
+
+    override fun onPause() {
+        // Be sure all dialogs are dismissed to avoid they are shown on locked screen
+        dismissPreferenceDialog()
+        dismissMasterPasswordInputDialog()
+
+        super.onPause()
+    }
+
+    override fun onStop() {
+        generateBiometricsUnlockKeyViewHandler?.unregisterObservers()
+        cancelSetupBiometricUnlockKeyViewHandler?.unregisterObservers()
+        enableBiometricsUnlockKeyViewHandler?.unregisterObservers()
+        disableBiometricsUnlockKeyViewHandler?.unregisterObservers()
+
+        super.onStop()
     }
 
     private fun showBiometricPrompt() {
@@ -126,14 +141,6 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         }
     }
 
-    override fun onPause() {
-        // Be sure all dialogs are dismissed to avoid they are shown on locked screen
-        dismissPreferenceDialog()
-        dismissMasterPasswordInputDialog()
-
-        super.onPause()
-    }
-
     private fun dismissPreferenceDialog() {
         // Dirty approach to dismiss the visible preference dialog fragment (fragment tag copied from `PreferenceFragmentCompat.DIALOG_FRAGMENT_TAG`):
         val preferenceDialogFragmentTag = "androidx.preference.PreferenceFragment.DIALOG"
@@ -154,14 +161,6 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         }
 
         masterPasswordInputDialog = null
-    }
-
-    override fun onDestroyView() {
-        generateBiometricsUnlockKeyViewHandler?.unregisterObservers()
-        cancelSetupBiometricUnlockKeyViewHandler?.unregisterObservers()
-        enableBiometricsUnlockKeyViewHandler?.unregisterObservers()
-        disableBiometricsUnlockKeyViewHandler?.unregisterObservers()
-        super.onDestroyView()
     }
 
     private class GenerateBiometricsUnlockKeyViewHandler(
@@ -239,8 +238,10 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             }
         }
 
-        private fun showSetupBiometricUnlockFailedError() = launch {
-            showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))
+        private fun showSetupBiometricUnlockFailedError() {
+            launch {
+                showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))
+            }
         }
 
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
