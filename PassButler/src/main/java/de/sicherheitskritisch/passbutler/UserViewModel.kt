@@ -61,11 +61,11 @@ class UserViewModel private constructor(
         biometricUnlockAvailable.value && userManager.loggedInStateStorage.encryptedMasterPassword != null
     }
 
-    // TODO: Avoid initial observer calls on register
     private val automaticLockTimeoutChangedObserver = Observer<Int?> { applyUserSettings() }
     private val hidePasswordsEnabledChangedObserver = Observer<Boolean?> { applyUserSettings() }
 
     private var masterEncryptionKey: ByteArray? = null
+    private var currentSettings: UserSettings? = null
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default + coroutineJob
@@ -265,7 +265,13 @@ class UserViewModel private constructor(
 
         if (automaticLockTimeoutValue != null && hidePasswordsEnabledValue != null) {
             val updatedSettings = UserSettings(automaticLockTimeoutValue, hidePasswordsEnabledValue)
-            persistUserSettings(updatedSettings)
+
+            // Do not persist settings if unchanged or uninitialized
+            if (updatedSettings != currentSettings && currentSettings != null) {
+                persistUserSettings(updatedSettings)
+            }
+
+            currentSettings = updatedSettings
         }
     }
 
