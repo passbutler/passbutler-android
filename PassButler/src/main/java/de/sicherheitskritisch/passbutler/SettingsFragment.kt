@@ -40,6 +40,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
     private var binding: FragmentSettingsBinding? = null
     private var settingsPreferenceFragment: SettingsPreferenceFragment? = null
+    private var biometricPrompt: BiometricPrompt? = null
     private var masterPasswordInputDialog: AlertDialog? = null
 
     private var generateBiometricsUnlockKeyViewHandler: GenerateBiometricsUnlockKeyViewHandler? = null
@@ -104,6 +105,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         // Be sure all dialogs are dismissed to avoid they are shown on locked screen
         dismissPreferenceDialog()
         dismissMasterPasswordInputDialog()
+        dismissBiometricPrompt()
 
         super.onPause()
     }
@@ -124,15 +126,16 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
                 activity?.let { activity ->
                     val biometricAuthenticationCallback = BiometricAuthenticationCallback()
-                    val biometricPrompt = BiometricPrompt(activity, biometricCallbackExecutor, biometricAuthenticationCallback)
-                    val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
-                        .setTitle(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_title))
-                        .setDescription(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_description))
-                        .setNegativeButtonText(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_cancel_button_text))
-                        .build()
+                    biometricPrompt = BiometricPrompt(activity, biometricCallbackExecutor, biometricAuthenticationCallback).also {
+                        val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
+                            .setTitle(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_title))
+                            .setDescription(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_description))
+                            .setNegativeButtonText(getString(R.string.settings_setup_biometric_unlock_biometrics_prompt_cancel_button_text))
+                            .build()
 
-                    val cryptoObject = BiometricPrompt.CryptoObject(initializedSetupBiometricUnlockCipher)
-                    biometricPrompt.authenticate(biometricPromptInfo, cryptoObject)
+                        val cryptoObject = BiometricPrompt.CryptoObject(initializedSetupBiometricUnlockCipher)
+                        it.authenticate(biometricPromptInfo, cryptoObject)
+                    }
                 }
             } catch (e: Exception) {
                 L.w("SettingsFragment", "showBiometricPrompt(): The biometric authentication failed!", e)
@@ -161,6 +164,11 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         }
 
         masterPasswordInputDialog = null
+    }
+
+    private fun dismissBiometricPrompt() {
+        biometricPrompt?.cancelAuthentication()
+        biometricPrompt = null
     }
 
     private class GenerateBiometricsUnlockKeyViewHandler(
