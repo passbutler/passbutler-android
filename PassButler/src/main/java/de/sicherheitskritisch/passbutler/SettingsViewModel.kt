@@ -53,7 +53,6 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
     private var setupBiometricUnlockKeyJob: Job? = null
 
-    // TODO: Make non-suspend
     @Throws(InitializeSetupBiometricUnlockCipherFailedException::class)
     suspend fun initializeSetupBiometricUnlockCipher(): Cipher {
         return try {

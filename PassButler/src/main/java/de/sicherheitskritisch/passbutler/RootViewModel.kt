@@ -94,7 +94,6 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         }
     }
 
-    // TODO: Make non-suspend
     @Throws(InitializeBiometricUnlockCipherFailedException::class)
     suspend fun initializeBiometricUnlockCipher(): Cipher {
         return try {
