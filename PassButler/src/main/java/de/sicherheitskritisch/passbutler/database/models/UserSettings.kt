@@ -7,7 +7,6 @@ import de.sicherheitskritisch.passbutler.base.putInt
 import org.json.JSONException
 import org.json.JSONObject
 
-// TODO: Add unit tests for serialization/deserialization
 data class UserSettings(
     val automaticLockTimeout: Int = 0,
     val hidePasswords: Boolean = true
