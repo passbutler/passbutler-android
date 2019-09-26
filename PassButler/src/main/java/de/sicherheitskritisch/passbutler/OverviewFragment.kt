@@ -72,8 +72,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         synchronizeDataRequestSendingViewHandler = SynchronizeDataRequestSendingViewHandler(viewModel.synchronizeDataRequestSendingViewModel, WeakReference(this))
         logoutRequestSendingViewHandler = LogoutRequestSendingViewHandler(viewModel.rootViewModel.loginRequestSendingViewModel, WeakReference(this))
 
-        viewModel.rootViewModel.webserviceRestored.addSignal(webserviceRestoredSignal)
-
         return binding?.root
     }
 
@@ -132,19 +130,17 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
         synchronizeDataRequestSendingViewHandler?.registerObservers()
         logoutRequestSendingViewHandler?.registerObservers()
+
+        viewModel.rootViewModel.webserviceRestored.addSignal(webserviceRestoredSignal)
     }
 
     override fun onStop() {
+        viewModel.rootViewModel.webserviceRestored.removeSignal(webserviceRestoredSignal)
+
         synchronizeDataRequestSendingViewHandler?.unregisterObservers()
         logoutRequestSendingViewHandler?.unregisterObservers()
 
         super.onStop()
-    }
-
-    override fun onDestroyView() {
-        viewModel.rootViewModel.webserviceRestored.removeSignal(webserviceRestoredSignal)
-
-        super.onDestroyView()
     }
 
     override fun onHandleBackPress(): Boolean {
