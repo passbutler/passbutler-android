@@ -1,16 +1,14 @@
 package de.sicherheitskritisch.passbutler
 
 import android.os.Bundle
-import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import de.sicherheitskritisch.passbutler.base.formattedDateTime
 import de.sicherheitskritisch.passbutler.base.viewmodels.EmptyViewModel
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
-import java.text.SimpleDateFormat
-import java.util.*
 
 class AboutFragment : ToolBarFragment<EmptyViewModel>() {
 
@@ -20,12 +18,7 @@ class AboutFragment : ToolBarFragment<EmptyViewModel>() {
         get() = BuildConfig.VERSION_NAME
 
     private val formattedBuildTime: String
-        get() {
-            val locale = Locale.getDefault()
-            val dateTimeFormatPattern = DateFormat.getBestDateTimePattern(locale, "MM/dd/yyyy HH:mm:ss")
-            val formatter = SimpleDateFormat(dateTimeFormatPattern, locale)
-            return formatter.format(BuildConfig.BUILD_TIME)
-        }
+        get() = BuildConfig.BUILD_TIME.formattedDateTime
 
     override fun getToolBarTitle() = getString(R.string.about_title)
 
