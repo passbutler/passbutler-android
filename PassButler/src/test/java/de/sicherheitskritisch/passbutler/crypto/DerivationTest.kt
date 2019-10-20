@@ -2,12 +2,16 @@ package de.sicherheitskritisch.passbutler.crypto
 
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.hexToBytes
-import org.junit.jupiter.api.Assertions.assertArrayEquals
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkAll
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class DerivationMasterKeyTest {
+class MasterKeyDerivationTest {
 
     /**
      * Invalid password tests
@@ -20,7 +24,7 @@ class DerivationMasterKeyTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val exception = assertThrows(IllegalArgumentException::class.java) {
+        val exception = Assertions.assertThrows(IllegalArgumentException::class.java) {
             Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         }
 
@@ -34,7 +38,7 @@ class DerivationMasterKeyTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val exception = assertThrows(IllegalArgumentException::class.java) {
+        val exception = Assertions.assertThrows(IllegalArgumentException::class.java) {
             Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         }
 
@@ -52,7 +56,7 @@ class DerivationMasterKeyTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val exception = assertThrows(IllegalArgumentException::class.java) {
+        val exception = Assertions.assertThrows(IllegalArgumentException::class.java) {
             Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         }
 
@@ -66,7 +70,7 @@ class DerivationMasterKeyTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val exception = assertThrows(IllegalArgumentException::class.java) {
+        val exception = Assertions.assertThrows(IllegalArgumentException::class.java) {
             Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         }
 
@@ -80,7 +84,7 @@ class DerivationMasterKeyTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val exception = assertThrows(IllegalArgumentException::class.java) {
+        val exception = Assertions.assertThrows(IllegalArgumentException::class.java) {
             Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         }
 
@@ -102,7 +106,7 @@ class DerivationMasterKeyTest {
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
         val derivedKey = Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
-        assertArrayEquals("8A803738E7D84E90A607ABB9CCE4E6C10E14F4856B4B8F6D3A2DB0EFC48456EB".hexToBytes(), derivedKey)
+        Assertions.assertArrayEquals("8A803738E7D84E90A607ABB9CCE4E6C10E14F4856B4B8F6D3A2DB0EFC48456EB".hexToBytes(), derivedKey)
     }
 
     @Test
@@ -113,7 +117,7 @@ class DerivationMasterKeyTest {
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
         val derivedKey = Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
-        assertArrayEquals("10869F0AB3966CA9EF91660167EA6416C30CCE8A1F6C4A7DAB0E465E6D608598".hexToBytes(), derivedKey)
+        Assertions.assertArrayEquals("10869F0AB3966CA9EF91660167EA6416C30CCE8A1F6C4A7DAB0E465E6D608598".hexToBytes(), derivedKey)
     }
 
     /**
@@ -132,6 +136,91 @@ class DerivationMasterKeyTest {
         val userPasswordWithoutSpaces = "1234abcd"
         val derivedKeyWithoutSpaces = Derivation.deriveMasterKey(userPasswordWithoutSpaces, keyDerivationInformation)
 
-        assertArrayEquals(derivedKeyWithSpaces, derivedKeyWithoutSpaces)
+        Assertions.assertArrayEquals(derivedKeyWithSpaces, derivedKeyWithoutSpaces)
+    }
+}
+
+class LocalAuthenticationHashDerivationTest {
+
+    /**
+     * Test values can be generated with following shell command:
+     *
+     * $ USERNAME="testuser";
+     * $ PASSWORD="1234abcd";
+     * $ SALT=$(echo -n "$USERNAME" | od -A n -t x1 | sed 's/ //g');
+     * $ echo -n "$PASSWORD" | nettle-pbkdf2 -i 100001 -l 32 --hex-salt $SALT | sed 's/ //g' | tr a-z A-Z
+     */
+
+    @Test
+    fun `Derive a local authentication hash from username and password`() {
+        val username = "testuser"
+        val password = "1234abcd"
+
+        val derivedHash = Derivation.deriveLocalAuthenticationHash(username, password)
+        assertEquals("E8DCDA8125DBBAF57893AD24490096C28C0C079762CB48CE045D770E8CF41D45", derivedHash)
+    }
+
+    @Test
+    fun `Leading and trailing spaces in username does not matter for derive a authentication hash`() {
+        val password = "1234abcd"
+
+        val usernameWithSpaces = " testuser  "
+        val derivedHashWithSpaces = Derivation.deriveLocalAuthenticationHash(usernameWithSpaces, password)
+
+        val usernameWithoutSpaces = "testuser"
+        val derivedHashWithoutSpaces = Derivation.deriveLocalAuthenticationHash(usernameWithoutSpaces, password)
+
+        assertEquals(derivedHashWithSpaces, derivedHashWithoutSpaces)
+    }
+
+    @Test
+    fun `Leading and trailing spaces in password does not matter for derive a authentication hash`() {
+        val username = "testuser"
+
+        val passwordWithSpaces = " 1234abcd  "
+        val derivedHashWithSpaces = Derivation.deriveLocalAuthenticationHash(username, passwordWithSpaces)
+
+        val passwordWithoutSpaces = "1234abcd"
+        val derivedHashWithoutSpaces = Derivation.deriveLocalAuthenticationHash(username, passwordWithoutSpaces)
+
+        assertEquals(derivedHashWithSpaces, derivedHashWithoutSpaces)
+    }
+}
+
+class ServerAuthenticationHashDerivationTest {
+
+    @BeforeEach
+    fun setUp() {
+        mockkObject(RandomGenerator)
+
+        // Return static salt to be sure tests can be reproduced
+        every { RandomGenerator.generateRandomString(SERVER_AUTHENTICATION_HASH_SALT_LENGTH, SERVER_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS) } returns STATIC_SALT
+    }
+
+    @AfterEach
+    fun unsetUp() {
+        unmockkAll()
+    }
+
+    /**
+     * Test values can be generated with following Python code:
+     *
+     * from werkzeug.security import _hash_internal
+     * salt = 'abcdefgh'
+     * password = '1234abcd'
+     * hash = _hash_internal(method='pbkdf2:sha256:150000', salt=salt, password=password)
+     * print("{}${}${}".format(hash[1], salt, hash[0]))
+     */
+
+    @Test
+    fun `Derive a server authentication hash`() {
+        val password = "1234abcd"
+
+        val derivedHash = Derivation.deriveServerAuthenticationHash(password)
+        assertEquals("pbkdf2:sha256:150000\$abcdefgh\$e6b929bdae73863bff72d05be560a47c9b026a38233532fdd978ca315e5ea982", derivedHash)
+    }
+
+    companion object {
+        private const val STATIC_SALT = "abcdefgh"
     }
 }
