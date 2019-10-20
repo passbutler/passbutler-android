@@ -9,6 +9,8 @@ import de.sicherheitskritisch.passbutler.database.Synchronizable
 import org.json.JSONObject
 import java.util.*
 
+// TODO: Add tests
+
 @Entity(tableName = "items")
 data class Item(
     @PrimaryKey

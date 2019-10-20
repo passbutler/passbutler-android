@@ -12,6 +12,8 @@ interface BaseEncryptedValue {
     val encryptedValue: ByteArray
 }
 
+// TODO: Add tests
+
 /**
  * Wraps a encrypted value with its initialization vector in a `JSONSerializable`.
  */
