@@ -14,3 +14,7 @@ internal fun String.hexToBytes(): ByteArray {
 internal fun assertJSONObjectEquals(expected: JSONObject, actual: JSONObject) {
     Assertions.assertEquals(expected.toString(), actual.toString())
 }
+
+internal fun assertEqualsIgnoringCase(expected: String, actual: String) {
+    Assertions.assertEquals(expected.toLowerCase(), actual.toLowerCase())
+}

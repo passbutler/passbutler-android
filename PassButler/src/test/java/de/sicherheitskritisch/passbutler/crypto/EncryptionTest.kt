@@ -1,10 +1,15 @@
 package de.sicherheitskritisch.passbutler.crypto
 
+import de.sicherheitskritisch.passbutler.assertEqualsIgnoringCase
 import de.sicherheitskritisch.passbutler.base.toHexString
 import de.sicherheitskritisch.passbutler.hexToBytes
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import java.math.BigInteger
+import java.security.KeyFactory
+import java.security.spec.RSAPrivateKeySpec
+
 
 class SymmetricEncryptionTest {
 
@@ -326,3 +331,36 @@ private data class SymmetricTestVector(
     val cipherText: String,
     val tag: String
 )
+
+class AsymmetricEncryptionTest {
+
+    /**
+     * RSA-2048-OAEP decryption tests
+     */
+
+    @Test
+    fun `Test RSA decryption`() {
+        val keyFactory = KeyFactory.getInstance("RSA")
+
+        val privateKeyModulus = BigInteger("b8e814a25ca64c8de16f73849a78c8b13bb086a407301604f674efb588ee7b996b1b6a2968625a2548e9ab01ce6a3699907e303c8a02c9e40ea36bd6d8b2a74b1ee98fa8835a480dfc751fddc490e5a46707095356316587fc339196e4d7db70c7feae50a1263dedd589bec009624193c7de4793dcdf830be3256c70de1f02f7a7d3503035fcb9625c40abb7445470203902ea045f337d31fcd28506e46cd65560949f08cd90fedaabbcb6615b884737d3f5ad01e67cc0c2997af3328b3c80d5ee0a9aa40a9119bd7594fcfe2324728ea9a8f839e663467a0c44915d0275e34cf1c9605ad317c4573f57c85fd7e19e82cc6f77314e8db47a908a57e3e4418e45", 16)
+        val privateKeyExponent = BigInteger("4af58aa7e7776341814a7542247d229ef6dbb1397dd0789cba6cdd60728a7b80ce72e6aeb2aa6c710105f9555a20a4d1cc49dbb42f1ec249b9c5764a3abef222f9fd2547e3380e4ddd327e20a1373c61518300bcd00c6664a251258c4e6953847d0f3a0b65c8e3022fb70fa53a28a2fd0de18692e2cf99889024f3b92dd2d49870a5de6f11827feade31bdc8889148968fad08b794007f68524a3bbce886dee240cb18f0b14e22ebfe5b04a4f1a73c9ed56adc0881b9aca2a02a776a2df2843b3cca528c8dca70db0a72baa978e8e11ef833f298403003de5820cf6d54d58de1753aac48aae6911a55f9d393a829fd4169799365b7a4015c5911277937bb1501", 16)
+        val privateKeySpec = RSAPrivateKeySpec(privateKeyModulus, privateKeyExponent)
+        val privateKey = keyFactory.generatePrivate(privateKeySpec)
+
+        /*
+        val publicKeyExponent = BigInteger("10001", 16)
+        val publicKeySpec = RSAPublicKeySpec(privateKeyModulus, publicKeyExponent)
+        val publicKey = keyFactory.generatePublic(publicKeySpec)
+        */
+
+        val cipherText = "6afdbc76de74458198a9c890cc5abb52580af01c2096036dca104d67f96a05de682da5c26970a808343527440aa80b9d043045d7983f442a3d376e5b039bcfb96c1b5fd0e46b5fff85646273293ced5e7272993850017f24f6133591d5c9788781a9952873ebfc45ad4d34fff2b4e9ababf49d9f9a3d7726bdce3eb2feb545db5cfef0b183bd55735a2d356b4278c5580ce0e4cfd21a0a3ad3b225de388fcfd688394710f97d5a3933e01d434fcff732542390f8915d5d291780ed63d425c0bea5bb0ad25aae3a70355e3f45a443ea111b80515b743d5bd226d339dc7516ce6c41414a0aa978198bc6762f443e957c7be5edbd25fcdd226c5d967fa05d7c9079".hexToBytes()
+
+        val expectedPlainText = "6628194e12073db03ba94cda9ef9532397d50dba79b987004afefe34"
+
+        val plainText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(privateKey.encoded, cipherText)
+            .toHexString()
+
+        assertEqualsIgnoringCase(expectedPlainText, plainText)
+    }
+
+}

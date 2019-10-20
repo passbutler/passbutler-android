@@ -1,13 +1,23 @@
 package de.sicherheitskritisch.passbutler.crypto
 
+import android.security.keystore.KeyProperties.BLOCK_MODE_ECB
 import android.security.keystore.KeyProperties.BLOCK_MODE_GCM
 import android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE
+import android.security.keystore.KeyProperties.ENCRYPTION_PADDING_RSA_OAEP
 import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
+import android.security.keystore.KeyProperties.KEY_ALGORITHM_RSA
 import de.sicherheitskritisch.passbutler.base.bitSize
 import de.sicherheitskritisch.passbutler.base.byteSize
+import java.security.KeyFactory
+import java.security.KeyPair
+import java.security.KeyPairGenerator
+import java.security.spec.MGF1ParameterSpec
+import java.security.spec.PKCS8EncodedKeySpec
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.spec.GCMParameterSpec
+import javax.crypto.spec.OAEPParameterSpec
+import javax.crypto.spec.PSource
 import javax.crypto.spec.SecretKeySpec
 
 sealed class EncryptionAlgorithm(val stringRepresentation: String) {
@@ -90,6 +100,62 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
             }
         }
     }
+
+    sealed class Asymmetric(stringRepresentation: String) : EncryptionAlgorithm(stringRepresentation) {
+
+        abstract fun generateKeyPair(): KeyPair
+        abstract fun encrypt(publicKey: ByteArray, data: ByteArray): ByteArray
+        abstract fun decrypt(secretKey: ByteArray, data: ByteArray): ByteArray
+
+        object RSA2048OAEP : EncryptionAlgorithm.Asymmetric("RSA-2048-OAEP") {
+
+            private const val RSA_KEY_LENGTH = 2048
+
+            @Throws(GenerateEncryptionKeyFailedException::class)
+            override fun generateKeyPair(): KeyPair {
+                val keyPairGenerator = KeyPairGenerator.getInstance("RSA")
+                keyPairGenerator.initialize(RSA_KEY_LENGTH)
+
+                return keyPairGenerator.genKeyPair()
+            }
+
+            @Throws(EncryptionFailedException::class)
+            override fun encrypt(publicKey: ByteArray, data: ByteArray): ByteArray {
+                return try {
+                    val initializedCipher = Cipher.getInstance("$KEY_ALGORITHM_RSA/$BLOCK_MODE_ECB/$ENCRYPTION_PADDING_RSA_OAEP").apply {
+                        val publicKeyInstance = KeyFactory.getInstance(KEY_ALGORITHM_RSA).generatePublic(PKCS8EncodedKeySpec(publicKey))
+                        val oaepParameterSpec = createOAEPParameterSpec()
+                        init(Cipher.ENCRYPT_MODE, publicKeyInstance, oaepParameterSpec)
+                    }
+
+                    initializedCipher.doFinal(data)
+                } catch (e: Exception) {
+                    throw EncryptionFailedException(e)
+                }
+            }
+
+            @Throws(DecryptionFailedException::class)
+            override fun decrypt(secretKey: ByteArray, data: ByteArray): ByteArray {
+                return try {
+                    val initializedCipher = Cipher.getInstance("$KEY_ALGORITHM_RSA/$BLOCK_MODE_ECB/$ENCRYPTION_PADDING_RSA_OAEP").apply {
+                        val secretKeyInstance = KeyFactory.getInstance(KEY_ALGORITHM_RSA).generatePrivate(PKCS8EncodedKeySpec(secretKey))
+                        val oaepParameterSpec = createOAEPParameterSpec()
+                        init(Cipher.DECRYPT_MODE, secretKeyInstance, oaepParameterSpec)
+                    }
+
+                    initializedCipher.doFinal(data)
+                } catch (e: Exception) {
+                    throw DecryptionFailedException(e)
+                }
+            }
+
+            private fun createOAEPParameterSpec(): OAEPParameterSpec {
+                // Use SHA-256 for main and also for MGF1 digest
+                return OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, PSource.PSpecified.DEFAULT)
+            }
+        }
+    }
+
 
     class GenerateEncryptionKeyFailedException(cause: Exception? = null) : Exception(cause)
     class EncryptionFailedException(cause: Exception? = null) : Exception(cause)
