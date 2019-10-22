@@ -15,7 +15,7 @@ fun ByteArray?.optionalContentNotEquals(other: ByteArray?): Boolean {
 }
 
 fun ByteArray?.toHexString(): String {
-    return this?.joinToString("") { "%02X".format(it) } ?: ""
+    return this?.joinToString("") { "%02x".format(it) } ?: ""
 }
 
 /**

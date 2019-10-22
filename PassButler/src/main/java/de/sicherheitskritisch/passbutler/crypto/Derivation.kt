@@ -4,7 +4,6 @@ import de.sicherheitskritisch.passbutler.base.bitSize
 import de.sicherheitskritisch.passbutler.base.toHexString
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import java.text.Normalizer
-import java.util.*
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 
@@ -57,7 +56,7 @@ object Derivation {
 
             val iterationCount = SERVER_AUTHENTICATION_HASH_ITERATION_COUNT
             val hashBytes = performPBKDFWithSHA256(password, saltBytes, iterationCount, SERVER_AUTHENTICATION_HASH_BIT_LENGTH)
-            val hashString = hashBytes.toHexString().toLowerCase(Locale.getDefault())
+            val hashString = hashBytes.toHexString()
 
             "pbkdf2:sha256:$iterationCount\$$saltString\$$hashString"
         } catch (e: Exception) {

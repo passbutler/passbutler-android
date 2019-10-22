@@ -157,7 +157,7 @@ class LocalAuthenticationHashDerivationTest {
         val password = "1234abcd"
 
         val derivedHash = Derivation.deriveLocalAuthenticationHash(username, password)
-        assertEquals("E8DCDA8125DBBAF57893AD24490096C28C0C079762CB48CE045D770E8CF41D45", derivedHash)
+        assertEquals("e8dcda8125dbbaf57893ad24490096c28c0c079762cb48ce045d770e8cf41d45", derivedHash)
     }
 
     @Test
