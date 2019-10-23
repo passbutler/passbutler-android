@@ -62,51 +62,13 @@ class SymmetricEncryptionTest {
     }
 
     @Test
-    fun `Encrypt AES-256-GCM test vector (no plain text)`() {
-        val testVector = validTestVectors[0]
+    fun `Encrypt AES-256-GCM valid test vectors`() {
+        validTestVectors.forEach { testVector ->
+            val encryptionResult = encryptAES256GCM(testVector)
+            assertEquals(testVector.cipherText + testVector.tag, encryptionResult)
+        }
 
-        val encryptionResult = encryptAES256GCM(testVector)
-        assertEquals(testVector.cipherText + testVector.tag, encryptionResult)
-    }
-
-    @Test
-    fun `Encrypt AES-256-GCM test vector 1`() {
-        val testVector = validTestVectors[1]
-
-        val encryptionResult = encryptAES256GCM(testVector)
-        assertEquals(testVector.cipherText + testVector.tag, encryptionResult)
-    }
-
-    @Test
-    fun `Encrypt AES-256-GCM test vector 2`() {
-        val testVector = validTestVectors[2]
-
-        val encryptionResult = encryptAES256GCM(testVector)
-        assertEquals(testVector.cipherText + testVector.tag, encryptionResult)
-    }
-
-    @Test
-    fun `Encrypt AES-256-GCM test vector 3`() {
-        val testVector = validTestVectors[3]
-
-        val encryptionResult = encryptAES256GCM(testVector)
-        assertEquals(testVector.cipherText + testVector.tag, encryptionResult)
-    }
-
-    @Test
-    fun `Encrypt AES-256-GCM test vector 4`() {
-        val testVector = validTestVectors[4]
-
-        val encryptionResult = encryptAES256GCM(testVector)
-        assertEquals(testVector.cipherText + testVector.tag, encryptionResult)
-    }
-
-    @Test
-    fun `Encrypt AES-256-GCM test vector 5`() {
-        val testVector = validTestVectors[5]
-
-        val encryptionResult = encryptAES256GCM(testVector)
-        assertEquals(testVector.cipherText + testVector.tag, encryptionResult)
+        assertEquals(8, validTestVectors.size)
     }
 
     /**
@@ -158,51 +120,13 @@ class SymmetricEncryptionTest {
     }
 
     @Test
-    fun `Decrypt AES-256-GCM test vector (no plain text)`() {
-        val testVector = validTestVectors[0]
+    fun `Decrypt AES-256-GCM valid test vectors`() {
+        validTestVectors.forEach { testVector ->
+            val decryptionResult = decryptAES256GCM(testVector)
+            assertEquals(testVector.plainText, decryptionResult)
+        }
 
-        val decryptionResult = decryptAES256GCM(testVector)
-        assertEquals(testVector.plainText, decryptionResult)
-    }
-
-    @Test
-    fun `Decrypt AES-256-GCM test vector 1`() {
-        val testVector = validTestVectors[1]
-
-        val decryptionResult = decryptAES256GCM(testVector)
-        assertEquals(testVector.plainText, decryptionResult)
-    }
-
-    @Test
-    fun `Decrypt AES-256-GCM test vector 2`() {
-        val testVector = validTestVectors[2]
-
-        val decryptionResult = decryptAES256GCM(testVector)
-        assertEquals(testVector.plainText, decryptionResult)
-    }
-
-    @Test
-    fun `Decrypt AES-256-GCM test vector 3`() {
-        val testVector = validTestVectors[3]
-
-        val decryptionResult = decryptAES256GCM(testVector)
-        assertEquals(testVector.plainText, decryptionResult)
-    }
-
-    @Test
-    fun `Decrypt AES-256-GCM test vector 4`() {
-        val testVector = validTestVectors[4]
-
-        val decryptionResult = decryptAES256GCM(testVector)
-        assertEquals(testVector.plainText, decryptionResult)
-    }
-
-    @Test
-    fun `Decrypt AES-256-GCM test vector 5`() {
-        val testVector = validTestVectors[5]
-
-        val decryptionResult = decryptAES256GCM(testVector)
-        assertEquals(testVector.plainText, decryptionResult)
+        assertEquals(8, validTestVectors.size)
     }
 
     companion object {
@@ -215,7 +139,6 @@ class SymmetricEncryptionTest {
                 cipherText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
                 tag = "00000000000000000000000000000000"
             ),
-
             "tooLongInitializationVector" to SymmetricTestVector(
                 key = "0000000000000000000000000000000000000000000000000000000000000000",
                 initializationVector = "000000000000000000000000AA",
@@ -223,7 +146,6 @@ class SymmetricEncryptionTest {
                 cipherText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
                 tag = "00000000000000000000000000000000"
             ),
-
             "emptyKey" to SymmetricTestVector(
                 key = "",
                 initializationVector = "000000000000000000000000",
@@ -231,7 +153,6 @@ class SymmetricEncryptionTest {
                 cipherText = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
                 tag = "00000000000000000000000000000000"
             ),
-
             "tooLongKey" to SymmetricTestVector(
                 key = "0000000000000000000000000000000000000000000000000000000000000000AA",
                 initializationVector = "000000000000000000000000",
@@ -242,84 +163,112 @@ class SymmetricEncryptionTest {
         )
 
         /**
-         * Test vectors took from <https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/gcmtestvectors.zip>
+         * Test vectors took from: <https://github.com/pyca/cryptography/blob/2.4.x/vectors/cryptography_vectors/ciphers/AES/GCM/gcmDecrypt256.rsp>
+         *
+         * The vectors were chosen using the following scheme:
+         * [Keylen = 256]
+         * [IVlen = 96]
+         * [PTlen = N]
+         * [AADlen = 0]
+         * [Taglen = 128]
          */
         private val validTestVectors = listOf(
 
             /*
-             * [Keylen = 256]
-             * [IVlen = 96]
-             * [PTlen = 0]
-             * [AADlen = 0]
-             * [Taglen = 128]
-             *
-             * (from file `gcmDecrypt256.rsp`)
-            */
-            SymmetricTestVector(
-                key = "F5A2B27C74355872EB3EF6C5FEAFAA740E6AE990D9D48C3BD9BB8235E589F010",
-                initializationVector = "58D2240F580A31C1D24948E9",
-                plainText = "",
-                cipherText = "",
-                tag = "15E051A5E4A5F5DA6CEA92E2EBEE5BAC"
-            ),
-
-            /*
-             * [Keylen = 256]
-             * [IVlen = 96]
-             * [PTlen = 408]
-             * [AADlen = 0]
-             * [Taglen = 128]
-             *
-             * (from file `gcmEncryptExtIV256.rsp`)
+             * Key with plain text length == 0
              */
 
             SymmetricTestVector(
-                key = "1FDED32D5999DE4A76E0F8082108823AEF60417E1896CF4218A2FA90F632EC8A",
-                initializationVector = "1F3AFA4711E9474F32E70462",
-                plainText = "06B2C75853DF9AEB17BEFD33CEA81C630B0FC53667FF45199C629C8E15DCE41E530AA792F796B8138EEAB2E86C7B7BEE1D40B0",
-                cipherText = "91FBD061DDC5A7FCC9513FCDFDC9C3A7C5D4D64CEDF6A9C24AB8A77C36EEFBF1C5DC00BC50121B96456C8CD8B6FF1F8B3E480F",
-                tag = "30096D340F3D5C42D82A6F475DEF23EB"
+                key = "f5a2b27c74355872eb3ef6c5feafaa740e6ae990d9d48c3bd9bb8235e589f010",
+                initializationVector = "58d2240f580a31c1d24948e9",
+                plainText = "",
+                cipherText = "",
+                tag = "15e051a5e4a5f5da6cea92e2ebee5bac"
             ),
 
             SymmetricTestVector(
-                key = "B405AC89724F8B555BFEE1EAA369CD854003E9FAE415F28C5A199D4D6EFC83D6",
-                initializationVector = "CEC71A13B14C4D9BD024EF29",
-                plainText = "AB4FD35BEF66ADDFD2856B3881FF2C74FDC09C82ABE339F49736D69B2BD0A71A6B4FE8FC53F50F8B7D6D6D6138AB442C7F653F",
-                cipherText = "69A079BCA9A6A26707BBFA7FD83D5D091EDC88A7F7FF08BD8656D8F2C92144FF23400FCB5C370B596AD6711F386E18F2629E76",
-                tag = "6D2B7861A3C59BA5A3E3A11C92BB2B14"
+                key = "c1d6162b585e2bac14d554d5675c6ddaa6b93be2eb07f8df86c9bb30f93ae688",
+                initializationVector = "f04dfce5c8e7713c71a70cc9",
+                plainText = "",
+                cipherText = "",
+                tag = "37fb4f33c82f6fce0c562896b3e10fc2"
+            ),
+
+            /*
+             * Keys with plain text length == 128
+             */
+
+            SymmetricTestVector(
+                key = "4c8ebfe1444ec1b2d503c6986659af2c94fafe945f72c1e8486a5acfedb8a0f8",
+                initializationVector = "473360e0ad24889959858995",
+                plainText = "7789b41cb3ee548814ca0b388c10b343",
+                cipherText = "d2c78110ac7e8f107c0df0570bd7c90c",
+                tag = "c26a379b6d98ef2852ead8ce83a833a7"
             ),
 
             SymmetricTestVector(
-                key = "FAD40C82264DC9B8D9A42C10A234138344B0133A708D8899DA934BFEE2BDD6B8",
-                initializationVector = "0DADE2C95A9B85A8D2BC13EF",
-                plainText = "664EA95D511B2CFDB9E5FB87EFDD41CBFB88F3FF47A7D2B8830967E39071A89B948754FFB0ED34C357ED6D4B4B2F8A76615C03",
-                cipherText = "EA94DCBF52B22226DDA91D9BFC96FB382730B213B66E30960B0D20D2417036CBAA9E359984EEA947232526E175F49739095E69",
-                tag = "5CA8905D469FFFEC6FBA7435EBDFFDAF"
+                key = "3934f363fd9f771352c4c7a060682ed03c2864223a1573b3af997e2ababd60ab",
+                initializationVector = "efe2656d878c586e41c539c4",
+                plainText = "697aff2d6b77e5ed6232770e400c1ead",
+                cipherText = "e0de64302ac2d04048d65a87d2ad09fe",
+                tag = "33cbd8d2fb8a3a03e30c1eb1b53c1d99"
+            ),
+
+            /*
+             * Keys with plain text length == 256
+             */
+
+            SymmetricTestVector(
+                key = "c3d99825f2181f4808acd2068eac7441a65bd428f14d2aab43fefc0129091139",
+                initializationVector = "cafabd9672ca6c79a2fbdc22",
+                plainText = "25431587e9ecffc7c37f8d6d52a9bc3310651d46fb0e3bad2726c8f2db653749",
+                cipherText = "84e5f23f95648fa247cb28eef53abec947dbf05ac953734618111583840bd980",
+                tag = "79651c875f7941793d42bbd0af1cce7c"
             ),
 
             SymmetricTestVector(
-                key = "AA5FCA688CC83283ECF39454679948F4D30AA8CB43DB7CC4DA4EFF1669D6C52F",
-                initializationVector = "4B2D7B699A5259F9B541FA49",
-                plainText = "C691F3B8F3917EFB76825108C0E37DC33E7A8342764CE68A62A2DC1A5C940594961FCD5C0DF05394A5C0FFF66C254C6B26A549",
-                cipherText = "2CD380EBD6B2CF1B80831CFF3D6DC2B6770778AD0D0A91D03EB8553696800F84311D337302519D1036FEAAB8C8EB845882C5F0",
-                tag = "5DE4EF67BF8896FBE82C01DCA041D590"
+                key = "5c3bd1986d3c807b0c3ace811e618dbae1693f07145f282d474daaae0b6a1774",
+                initializationVector = "3c9e5a952b5009afd3dd1eac",
+                plainText = "7adb5cc81adcc3b7561d00972c313bee74b9022c8c035de386f476c8efa15f62",
+                cipherText = "ebb8c233496a5bddf70821fb8914ec8aa9633c1fcbc067948fc2d82e8fbe2fbb",
+                tag = "55074766eba059eee2af2db30029cf53"
+            ),
+
+            /*
+             * Keys with plain text length > 256
+             */
+
+            SymmetricTestVector(
+                key = "4433db5fe066960bdd4e1d4d418b641c14bfcef9d574e29dcd0995352850f1eb",
+                initializationVector = "0e396446655582838f27f72f",
+                plainText = "d602c06b947abe06cf6aa2c5c1562e29062ad6220da9bc9c25d66a60bd85a80d4fbcc1fb4919b6566be35af9819aba836b8b47",
+                cipherText = "b0d254abe43bdb563ead669192c1e57e9a85c51dba0f1c8501d1ce92273f1ce7e140dcfac94757fabb128caad16912cead0607",
+                tag = "ffd0b02c92dbfcfbe9d58f7ff9e6f506"
             ),
 
             SymmetricTestVector(
-                key = "1C7690D5D845FCEABBA227B11CA221F4D6D302233641016D9CD3A158C3E36017",
-                initializationVector = "93BCA8DE6B11A4830C5F5F64",
-                plainText = "3C79A39878A605F3AC63A256F68C8A66369CC3CD7AF680D19692B485A7BA58CE1D536707C55EDA5B256C8B29BBF0B4CBEB4FC4",
-                cipherText = "C9E48684DF13AFCCDB1D9CEAA483759022E59C3111188C1ECEB02EAF308035B0428DB826DE862D925A3C55AF0B61FD8F09A74D",
-                tag = "8F577E8730C19858CAD8E0124F311DD9"
+                key = "f9b70fd065668b9fc4ee7e222f1c4ae27e0a6e37b551e7d5fb58eea40a59fba3",
+                initializationVector = "a7f5ddb39b8c62b50b5a8c0c",
+                plainText = "6e9c24c172ae8e81e69e797a8bd9f8de4e5e43ccbdeec5a0d0ec1a7b3527384e06129290c5f61fa2f90ae8b03a9402aeb0b6ce",
+                cipherText = "0d6dcdf0820f546d54f5476f49bbf1cfafae3b5c7cb0875c826757650864f99d74ee4073651eed0dbaf5789d211c1be5579843",
+                tag = "31efc69daae6f7f0067fd6e969bd9240"
             )
         )
 
         private fun encryptAES256GCM(testVector: SymmetricTestVector): String {
-            return EncryptionAlgorithm.Symmetric.AES256GCM.encrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), testVector.plainText.hexToBytes()).toHexString()
+            return EncryptionAlgorithm.Symmetric.AES256GCM.encrypt(
+                initializationVector = testVector.initializationVector.hexToBytes(),
+                encryptionKey = testVector.key.hexToBytes(),
+                data = testVector.plainText.hexToBytes()
+            ).toHexString()
         }
 
         private fun decryptAES256GCM(testVector: SymmetricTestVector): String {
-            return EncryptionAlgorithm.Symmetric.AES256GCM.decrypt(testVector.initializationVector.hexToBytes(), testVector.key.hexToBytes(), (testVector.cipherText + testVector.tag).hexToBytes()).toHexString()
+            return EncryptionAlgorithm.Symmetric.AES256GCM.decrypt(
+                initializationVector = testVector.initializationVector.hexToBytes(),
+                encryptionKey = testVector.key.hexToBytes(),
+                data = (testVector.cipherText + testVector.tag).hexToBytes()
+            ).toHexString()
         }
     }
 }
