@@ -1,5 +1,6 @@
 package de.sicherheitskritisch.passbutler
 
+import de.sicherheitskritisch.passbutler.base.toHexString
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions
 
@@ -17,4 +18,8 @@ internal fun assertJSONObjectEquals(expected: JSONObject, actual: JSONObject) {
 
 internal fun assertEqualsIgnoringCase(expected: String, actual: String) {
     Assertions.assertEquals(expected.toLowerCase(), actual.toLowerCase())
+}
+
+internal fun assertByteArrayEquals(expected: ByteArray, actual: ByteArray) {
+    Assertions.assertEquals(expected.toHexString(), actual.toHexString())
 }

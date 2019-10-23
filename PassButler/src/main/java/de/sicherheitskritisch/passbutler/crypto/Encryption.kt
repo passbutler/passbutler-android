@@ -13,6 +13,7 @@ import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.spec.MGF1ParameterSpec
 import java.security.spec.PKCS8EncodedKeySpec
+import java.security.spec.X509EncodedKeySpec
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.spec.GCMParameterSpec
@@ -113,7 +114,7 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
 
             @Throws(GenerateEncryptionKeyFailedException::class)
             override fun generateKeyPair(): KeyPair {
-                val keyPairGenerator = KeyPairGenerator.getInstance("RSA")
+                val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGORITHM_RSA)
                 keyPairGenerator.initialize(RSA_KEY_LENGTH)
 
                 return keyPairGenerator.genKeyPair()
@@ -123,7 +124,7 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
             override fun encrypt(publicKey: ByteArray, data: ByteArray): ByteArray {
                 return try {
                     val initializedCipher = Cipher.getInstance("$KEY_ALGORITHM_RSA/$BLOCK_MODE_ECB/$ENCRYPTION_PADDING_RSA_OAEP").apply {
-                        val publicKeyInstance = KeyFactory.getInstance(KEY_ALGORITHM_RSA).generatePublic(PKCS8EncodedKeySpec(publicKey))
+                        val publicKeyInstance = KeyFactory.getInstance(KEY_ALGORITHM_RSA).generatePublic(X509EncodedKeySpec(publicKey))
                         val oaepParameterSpec = createOAEPParameterSpec()
                         init(Cipher.ENCRYPT_MODE, publicKeyInstance, oaepParameterSpec)
                     }
