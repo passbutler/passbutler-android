@@ -275,6 +275,27 @@ class ProtectedValueTest {
         assertEquals("The given encryption key can't be used because it is cleared!", (exception.cause as IllegalArgumentException).message)
     }
 
+    /**
+     * Copy test
+     */
+
+    @Test
+    fun `Copy a ProtectedValue and expect the references has been changed`() {
+        val protectedValue = createSimpleTestProtectedValue(
+            initializationVector = "aaaaaaaaaaaaaaaaaaaaaaaa".hexToBytes(),
+            encryptedValue = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".hexToBytes()
+        )
+
+        val protectedValueCopy = protectedValue.copy()
+
+        assertTrue(protectedValue !== protectedValueCopy)
+        assertTrue(protectedValue.initializationVector !== protectedValueCopy.initializationVector)
+        assertTrue(protectedValue.encryptedValue !== protectedValueCopy.encryptedValue)
+
+        // The encryption algorithm holds no data and is an object
+        assertTrue(protectedValue.encryptionAlgorithm === protectedValueCopy.encryptionAlgorithm)
+    }
+
     companion object {
         /**
          * Create a simple `ProtectedValue` with given type and pre-set `encryptionAlgorithm`.

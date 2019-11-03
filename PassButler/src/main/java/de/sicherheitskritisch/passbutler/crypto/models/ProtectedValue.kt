@@ -32,6 +32,14 @@ class ProtectedValue<T : JSONSerializable> private constructor(
 
     val encryptionAlgorithm = encryptionAlgorithm
 
+    fun copy(): ProtectedValue<T> {
+        return ProtectedValue(
+            initializationVector.clone(),
+            encryptedValue.clone(),
+            encryptionAlgorithm
+        )
+    }
+
     @Throws(DecryptFailedException::class)
     fun decrypt(encryptionKey: ByteArray, deserializer: JSONSerializableDeserializer<T>): T {
         return try {
