@@ -32,14 +32,6 @@ class ProtectedValue<T : JSONSerializable>(
 
     val encryptionAlgorithm = encryptionAlgorithm
 
-    override fun serialize(): JSONObject {
-        return JSONObject().apply {
-            putByteArray(SERIALIZATION_KEY_INITIALIZATION_VECTOR, initializationVector)
-            putByteArray(SERIALIZATION_KEY_ENCRYPTED_VALUE, encryptedValue)
-            putSymmetricEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM, encryptionAlgorithm)
-        }
-    }
-
     @Throws(DecryptFailedException::class)
     fun decrypt(encryptionKey: ByteArray, deserializer: JSONSerializableDeserializer<T>): T {
         return try {
@@ -99,6 +91,14 @@ class ProtectedValue<T : JSONSerializable>(
 
     override fun toString(): String {
         return "ProtectedValue(initializationVector=${initializationVector.toHexString()}, encryptionAlgorithm=$encryptionAlgorithm, encryptedValue=${encryptedValue.toHexString()})"
+    }
+
+    override fun serialize(): JSONObject {
+        return JSONObject().apply {
+            putByteArray(SERIALIZATION_KEY_INITIALIZATION_VECTOR, initializationVector)
+            putByteArray(SERIALIZATION_KEY_ENCRYPTED_VALUE, encryptedValue)
+            putSymmetricEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM, encryptionAlgorithm)
+        }
     }
 
     class Deserializer<T : JSONSerializable> : JSONSerializableDeserializer<ProtectedValue<T>>() {
