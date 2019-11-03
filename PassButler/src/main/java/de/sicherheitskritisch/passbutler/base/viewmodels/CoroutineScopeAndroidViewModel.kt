@@ -20,7 +20,7 @@ open class CoroutineScopeAndroidViewModel(application: Application) : AndroidVie
     /**
      * By default use a `SupervisorJob` to avoid that a failing child job cancel all jobs.
      */
-    protected val coroutineJob = SupervisorJob()
+    private val coroutineJob = SupervisorJob()
 
     @CallSuper
     override fun onCleared() {
