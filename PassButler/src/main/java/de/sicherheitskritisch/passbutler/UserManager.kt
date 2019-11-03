@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import android.net.Uri
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.byteSize
@@ -24,6 +25,8 @@ import de.sicherheitskritisch.passbutler.database.Differentiation
 import de.sicherheitskritisch.passbutler.database.LocalRepository
 import de.sicherheitskritisch.passbutler.database.Synchronization
 import de.sicherheitskritisch.passbutler.database.UserWebservice
+import de.sicherheitskritisch.passbutler.database.models.Item
+import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import de.sicherheitskritisch.passbutler.database.requestAuthToken
@@ -37,7 +40,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.util.*
 
-class UserManager(applicationContext: Context, private val localRepository: LocalRepository) {
+class UserManager(applicationContext: Context, private val localRepository: LocalRepository) : Synchronization {
 
     val loggedInUserResult = MutableLiveData<LoggedInUserResult?>()
 
@@ -45,6 +48,8 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         val sharedPreferences = applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
         LoggedInStateStorage(sharedPreferences)
     }
+
+    private var loggedInUser: User? = null
 
     private var authWebservice: AuthWebservice? = null
     private var userWebservice: UserWebservice? = null
@@ -65,6 +70,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             loggedInStateStorage.userType = UserType.Server(remoteUser.username, serverUrl, authToken)
             loggedInStateStorage.persist()
 
+            loggedInUser = remoteUser
             loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(remoteUser, masterPassword))
         } catch (exception: Exception) {
             // If the operation failed, reset all states to avoid a dirty state
@@ -92,9 +98,12 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             val serializableMasterEncryptionKey = CryptographicKey(masterEncryptionKey)
             val protectedMasterEncryptionKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterKey, serializableMasterEncryptionKey)
 
-            // TODO: Generate real values
-            val itemEncryptionPublicKey = CryptographicKey(ByteArray(0))
-            val itemEncryptionSecretKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, CryptographicKey(ByteArray(0)))
+            val itemEncryptionKeyPair = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.generateKeyPair()
+
+            val itemEncryptionPublicKey = CryptographicKey(itemEncryptionKeyPair.public.encoded)
+
+            val serializableItemEncryptionSecretKey = CryptographicKey(itemEncryptionKeyPair.private.encoded)
+            val protectedItemEncryptionSecretKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, serializableItemEncryptionSecretKey)
 
             val userSettings = UserSettings()
             val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, userSettings)
@@ -106,7 +115,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
                 masterKeyDerivationInformation,
                 protectedMasterEncryptionKey,
                 itemEncryptionPublicKey,
-                itemEncryptionSecretKey,
+                protectedItemEncryptionSecretKey,
                 protectedUserSettings,
                 false,
                 currentDate,
@@ -119,6 +128,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             loggedInStateStorage.userType = UserType.Local(localUser.username)
             loggedInStateStorage.persist()
 
+            loggedInUser = localUser
             loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(localUser, masterPassword))
         } catch (exception: Exception) {
             // If the operation failed, reset all states to avoid a dirty state
@@ -187,7 +197,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     }
 
     @Throws(IllegalStateException::class)
-    fun initializeAuthWebservice(masterPassword: String) {
+    suspend fun initializeAuthWebservice(masterPassword: String) {
         L.d("UserManager", "initializeAuthWebservice()")
 
         val userType = loggedInStateStorage.userType as? UserType.Server ?: throw IllegalStateException("The user is a local kind despite it was tried to initialize auth webservice!")
@@ -195,34 +205,57 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         val username = userType.username
         val serverUrl = userType.serverUrl
 
-        val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword)
+        val masterPasswordAuthenticationHash = withContext(Dispatchers.Default) {
+            Derivation.deriveLocalAuthenticationHash(username, masterPassword)
+        }
+
         authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
     }
 
     suspend fun updateUser(user: User) {
         L.d("UserManager", "updateUser(): user = $user")
 
+        loggedInUser = user
         localRepository.updateUser(user)
+    }
 
-        if (loggedInStateStorage.userType is UserType.Server) {
-            try {
-                userWebservice.updateUser(user)
-            } catch (e: Exception) {
-                L.w("UserManager", "updateUser(): The user could not be updated on webservice!", e)
-            }
-        }
+    fun findItems(): LiveData<List<Item>> {
+        return localRepository.findAllItems()
+    }
+
+    suspend fun createItem(item: Item) {
+        localRepository.insertItem(item)
+    }
+
+    suspend fun updateItem(item: Item) {
+        localRepository.updateItem(item)
+    }
+
+    suspend fun deleteItem(item: Item) {
+        localRepository.deleteItem(item)
+    }
+
+    suspend fun findItemAuthorization(item: Item): ItemAuthorization? {
+        return localRepository.findItemAuthorization(item.id)
     }
 
     @Throws(Synchronization.SynchronizationFailedException::class)
-    suspend fun synchronizeUsers(loggedInUser: User) {
+    override suspend fun synchronize() {
         val userWebservice = userWebservice ?: throw Synchronization.SynchronizationFailedException("The user webservice is not initialized!")
-        val userSynchronization = UserSynchronization(localRepository, userWebservice, loggedInUser)
-        userSynchronization.synchronize()
+        val loggedInUser = loggedInUser ?: throw Synchronization.SynchronizationFailedException("The logged-in user is not initialized!")
+
+        val userSynchronizationTask = UserSynchronizationTask(localRepository, userWebservice, loggedInUser)
+        userSynchronizationTask.synchronize()
+
+        val itemsSynchronizationTask = ItemsSynchronizationTask(localRepository, userWebservice)
+        itemsSynchronizationTask.synchronize()
     }
 
     private suspend fun resetLoggedInUser() {
         authWebservice = null
         userWebservice = null
+
+        loggedInUser = null
 
         localRepository.reset()
         loggedInStateStorage.reset()
@@ -287,16 +320,16 @@ sealed class LoggedInUserResult(val newLoggedInUser: User) {
     class RestoredLogin(newLoggedInUser: User) : LoggedInUserResult(newLoggedInUser)
 }
 
-private class UserSynchronization(private val localRepository: LocalRepository, private var userWebservice: UserWebservice, private val loggedInUser: User) : Synchronization {
+private class UserSynchronizationTask(private val localRepository: LocalRepository, private var userWebservice: UserWebservice, private val loggedInUser: User) : Synchronization {
 
     @Throws(Synchronization.SynchronizationFailedException::class)
     override suspend fun synchronize() {
         try {
             coroutineScope {
-                L.d("UserSynchronization", "synchronize(): Started")
+                L.d("UserSynchronizationTask", "synchronize(): Started")
                 synchronizePublicUsersList(this)
                 synchronizeLoggedInUser()
-                L.d("UserSynchronization", "synchronize(): Finished successfully")
+                L.d("UserSynchronizationTask", "synchronize(): Finished successfully")
             }
         } catch (e: Exception) {
             throw Synchronization.SynchronizationFailedException(e)
@@ -323,7 +356,7 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
             val remoteUserList = remoteUserListDeferred.await().filterNot { it.username == loggedInUsername }
 
             val newLocalUsers = Differentiation.collectNewItems(localUserList, remoteUserList)
-            L.d("UserSynchronization", "synchronizePublicUsersList(): New user items for local database: ${newLocalUsers.buildShortUserList()}")
+            L.d("UserSynchronizationTask", "synchronizePublicUsersList(): New user items for local database: ${newLocalUsers.buildShortUserList()}")
 
             if (newLocalUsers.isNotEmpty()) {
                 createNewUsersInLocalDatabase(newLocalUsers)
@@ -333,7 +366,7 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
             localUserList = localUserList + newLocalUsers
 
             val modifiedLocalUsers = Differentiation.collectModifiedItems(localUserList, remoteUserList)
-            L.d("UserSynchronization", "synchronizePublicUsersList(): Modified user items for local database: ${modifiedLocalUsers.buildShortUserList()}")
+            L.d("UserSynchronizationTask", "synchronizePublicUsersList(): Modified user items for local database: ${modifiedLocalUsers.buildShortUserList()}")
 
             if (modifiedLocalUsers.isNotEmpty()) {
                 updateModifiedUsersToLocalDatabase(modifiedLocalUsers)
@@ -359,15 +392,15 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
 
             when {
                 localLoggedInUser.modified > remoteLoggedInUser.modified -> {
-                    L.d("UserSynchronization", "synchronizeLoggedInUser(): Update remote user because local user was lastly modified")
+                    L.d("UserSynchronizationTask", "synchronizeLoggedInUser(): Update remote user because local user was lastly modified")
                     userWebservice.updateUser(localLoggedInUser)
                 }
                 localLoggedInUser.modified < remoteLoggedInUser.modified -> {
-                    L.d("UserSynchronization", "synchronizeLoggedInUser(): Update local user because remote user was lastly modified")
+                    L.d("UserSynchronizationTask", "synchronizeLoggedInUser(): Update local user because remote user was lastly modified")
                     localRepository.updateUser(remoteLoggedInUser)
                 }
                 else -> {
-                    L.d("UserSynchronization", "synchronizeLoggedInUser(): No update needed because local and remote user are equal")
+                    L.d("UserSynchronizationTask", "synchronizeLoggedInUser(): No update needed because local and remote user are equal")
                 }
             }
         } catch (e: Exception) {
@@ -381,4 +414,22 @@ private class UserSynchronization(private val localRepository: LocalRepository, 
 
     class SynchronizePublicUsersListFailedException(cause: Throwable) : Synchronization.SynchronizationFailedException(cause)
     class SynchronizeLoggedInUserFailedException(cause: Throwable) : Synchronization.SynchronizationFailedException(cause)
+}
+
+private class ItemsSynchronizationTask(private val localRepository: LocalRepository, private var userWebservice: UserWebservice) : Synchronization {
+
+    @Throws(Synchronization.SynchronizationFailedException::class)
+    override suspend fun synchronize() {
+        try {
+            coroutineScope {
+                L.d("ItemsSynchronizationTask", "synchronize(): Started")
+
+                // TODO: Implement
+
+                L.d("ItemsSynchronizationTask", "synchronize(): Finished successfully")
+            }
+        } catch (e: Exception) {
+            throw Synchronization.SynchronizationFailedException(e)
+        }
+    }
 }

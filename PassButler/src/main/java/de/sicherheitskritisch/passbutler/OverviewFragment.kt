@@ -13,12 +13,17 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.signal
 import de.sicherheitskritisch.passbutler.databinding.FragmentOverviewBinding
+import de.sicherheitskritisch.passbutler.databinding.ListItemEntryBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.VisibilityHideMode
@@ -51,6 +56,13 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         }
     }
 
+    private val itemsChangedObserver = Observer<List<ItemViewModel>> { newItems ->
+        if (newItems != null && newItems.isNotEmpty()) {
+            val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemAdapter
+            adapter?.submitList(newItems)
+        }
+    }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
@@ -67,6 +79,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
             setupToolBar(binding)
             setupDrawerLayout(binding)
+            setupEntryList(binding)
         }
 
         synchronizeDataRequestSendingViewHandler = SynchronizeDataRequestSendingViewHandler(viewModel.synchronizeDataRequestSendingViewModel, WeakReference(this))
@@ -125,6 +138,14 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         }
     }
 
+    private fun setupEntryList(binding: FragmentOverviewBinding) {
+        binding.layoutOverviewContent.recyclerViewItemList.adapter = ItemAdapter(viewModel)
+
+        binding.layoutOverviewContent.floatingActionButtonAddEntry.setOnClickListener {
+            viewModel.loggedInUserViewModel?.createItem()
+        }
+    }
+
     override fun onStart() {
         super.onStart()
 
@@ -132,6 +153,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         logoutRequestSendingViewHandler?.registerObservers()
 
         viewModel.rootViewModel.webserviceRestored.addSignal(webserviceRestoredSignal)
+
+        viewModel.loggedInUserViewModel?.itemViewModels?.observe(viewLifecycleOwner, itemsChangedObserver)
     }
 
     override fun onStop() {
@@ -242,7 +265,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         requestSendingViewModel: RequestSendingViewModel,
         fragmentWeakReference: WeakReference<OverviewFragment>
     ) : DefaultRequestSendingViewHandler<OverviewFragment>(requestSendingViewModel, fragmentWeakReference) {
-
         override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.overview_logout_failed_title
     }
 
@@ -251,5 +273,53 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         private const val URL_GOOGLE_PLAY = "market://details?id=de.sicherheitskritisch.passbutler"
 
         fun newInstance() = OverviewFragment()
+    }
+}
+
+class ItemAdapter(private val overviewViewModel: OverviewViewModel) : ListAdapter<ItemViewModel, ItemAdapter.EntryViewHolder>(ItemDiffCallback()) {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EntryViewHolder {
+        val binding = DataBindingUtil.inflate<ListItemEntryBinding>(LayoutInflater.from(parent.context), R.layout.list_item_entry, parent, false)
+        return EntryViewHolder(binding, overviewViewModel)
+    }
+
+    override fun onBindViewHolder(holder: EntryViewHolder, position: Int) {
+        getItem(position).let { item ->
+            holder.apply {
+                itemView.tag = item
+                bind(item)
+            }
+        }
+    }
+
+    class EntryViewHolder(
+        private val binding: ListItemEntryBinding,
+        private val overviewViewModel: OverviewViewModel
+    ) : RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(itemViewModel: ItemViewModel) {
+            binding.apply {
+                viewModel = itemViewModel
+                executePendingBindings()
+
+                buttonUpdate.setOnClickListener {
+                    overviewViewModel.loggedInUserViewModel?.updateItem(itemViewModel)
+                }
+
+                buttonDelete.setOnClickListener {
+                    overviewViewModel.loggedInUserViewModel?.deleteItem(itemViewModel)
+                }
+            }
+        }
+    }
+}
+
+private class ItemDiffCallback : DiffUtil.ItemCallback<ItemViewModel>() {
+    override fun areItemsTheSame(oldItem: ItemViewModel, newItem: ItemViewModel): Boolean {
+        return oldItem.id == newItem.id
+    }
+
+    override fun areContentsTheSame(oldItem: ItemViewModel, newItem: ItemViewModel): Boolean {
+        return oldItem == newItem
     }
 }

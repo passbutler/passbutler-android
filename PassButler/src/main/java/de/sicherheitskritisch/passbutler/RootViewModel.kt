@@ -15,11 +15,9 @@ import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
 import de.sicherheitskritisch.passbutler.base.toUTF8String
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.crypto.Cipher
 
 class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
@@ -83,11 +81,9 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     fun unlockScreenWithPassword(masterPassword: String) {
         cryptoResourcesJob?.cancel()
         cryptoResourcesJob = createRequestSendingJob(unlockScreenRequestSendingViewModel) {
-            withContext(Dispatchers.Default) {
-                loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
-            }
+            loggedInUserViewModel?.decryptSensibleData(masterPassword)
 
-            // Restore webservices asynchronously to avoid slow network is blocking unlock
+            // Restore webservices asynchronously to avoid slow network is blocking unlock progress
             launch {
                 restoreWebservices(masterPassword)
             }
@@ -118,12 +114,9 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
                 ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
 
             val masterPassword = Biometrics.decryptData(initializedBiometricUnlockCipher, encryptedMasterPassword).toUTF8String()
+            loggedInUserViewModel?.decryptSensibleData(masterPassword)
 
-            withContext(Dispatchers.Default) {
-                loggedInUserViewModel?.unlockMasterEncryptionKey(masterPassword)
-            }
-
-            // Restore webservices asynchronously to avoid slow network is blocking unlock
+            // Restore webservices asynchronously to avoid slow network is blocking unlock progress
             launch {
                 restoreWebservices(masterPassword)
             }
@@ -183,7 +176,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         cryptoResourcesJob = launch {
             // Be sure all UI is hidden behind the lock screen before clear crypto resources
             lockScreenState.postValue(LockScreenState.Locked)
-            loggedInUserViewModel?.clearMasterEncryptionKey()
+            loggedInUserViewModel?.clearSensibleData()
         }
     }
 
@@ -222,9 +215,11 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
                     lockScreenState.value = null
 
                     // Finally clear crypto resources and reset related jobs
-                    loggedInUserViewModel?.clearMasterEncryptionKey()
-                    loggedInUserViewModel?.cancelJobs()
-                    loggedInUserViewModel = null
+                    launch {
+                        loggedInUserViewModel?.clearSensibleData()
+                        loggedInUserViewModel?.cancelJobs()
+                        loggedInUserViewModel = null
+                    }
                 }
             }
         }

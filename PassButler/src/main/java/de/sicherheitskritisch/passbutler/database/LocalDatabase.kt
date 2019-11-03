@@ -1,6 +1,7 @@
 package de.sicherheitskritisch.passbutler.database
 
 import android.content.Context
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Delete
@@ -12,21 +13,24 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import androidx.room.Update
-import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
-import de.sicherheitskritisch.passbutler.database.models.ItemKey
+import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
+import de.sicherheitskritisch.passbutler.database.models.Item
+import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
+import de.sicherheitskritisch.passbutler.database.models.ItemData
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.*
 
-@Database(entities = [User::class, ItemKey::class], version = 1, exportSchema = false)
+@Database(entities = [User::class, Item::class, ItemAuthorization::class], version = 1, exportSchema = false)
 @TypeConverters(GeneralDatabaseConverters::class, ModelConverters::class)
 abstract class PassButlerDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun itemDao(): ItemDao
+    abstract fun itemAuthorizationDao(): ItemAuthorizationDao
 }
 
 class GeneralDatabaseConverters {
@@ -51,7 +55,7 @@ class LocalRepository(applicationContext: Context) {
 
     suspend fun findUser(username: String): User? {
         return withContext(Dispatchers.IO) {
-            localDatabase.userDao().findUser(username)
+            localDatabase.userDao().find(username)
         }
     }
 
@@ -67,27 +71,37 @@ class LocalRepository(applicationContext: Context) {
         }
     }
 
+    fun findAllItems(): LiveData<List<Item>> {
+        return localDatabase.itemDao().findAll()
+    }
+
+    suspend fun insertItem(vararg item: Item) {
+        withContext(Dispatchers.IO) {
+            localDatabase.itemDao().insert(*item)
+        }
+    }
+
+    suspend fun updateItem(vararg item: Item) {
+        withContext(Dispatchers.IO) {
+            localDatabase.itemDao().update(*item)
+        }
+    }
+
+    suspend fun deleteItem(vararg item: Item) {
+        withContext(Dispatchers.IO) {
+            localDatabase.itemDao().delete(*item)
+        }
+    }
+
+    suspend fun findItemAuthorization(itemId: String): ItemAuthorization? {
+        return withContext(Dispatchers.IO) {
+            localDatabase.itemAuthorizationDao().find(itemId)
+        }
+    }
+
     suspend fun reset() {
         withContext(Dispatchers.IO) {
             localDatabase.clearAllTables()
-        }
-    }
-
-    suspend fun insertItemKey(vararg itemKey: ItemKey) {
-        withContext(Dispatchers.IO) {
-            localDatabase.itemDao().insert(*itemKey)
-        }
-    }
-
-    suspend fun findAllItemKeys(): List<ItemKey> {
-        return withContext(Dispatchers.IO) {
-            localDatabase.itemDao().findAll()
-        }
-    }
-
-    suspend fun findUserItemKeys(username: String): List<ItemKey> {
-        return withContext(Dispatchers.IO) {
-            localDatabase.itemDao().findUserItemKeys(username)
         }
     }
 }
@@ -98,7 +112,7 @@ interface UserDao {
     fun findAll(): List<User>
 
     @Query("SELECT * FROM users WHERE username = :username")
-    fun findUser(username: String): User?
+    fun find(username: String): User?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg users: User)
@@ -108,6 +122,27 @@ interface UserDao {
 
     @Delete
     fun delete(user: User)
+}
+
+@Dao
+interface ItemDao {
+    @Query("SELECT * FROM items ORDER BY created")
+    fun findAll(): LiveData<List<Item>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(vararg item: Item)
+
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    fun update(vararg items: Item)
+
+    @Delete
+    fun delete(vararg items: Item)
+}
+
+@Dao
+interface ItemAuthorizationDao {
+    @Query("SELECT * FROM item_authorizations WHERE itemId = :itemId")
+    fun find(itemId: String): ItemAuthorization?
 }
 
 class ModelConverters {
@@ -153,16 +188,11 @@ class ModelConverters {
             ProtectedValue.Deserializer<UserSettings>().deserializeOrNull(it)
         }
     }
-}
 
-@Dao
-interface ItemDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(vararg itemKey: ItemKey)
-
-    @Query("SELECT * FROM itemkeys")
-    fun findAll(): List<ItemKey>
-
-    @Query("SELECT * FROM itemkeys WHERE username = :username")
-    fun findUserItemKeys(username: String): List<ItemKey>
+    @TypeConverter
+    fun stringToProtectedValueWithItemData(serializedProtectedValue: String?): ProtectedValue<ItemData>? {
+        return serializedProtectedValue?.let {
+            ProtectedValue.Deserializer<ItemData>().deserializeOrNull(it)
+        }
+    }
 }
