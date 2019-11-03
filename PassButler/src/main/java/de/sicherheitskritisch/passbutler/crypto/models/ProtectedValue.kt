@@ -18,7 +18,7 @@ import org.json.JSONObject
 /**
  * Wraps a `JSONSerializable` object to store it encrypted as a `JSONSerializable`.
  */
-class ProtectedValue<T : JSONSerializable>(
+class ProtectedValue<T : JSONSerializable> private constructor(
     initializationVector: ByteArray,
     encryptedValue: ByteArray,
     encryptionAlgorithm: EncryptionAlgorithm.Symmetric
@@ -126,6 +126,10 @@ class ProtectedValue<T : JSONSerializable>(
             } catch (e: Exception) {
                 throw CreateFailedException(e)
             }
+        }
+
+        fun <T : JSONSerializable> createInstanceForTesting(initializationVector: ByteArray, encryptedValue: ByteArray, encryptionAlgorithm: EncryptionAlgorithm.Symmetric): ProtectedValue<T> {
+            return ProtectedValue(initializationVector, encryptedValue, encryptionAlgorithm)
         }
     }
 

@@ -7,6 +7,7 @@ import de.sicherheitskritisch.passbutler.base.JSONSerializableDeserializer
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.putString
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
+import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue.Companion.createInstanceForTesting
 import de.sicherheitskritisch.passbutler.hexToBytes
 import io.mockk.every
 import io.mockk.mockk
@@ -43,7 +44,7 @@ class ProtectedValueTest {
 
     @Test
     fun `Serialize a protected value with short encrypted value and deserialize it than`() {
-        val protectedValueReference = createTestProtectedValue(
+        val protectedValueReference = createSimpleTestProtectedValue(
             initializationVector = "1310aadeaa489ae84125c36a".hexToBytes(),
             encryptedValue = "4e692fce708b1b759cf61beb5c4e55a3a22d749c5839b3654d6cbe2299b3c28a".hexToBytes()
         )
@@ -61,7 +62,7 @@ class ProtectedValueTest {
 
     @Test
     fun `Serialize a protected value with longer encrypted value and deserialize it than`() {
-        val protectedValueReference = createTestProtectedValue(
+        val protectedValueReference = createSimpleTestProtectedValue(
             initializationVector = "b263e025c3d0e60765e7eeba".hexToBytes(),
             encryptedValue = "0664c21c4485b0a37ebd3d0c5cba77c88ed4be3d8035b40390d8c32c6eaaa12dfd3d6fc19fa6b0d12092e9384f26e60747019c0294de426574b8a3d1dab2f5802a4db735952300b5da".hexToBytes()
         )
@@ -151,7 +152,7 @@ class ProtectedValueTest {
 
         val initialInitializationVector = "aaaaaaaaaaaaaaaaaaaaaaaa".hexToBytes()
         val initialEncryptedValue = "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
-        val protectedValue = createTestProtectedValue(
+        val protectedValue = createSimpleTestProtectedValue(
             initializationVector = initialInitializationVector,
             encryptedValue = initialEncryptedValue,
             encryptionAlgorithm = mockAES256GCMAlgorithm
@@ -173,7 +174,7 @@ class ProtectedValueTest {
 
         val initialInitializationVector = "aaaaaaaaaaaaaaaaaaaaaaaa".hexToBytes()
         val initialEncryptedValue = "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
-        val protectedValue = createTestProtectedValue(
+        val protectedValue = createSimpleTestProtectedValue(
             initializationVector = initialInitializationVector,
             encryptedValue = initialEncryptedValue,
             encryptionAlgorithm = mockAES256GCMAlgorithm
@@ -201,7 +202,7 @@ class ProtectedValueTest {
         val unusedUpdatedInitializationVector = ByteArray(0)
         val mockAES256GCMAlgorithm = createMockAlgorithmAES256GCMWithoutEncryption(unusedUpdatedInitializationVector)
 
-        val protectedValue = createTestProtectedValue(
+        val protectedValue = createSimpleTestProtectedValue(
             initializationVector = unusedInitialInitializationVector,
             encryptedValue = unusedInitialEncryptedValue,
             encryptionAlgorithm = mockAES256GCMAlgorithm
@@ -236,7 +237,7 @@ class ProtectedValueTest {
 
         val unusedInitializationVector = ByteArray(0)
         val encryptedTestJSONSerializable = byteArrayOf(123, 34, 116, 101, 115, 116, 70, 105, 101, 108, 100, 34, 58, 34, 116, 101, 115, 116, 86, 97, 108, 117, 101, 34, 125)
-        val protectedValue = ProtectedValue<TestJSONSerializable>(
+        val protectedValue = createInstanceForTesting<TestJSONSerializable>(
             initializationVector = unusedInitializationVector,
             encryptedValue = encryptedTestJSONSerializable,
             encryptionAlgorithm = mockAES256GCMAlgorithm
@@ -256,7 +257,7 @@ class ProtectedValueTest {
         val unusedUpdatedInitializationVector = ByteArray(0)
         val mockAES256GCMAlgorithm = createMockAlgorithmAES256GCMWithoutEncryption(unusedUpdatedInitializationVector)
 
-        val protectedValue = ProtectedValue<TestJSONSerializable>(
+        val protectedValue = createInstanceForTesting<TestJSONSerializable>(
             initializationVector = unusedInitialInitializationVector,
             encryptedValue = unusedInitialEncryptedValue,
             encryptionAlgorithm = mockAES256GCMAlgorithm
@@ -276,14 +277,14 @@ class ProtectedValueTest {
 
     companion object {
         /**
-         * Create a simple `ProtectedValue` with given argument values and pre-set encryptionAlgorithm.
+         * Create a simple `ProtectedValue` with given type and pre-set `encryptionAlgorithm`.
          */
-        private fun createTestProtectedValue(
+        private fun createSimpleTestProtectedValue(
             initializationVector: ByteArray,
             encryptedValue: ByteArray,
             encryptionAlgorithm: EncryptionAlgorithm.Symmetric = EncryptionAlgorithm.Symmetric.AES256GCM
         ): ProtectedValue<JSONSerializable> {
-            return ProtectedValue(initializationVector, encryptedValue, encryptionAlgorithm)
+            return createInstanceForTesting(initializationVector, encryptedValue, encryptionAlgorithm)
         }
 
         /**
