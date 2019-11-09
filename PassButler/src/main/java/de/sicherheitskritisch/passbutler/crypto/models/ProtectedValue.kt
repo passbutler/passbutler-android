@@ -1,8 +1,11 @@
 package de.sicherheitskritisch.passbutler.crypto.models
 
+import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.JSONSerializableDeserializer
 import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.Result
+import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.getByteArray
 import de.sicherheitskritisch.passbutler.base.putByteArray
 import de.sicherheitskritisch.passbutler.base.putJSONSerializable
@@ -53,6 +56,24 @@ class ProtectedValue<T : JSONSerializable> private constructor(
             throw DecryptFailedException("The value could not be deserialized!", e)
         } catch (e: Exception) {
             throw DecryptFailedException("The value could not be decrypted!", e)
+        }
+    }
+
+    // TODO: Use `Result` for normal `decrypt` method and delete this
+    fun decryptWithResult(encryptionKey: ByteArray, deserializer: JSONSerializableDeserializer<T>): Result<T> {
+        return try {
+            require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
+
+            val decryptedData = encryptionAlgorithm.decrypt(initializationVector, encryptionKey, encryptedValue).let { decryptedBytes ->
+                val jsonSerializedString = decryptedBytes.toUTF8String()
+                deserializer.deserialize(jsonSerializedString)
+            }
+
+            Success(decryptedData)
+        } catch (e: JSONException) {
+            Failure(DecryptFailedException("The value could not be deserialized!", e))
+        } catch (e: Exception) {
+            Failure(DecryptFailedException("The value could not be decrypted!", e))
         }
     }
 
