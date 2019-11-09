@@ -48,11 +48,13 @@ data class Item(
 }
 
 data class ItemData(
+    val title: String,
     val password: String
 ) : JSONSerializable {
 
     override fun serialize(): JSONObject {
         return JSONObject().apply {
+            putString(SERIALIZATION_KEY_TITLE, title)
             putString(SERIALIZATION_KEY_PASSWORD, password)
         }
     }
@@ -61,12 +63,14 @@ data class ItemData(
         @Throws(JSONException::class)
         override fun deserialize(jsonObject: JSONObject): ItemData {
             return ItemData(
+                title = jsonObject.getString(SERIALIZATION_KEY_TITLE),
                 password = jsonObject.getString(SERIALIZATION_KEY_PASSWORD)
             )
         }
     }
 
     companion object {
+        private const val SERIALIZATION_KEY_TITLE = "title"
         private const val SERIALIZATION_KEY_PASSWORD = "password"
     }
 }
