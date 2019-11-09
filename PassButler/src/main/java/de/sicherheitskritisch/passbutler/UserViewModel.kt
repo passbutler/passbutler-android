@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.clear
+import de.sicherheitskritisch.passbutler.base.viewmodels.ManualCancelledCoroutineScopeViewModel
 import de.sicherheitskritisch.passbutler.base.viewmodels.ModelBasedViewModel
 import de.sicherheitskritisch.passbutler.base.viewmodels.SensibleDataViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
@@ -30,9 +31,7 @@ import kotlin.coroutines.CoroutineContext
 
 /**
  * This viewmodel is held by `RootViewModel` end contains the business logic for logged-in user.
- *
- * No need to inherit from `CoroutineScopeAndroidViewModel` because this viewmodel is not held by a `Fragment`,
- * thus `onCleared()` is never called. Instead `cancelJobs()` is manually called by `RootViewModel`.
+ * The method `cancelJobs()` is manually called by `RootViewModel`.
  */
 class UserViewModel private constructor(
     private val userManager: UserManager,
@@ -44,7 +43,7 @@ class UserViewModel private constructor(
     private val protectedItemEncryptionSecretKey: ProtectedValue<CryptographicKey>,
     private val protectedSettings: ProtectedValue<UserSettings>,
     masterPassword: String?
-) : ViewModel(), ModelBasedViewModel<User>, SensibleDataViewModel<String>, CoroutineScope {
+) : ManualCancelledCoroutineScopeViewModel(), ModelBasedViewModel<User>, SensibleDataViewModel<String> {
 
     val userType
         get() = userManager.loggedInStateStorage.userType
@@ -118,11 +117,6 @@ class UserViewModel private constructor(
     private var itemEncryptionSecretKey: ByteArray? = null
     private var settings: UserSettings? = null
 
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Default + coroutineJob
-
-    private val coroutineJob = SupervisorJob()
-
     @Throws(IllegalArgumentException::class)
     constructor(userManager: UserManager, user: User, masterPassword: String?) : this(
         userManager,
@@ -148,11 +142,6 @@ class UserViewModel private constructor(
                 }
             }
         }
-    }
-
-    fun cancelJobs() {
-        L.d("UserViewModel", "cancelJobs()")
-        coroutineJob.cancel()
     }
 
     @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
