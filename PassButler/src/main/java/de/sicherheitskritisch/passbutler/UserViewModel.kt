@@ -2,13 +2,11 @@ package de.sicherheitskritisch.passbutler
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.viewmodels.ManualCancelledCoroutineScopeViewModel
 import de.sicherheitskritisch.passbutler.base.viewmodels.ModelBasedViewModel
-import de.sicherheitskritisch.passbutler.base.viewmodels.SensibleDataViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
 import de.sicherheitskritisch.passbutler.crypto.Derivation
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
@@ -18,16 +16,13 @@ import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.database.models.Item
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 import javax.crypto.Cipher
-import kotlin.coroutines.CoroutineContext
 
 /**
  * This viewmodel is held by `RootViewModel` end contains the business logic for logged-in user.
@@ -43,7 +38,7 @@ class UserViewModel private constructor(
     private val protectedItemEncryptionSecretKey: ProtectedValue<CryptographicKey>,
     private val protectedSettings: ProtectedValue<UserSettings>,
     masterPassword: String?
-) : ManualCancelledCoroutineScopeViewModel(), ModelBasedViewModel<User>, SensibleDataViewModel<String> {
+) : ManualCancelledCoroutineScopeViewModel(), ModelBasedViewModel<User> {
 
     val userType
         get() = userManager.loggedInStateStorage.userType
@@ -144,9 +139,8 @@ class UserViewModel private constructor(
         }
     }
 
-    @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
     @Throws(UnlockFailedException::class)
-    override suspend fun decryptSensibleData(masterPassword: String) {
+    suspend fun decryptSensibleData(masterPassword: String) {
         L.d("UserViewModel", "decryptSensibleData()")
 
         try {
@@ -179,7 +173,7 @@ class UserViewModel private constructor(
         }
     }
 
-    override suspend fun clearSensibleData() {
+    suspend fun clearSensibleData() {
         L.d("UserViewModel", "clearSensibleData()")
 
         masterEncryptionKey?.clear()
@@ -203,28 +197,6 @@ class UserViewModel private constructor(
 
             automaticLockTimeout.value = null
             hidePasswordsEnabled.value = null
-        }
-    }
-
-    fun updateItem(itemViewModel: ItemViewModel) {
-        launch(Dispatchers.IO) {
-            val item = itemViewModel.createModel()
-
-            val now = Date()
-            item.modified = now
-
-            userManager.updateItem(item)
-        }
-    }
-
-    fun deleteItem(itemViewModel: ItemViewModel) {
-        launch(Dispatchers.IO) {
-            val item = itemViewModel.createModel()
-
-            val now = Date()
-            item.modified = now
-
-            userManager.deleteItem(item)
         }
     }
 
