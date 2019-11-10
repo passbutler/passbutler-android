@@ -360,22 +360,17 @@ class UserViewModel private constructor(
             val oldItemViewModels = itemViewModels.value
             val newItemViewModels = newItems
                 ?.mapNotNull { item ->
-                    oldItemViewModels
-                        ?.find { it.id == item.id }
-                        ?.takeIf {
-                            // TODO: Also check itemAuthorization
-                            it.item == item /*&& it.itemAuthorization ==*/
-                        }
-                        ?: run {
-                            val itemAuthorization = userManager.findItemAuthorization(item)
+                    val itemAuthorization = userManager.findItemAuthorization(item)
 
-                            if (itemAuthorization != null) {
-                                ItemViewModel(item, itemAuthorization, userManager)
-                            } else {
-                                L.w("ItemsChangedObserver", "createItemViewModelList(): The item authorization of item ${item.id} was not found - skip item!")
-                                null
-                            }
-                        }
+                    if (itemAuthorization != null) {
+                        oldItemViewModels
+                            ?.find { it.id == item.id }
+                            ?.takeIf { it.item == item && it.itemAuthorization == itemAuthorization }
+                            ?: ItemViewModel(item, itemAuthorization, userManager)
+                    } else {
+                        L.w("ItemsChangedObserver", "createItemViewModelList(): The item authorization of item ${item.id} was not found - skip item!")
+                        null
+                    }
                 }
                 ?: emptyList()
 
