@@ -70,69 +70,8 @@ class UserViewModel private constructor(
     // Save instance to be able to unregister observer on this instance
     private val items = userManager.findItems()
 
-    private val itemsObserver = Observer<List<Item>?> { newItems ->
-        updateItemsJob?.cancel()
-        updateItemsJob = launch {
-            val oldItemViewModels = itemViewModels.value
-            val newItemViewModels = newItems
-                ?.mapNotNull { item ->
-                    oldItemViewModels
-                        ?.find { it.id == item.id }
-                        ?.takeIf {
-                            // TODO: Also check itemAuthorization
-                            it.item == item /*&& it.itemAuthorization ==*/
-                        }
-                        ?: run {
-                            val itemAuthorization = userManager.findItemAuthorization(item)
-
-                            if (itemAuthorization != null) {
-                                ItemViewModel(item, itemAuthorization, userManager)
-                            } else {
-                                L.w("UserViewModel", "ItemsObserver: The item authorization of item ${item.id} was not found - skip item!")
-                                null
-                            }
-                        }
-                }
-                ?: emptyList()
-
-            // Decrypt new items that are still not unlocked
-            val failedItemViewModels = newItemViewModels
-                .filter { it.itemData == null }
-                .map {
-                    val itemEncryptionSecretKey = itemEncryptionSecretKey ?: throw IllegalStateException("The item encryption key is null despite item decryption was started!")
-
-                    it to async {
-                        it.decryptSensibleData(itemEncryptionSecretKey)
-                    }
-                }
-                .mapNotNull {
-                    val itemViewModel = it.first
-                    val itemDecryptSensibleDataResult = it.second.await()
-
-                    when (itemDecryptSensibleDataResult) {
-                        is Success -> {
-                            L.d("UserViewModel", "The item ${itemViewModel.id} was decrypted successfully!")
-                            null
-                        }
-                        is Failure -> {
-                            L.w("UserViewModel", "The item ${itemViewModel.id} could not be decrypted!", itemDecryptSensibleDataResult.throwable)
-                            itemViewModel
-                        }
-                    }
-                }
-
-            val updatedItemViewModels = newItemViewModels
-                .subtract(failedItemViewModels)
-                .sortedBy { it.created }
-
-            withContext(Dispatchers.Main) {
-                L.d("UserViewModel", "Updated updatedItemViewModels = ${updatedItemViewModels.size}")
-                itemViewModels.value = updatedItemViewModels
-            }
-        }
-    }
-
-    private var updateItemsJob: Job? = null
+    private val itemsObserver = ItemsChangedObserver()
+    private var itemsObserverUpdateJob: Job? = null
 
     private val automaticLockTimeoutChangedObserver = Observer<Int?> { applyUserSettings() }
     private val hidePasswordsEnabledChangedObserver = Observer<Boolean?> { applyUserSettings() }
@@ -157,7 +96,7 @@ class UserViewModel private constructor(
     init {
         // If the master password was supplied (only on login), directly unlock resources
         if (masterPassword != null) {
-            launch(Dispatchers.Default) {
+            launch {
                 try {
                     decryptSensibleData(masterPassword)
                 } catch (e: UnlockFailedException) {
@@ -214,7 +153,7 @@ class UserViewModel private constructor(
         withContext(Dispatchers.Main) {
             // First remove observer and than cancel the (possible) running update `ItemViewModel` list job
             items.removeObserver(itemsObserver)
-            updateItemsJob?.cancel()
+            itemsObserverUpdateJob?.cancel()
 
             itemViewModels.value?.forEach { it.clearSensibleData() }
         }
@@ -399,6 +338,77 @@ class UserViewModel private constructor(
     class UpdateMasterPasswordFailedException(cause: Exception? = null) : Exception(cause)
     class EnableBiometricUnlockFailedException(cause: Exception? = null) : Exception(cause)
     class DisableBiometricUnlockFailedException(cause: Exception? = null) : Exception(cause)
+
+    private inner class ItemsChangedObserver : Observer<List<Item>?> {
+        override fun onChanged(newItems: List<Item>?) {
+            itemsObserverUpdateJob?.cancel()
+            itemsObserverUpdateJob = launch {
+                val newItemViewModels = createItemViewModelList(newItems)
+                val failedDecryptionItemViewModels = collectFailedDecryptionItemViewModels(newItemViewModels)
+                val updatedItemViewModels = newItemViewModels
+                    .subtract(failedDecryptionItemViewModels)
+                    .sortedBy { it.created }
+
+                withContext(Dispatchers.Main) {
+                    L.d("ItemsChangedObserver", "onChanged(): Updated size of itemViewModels = ${updatedItemViewModels.size}")
+                    itemViewModels.value = updatedItemViewModels
+                }
+            }
+        }
+
+        private suspend fun createItemViewModelList(newItems: List<Item>?): List<ItemViewModel> {
+            val oldItemViewModels = itemViewModels.value
+            val newItemViewModels = newItems
+                ?.mapNotNull { item ->
+                    oldItemViewModels
+                        ?.find { it.id == item.id }
+                        ?.takeIf {
+                            // TODO: Also check itemAuthorization
+                            it.item == item /*&& it.itemAuthorization ==*/
+                        }
+                        ?: run {
+                            val itemAuthorization = userManager.findItemAuthorization(item)
+
+                            if (itemAuthorization != null) {
+                                ItemViewModel(item, itemAuthorization, userManager)
+                            } else {
+                                L.w("ItemsChangedObserver", "createItemViewModelList(): The item authorization of item ${item.id} was not found - skip item!")
+                                null
+                            }
+                        }
+                }
+                ?: emptyList()
+
+            return newItemViewModels
+        }
+
+        private suspend fun collectFailedDecryptionItemViewModels(itemViewModels: List<ItemViewModel>): List<ItemViewModel> {
+            val itemEncryptionSecretKey = itemEncryptionSecretKey ?: throw IllegalStateException("The item encryption key is null despite item decryption was started!")
+
+            return itemViewModels
+                .filter { it.itemData == null }
+                .map {
+                    it to async {
+                        it.decryptSensibleData(itemEncryptionSecretKey)
+                    }
+                }
+                .mapNotNull {
+                    val itemViewModel = it.first
+                    val itemDecryptSensibleDataResult = it.second.await()
+
+                    when (itemDecryptSensibleDataResult) {
+                        is Success -> {
+                            L.d("ItemsChangedObserver", "collectFailedDecryptionItemViewModels(): The item ${itemViewModel.id} was decrypted successfully!")
+                            null
+                        }
+                        is Failure -> {
+                            L.w("ItemsChangedObserver", "collectFailedDecryptionItemViewModels(): The item ${itemViewModel.id} could not be decrypted!", itemDecryptSensibleDataResult.throwable)
+                            itemViewModel
+                        }
+                    }
+                }
+        }
+    }
 
     companion object {
         const val BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME = "MasterPasswordEncryptionKey"
