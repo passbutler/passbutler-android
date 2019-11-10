@@ -28,7 +28,7 @@ class ItemViewModel(
     private val userManager: UserManager
 ) : EditableViewModel<ItemEditingViewModel> {
 
-    val id: String?
+    val id
         get() = item.id
 
     val title = ValueGetterLiveData {

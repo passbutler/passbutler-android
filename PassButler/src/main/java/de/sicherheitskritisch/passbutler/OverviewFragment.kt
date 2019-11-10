@@ -303,9 +303,7 @@ class ItemAdapter(private val overviewFragment: OverviewFragment) : ListAdapter<
                 executePendingBindings()
 
                 binding.root.setOnClickListener {
-                    itemViewModel.id?.let { itemId ->
-                        overviewFragment.showFragment(ItemDetailFragment.newInstance(itemId))
-                    }
+                    overviewFragment.showFragment(ItemDetailFragment.newInstance(itemViewModel.id))
                 }
             }
         }
