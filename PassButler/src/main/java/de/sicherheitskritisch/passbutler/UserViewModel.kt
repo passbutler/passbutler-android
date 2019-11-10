@@ -48,9 +48,6 @@ class UserViewModel private constructor(
     val encryptedMasterPassword
         get() = userManager.loggedInStateStorage.encryptedMasterPassword
 
-    val id
-        get() = username
-
     val username
         get() = user.username
 

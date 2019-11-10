@@ -2,6 +2,7 @@ package de.sicherheitskritisch.passbutler
 
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.Failure
+import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
@@ -57,7 +58,9 @@ class ItemViewModel(
 
                     when (itemDataDecryptionResult) {
                         is Success -> {
-                            updateSensibleDataFields(decryptedItemKey, itemDataDecryptionResult.result)
+                            val decryptedItemData = itemDataDecryptionResult.result
+                            updateSensibleDataFields(decryptedItemKey, decryptedItemData)
+
                             Success(Unit)
                         }
                         is Failure -> {
@@ -87,13 +90,15 @@ class ItemViewModel(
     }
 
     override fun createEditingViewModel(): ItemEditingViewModel {
-        val itemKey = itemKey ?: throw IllegalStateException("The item key is null despite the the ItemEditingViewModel is created!")
-        val itemModel = ItemModel.Existing(item, itemKey)
-        return ItemEditingViewModel(itemModel, userManager, itemData)
+        val itemData = itemData ?: throw IllegalStateException("The item data is null despite a ItemEditingViewModel is created!")
+        val itemKey = itemKey ?: throw IllegalStateException("The item key is null despite a ItemEditingViewModel is created!")
+
+        val itemModel = ItemModel.Existing(item, itemData, itemKey)
+        return ItemEditingViewModel(itemModel, userManager)
     }
 
     /**
-     * The methods `equals()` and `hashCode()` only check the `ItemModel` because this makes an item unique.
+     * The methods `equals()` and `hashCode()` only check the `item` and `itemAuthorization` fields because only these makes an item unique.
      * The `itemData` and `itemKey` is just a state of the item that should not cause the item list to change.
      */
 
@@ -117,92 +122,120 @@ class ItemViewModel(
 }
 
 class ItemEditingViewModel(
-    private var itemModel: ItemModel,
-    private val userManager: UserManager,
-    itemData: ItemData?
+    private val itemModel: ItemModel,
+    private val userManager: UserManager
 ) : ManualCancelledCoroutineScopeViewModel(), EditingViewModel {
 
-    val id = (itemModel as? ItemModel.Existing)?.item?.id ?: "-"
-
-    val title = NonNullMutableLiveData(itemData?.title ?: "Initial Title")
-    val password = NonNullMutableLiveData(itemData?.password ?: "Initial password")
+    val title = NonNullMutableLiveData(itemModel.asExisting()?.itemData?.title ?: "")
+    val password = NonNullMutableLiveData(itemModel.asExisting()?.itemData?.password ?: "")
 
     val saveRequestSendingViewModel = DefaultRequestSendingViewModel()
 
     private var saveCoroutineJob: Job? = null
+
+    init {
+        L.d("ItemEditingViewModel", "init(): id = ${itemModel.asExisting()?.item?.id}")
+    }
 
     fun save() {
         saveCoroutineJob?.cancel()
         saveCoroutineJob = createRequestSendingJob(saveRequestSendingViewModel) {
             val itemModel = itemModel
 
-            val itemData = ItemData(title.value, password.value)
-            val currentDate = Date()
-
             when (itemModel) {
-                is ItemModel.Creating -> {
-                    val userId = itemModel.userViewModel.id
-
-                    val symmetricEncryptionAlgorithm = EncryptionAlgorithm.Symmetric.AES256GCM
-                    val itemKey = symmetricEncryptionAlgorithm.generateEncryptionKey()
-
-                    val protectedItemData = ProtectedValue.create(symmetricEncryptionAlgorithm, itemKey, itemData)
-
-                    val item = Item(
-                        id = UUID.randomUUID().toString(),
-                        userId = userId,
-                        data = protectedItemData,
-                        deleted = false,
-                        modified = currentDate,
-                        created = currentDate
-                    )
-
-                    userManager.createItem(item)
-
-                    val asymmetricEncryptionAlgorithm = EncryptionAlgorithm.Asymmetric.RSA2048OAEP
-
-                    val userItemEncryptionPublicKey = itemModel.userViewModel.itemEncryptionPublicKey.key
-                    val protectedItemKey = ProtectedValue.create(asymmetricEncryptionAlgorithm, userItemEncryptionPublicKey, CryptographicKey(itemKey))
-
-                    val itemAuthorization = ItemAuthorization(
-                        id = UUID.randomUUID().toString(),
-                        userId = userId,
-                        itemId = item.id,
-                        itemKey = protectedItemKey,
-                        readOnly = false,
-                        deleted = false,
-                        modified = currentDate,
-                        created = currentDate
-                    )
-
-                    userManager.createItemAuthorization(itemAuthorization)
-
-                    this.itemModel = ItemModel.Existing(item, itemKey)
-                }
-                is ItemModel.Existing -> {
-
-                    // TODO: Fix itemKey is null because of reference is cleared
-
-                    // TODO: copy protectedItemData?
-                    val protectedItemData = itemModel.item.data.apply {
-                        update(itemModel.itemKey, itemData)
-                    }
-
-                    val item = itemModel.item.copy(
-                        data = protectedItemData,
-                        modified = currentDate
-                    )
-
-                    userManager.updateItem(item)
-
-                    this.itemModel = ItemModel.Existing(item, itemModel.itemKey)
-                }
+                is ItemModel.Creating -> saveNewItem(itemModel)
+                is ItemModel.Existing -> saveExistingItem(itemModel)
             }
         }
+    }
+
+    private suspend fun saveNewItem(creatingItemModel1: ItemModel.Creating) {
+        val loggedInUserId = creatingItemModel.loggedInUserViewModel.username
+        val loggedInUserItemEncryptionPublicKey = creatingItemModel.loggedInUserViewModel.itemEncryptionPublicKey.key
+
+        val itemData = createItemData()
+
+        val (item, itemKey) = createNewItemAndKey(loggedInUserId, itemData)
+        userManager.createItem(item)
+
+        val itemAuthorization = createNewItemAuthorization(loggedInUserId, loggedInUserItemEncryptionPublicKey, item, itemKey)
+        userManager.createItemAuthorization(itemAuthorization)
+    }
+
+    private fun createNewItemAndKey(loggedInUserId: String, itemData: ItemData): Pair<Item, ByteArray> {
+        val symmetricEncryptionAlgorithm = EncryptionAlgorithm.Symmetric.AES256GCM
+
+        // TODO: Handle exception / result
+        val itemKey = symmetricEncryptionAlgorithm.generateEncryptionKey()
+
+        // TODO: Handle exception / result
+        val protectedItemData = ProtectedValue.create(symmetricEncryptionAlgorithm, itemKey, itemData)
+
+        val currentDate = Date()
+
+        val item = Item(
+            id = UUID.randomUUID().toString(),
+            userId = loggedInUserId,
+            data = protectedItemData,
+            deleted = false,
+            modified = currentDate,
+            created = currentDate
+        )
+
+        return Pair(item, itemKey)
+    }
+
+    private fun createNewItemAuthorization(loggedInUserId: String, loggedInUserItemEncryptionPublicKey: ByteArray, item: Item, itemKey: ByteArray): ItemAuthorization {
+        val asymmetricEncryptionAlgorithm = EncryptionAlgorithm.Asymmetric.RSA2048OAEP
+
+        // TODO: Handle exception / result
+        val protectedItemKey = ProtectedValue.create(asymmetricEncryptionAlgorithm, loggedInUserItemEncryptionPublicKey, CryptographicKey(itemKey))
+
+        val currentDate = Date()
+
+        return ItemAuthorization(
+            id = UUID.randomUUID().toString(),
+            userId = loggedInUserId,
+            itemId = item.id,
+            itemKey = protectedItemKey,
+            readOnly = false,
+            deleted = false,
+            modified = currentDate,
+            created = currentDate
+        )
+    }
+
+    private suspend fun saveExistingItem(existingItemModel1: ItemModel.Existing) {
+
+        val itemData = createItemData()
+
+
+        // TODO: Fix itemKey is null because of reference is cleared
+        // TODO: copy protectedItemData?
+        val protectedItemData = existingItemModel.item.data.apply {
+            //update(existingItemModel.itemKey, itemData)
+        }
+
+        val currentDate = Date()
+
+        val item = existingItemModel.item.copy(
+            data = protectedItemData,
+            modified = currentDate
+        )
+
+        userManager.updateItem(item)
+    }
+
+    private fun createItemData(): ItemData {
+        return ItemData(title.value, password.value)
     }
 }
 
 sealed class ItemModel {
-    class Creating(val userViewModel: UserViewModel) : ItemModel()
-    class Existing(val item: Item, val itemKey: ByteArray) : ItemModel()
+    class Creating(val loggedInUserViewModel: UserViewModel) : ItemModel()
+    class Existing(val item: Item, val itemData: ItemData, val itemKey: ByteArray) : ItemModel()
+}
+
+private fun ItemModel.asExisting(): ItemModel.Existing? {
+    return (this as? ItemModel.Existing)
 }
