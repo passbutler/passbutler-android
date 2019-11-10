@@ -24,7 +24,7 @@ import org.json.JSONObject
 class ProtectedValue<T : JSONSerializable> private constructor(
     initializationVector: ByteArray,
     encryptedValue: ByteArray,
-    encryptionAlgorithm: EncryptionAlgorithm.Symmetric
+    encryptionAlgorithm: EncryptionAlgorithm
 ) : BaseEncryptedValue, JSONSerializable {
 
     override var initializationVector = initializationVector
@@ -48,9 +48,19 @@ class ProtectedValue<T : JSONSerializable> private constructor(
         return try {
             require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 
-            encryptionAlgorithm.decrypt(initializationVector, encryptionKey, encryptedValue).let { decryptedBytes ->
-                val jsonSerializedString = decryptedBytes.toUTF8String()
-                deserializer.deserialize(jsonSerializedString)
+            when (encryptionAlgorithm) {
+                is EncryptionAlgorithm.Symmetric -> {
+                    encryptionAlgorithm.decrypt(initializationVector, encryptionKey, encryptedValue).let { decryptedBytes ->
+                        val jsonSerializedString = decryptedBytes.toUTF8String()
+                        deserializer.deserialize(jsonSerializedString)
+                    }
+                }
+                is EncryptionAlgorithm.Asymmetric -> {
+                    encryptionAlgorithm.decrypt(encryptionKey, encryptedValue).let { decryptedBytes ->
+                        val jsonSerializedString = decryptedBytes.toUTF8String()
+                        deserializer.deserialize(jsonSerializedString)
+                    }
+                }
             }
         } catch (e: JSONException) {
             throw DecryptFailedException("The value could not be deserialized!", e)
@@ -64,9 +74,19 @@ class ProtectedValue<T : JSONSerializable> private constructor(
         return try {
             require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 
-            val decryptedData = encryptionAlgorithm.decrypt(initializationVector, encryptionKey, encryptedValue).let { decryptedBytes ->
-                val jsonSerializedString = decryptedBytes.toUTF8String()
-                deserializer.deserialize(jsonSerializedString)
+            val decryptedData = when (encryptionAlgorithm) {
+                is EncryptionAlgorithm.Symmetric -> {
+                    encryptionAlgorithm.decrypt(initializationVector, encryptionKey, encryptedValue).let { decryptedBytes ->
+                        val jsonSerializedString = decryptedBytes.toUTF8String()
+                        deserializer.deserialize(jsonSerializedString)
+                    }
+                }
+                is EncryptionAlgorithm.Asymmetric -> {
+                    encryptionAlgorithm.decrypt(encryptionKey, encryptedValue).let { decryptedBytes ->
+                        val jsonSerializedString = decryptedBytes.toUTF8String()
+                        deserializer.deserialize(jsonSerializedString)
+                    }
+                }
             }
 
             Success(decryptedData)
@@ -82,12 +102,24 @@ class ProtectedValue<T : JSONSerializable> private constructor(
         try {
             require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 
-            val newInitializationVector = encryptionAlgorithm.generateInitializationVector()
-            val encryptedValue = encryptionAlgorithm.encrypt(newInitializationVector, encryptionKey, updatedValue.toByteArray())
+            when (encryptionAlgorithm) {
+                is EncryptionAlgorithm.Symmetric -> {
+                    val newInitializationVector = encryptionAlgorithm.generateInitializationVector()
+                    val encryptedValue = encryptionAlgorithm.encrypt(newInitializationVector, encryptionKey, updatedValue.toByteArray())
 
-            // Update values only if encryption was successful
-            this.initializationVector = newInitializationVector
-            this.encryptedValue = encryptedValue
+                    // Update values only if encryption was successful
+                    this.initializationVector = newInitializationVector
+                    this.encryptedValue = encryptedValue
+                }
+                is EncryptionAlgorithm.Asymmetric -> {
+                    val encryptedValue = encryptionAlgorithm.encrypt(encryptionKey, updatedValue.toByteArray())
+
+                    // Update values only if encryption was successful
+                    this.initializationVector = ByteArray(0)
+                    this.encryptedValue = encryptedValue
+                }
+            }
+
         } catch (e: Exception) {
             throw UpdateFailedException(e)
         }
@@ -126,7 +158,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
         return JSONObject().apply {
             putByteArray(SERIALIZATION_KEY_INITIALIZATION_VECTOR, initializationVector)
             putByteArray(SERIALIZATION_KEY_ENCRYPTED_VALUE, encryptedValue)
-            putSymmetricEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM, encryptionAlgorithm)
+            putEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM, encryptionAlgorithm)
         }
     }
 
@@ -136,7 +168,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
             return ProtectedValue(
                 jsonObject.getByteArray(SERIALIZATION_KEY_INITIALIZATION_VECTOR),
                 jsonObject.getByteArray(SERIALIZATION_KEY_ENCRYPTED_VALUE),
-                jsonObject.getSymmetricEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM)
+                jsonObject.getEncryptionAlgorithm(SERIALIZATION_KEY_ENCRYPTION_ALGORITHM)
             )
         }
     }
@@ -145,13 +177,22 @@ class ProtectedValue<T : JSONSerializable> private constructor(
         const val SERIALIZATION_KEY_ENCRYPTION_ALGORITHM = "encryptionAlgorithm"
 
         @Throws(CreateFailedException::class)
-        fun <T : JSONSerializable> create(encryptionAlgorithm: EncryptionAlgorithm.Symmetric, encryptionKey: ByteArray, initialValue: T): ProtectedValue<T> {
+        fun <T : JSONSerializable> create(encryptionAlgorithm: EncryptionAlgorithm, encryptionKey: ByteArray, initialValue: T): ProtectedValue<T> {
             return try {
                 require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 
-                val newInitializationVector = encryptionAlgorithm.generateInitializationVector()
-                val encryptedValue = encryptionAlgorithm.encrypt(newInitializationVector, encryptionKey, initialValue.toByteArray())
-                ProtectedValue(newInitializationVector, encryptedValue, encryptionAlgorithm)
+                when (encryptionAlgorithm) {
+                    is EncryptionAlgorithm.Symmetric -> {
+                        val newInitializationVector = encryptionAlgorithm.generateInitializationVector()
+                        val encryptedValue = encryptionAlgorithm.encrypt(newInitializationVector, encryptionKey, initialValue.toByteArray())
+                        ProtectedValue(newInitializationVector, encryptedValue, encryptionAlgorithm)
+                    }
+                    is EncryptionAlgorithm.Asymmetric -> {
+                        val newInitializationVector = ByteArray(0)
+                        val encryptedValue = encryptionAlgorithm.encrypt(encryptionKey, initialValue.toByteArray())
+                        ProtectedValue(newInitializationVector, encryptedValue, encryptionAlgorithm)
+                    }
+                }
             } catch (e: Exception) {
                 throw CreateFailedException(e)
             }
@@ -200,21 +241,22 @@ fun <T : JSONSerializable> JSONObject.putProtectedValue(name: String, value: T?)
 }
 
 /**
- * Convenience method to put a `EncryptionAlgorithm.Symmetric` value to `JSONObject`.
+ * Convenience method to put a `EncryptionAlgorithm` value to `JSONObject`.
  */
 @Throws(JSONException::class)
-fun JSONObject.putSymmetricEncryptionAlgorithm(name: String, value: EncryptionAlgorithm.Symmetric): JSONObject {
+fun JSONObject.putEncryptionAlgorithm(name: String, value: EncryptionAlgorithm): JSONObject {
     val algorithmStringRepresentation = value.stringRepresentation
     return putString(name, algorithmStringRepresentation)
 }
 
 /**
- * Convenience method to get a `EncryptionAlgorithm.Symmetric` value from `JSONObject`.
+ * Convenience method to get a `EncryptionAlgorithm` value from `JSONObject`.
  */
 @Throws(JSONException::class)
-fun JSONObject.getSymmetricEncryptionAlgorithm(name: String): EncryptionAlgorithm.Symmetric {
+fun JSONObject.getEncryptionAlgorithm(name: String): EncryptionAlgorithm {
     return when (val algorithmStringRepresentation = getString(name)) {
         EncryptionAlgorithm.Symmetric.AES256GCM.stringRepresentation -> EncryptionAlgorithm.Symmetric.AES256GCM
-        else -> throw JSONException("The EncryptionAlgorithm.Symmetric string representation '$algorithmStringRepresentation' could not be found!")
+        EncryptionAlgorithm.Asymmetric.RSA2048OAEP.stringRepresentation -> EncryptionAlgorithm.Asymmetric.RSA2048OAEP
+        else -> throw JSONException("The EncryptionAlgorithm string representation '$algorithmStringRepresentation' could not be found!")
     }
 }
