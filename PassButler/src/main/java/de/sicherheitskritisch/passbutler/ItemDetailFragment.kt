@@ -32,9 +32,8 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
             val userManager = userViewModel?.userManager ?: throw IllegalStateException("The user manager is null!")
 
             val itemId = arguments?.getString(ARGUMENT_ITEM_ID)
-            val itemViewModel = userViewModel.itemViewModels.value?.find { itemViewModel ->
-                itemViewModel.id == itemId
-            } ?: ItemViewModel(userManager, ItemModel.New(userViewModel.id, userViewModel.itemEncryptionPublicKey.key))
+            val itemViewModel = userViewModel.itemViewModels.value?.find { itemViewModel -> itemViewModel.id == itemId }?.createEditingViewModel()
+                ?: ItemEditingViewModel(ItemModel.New(userViewModel.id, userViewModel.itemEncryptionPublicKey.key), userManager, null)
 
             val factory = ItemEditingViewModelFactory(itemViewModel)
 
@@ -100,11 +99,11 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 }
 
 class ItemEditingViewModelFactory(
-    private val itemViewModel: ItemViewModel
+    private val itemEditingViewModel: ItemEditingViewModel
 ) : ViewModelProvider.NewInstanceFactory() {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return (itemViewModel.createEditingViewModel()) as T
+        return itemEditingViewModel as T
     }
 }

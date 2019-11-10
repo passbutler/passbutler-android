@@ -22,71 +22,51 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.*
 
-class ItemViewModel private constructor(
-    private val itemModel: ItemModel,
+class ItemViewModel(
+    private val itemModel: ItemModel.Existing,
     private val userManager: UserManager
 ) : EditableViewModel<ItemEditingViewModel> {
 
     val id: String?
-        get() = when (itemModel) {
-            is ItemModel.New -> {
-                null // TODO: Is `null` okay or better new UUID?
-            }
-            is ItemModel.Existing -> itemModel.item.id
-        }
+        get() = itemModel.item.id
 
     val title = ValueGetterLiveData {
         itemData?.title
     }
 
     val subtitle = ValueGetterLiveData {
-        when (itemModel) {
-            is ItemModel.New -> null
-            is ItemModel.Existing -> itemModel.item.modified.formattedDateTime
-        }
+        itemModel.item.modified.formattedDateTime
     }
 
-    val sensibleDataLocked
-        get() = itemData == null
-
-    private var itemData: ItemData? = null
-
-    constructor(userManager: UserManager, itemModel: ItemModel.New) : this(itemModel, userManager)
-    constructor(userManager: UserManager, itemModel: ItemModel.Existing) : this(itemModel, userManager)
+    var itemData: ItemData? = null
+        private set
 
     suspend fun decryptSensibleData(userItemEncryptionSecretKey: ByteArray): Result<Unit> {
         return withContext(Dispatchers.Default) {
+            val itemKeyDecryptionResult = itemModel.itemAuthorization.itemKey.decryptWithResult(userItemEncryptionSecretKey, CryptographicKey.Deserializer)
 
-            if (itemModel is ItemModel.Existing) {
-                val itemKeyDecryptionResult = itemModel.itemAuthorization.itemKey.decryptWithResult(userItemEncryptionSecretKey, CryptographicKey.Deserializer)
+            when (itemKeyDecryptionResult) {
+                is Success -> {
+                    val decryptedItemKey = itemKeyDecryptionResult.result.key
+                    val itemDataDecryptionResult = itemModel.item.data.decryptWithResult(decryptedItemKey, ItemData.Deserializer)
 
-                when (itemKeyDecryptionResult) {
-                    is Success -> {
-                        val decryptedItemKey = itemKeyDecryptionResult.result.key
-                        val itemDataDecryptionResult = itemModel.item.data.decryptWithResult(decryptedItemKey, ItemData.Deserializer)
+                    when (itemDataDecryptionResult) {
+                        is Success -> {
+                            itemData = itemDataDecryptionResult.result
 
-                        when (itemDataDecryptionResult) {
-                            is Success -> {
-                                itemData = itemDataDecryptionResult.result
+                            title.notifyChange()
+                            subtitle.notifyChange()
 
-                                title.notifyChange()
-                                subtitle.notifyChange()
-
-                                Success(Unit)
-                            }
-                            is Failure -> {
-                                Failure(itemDataDecryptionResult.throwable)
-                            }
+                            Success(Unit)
+                        }
+                        is Failure -> {
+                            Failure(itemDataDecryptionResult.throwable)
                         }
                     }
-                    is Failure -> {
-                        Failure(itemKeyDecryptionResult.throwable)
-                    }
                 }
-            } else {
-                // TODO: Set itemkey + itemdata? should not be necessary because this VM is re-created automatically if model was saved
-                // A new created viewmodel without model does not need to be decrypted
-                Success(Unit)
+                is Failure -> {
+                    Failure(itemKeyDecryptionResult.throwable)
+                }
             }
         }
     }
@@ -100,8 +80,8 @@ class ItemViewModel private constructor(
     }
 
     /**
-     * The methods `equals()` and `hashCode()` are only check the `Item` and `ItemAuthorization` because this makes an item unique.
-     * The item key can be changed without causing the list to change.
+     * The methods `equals()` and `hashCode()` only check the `ItemModel` because this makes an item unique.
+     * The `itemData` is just a state of the item that should not cause the item list to change.
      */
 
     override fun equals(other: Any?): Boolean {
@@ -131,7 +111,7 @@ class ItemEditingViewModel(
 
     val saveRequestSendingViewModel = DefaultRequestSendingViewModel()
 
-//    private var protectedItemData = item?.data?.copy()
+    // TODO: Save job?
 
     fun save() {
         createRequestSendingJob(saveRequestSendingViewModel) {

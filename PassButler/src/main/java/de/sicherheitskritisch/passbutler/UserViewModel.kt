@@ -2,8 +2,10 @@ package de.sicherheitskritisch.passbutler
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
+import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.viewmodels.ManualCancelledCoroutineScopeViewModel
 import de.sicherheitskritisch.passbutler.base.viewmodels.ModelBasedViewModel
@@ -72,34 +74,45 @@ class UserViewModel private constructor(
         updateItemsJob?.cancel()
         updateItemsJob = launch {
             val oldItemViewModels = itemViewModels.value
-            val newItemViewModels = newItems?.mapNotNull { newItem ->
-                oldItemViewModels?.find { it.id == newItem.id } ?: run {
-                    val itemAuthorization = userManager.findItemAuthorization(newItem)
 
-                    if (itemAuthorization != null) {
-                        ItemViewModel(userManager, ItemModel.Existing(newItem, itemAuthorization))
+            val newItemViewModels = newItems
+                ?.mapNotNull { newItem ->
+                    oldItemViewModels?.find { it.id == newItem.id } ?: run {
+                        val itemAuthorization = userManager.findItemAuthorization(newItem)
 
-                    } else {
-                        L.e("UserViewModel", "ItemsObserver: The item authorization of item ${newItem.id} was not found - skip item!")
-                        null
+                        if (itemAuthorization != null) {
+                            ItemViewModel(ItemModel.Existing(newItem, itemAuthorization), userManager)
+                        } else {
+                            L.w("UserViewModel", "ItemsObserver: The item authorization of item ${newItem.id} was not found - skip item!")
+                            null
+                        }
                     }
                 }
-            } ?: listOf()
-
-            // Decrypt new items that are still not unlocked
-            newItemViewModels
-                .filter { it.sensibleDataLocked }
-                .map {
-                    async {
+                ?.filter {
+                    // Decrypt new items that are still not unlocked
+                    it.itemData == null
+                }
+                ?.map {
+                    it to async {
                         val itemEncryptionSecretKey = itemEncryptionSecretKey ?: throw IllegalStateException("The item encryption key is null despite item decryption was started!")
                         it.decryptSensibleData(itemEncryptionSecretKey)
                     }
                 }
-                .forEach {
-                    // TODO: exclude items that are failed and clear them
-                    // L.e("ItemViewModel", "decryptSensibleData(): The item could not be decrypted!", e)
-                    it.await()
+                ?.mapNotNull {
+                    val decryptSensibleDataResult = it.second.await()
+
+                    when (decryptSensibleDataResult) {
+                        is Success -> {
+                            L.d("UserViewModel", "The item ${it.first.id} was decrypted successfully!")
+                            it.first
+                        }
+                        is Failure -> {
+                            L.w("UserViewModel", "The item ${it.first.id} could not be decrypted!", decryptSensibleDataResult.throwable)
+                            null
+                        }
+                    }
                 }
+                ?: listOf()
 
             withContext(Dispatchers.Main) {
                 itemViewModels.value = newItemViewModels
