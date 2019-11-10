@@ -99,6 +99,24 @@ class LocalRepository(applicationContext: Context) {
         }
     }
 
+    suspend fun insertItemAuthorization(vararg itemAuthorization: ItemAuthorization) {
+        withContext(Dispatchers.IO) {
+            localDatabase.itemAuthorizationDao().insert(*itemAuthorization)
+        }
+    }
+
+    suspend fun updateItemAuthorization(vararg itemAuthorization: ItemAuthorization) {
+        withContext(Dispatchers.IO) {
+            localDatabase.itemAuthorizationDao().update(*itemAuthorization)
+        }
+    }
+
+    suspend fun deleteItemAuthorization(vararg itemAuthorization: ItemAuthorization) {
+        withContext(Dispatchers.IO) {
+            localDatabase.itemAuthorizationDao().delete(*itemAuthorization)
+        }
+    }
+
     suspend fun reset() {
         withContext(Dispatchers.IO) {
             localDatabase.clearAllTables()
@@ -130,7 +148,7 @@ interface ItemDao {
     fun findAll(): LiveData<List<Item>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(vararg item: Item)
+    fun insert(vararg items: Item)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun update(vararg items: Item)
@@ -143,6 +161,15 @@ interface ItemDao {
 interface ItemAuthorizationDao {
     @Query("SELECT * FROM item_authorizations WHERE itemId = :itemId")
     fun find(itemId: String): ItemAuthorization?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(vararg itemAuthorizations: ItemAuthorization)
+
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    fun update(vararg itemAuthorizations: ItemAuthorization)
+
+    @Delete
+    fun delete(vararg itemAuthorizations: ItemAuthorization)
 }
 
 class ModelConverters {

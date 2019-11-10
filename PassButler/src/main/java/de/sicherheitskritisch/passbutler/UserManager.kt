@@ -239,6 +239,18 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         return localRepository.findItemAuthorization(item.id)
     }
 
+    suspend fun createItemAuthorization(itemAuthorization: ItemAuthorization) {
+        localRepository.insertItemAuthorization(itemAuthorization)
+    }
+
+    suspend fun updateItemAuthorization(itemAuthorization: ItemAuthorization) {
+        localRepository.updateItemAuthorization(itemAuthorization)
+    }
+
+    suspend fun deleteItemAuthorization(itemAuthorization: ItemAuthorization) {
+        localRepository.deleteItemAuthorization(itemAuthorization)
+    }
+
     @Throws(Synchronization.SynchronizationFailedException::class)
     override suspend fun synchronize() {
         val userWebservice = userWebservice ?: throw Synchronization.SynchronizationFailedException("The user webservice is not initialized!")

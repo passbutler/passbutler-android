@@ -29,12 +29,12 @@ import javax.crypto.Cipher
  * The method `cancelJobs()` is manually called by `RootViewModel`.
  */
 class UserViewModel private constructor(
-    private val userManager: UserManager,
+    val userManager: UserManager,
     private val user: User,
     private var masterPasswordAuthenticationHash: String,
     private val masterKeyDerivationInformation: KeyDerivationInformation,
     private val protectedMasterEncryptionKey: ProtectedValue<CryptographicKey>,
-    private val itemEncryptionPublicKey: CryptographicKey,
+    val itemEncryptionPublicKey: CryptographicKey,
     private val protectedItemEncryptionSecretKey: ProtectedValue<CryptographicKey>,
     private val protectedSettings: ProtectedValue<UserSettings>,
     masterPassword: String?
@@ -45,6 +45,9 @@ class UserViewModel private constructor(
 
     val encryptedMasterPassword
         get() = userManager.loggedInStateStorage.encryptedMasterPassword
+
+    val id
+        get() = username
 
     val username
         get() = user.username
@@ -74,7 +77,8 @@ class UserViewModel private constructor(
                     val itemAuthorization = userManager.findItemAuthorization(newItem)
 
                     if (itemAuthorization != null) {
-                        ItemViewModel(newItem, itemAuthorization)
+                        ItemViewModel(userManager, ItemModel.Existing(newItem, itemAuthorization))
+
                     } else {
                         L.e("UserViewModel", "ItemsObserver: The item authorization of item ${newItem.id} was not found - skip item!")
                         null
@@ -84,7 +88,7 @@ class UserViewModel private constructor(
 
             // Decrypt new items that are still not unlocked
             newItemViewModels
-                .filter { it.sensibleDataLocked == false }
+                .filter { it.sensibleDataLocked }
                 .map {
                     async {
                         val itemEncryptionSecretKey = itemEncryptionSecretKey ?: throw IllegalStateException("The item encryption key is null despite item decryption was started!")

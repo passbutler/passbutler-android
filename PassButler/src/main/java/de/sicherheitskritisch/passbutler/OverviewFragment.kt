@@ -139,10 +139,10 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     }
 
     private fun setupEntryList(binding: FragmentOverviewBinding) {
-        binding.layoutOverviewContent.recyclerViewItemList.adapter = ItemAdapter(viewModel)
+        binding.layoutOverviewContent.recyclerViewItemList.adapter = ItemAdapter(this)
 
         binding.layoutOverviewContent.floatingActionButtonAddEntry.setOnClickListener {
-            viewModel.loggedInUserViewModel?.createItem()
+            showFragment(ItemDetailFragment.newInstance(null))
         }
     }
 
@@ -276,11 +276,11 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     }
 }
 
-class ItemAdapter(private val overviewViewModel: OverviewViewModel) : ListAdapter<ItemViewModel, ItemAdapter.EntryViewHolder>(ItemDiffCallback()) {
+class ItemAdapter(private val overviewFragment: OverviewFragment) : ListAdapter<ItemViewModel, ItemAdapter.EntryViewHolder>(ItemDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EntryViewHolder {
         val binding = DataBindingUtil.inflate<ListItemEntryBinding>(LayoutInflater.from(parent.context), R.layout.list_item_entry, parent, false)
-        return EntryViewHolder(binding, overviewViewModel)
+        return EntryViewHolder(binding, overviewFragment)
     }
 
     override fun onBindViewHolder(holder: EntryViewHolder, position: Int) {
@@ -294,7 +294,7 @@ class ItemAdapter(private val overviewViewModel: OverviewViewModel) : ListAdapte
 
     class EntryViewHolder(
         private val binding: ListItemEntryBinding,
-        private val overviewViewModel: OverviewViewModel
+        private val overviewFragment: OverviewFragment
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(itemViewModel: ItemViewModel) {
@@ -302,12 +302,10 @@ class ItemAdapter(private val overviewViewModel: OverviewViewModel) : ListAdapte
                 viewModel = itemViewModel
                 executePendingBindings()
 
-                buttonUpdate.setOnClickListener {
-                    overviewViewModel.loggedInUserViewModel?.updateItem(itemViewModel)
-                }
-
-                buttonDelete.setOnClickListener {
-                    overviewViewModel.loggedInUserViewModel?.deleteItem(itemViewModel)
+                binding.root.setOnClickListener {
+                    itemViewModel.id?.let { itemId ->
+                        overviewFragment.showFragment(ItemDetailFragment.newInstance(itemId))
+                    }
                 }
             }
         }

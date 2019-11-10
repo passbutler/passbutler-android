@@ -75,6 +75,15 @@
 
     <string name="overview_logout_failed_title">Abmeldung hat nicht geklappt</string>
 
+    <!-- Item detail-->
+
+    <string name="itemdetail_title">Eintrag „%s“ bearbeiten</string>
+
+    <string name="itemdetail_save_button_title">Speichern</string>
+
+    <string name="itemdetail_save_failed_general_title">Speichern hat nicht geklappt</string>
+    <string name="itemdetail_save_successful_message">Speichern erfolgreich</string>
+
     <!-- About -->
 
     <string name="about_title">Über / Lizenz</string>

@@ -48,3 +48,18 @@ class NonNullValueGetterLiveData<T : Any>(private val valueGetter: () -> T) : Li
         postValue(newValue)
     }
 }
+
+/**
+ * A default `LiveData<T>` that retrieves its value via lambda.
+ * On a known change of values used in the lambda, `notifyChange()` must be called!
+ */
+class ValueGetterLiveData<T : Any?>(private val valueGetter: () -> T) : LiveData<T>() {
+    init {
+        value = valueGetter()
+    }
+
+    fun notifyChange() {
+        val newValue = valueGetter()
+        postValue(newValue)
+    }
+}
