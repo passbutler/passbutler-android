@@ -66,7 +66,6 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
             binding.viewModel = viewModel
 
             applyRestoredViewStates(binding)
-
         }
 
         loginRequestSendingViewHandler = LoginRequestSendingViewHandler(viewModel.rootViewModel.loginRequestSendingViewModel, WeakReference(this))
