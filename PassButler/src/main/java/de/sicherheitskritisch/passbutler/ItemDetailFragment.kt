@@ -2,6 +2,8 @@ package de.sicherheitskritisch.passbutler
 
 import android.content.Context
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,7 +35,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
             val itemId = arguments?.getString(ARGUMENT_ITEM_ID)
             val itemViewModel = userViewModel.itemViewModels.value?.find { itemViewModel -> itemViewModel.id == itemId }?.createEditingViewModel()
-                ?: ItemEditingViewModel(ItemModel.New(userViewModel.id, userViewModel.itemEncryptionPublicKey.key), userManager, null)
+                ?: ItemEditingViewModel(ItemModel.Creating(userViewModel), userManager, null)
 
             val factory = ItemEditingViewModelFactory(itemViewModel)
 
@@ -45,6 +47,22 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = DataBindingUtil.inflate<FragmentItemdetailBinding>(inflater, R.layout.fragment_itemdetail, container, false).also { binding ->
             binding.lifecycleOwner = viewLifecycleOwner
+            binding.viewModel = viewModel
+
+            // TODO: Handle view rotation
+
+            binding.editTextTitle.addTextChangedListener(object : SimpleTextWatcher() {
+                override fun afterTextChanged(s: Editable?) {
+                    viewModel.title.value = s?.toString() ?: ""
+                    updateToolbarTitle()
+                }
+            })
+
+            binding.editTextPassword.addTextChangedListener(object : SimpleTextWatcher() {
+                override fun afterTextChanged(s: Editable?) {
+                    viewModel.password.value = s?.toString() ?: ""
+                }
+            })
 
             binding.buttonSave.setOnClickListener {
                 viewModel.save()
@@ -105,5 +123,19 @@ class ItemEditingViewModelFactory(
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return itemEditingViewModel as T
+    }
+}
+
+open class SimpleTextWatcher : TextWatcher {
+    override fun afterTextChanged(s: Editable?) {
+        // Implement if needed
+    }
+
+    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+        // Implement if needed
+    }
+
+    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+        // Implement if needed
     }
 }

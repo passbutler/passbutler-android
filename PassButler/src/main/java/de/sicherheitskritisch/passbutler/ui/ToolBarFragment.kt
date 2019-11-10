@@ -23,7 +23,7 @@ abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragmen
         val rootView = inflater.inflate(R.layout.fragment_toolbar, container, false)
 
         toolBar = rootView.findViewById<Toolbar>(R.id.toolbar)?.apply {
-            title = getToolBarTitle()
+            updateToolbarTitle()
 
             val toolBarIconDrawableId = when (transitionType) {
                 AnimatedFragment.TransitionType.MODAL -> R.drawable.icon_clear_24dp
@@ -48,6 +48,10 @@ abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragmen
         }
 
         return rootView
+    }
+
+    protected fun updateToolbarTitle() {
+       toolBar?.title = getToolBarTitle()
     }
 
     abstract fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?

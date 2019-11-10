@@ -79,6 +79,9 @@
 
     <string name="itemdetail_title">Eintrag „%s“ bearbeiten</string>
 
+    <string name="itemdetail_title_hint">Titel</string>
+    <string name="itemdetail_password_hint">Passwort</string>
+
     <string name="itemdetail_save_button_title">Speichern</string>
 
     <string name="itemdetail_save_failed_general_title">Speichern hat nicht geklappt</string>

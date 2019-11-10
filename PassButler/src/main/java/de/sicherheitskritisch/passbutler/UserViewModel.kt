@@ -74,48 +74,60 @@ class UserViewModel private constructor(
         updateItemsJob?.cancel()
         updateItemsJob = launch {
             val oldItemViewModels = itemViewModels.value
-
             val newItemViewModels = newItems
-                ?.mapNotNull { newItem ->
-                    oldItemViewModels?.find { it.id == newItem.id } ?: run {
-                        val itemAuthorization = userManager.findItemAuthorization(newItem)
-
-                        if (itemAuthorization != null) {
-                            ItemViewModel(ItemModel.Existing(newItem, itemAuthorization), userManager)
-                        } else {
-                            L.w("UserViewModel", "ItemsObserver: The item authorization of item ${newItem.id} was not found - skip item!")
-                            null
+                ?.mapNotNull { item ->
+                    oldItemViewModels
+                        ?.find { it.id == item.id }
+                        ?.takeIf {
+                            // TODO: Also check itemAuthorization
+                            it.item == item /*&& it.itemAuthorization ==*/
                         }
-                    }
+                        ?: run {
+                            val itemAuthorization = userManager.findItemAuthorization(item)
+
+                            if (itemAuthorization != null) {
+                                ItemViewModel(item, itemAuthorization, userManager)
+                            } else {
+                                L.w("UserViewModel", "ItemsObserver: The item authorization of item ${item.id} was not found - skip item!")
+                                null
+                            }
+                        }
                 }
-                ?.filter {
-                    // Decrypt new items that are still not unlocked
-                    it.itemData == null
-                }
-                ?.map {
+                ?: emptyList()
+
+            // Decrypt new items that are still not unlocked
+            val failedItemViewModels = newItemViewModels
+                .filter { it.itemData == null }
+                .map {
+                    val itemEncryptionSecretKey = itemEncryptionSecretKey ?: throw IllegalStateException("The item encryption key is null despite item decryption was started!")
+
                     it to async {
-                        val itemEncryptionSecretKey = itemEncryptionSecretKey ?: throw IllegalStateException("The item encryption key is null despite item decryption was started!")
                         it.decryptSensibleData(itemEncryptionSecretKey)
                     }
                 }
-                ?.mapNotNull {
-                    val decryptSensibleDataResult = it.second.await()
+                .mapNotNull {
+                    val itemViewModel = it.first
+                    val itemDecryptSensibleDataResult = it.second.await()
 
-                    when (decryptSensibleDataResult) {
+                    when (itemDecryptSensibleDataResult) {
                         is Success -> {
-                            L.d("UserViewModel", "The item ${it.first.id} was decrypted successfully!")
-                            it.first
+                            L.d("UserViewModel", "The item ${itemViewModel.id} was decrypted successfully!")
+                            null
                         }
                         is Failure -> {
-                            L.w("UserViewModel", "The item ${it.first.id} could not be decrypted!", decryptSensibleDataResult.throwable)
-                            null
+                            L.w("UserViewModel", "The item ${itemViewModel.id} could not be decrypted!", itemDecryptSensibleDataResult.throwable)
+                            itemViewModel
                         }
                     }
                 }
-                ?: listOf()
+
+            val updatedItemViewModels = newItemViewModels
+                .subtract(failedItemViewModels)
+                .sortedBy { it.created }
 
             withContext(Dispatchers.Main) {
-                itemViewModels.value = newItemViewModels
+                L.d("UserViewModel", "Updated updatedItemViewModels = ${updatedItemViewModels.size}")
+                itemViewModels.value = updatedItemViewModels
             }
         }
     }

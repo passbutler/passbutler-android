@@ -2,13 +2,12 @@ package de.sicherheitskritisch.passbutler
 
 import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
 import de.sicherheitskritisch.passbutler.base.Failure
-import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.ValueGetterLiveData
+import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
-import de.sicherheitskritisch.passbutler.base.formattedDateTime
 import de.sicherheitskritisch.passbutler.base.viewmodels.EditableViewModel
 import de.sicherheitskritisch.passbutler.base.viewmodels.EditingViewModel
 import de.sicherheitskritisch.passbutler.base.viewmodels.ManualCancelledCoroutineScopeViewModel
@@ -19,44 +18,46 @@ import de.sicherheitskritisch.passbutler.database.models.Item
 import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.ItemData
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 import java.util.*
 
 class ItemViewModel(
-    private val itemModel: ItemModel.Existing,
+    val item: Item,
+    val itemAuthorization: ItemAuthorization,
     private val userManager: UserManager
 ) : EditableViewModel<ItemEditingViewModel> {
 
     val id: String?
-        get() = itemModel.item.id
+        get() = item.id
 
     val title = ValueGetterLiveData {
         itemData?.title
     }
 
-    val subtitle = ValueGetterLiveData {
-        itemModel.item.modified.formattedDateTime
-    }
+    val subtitle
+        get() = item.id
+
+    val created
+        get() = item.created
 
     var itemData: ItemData? = null
         private set
 
+    private var itemKey: ByteArray? = null
+
     suspend fun decryptSensibleData(userItemEncryptionSecretKey: ByteArray): Result<Unit> {
         return withContext(Dispatchers.Default) {
-            val itemKeyDecryptionResult = itemModel.itemAuthorization.itemKey.decryptWithResult(userItemEncryptionSecretKey, CryptographicKey.Deserializer)
+            val itemKeyDecryptionResult = itemAuthorization.itemKey.decryptWithResult(userItemEncryptionSecretKey, CryptographicKey.Deserializer)
 
             when (itemKeyDecryptionResult) {
                 is Success -> {
                     val decryptedItemKey = itemKeyDecryptionResult.result.key
-                    val itemDataDecryptionResult = itemModel.item.data.decryptWithResult(decryptedItemKey, ItemData.Deserializer)
+                    val itemDataDecryptionResult = item.data.decryptWithResult(decryptedItemKey, ItemData.Deserializer)
 
                     when (itemDataDecryptionResult) {
                         is Success -> {
-                            itemData = itemDataDecryptionResult.result
-
-                            title.notifyChange()
-                            subtitle.notifyChange()
-
+                            updateSensibleDataFields(decryptedItemKey, itemDataDecryptionResult.result)
                             Success(Unit)
                         }
                         is Failure -> {
@@ -71,17 +72,29 @@ class ItemViewModel(
         }
     }
 
+    private fun updateSensibleDataFields(itemKey: ByteArray, itemData: ItemData) {
+        this.itemKey = itemKey
+        this.itemData = itemData
+
+        title.notifyChange()
+    }
+
     fun clearSensibleData() {
         itemData = null
+
+        itemKey?.clear()
+        itemKey = null
     }
 
     override fun createEditingViewModel(): ItemEditingViewModel {
+        val itemKey = itemKey ?: throw IllegalStateException("The item key is null despite the the ItemEditingViewModel is created!")
+        val itemModel = ItemModel.Existing(item, itemKey)
         return ItemEditingViewModel(itemModel, userManager, itemData)
     }
 
     /**
      * The methods `equals()` and `hashCode()` only check the `ItemModel` because this makes an item unique.
-     * The `itemData` is just a state of the item that should not cause the item list to change.
+     * The `itemData` and `itemKey` is just a state of the item that should not cause the item list to change.
      */
 
     override fun equals(other: Any?): Boolean {
@@ -90,13 +103,16 @@ class ItemViewModel(
 
         other as ItemViewModel
 
-        if (itemModel != other.itemModel) return false
+        if (item != other.item) return false
+        if (itemAuthorization != other.itemAuthorization) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        return itemModel.hashCode()
+        var result = item.hashCode()
+        result = 31 * result + itemAuthorization.hashCode()
+        return result
     }
 }
 
@@ -106,26 +122,30 @@ class ItemEditingViewModel(
     itemData: ItemData?
 ) : ManualCancelledCoroutineScopeViewModel(), EditingViewModel {
 
+    val id = (itemModel as? ItemModel.Existing)?.item?.id ?: "-"
+
     val title = NonNullMutableLiveData(itemData?.title ?: "Initial Title")
     val password = NonNullMutableLiveData(itemData?.password ?: "Initial password")
 
     val saveRequestSendingViewModel = DefaultRequestSendingViewModel()
 
-    // TODO: Save job?
+    private var saveCoroutineJob: Job? = null
 
     fun save() {
-        createRequestSendingJob(saveRequestSendingViewModel) {
-            val currentDate = Date()
+        saveCoroutineJob?.cancel()
+        saveCoroutineJob = createRequestSendingJob(saveRequestSendingViewModel) {
             val itemModel = itemModel
 
+            val itemData = ItemData(title.value, password.value)
+            val currentDate = Date()
+
             when (itemModel) {
-                is ItemModel.New -> {
-                    val userId = itemModel.userId
+                is ItemModel.Creating -> {
+                    val userId = itemModel.userViewModel.id
 
                     val symmetricEncryptionAlgorithm = EncryptionAlgorithm.Symmetric.AES256GCM
                     val itemKey = symmetricEncryptionAlgorithm.generateEncryptionKey()
 
-                    val itemData = ItemData(title.value, password.value)
                     val protectedItemData = ProtectedValue.create(symmetricEncryptionAlgorithm, itemKey, itemData)
 
                     val item = Item(
@@ -141,7 +161,7 @@ class ItemEditingViewModel(
 
                     val asymmetricEncryptionAlgorithm = EncryptionAlgorithm.Asymmetric.RSA2048OAEP
 
-                    val userItemEncryptionPublicKey = itemModel.userItemEncryptionPublicKey
+                    val userItemEncryptionPublicKey = itemModel.userViewModel.itemEncryptionPublicKey.key
                     val protectedItemKey = ProtectedValue.create(asymmetricEncryptionAlgorithm, userItemEncryptionPublicKey, CryptographicKey(itemKey))
 
                     val itemAuthorization = ItemAuthorization(
@@ -157,12 +177,25 @@ class ItemEditingViewModel(
 
                     userManager.createItemAuthorization(itemAuthorization)
 
-                    this.itemModel = ItemModel.Existing(item, itemAuthorization)
+                    this.itemModel = ItemModel.Existing(item, itemKey)
                 }
                 is ItemModel.Existing -> {
-//                    val itemData = ItemData(title, password)
-//                    protectedItemData.update(itemKey, itemData)
-                    L.d("ItemViewModel", "Handling of existing item not supported yet")
+
+                    // TODO: Fix itemKey is null because of reference is cleared
+
+                    // TODO: copy protectedItemData?
+                    val protectedItemData = itemModel.item.data.apply {
+                        update(itemModel.itemKey, itemData)
+                    }
+
+                    val item = itemModel.item.copy(
+                        data = protectedItemData,
+                        modified = currentDate
+                    )
+
+                    userManager.updateItem(item)
+
+                    this.itemModel = ItemModel.Existing(item, itemModel.itemKey)
                 }
             }
         }
@@ -170,6 +203,6 @@ class ItemEditingViewModel(
 }
 
 sealed class ItemModel {
-    class New(val userId: String, val userItemEncryptionPublicKey: ByteArray) : ItemModel()
-    class Existing(val item: Item, val itemAuthorization: ItemAuthorization) : ItemModel()
+    class Creating(val userViewModel: UserViewModel) : ItemModel()
+    class Existing(val item: Item, val itemKey: ByteArray) : ItemModel()
 }
