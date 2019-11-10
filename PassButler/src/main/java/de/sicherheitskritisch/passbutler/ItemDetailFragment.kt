@@ -30,12 +30,12 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
         activity?.let {
             val rootViewModel = getRootViewModel(it)
-            val userViewModel = rootViewModel.loggedInUserViewModel
-            val userManager = userViewModel?.userManager ?: throw IllegalStateException("The user manager is null!")
+            val loggedInUserViewModel = rootViewModel.loggedInUserViewModel
+            val userManager = loggedInUserViewModel?.userManager ?: throw IllegalStateException("The user manager is null!")
 
             val itemId = arguments?.getString(ARGUMENT_ITEM_ID)
-            val itemViewModel = userViewModel.itemViewModels.value?.find { itemViewModel -> itemViewModel.id == itemId }?.createEditingViewModel()
-                ?: ItemEditingViewModel(ItemModel.Creating(userViewModel), userManager, null)
+            val itemViewModel = loggedInUserViewModel.itemViewModels.value?.find { itemViewModel -> itemViewModel.id == itemId }?.createEditingViewModel()
+                ?: ItemEditingViewModel(ItemModel.Creating(loggedInUserViewModel), userManager)
 
             val factory = ItemEditingViewModelFactory(itemViewModel)
 
