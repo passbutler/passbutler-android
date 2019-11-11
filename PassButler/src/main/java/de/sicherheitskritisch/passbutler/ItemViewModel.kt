@@ -80,18 +80,21 @@ class ItemViewModel(
     }
 
     fun clearSensibleData() {
-        itemData = null
-
-        // TODO: Check if itemKey is null because of reference is cleared in `ItemEditingViewModel`
         itemKey?.clear()
         itemKey = null
+
+        itemData = null
+
+        title.notifyChange()
     }
 
     override fun createEditingViewModel(): ItemEditingViewModel {
         val itemData = itemData ?: throw IllegalStateException("The item data is null despite a ItemEditingViewModel is created!")
-        val itemKey = itemKey ?: throw IllegalStateException("The item key is null despite a ItemEditingViewModel is created!")
 
-        val itemModel = ItemModel.Existing(item, itemData, itemKey)
+        // Pass a copy of the item key to `ItemEditingViewModel` to avoid it get cleared via reference
+        val itemKeyCopy = itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite a ItemEditingViewModel is created!")
+
+        val itemModel = ItemModel.Existing(item, itemData, itemKeyCopy)
         return ItemEditingViewModel(itemModel, userManager)
     }
 
