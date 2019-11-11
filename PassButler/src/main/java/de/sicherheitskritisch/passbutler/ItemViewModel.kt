@@ -60,14 +60,10 @@ class ItemViewModel(
 
                             Success(Unit)
                         }
-                        is Failure -> {
-                            Failure(itemDataDecryptionResult.throwable)
-                        }
+                        is Failure -> itemDataDecryptionResult
                     }
                 }
-                is Failure -> {
-                    Failure(itemKeyDecryptionResult.throwable)
-                }
+                is Failure -> itemKeyDecryptionResult
             }
         }
     }
