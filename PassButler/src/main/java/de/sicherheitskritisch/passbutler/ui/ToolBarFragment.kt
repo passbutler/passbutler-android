@@ -23,8 +23,6 @@ abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragmen
         val rootView = inflater.inflate(R.layout.fragment_toolbar, container, false)
 
         toolBar = rootView.findViewById<Toolbar>(R.id.toolbar)?.apply {
-            updateToolbarTitle()
-
             val toolBarIconDrawableId = when (transitionType) {
                 AnimatedFragment.TransitionType.MODAL -> R.drawable.icon_clear_24dp
                 AnimatedFragment.TransitionType.SLIDE,
@@ -39,6 +37,8 @@ abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragmen
                 popBackstack()
             }
         }
+
+        updateToolbarTitle()
 
         floatingActionButton = rootView.findViewById(R.id.main_fab)
 

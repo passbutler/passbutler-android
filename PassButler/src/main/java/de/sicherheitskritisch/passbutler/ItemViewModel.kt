@@ -127,6 +127,8 @@ class ItemEditingViewModel(
     private val userManager: UserManager
 ) : ViewModel(), EditingViewModel {
 
+    val isNewEntry = itemModel is ItemModel.New
+
     val title = NonNullMutableLiveData(itemModel.asExisting()?.itemData?.title ?: "")
     val password = NonNullMutableLiveData(itemModel.asExisting()?.itemData?.password ?: "")
 
