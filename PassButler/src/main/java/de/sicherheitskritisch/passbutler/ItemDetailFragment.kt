@@ -2,8 +2,6 @@ package de.sicherheitskritisch.passbutler
 
 import android.content.Context
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +14,6 @@ import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.databinding.FragmentItemdetailBinding
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
 import de.sicherheitskritisch.passbutler.ui.showError
-import de.sicherheitskritisch.passbutler.ui.simpleTextWatcher
 
 class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
@@ -68,21 +65,13 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         super.onStart()
 
         binding?.let {
-            setupFormViews(it)
+            setupSaveButton(it)
         }
 
         viewModel.title.observe(viewLifecycleOwner, titleObserver)
     }
 
-    private fun setupFormViews(binding: FragmentItemdetailBinding) {
-        binding.editTextTitle.addTextChangedListener(simpleTextWatcher {
-            viewModel.title.value = it ?: ""
-        })
-
-        binding.editTextPassword.addTextChangedListener(simpleTextWatcher {
-            viewModel.password.value = it ?: ""
-        })
-
+    private fun setupSaveButton(binding: FragmentItemdetailBinding) {
         binding.buttonSave.setOnClickListener {
             launchRequestSending(
                 handleSuccess = { popBackstack() },
