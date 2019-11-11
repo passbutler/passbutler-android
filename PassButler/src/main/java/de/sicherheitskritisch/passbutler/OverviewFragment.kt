@@ -299,10 +299,12 @@ class ItemAdapter(private val overviewFragment: OverviewFragment) : ListAdapter<
 
         fun bind(itemViewModel: ItemViewModel) {
             binding.apply {
+                lifecycleOwner = overviewFragment.viewLifecycleOwner
                 viewModel = itemViewModel
+
                 executePendingBindings()
 
-                binding.root.setOnClickListener {
+                root.setOnClickListener {
                     overviewFragment.showFragment(ItemDetailFragment.newInstance(itemViewModel.id))
                 }
             }
