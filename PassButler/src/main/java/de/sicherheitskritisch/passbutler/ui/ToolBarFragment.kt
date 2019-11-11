@@ -36,6 +36,8 @@ abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragmen
             setNavigationOnClickListener {
                 popBackstack()
             }
+
+            setupToolbarMenu(this)
         }
 
         updateToolbarTitle()
@@ -50,8 +52,12 @@ abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragmen
         return rootView
     }
 
+    protected open fun setupToolbarMenu(toolbar: Toolbar) {
+        // Implement if needed
+    }
+
     protected fun updateToolbarTitle() {
-       toolBar?.title = getToolBarTitle()
+        toolBar?.title = getToolBarTitle()
     }
 
     abstract fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?

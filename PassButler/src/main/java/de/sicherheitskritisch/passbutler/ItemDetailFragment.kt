@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.Toolbar
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -12,7 +13,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.databinding.FragmentItemdetailBinding
+import de.sicherheitskritisch.passbutler.ui.Keyboard
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
+import de.sicherheitskritisch.passbutler.ui.applyTint
 import de.sicherheitskritisch.passbutler.ui.showError
 
 class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
@@ -61,25 +64,45 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         return binding?.root
     }
 
+    override fun setupToolbarMenu(toolbar: Toolbar) {
+        toolbar.inflateMenu(R.menu.item_detail_menu)
+
+        toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.item_detail_menu_item_save -> {
+                    saveClicked()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        toolbar.menu.findItem(R.id.item_detail_menu_item_save).apply {
+            val menuIconColor = resources.getColor(R.color.white, null)
+            icon.applyTint(menuIconColor)
+        }
+    }
+
+    private fun saveClicked() {
+        launchRequestSending(
+            handleSuccess = { popBackstack() },
+            handleFailure = { showError(getString(R.string.itemdetail_save_failed_general_title)) }
+        ) {
+            viewModel.save()
+        }
+    }
+
     override fun onStart() {
         super.onStart()
-
-        binding?.let {
-            setupSaveButton(it)
-        }
 
         viewModel.title.observe(viewLifecycleOwner, titleObserver)
     }
 
-    private fun setupSaveButton(binding: FragmentItemdetailBinding) {
-        binding.buttonSave.setOnClickListener {
-            launchRequestSending(
-                handleSuccess = { popBackstack() },
-                handleFailure = { showError(getString(R.string.itemdetail_save_failed_general_title)) }
-            ) {
-                viewModel.save()
-            }
-        }
+    override fun onStop() {
+        // Always hide keyboard if fragment gets stopped
+        Keyboard.hideKeyboard(context, this)
+
+        super.onStop()
     }
 
     companion object {
