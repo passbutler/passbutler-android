@@ -11,17 +11,12 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
-import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
+import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.databinding.FragmentItemdetailBinding
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
-import de.sicherheitskritisch.passbutler.ui.showInformation
-import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
+import de.sicherheitskritisch.passbutler.ui.showError
 
 class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
-
-    private var saveRequestHandler: SaveViewHandler? = null
 
     override fun getToolBarTitle() = getString(R.string.itemdetail_title, viewModel.title.value)
 
@@ -35,7 +30,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
             val itemId = arguments?.getString(ARGUMENT_ITEM_ID)
             val itemViewModel = loggedInUserViewModel.itemViewModels.value?.find { itemViewModel -> itemViewModel.id == itemId }?.createEditingViewModel()
-                ?: ItemEditingViewModel(ItemModel.Creating(loggedInUserViewModel), userManager)
+                ?: ItemEditingViewModel(ItemModel.New(loggedInUserViewModel), userManager)
 
             val factory = ItemEditingViewModelFactory(itemViewModel)
 
@@ -65,44 +60,16 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
             })
 
             binding.buttonSave.setOnClickListener {
-                viewModel.save()
+                launchRequestSending(
+                    handleSuccess = { popBackstack() },
+                    handleFailure = { showError(getString(R.string.itemdetail_save_failed_general_title)) }
+                ) {
+                    viewModel.save()
+                }
             }
         }
-
-        saveRequestHandler = SaveViewHandler(viewModel.saveRequestSendingViewModel, WeakReference(this))
 
         return binding?.root
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        saveRequestHandler?.registerObservers()
-    }
-
-    override fun onStop() {
-        saveRequestHandler?.unregisterObservers()
-
-        super.onStop()
-    }
-
-    override fun onDestroy() {
-        viewModel.cancelJobs()
-        super.onDestroy()
-    }
-
-    private class SaveViewHandler(
-        requestSendingViewModel: RequestSendingViewModel,
-        fragmentWeakReference: WeakReference<ItemDetailFragment>
-    ) : DefaultRequestSendingViewHandler<ItemDetailFragment>(requestSendingViewModel, fragmentWeakReference) {
-
-        override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.itemdetail_save_failed_general_title
-
-        override fun handleRequestFinishedSuccessfully() {
-            fragment?.launch {
-                fragment?.showInformation(resources?.getString(R.string.itemdetail_save_successful_message))
-            }
-        }
     }
 
     companion object {
@@ -126,6 +93,7 @@ class ItemEditingViewModelFactory(
     }
 }
 
+// TODO: Extract and provide better API
 open class SimpleTextWatcher : TextWatcher {
     override fun afterTextChanged(s: Editable?) {
         // Implement if needed

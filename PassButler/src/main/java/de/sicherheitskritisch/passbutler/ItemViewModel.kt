@@ -1,6 +1,6 @@
 package de.sicherheitskritisch.passbutler
 
-import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
+import androidx.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
@@ -8,10 +8,8 @@ import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.ValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.clear
-import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
 import de.sicherheitskritisch.passbutler.base.viewmodels.EditableViewModel
 import de.sicherheitskritisch.passbutler.base.viewmodels.EditingViewModel
-import de.sicherheitskritisch.passbutler.base.viewmodels.ManualCancelledCoroutineScopeViewModel
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
@@ -19,7 +17,6 @@ import de.sicherheitskritisch.passbutler.database.models.Item
 import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.ItemData
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 import java.util.*
 
@@ -85,6 +82,7 @@ class ItemViewModel(
     fun clearSensibleData() {
         itemData = null
 
+        // TODO: Check if itemKey is null because of reference is cleared in `ItemEditingViewModel`
         itemKey?.clear()
         itemKey = null
     }
@@ -124,55 +122,67 @@ class ItemViewModel(
 class ItemEditingViewModel(
     private val itemModel: ItemModel,
     private val userManager: UserManager
-) : ManualCancelledCoroutineScopeViewModel(), EditingViewModel {
+) : ViewModel(), EditingViewModel {
 
     val title = NonNullMutableLiveData(itemModel.asExisting()?.itemData?.title ?: "")
     val password = NonNullMutableLiveData(itemModel.asExisting()?.itemData?.password ?: "")
-
-    val saveRequestSendingViewModel = DefaultRequestSendingViewModel()
-
-    private var saveCoroutineJob: Job? = null
 
     init {
         L.d("ItemEditingViewModel", "init(): id = ${itemModel.asExisting()?.item?.id}")
     }
 
-    fun save() {
-        saveCoroutineJob?.cancel()
-        saveCoroutineJob = createRequestSendingJob(saveRequestSendingViewModel) {
-            val itemModel = itemModel
+    suspend fun save(): Result<Unit> {
+        val itemModel = itemModel
 
-            when (itemModel) {
-                is ItemModel.Creating -> saveNewItem(itemModel)
-                is ItemModel.Existing -> saveExistingItem(itemModel)
-            }
+        // TODO: How to be sure, `save` is only called once, because `itemModel` won't change
+        return when (itemModel) {
+            is ItemModel.New -> saveNewItem(itemModel)
+            is ItemModel.Existing -> saveExistingItem(itemModel)
         }
     }
 
-    private suspend fun saveNewItem(creatingItemModel1: ItemModel.Creating) {
-        val loggedInUserId = creatingItemModel.loggedInUserViewModel.username
-        val loggedInUserItemEncryptionPublicKey = creatingItemModel.loggedInUserViewModel.itemEncryptionPublicKey.key
+    private suspend fun saveNewItem(itemModel: ItemModel.New): Result<Unit> {
+        val loggedInUserId = itemModel.loggedInUserViewModel.username
+        val loggedInUserItemEncryptionPublicKey = itemModel.loggedInUserViewModel.itemEncryptionPublicKey.key
 
         val itemData = createItemData()
+        val createItemAndKeyResult = createNewItemAndKey(loggedInUserId, itemData)
 
-        val (item, itemKey) = createNewItemAndKey(loggedInUserId, itemData)
-        userManager.createItem(item)
+        return when (createItemAndKeyResult) {
+            is Success -> {
+                val (item, itemKey) = createItemAndKeyResult.result
+                userManager.createItem(item)
 
-        val itemAuthorization = createNewItemAuthorization(loggedInUserId, loggedInUserItemEncryptionPublicKey, item, itemKey)
-        userManager.createItemAuthorization(itemAuthorization)
+                val itemAuthorizationResult = createNewItemAuthorization(loggedInUserId, loggedInUserItemEncryptionPublicKey, item, itemKey)
+
+                when (itemAuthorizationResult) {
+                    is Success -> {
+                        val itemAuthorization = itemAuthorizationResult.result
+                        userManager.createItemAuthorization(itemAuthorization)
+
+                        Success(Unit)
+                    }
+                    is Failure -> itemAuthorizationResult
+                }
+            }
+            is Failure -> createItemAndKeyResult
+        }
     }
 
-    private fun createNewItemAndKey(loggedInUserId: String, itemData: ItemData): Pair<Item, ByteArray> {
+    private suspend fun createNewItemAndKey(loggedInUserId: String, itemData: ItemData): Result<Pair<Item, ByteArray>> {
         val symmetricEncryptionAlgorithm = EncryptionAlgorithm.Symmetric.AES256GCM
 
         // TODO: Handle exception / result
-        val itemKey = symmetricEncryptionAlgorithm.generateEncryptionKey()
+        val itemKey = withContext(Dispatchers.IO) {
+            symmetricEncryptionAlgorithm.generateEncryptionKey()
+        }
 
         // TODO: Handle exception / result
-        val protectedItemData = ProtectedValue.create(symmetricEncryptionAlgorithm, itemKey, itemData)
+        val protectedItemData = withContext(Dispatchers.Default) {
+            ProtectedValue.create(symmetricEncryptionAlgorithm, itemKey, itemData)
+        }
 
         val currentDate = Date()
-
         val item = Item(
             id = UUID.randomUUID().toString(),
             userId = loggedInUserId,
@@ -182,18 +192,20 @@ class ItemEditingViewModel(
             created = currentDate
         )
 
-        return Pair(item, itemKey)
+        // TODO: Proper result
+        return Success(Pair(item, itemKey))
     }
 
-    private fun createNewItemAuthorization(loggedInUserId: String, loggedInUserItemEncryptionPublicKey: ByteArray, item: Item, itemKey: ByteArray): ItemAuthorization {
+    private suspend fun createNewItemAuthorization(loggedInUserId: String, loggedInUserItemEncryptionPublicKey: ByteArray, item: Item, itemKey: ByteArray): Result<ItemAuthorization> {
         val asymmetricEncryptionAlgorithm = EncryptionAlgorithm.Asymmetric.RSA2048OAEP
 
         // TODO: Handle exception / result
-        val protectedItemKey = ProtectedValue.create(asymmetricEncryptionAlgorithm, loggedInUserItemEncryptionPublicKey, CryptographicKey(itemKey))
+        val protectedItemKey = withContext(Dispatchers.Default) {
+            ProtectedValue.create(asymmetricEncryptionAlgorithm, loggedInUserItemEncryptionPublicKey, CryptographicKey(itemKey))
+        }
 
         val currentDate = Date()
-
-        return ItemAuthorization(
+        val itemAuthorization = ItemAuthorization(
             id = UUID.randomUUID().toString(),
             userId = loggedInUserId,
             itemId = item.id,
@@ -203,27 +215,43 @@ class ItemEditingViewModel(
             modified = currentDate,
             created = currentDate
         )
+
+        // TODO: Proper result
+        return Success(itemAuthorization)
     }
 
-    private suspend fun saveExistingItem(existingItemModel1: ItemModel.Existing) {
+    private suspend fun saveExistingItem(itemModel: ItemModel.Existing): Result<Unit> {
+        val item = itemModel.item
+        val itemKey = itemModel.itemKey
 
-        val itemData = createItemData()
+        val updatedItemResult = createUpdatedItem(item, itemKey)
 
+        return when (updatedItemResult) {
+            is Success -> {
+                val updatedItem = updatedItemResult.result
+                userManager.updateItem(updatedItem)
 
-        // TODO: Fix itemKey is null because of reference is cleared
-        // TODO: copy protectedItemData?
-        val protectedItemData = existingItemModel.item.data.apply {
-            //update(existingItemModel.itemKey, itemData)
+                Success(Unit)
+            }
+            is Failure -> updatedItemResult
         }
+    }
+
+    private fun createUpdatedItem(item: Item, itemKey: ByteArray): Result<Item> {
+        val protectedItemData = item.data
+
+        // TODO: Handle exception / result
+        val itemData = createItemData()
+        protectedItemData.update(itemKey, itemData)
 
         val currentDate = Date()
-
-        val item = existingItemModel.item.copy(
+        val updatedItem = item.copy(
             data = protectedItemData,
             modified = currentDate
         )
 
-        userManager.updateItem(item)
+        // TODO: Proper result
+        return Success(updatedItem)
     }
 
     private fun createItemData(): ItemData {
@@ -232,7 +260,7 @@ class ItemEditingViewModel(
 }
 
 sealed class ItemModel {
-    class Creating(val loggedInUserViewModel: UserViewModel) : ItemModel()
+    class New(val loggedInUserViewModel: UserViewModel) : ItemModel()
     class Existing(val item: Item, val itemData: ItemData, val itemKey: ByteArray) : ItemModel()
 }
 

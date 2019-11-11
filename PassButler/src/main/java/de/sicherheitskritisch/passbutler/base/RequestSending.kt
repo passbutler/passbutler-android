@@ -126,3 +126,20 @@ abstract class DefaultRequestSendingViewHandler<T : BaseFragment>(
 
     abstract fun requestErrorMessageResourceId(requestError: Throwable): Int
 }
+
+fun BaseFragment.launchRequestSending(
+    handleSuccess: (() -> Unit)?,
+    handleFailure: ((Throwable?) -> Unit)?,
+    block: suspend () -> Result<*>
+) {
+    launch {
+        showProgress()
+        val result = block()
+        hideProgress()
+
+        when (result) {
+            is Success -> handleSuccess?.invoke()
+            is Failure -> handleFailure?.invoke(result.throwable)
+        }
+    }
+}
