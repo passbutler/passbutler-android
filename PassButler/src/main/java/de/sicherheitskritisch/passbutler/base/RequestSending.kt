@@ -128,14 +128,19 @@ abstract class DefaultRequestSendingViewHandler<T : BaseFragment>(
 }
 
 fun BaseFragment.launchRequestSending(
-    handleSuccess: (() -> Unit)?,
-    handleFailure: ((Throwable?) -> Unit)?,
+    handleSuccess: (() -> Unit)? = null,
+    handleFailure: ((Throwable) -> Unit)? = null,
+    handleLoadingChanged: ((Boolean) -> Unit)? = null,
     block: suspend () -> Result<*>
 ) {
     launch {
         showProgress()
+        handleLoadingChanged?.invoke(true)
+
         val result = block()
+
         hideProgress()
+        handleLoadingChanged?.invoke(false)
 
         when (result) {
             is Success -> handleSuccess?.invoke()
