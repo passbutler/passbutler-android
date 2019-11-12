@@ -48,8 +48,8 @@ class ItemViewModel(
     suspend fun decryptSensibleData(userItemEncryptionSecretKey: ByteArray): Result<Unit> {
         return withContext(Dispatchers.Default) {
             try {
-                val decryptedItemKey = itemAuthorization.itemKey.decryptWithResult(userItemEncryptionSecretKey, CryptographicKey.Deserializer).resultOrThrowException().key
-                val decryptedItemData = item.data.decryptWithResult(decryptedItemKey, ItemData.Deserializer).resultOrThrowException()
+                val decryptedItemKey = itemAuthorization.itemKey.decrypt(userItemEncryptionSecretKey, CryptographicKey.Deserializer).key
+                val decryptedItemData = item.data.decrypt(decryptedItemKey, ItemData.Deserializer)
                 updateSensibleDataFields(decryptedItemKey, decryptedItemData)
 
                 Success(Unit)
