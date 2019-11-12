@@ -8,6 +8,7 @@ import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.ValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.clear
+import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.viewmodels.EditableViewModel
 import de.sicherheitskritisch.passbutler.base.viewmodels.EditingViewModel
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
@@ -46,24 +47,14 @@ class ItemViewModel(
 
     suspend fun decryptSensibleData(userItemEncryptionSecretKey: ByteArray): Result<Unit> {
         return withContext(Dispatchers.Default) {
-            val itemKeyDecryptionResult = itemAuthorization.itemKey.decryptWithResult(userItemEncryptionSecretKey, CryptographicKey.Deserializer)
+            try {
+                val decryptedItemKey = itemAuthorization.itemKey.decryptWithResult(userItemEncryptionSecretKey, CryptographicKey.Deserializer).resultOrThrowException().key
+                val decryptedItemData = item.data.decryptWithResult(decryptedItemKey, ItemData.Deserializer).resultOrThrowException()
+                updateSensibleDataFields(decryptedItemKey, decryptedItemData)
 
-            when (itemKeyDecryptionResult) {
-                is Success -> {
-                    val decryptedItemKey = itemKeyDecryptionResult.result.key
-                    val itemDataDecryptionResult = item.data.decryptWithResult(decryptedItemKey, ItemData.Deserializer)
-
-                    when (itemDataDecryptionResult) {
-                        is Success -> {
-                            val decryptedItemData = itemDataDecryptionResult.result
-                            updateSensibleDataFields(decryptedItemKey, decryptedItemData)
-
-                            Success(Unit)
-                        }
-                        is Failure -> itemDataDecryptionResult
-                    }
-                }
-                is Failure -> itemKeyDecryptionResult
+                Success(Unit)
+            } catch (e: Exception) {
+                Failure(e)
             }
         }
     }
@@ -147,112 +138,105 @@ class ItemEditingViewModel(
         val loggedInUserItemEncryptionPublicKey = itemModel.loggedInUserViewModel.itemEncryptionPublicKey.key
 
         val itemData = createItemData()
-        val createItemAndKeyResult = createNewItemAndKey(loggedInUserId, itemData)
 
-        return when (createItemAndKeyResult) {
-            is Success -> {
-                val (item, itemKey) = createItemAndKeyResult.result
-                userManager.createItem(item)
+        return try {
+            val (item, itemKey) = createNewItemAndKey(loggedInUserId, itemData).resultOrThrowException()
+            userManager.createItem(item)
 
-                val itemAuthorizationResult = createNewItemAuthorization(loggedInUserId, loggedInUserItemEncryptionPublicKey, item, itemKey)
+            val itemAuthorization = createNewItemAuthorization(loggedInUserId, loggedInUserItemEncryptionPublicKey, item, itemKey).resultOrThrowException()
+            userManager.createItemAuthorization(itemAuthorization)
 
-                when (itemAuthorizationResult) {
-                    is Success -> {
-                        val itemAuthorization = itemAuthorizationResult.result
-                        userManager.createItemAuthorization(itemAuthorization)
-
-                        Success(Unit)
-                    }
-                    is Failure -> itemAuthorizationResult
-                }
-            }
-            is Failure -> createItemAndKeyResult
+            Success(Unit)
+        } catch (e: Exception) {
+            Failure(e)
         }
     }
 
     private suspend fun createNewItemAndKey(loggedInUserId: String, itemData: ItemData): Result<Pair<Item, ByteArray>> {
         val symmetricEncryptionAlgorithm = EncryptionAlgorithm.Symmetric.AES256GCM
 
-        // TODO: Handle exception / result
-        val itemKey = withContext(Dispatchers.IO) {
-            symmetricEncryptionAlgorithm.generateEncryptionKey()
+        return try {
+            val itemKey = withContext(Dispatchers.IO) {
+                symmetricEncryptionAlgorithm.generateEncryptionKey()
+            }
+
+            val protectedItemData = withContext(Dispatchers.Default) {
+                ProtectedValue.create(symmetricEncryptionAlgorithm, itemKey, itemData)
+            }
+
+            val currentDate = Date()
+            val item = Item(
+                id = UUID.randomUUID().toString(),
+                userId = loggedInUserId,
+                data = protectedItemData,
+                deleted = false,
+                modified = currentDate,
+                created = currentDate
+            )
+
+            Success(Pair(item, itemKey))
+        } catch (e: Exception) {
+            Failure(e)
         }
-
-        // TODO: Handle exception / result
-        val protectedItemData = withContext(Dispatchers.Default) {
-            ProtectedValue.create(symmetricEncryptionAlgorithm, itemKey, itemData)
-        }
-
-        val currentDate = Date()
-        val item = Item(
-            id = UUID.randomUUID().toString(),
-            userId = loggedInUserId,
-            data = protectedItemData,
-            deleted = false,
-            modified = currentDate,
-            created = currentDate
-        )
-
-        // TODO: Proper result
-        return Success(Pair(item, itemKey))
     }
 
     private suspend fun createNewItemAuthorization(loggedInUserId: String, loggedInUserItemEncryptionPublicKey: ByteArray, item: Item, itemKey: ByteArray): Result<ItemAuthorization> {
         val asymmetricEncryptionAlgorithm = EncryptionAlgorithm.Asymmetric.RSA2048OAEP
 
-        // TODO: Handle exception / result
-        val protectedItemKey = withContext(Dispatchers.Default) {
-            ProtectedValue.create(asymmetricEncryptionAlgorithm, loggedInUserItemEncryptionPublicKey, CryptographicKey(itemKey))
+        return try {
+            val protectedItemKey = withContext(Dispatchers.Default) {
+                ProtectedValue.create(asymmetricEncryptionAlgorithm, loggedInUserItemEncryptionPublicKey, CryptographicKey(itemKey))
+            }
+
+            val currentDate = Date()
+            val itemAuthorization = ItemAuthorization(
+                id = UUID.randomUUID().toString(),
+                userId = loggedInUserId,
+                itemId = item.id,
+                itemKey = protectedItemKey,
+                readOnly = false,
+                deleted = false,
+                modified = currentDate,
+                created = currentDate
+            )
+
+            Success(itemAuthorization)
+        } catch (e: Exception) {
+            Failure(e)
         }
-
-        val currentDate = Date()
-        val itemAuthorization = ItemAuthorization(
-            id = UUID.randomUUID().toString(),
-            userId = loggedInUserId,
-            itemId = item.id,
-            itemKey = protectedItemKey,
-            readOnly = false,
-            deleted = false,
-            modified = currentDate,
-            created = currentDate
-        )
-
-        // TODO: Proper result
-        return Success(itemAuthorization)
     }
 
     private suspend fun saveExistingItem(itemModel: ItemModel.Existing): Result<Unit> {
         val item = itemModel.item
         val itemKey = itemModel.itemKey
 
-        val updatedItemResult = createUpdatedItem(item, itemKey)
+        return try {
+            val updatedItem = createUpdatedItem(item, itemKey).resultOrThrowException()
+            userManager.updateItem(updatedItem)
 
-        return when (updatedItemResult) {
-            is Success -> {
-                val updatedItem = updatedItemResult.result
-                userManager.updateItem(updatedItem)
-
-                Success(Unit)
-            }
-            is Failure -> updatedItemResult
+            Success(Unit)
+        } catch (e: Exception) {
+            Failure(e)
         }
     }
 
     private fun createUpdatedItem(item: Item, itemKey: ByteArray): Result<Item> {
         val protectedItemData = item.data
-
-        // TODO: Handle exception / result
         val itemData = createItemData()
-        protectedItemData.update(itemKey, itemData)
 
-        val currentDate = Date()
-        val updatedItem = item.copy(
-            data = protectedItemData,
-            modified = currentDate
-        )
+        return try {
+            protectedItemData.update(itemKey, itemData)
 
-        // TODO: Proper result
-        return Success(updatedItem)
+            val currentDate = Date()
+            val updatedItem = item.copy(
+                data = protectedItemData,
+                modified = currentDate
+            )
+
+            Success(updatedItem)
+        } catch (e: Exception) {
+            Failure(e)
+        }
     }
 
     private fun createItemData(): ItemData {
