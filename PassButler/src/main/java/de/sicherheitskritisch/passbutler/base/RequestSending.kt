@@ -8,8 +8,10 @@ import androidx.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.ui.BaseFragment
 import de.sicherheitskritisch.passbutler.ui.showError
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 
 interface RequestSendingViewModel {
@@ -132,12 +134,14 @@ fun BaseFragment.launchRequestSending(
     handleFailure: ((Throwable) -> Unit)? = null,
     handleLoadingChanged: ((Boolean) -> Unit)? = null,
     block: suspend () -> Result<*>
-) {
-    launch {
+): Job {
+    return launch {
         showProgress()
         handleLoadingChanged?.invoke(true)
 
-        val result = block()
+        val result = withContext(Dispatchers.IO) {
+            block()
+        }
 
         hideProgress()
         handleLoadingChanged?.invoke(false)

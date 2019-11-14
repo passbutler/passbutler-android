@@ -17,6 +17,7 @@ import de.sicherheitskritisch.passbutler.ui.Keyboard
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
 import de.sicherheitskritisch.passbutler.ui.applyTint
 import de.sicherheitskritisch.passbutler.ui.showError
+import kotlinx.coroutines.Job
 
 class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
@@ -25,6 +26,8 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     private val titleObserver = Observer<String> {
         updateToolbarTitle()
     }
+
+    private var saveRequestSendingJob: Job? = null
 
     override fun getToolBarTitle(): String {
         return if (viewModel.isNewEntry) {
@@ -84,7 +87,8 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     }
 
     private fun saveClicked() {
-        launchRequestSending(
+        saveRequestSendingJob?.cancel()
+        saveRequestSendingJob = launchRequestSending(
             handleSuccess = { popBackstack() },
             handleFailure = { showError(getString(R.string.itemdetail_save_failed_general_title)) }
         ) {
