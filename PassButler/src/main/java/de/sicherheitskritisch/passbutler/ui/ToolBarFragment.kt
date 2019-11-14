@@ -12,6 +12,7 @@ import de.sicherheitskritisch.passbutler.R
 
 abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragment<ViewModelType>(), AnimatedFragment {
 
+    // TODO: This should not control the shown but showing fragment
     override val transitionType = AnimatedFragment.TransitionType.SLIDE
 
     private var toolBar: Toolbar? = null
