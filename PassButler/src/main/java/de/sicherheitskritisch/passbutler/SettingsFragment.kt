@@ -30,6 +30,7 @@ import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
 import de.sicherheitskritisch.passbutler.ui.showEditTextDialog
 import de.sicherheitskritisch.passbutler.ui.showError
 import de.sicherheitskritisch.passbutler.ui.showInformation
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import javax.crypto.Cipher
@@ -53,7 +54,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     }
 
     private val biometricCallbackExecutor by lazy {
-        BiometricAuthenticationCallbackExecutor(this)
+        BiometricAuthenticationCallbackExecutor(this, Dispatchers.Main)
     }
 
     override fun getToolBarTitle() = getString(R.string.settings_title)
@@ -242,12 +243,6 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
             // If the user canceled or dismissed the dialog or if the dialog was dismissed via on pause, do not show error
             if (errorCode != ERROR_NEGATIVE_BUTTON && errorCode != ERROR_USER_CANCELED && errorCode != ERROR_CANCELED) {
-                showSetupBiometricUnlockFailedError()
-            }
-        }
-
-        private fun showSetupBiometricUnlockFailedError() {
-            launch {
                 showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))
             }
         }
@@ -260,7 +255,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             if (initializedSetupBiometricUnlockCipher != null) {
                 showMasterPasswordInputDialog(initializedSetupBiometricUnlockCipher)
             } else {
-                showSetupBiometricUnlockFailedError()
+                showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))
             }
         }
 

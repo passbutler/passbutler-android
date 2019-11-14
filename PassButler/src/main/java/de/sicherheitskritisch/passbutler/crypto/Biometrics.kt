@@ -10,6 +10,7 @@ import android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE
 import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
 import androidx.core.hardware.fingerprint.FingerprintManagerCompat
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -190,9 +191,9 @@ object Biometrics {
     class RemoveKeyFailedException(cause: Throwable) : Exception(cause)
 }
 
-class BiometricAuthenticationCallbackExecutor(private val coroutineScope: CoroutineScope) : Executor {
+class BiometricAuthenticationCallbackExecutor(private val coroutineScope: CoroutineScope, private val coroutineDispatcher: CoroutineDispatcher) : Executor {
     override fun execute(runnable: Runnable) {
-        coroutineScope.launch(Dispatchers.IO) {
+        coroutineScope.launch(coroutineDispatcher) {
             runnable.run()
         }
     }

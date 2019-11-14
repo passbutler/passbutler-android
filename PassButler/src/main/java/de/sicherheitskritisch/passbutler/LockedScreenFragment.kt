@@ -36,7 +36,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     private var unlockRequestSendingViewHandler: UnlockRequestSendingViewHandler? = null
 
     private val biometricCallbackExecutor by lazy {
-        BiometricAuthenticationCallbackExecutor(this)
+        BiometricAuthenticationCallbackExecutor(this, Dispatchers.Main)
     }
 
     override fun onAttach(context: Context) {
@@ -193,12 +193,8 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
             // If the user canceled or dismissed the dialog or if the dialog was dismissed via on pause, do not show error
             if (errorCode != ERROR_NEGATIVE_BUTTON && errorCode != ERROR_USER_CANCELED && errorCode != ERROR_CANCELED) {
-                showBiometricUnlockFailedError()
+                showError(getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
             }
-        }
-
-        private fun showBiometricUnlockFailedError() = launch {
-            showError(getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
         }
 
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
@@ -209,7 +205,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
             if (initializedBiometricUnlockCipher != null) {
                 viewModel.unlockScreenWithBiometrics(initializedBiometricUnlockCipher)
             } else {
-                showBiometricUnlockFailedError()
+                showError(getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
             }
         }
 
