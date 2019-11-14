@@ -75,8 +75,8 @@ object Biometrics {
     fun obtainKeyInstance(): Cipher {
         return try {
             Cipher.getInstance("$KEY_ALGORITHM_AES/${BLOCK_MODE_GCM}/${ENCRYPTION_PADDING_NONE}")
-        } catch (e: Exception) {
-            throw ObtainKeyFailedException(e)
+        } catch (exception: Exception) {
+            throw ObtainKeyFailedException(exception)
         }
     }
 
@@ -108,8 +108,8 @@ object Biometrics {
                 androidKeyGenerator.init(keyParameters)
 
                 androidKeyGenerator.generateKey()
-            } catch (e: Exception) {
-                throw GenerateKeyFailedException(e)
+            } catch (exception: Exception) {
+                throw GenerateKeyFailedException(exception)
             }
         }
     }
@@ -122,8 +122,8 @@ object Biometrics {
 
                 val secretKey = androidKeyStore.getKey(keyName, null) as? SecretKey ?: throw InvalidKeyException("The key '$keyName' was not found!")
                 encryptionCipher.init(Cipher.ENCRYPT_MODE, secretKey)
-            } catch (e: Exception) {
-                throw InitializeKeyFailedException(e)
+            } catch (exception: Exception) {
+                throw InitializeKeyFailedException(exception)
             }
         }
     }
@@ -136,8 +136,8 @@ object Biometrics {
 
                 val secretKey = androidKeyStore.getKey(keyName, null) as? SecretKey ?: throw InvalidKeyException("The key '$keyName' was not found!")
                 decryptionCipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_AUTHENTICATION_TAG_BIT_SIZE, initializationVector))
-            } catch (e: Exception) {
-                throw InitializeKeyFailedException(e)
+            } catch (exception: Exception) {
+                throw InitializeKeyFailedException(exception)
             }
         }
     }
@@ -147,8 +147,8 @@ object Biometrics {
         return withContext(Dispatchers.Default) {
             try {
                 encryptionCipher.doFinal(data)
-            } catch (e: Exception) {
-                throw EncryptionFailedException(e)
+            } catch (exception: Exception) {
+                throw EncryptionFailedException(exception)
             }
         }
     }
@@ -158,8 +158,8 @@ object Biometrics {
         return withContext(Dispatchers.Default) {
             try {
                 decryptionCipher.doFinal(data)
-            } catch (e: Exception) {
-                throw DecryptionFailedException(e)
+            } catch (exception: Exception) {
+                throw DecryptionFailedException(exception)
             }
         }
     }
@@ -171,8 +171,8 @@ object Biometrics {
                 initializeAndroidKeyStore()
 
                 androidKeyStore.deleteEntry(keyName)
-            } catch (e: Exception) {
-                throw RemoveKeyFailedException(e)
+            } catch (exception: Exception) {
+                throw RemoveKeyFailedException(exception)
             }
         }
     }

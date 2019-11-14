@@ -191,8 +191,8 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             if (userWebservice == null || authTokenHasChanged) {
                 userWebservice = UserWebservice.create(userType.serverUrl, authToken.token)
             }
-        } catch (e: Exception) {
-            L.w("UserManager", "restoreWebservices(): The webservices could not be restored!", e)
+        } catch (exception: Exception) {
+            L.w("UserManager", "restoreWebservices(): The webservices could not be restored!", exception)
         }
     }
 
@@ -343,8 +343,8 @@ private class UserSynchronizationTask(private val localRepository: LocalReposito
                 synchronizeLoggedInUser()
                 L.d("UserSynchronizationTask", "synchronize(): Finished successfully")
             }
-        } catch (e: Exception) {
-            throw Synchronization.SynchronizationFailedException(e)
+        } catch (exception: Exception) {
+            throw Synchronization.SynchronizationFailedException(exception)
         }
     }
 
@@ -383,8 +383,8 @@ private class UserSynchronizationTask(private val localRepository: LocalReposito
             if (modifiedLocalUsers.isNotEmpty()) {
                 updateModifiedUsersToLocalDatabase(modifiedLocalUsers)
             }
-        } catch (e: Exception) {
-            throw SynchronizePublicUsersListFailedException(e)
+        } catch (exception: Exception) {
+            throw SynchronizePublicUsersListFailedException(exception)
         }
     }
 
@@ -415,8 +415,8 @@ private class UserSynchronizationTask(private val localRepository: LocalReposito
                     L.d("UserSynchronizationTask", "synchronizeLoggedInUser(): No update needed because local and remote user are equal")
                 }
             }
-        } catch (e: Exception) {
-            throw SynchronizeLoggedInUserFailedException(e)
+        } catch (exception: Exception) {
+            throw SynchronizeLoggedInUserFailedException(exception)
         }
     }
 
@@ -440,8 +440,8 @@ private class ItemsSynchronizationTask(private val localRepository: LocalReposit
 
                 L.d("ItemsSynchronizationTask", "synchronize(): Finished successfully")
             }
-        } catch (e: Exception) {
-            throw Synchronization.SynchronizationFailedException(e)
+        } catch (exception: Exception) {
+            throw Synchronization.SynchronizationFailedException(exception)
         }
     }
 }

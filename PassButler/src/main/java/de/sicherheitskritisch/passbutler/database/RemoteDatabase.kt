@@ -81,8 +81,8 @@ suspend fun AuthWebservice?.requestAuthToken(): AuthToken {
             val getTokenRequest = authWebservice?.getTokenAsync()
             val getTokenResponse = getTokenRequest?.await()
             getTokenResponse.completeRequestWithResult()
-        } catch (e: Exception) {
-            throw AuthWebservice.GetAuthTokenFailedException(e)
+        } catch (exception: Exception) {
+            throw AuthWebservice.GetAuthTokenFailedException(exception)
         }
     }
 }
@@ -163,8 +163,8 @@ suspend fun UserWebservice?.requestPublicUserList(): List<User> {
             val getUsersListRequest = userWebservice?.getUsersAsync()
             val getUsersListResponse = getUsersListRequest?.await()
             getUsersListResponse.completeRequestWithResult()
-        } catch (e: Exception) {
-            throw UserWebservice.GetUsersFailedException(e)
+        } catch (exception: Exception) {
+            throw UserWebservice.GetUsersFailedException(exception)
         }
     }
 }
@@ -177,8 +177,8 @@ suspend fun UserWebservice?.requestUser(username: String): User {
             val getUserDetailsRequest = userWebservice?.getUserDetailsAsync(username)
             val getUserDetailsResponse = getUserDetailsRequest?.await()
             getUserDetailsResponse.completeRequestWithResult()
-        } catch (e: Exception) {
-            throw UserWebservice.GetUserDetailsFailedException(e)
+        } catch (exception: Exception) {
+            throw UserWebservice.GetUserDetailsFailedException(exception)
         }
     }
 }
@@ -191,8 +191,8 @@ suspend fun UserWebservice?.updateUser(user: User) {
             val setUserDetailsRequest = userWebservice?.setUserDetailsAsync(user.username, user)
             val setUserDetailsResponse = setUserDetailsRequest?.await()
             setUserDetailsResponse.completeRequestWithoutResult()
-        } catch (e: Exception) {
-            throw UserWebservice.SetUserDetailsFailedException(e)
+        } catch (exception: Exception) {
+            throw UserWebservice.SetUserDetailsFailedException(exception)
         }
     }
 }

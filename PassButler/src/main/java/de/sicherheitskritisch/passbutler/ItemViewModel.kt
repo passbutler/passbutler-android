@@ -53,8 +53,8 @@ class ItemViewModel(
                 updateSensibleDataFields(decryptedItemKey, decryptedItemData)
 
                 Success(Unit)
-            } catch (e: Exception) {
-                Failure(e)
+            } catch (exception: Exception) {
+                Failure(exception)
             }
         }
     }
@@ -147,8 +147,8 @@ class ItemEditingViewModel(
             userManager.createItemAuthorization(itemAuthorization)
 
             Success(Unit)
-        } catch (e: Exception) {
-            Failure(e)
+        } catch (exception: Exception) {
+            Failure(exception)
         }
     }
 
@@ -175,8 +175,8 @@ class ItemEditingViewModel(
             )
 
             Success(Pair(item, itemKey))
-        } catch (e: Exception) {
-            Failure(e)
+        } catch (exception: Exception) {
+            Failure(exception)
         }
     }
 
@@ -201,8 +201,8 @@ class ItemEditingViewModel(
             )
 
             Success(itemAuthorization)
-        } catch (e: Exception) {
-            Failure(e)
+        } catch (exception: Exception) {
+            Failure(exception)
         }
     }
 
@@ -215,8 +215,8 @@ class ItemEditingViewModel(
             userManager.updateItem(updatedItem)
 
             Success(Unit)
-        } catch (e: Exception) {
-            Failure(e)
+        } catch (exception: Exception) {
+            Failure(exception)
         }
     }
 
@@ -234,8 +234,8 @@ class ItemEditingViewModel(
             )
 
             Success(updatedItem)
-        } catch (e: Exception) {
-            Failure(e)
+        } catch (exception: Exception) {
+            Failure(exception)
         }
     }
 

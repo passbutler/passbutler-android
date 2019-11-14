@@ -309,8 +309,8 @@ class UserViewModel private constructor(
 
                     val user = createModel()
                     userManager.updateUser(user)
-                } catch (e: Exception) {
-                    L.w("UserViewModel", "persistUserSettings(): The user settings could not be updated!", e)
+                } catch (exception: Exception) {
+                    L.w("UserViewModel", "persistUserSettings(): The user settings could not be updated!", exception)
                 }
             }
         }

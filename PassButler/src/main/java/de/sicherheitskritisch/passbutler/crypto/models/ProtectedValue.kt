@@ -59,10 +59,10 @@ class ProtectedValue<T : JSONSerializable> private constructor(
                     }
                 }
             }
-        } catch (e: JSONException) {
-            throw DecryptFailedException("The value could not be deserialized!", e)
-        } catch (e: Exception) {
-            throw DecryptFailedException("The value could not be decrypted!", e)
+        } catch (exception: JSONException) {
+            throw DecryptFailedException("The value could not be deserialized!", exception)
+        } catch (exception: Exception) {
+            throw DecryptFailedException("The value could not be decrypted!", exception)
         }
     }
 
@@ -89,8 +89,8 @@ class ProtectedValue<T : JSONSerializable> private constructor(
                 }
             }
 
-        } catch (e: Exception) {
-            throw UpdateFailedException(e)
+        } catch (exception: Exception) {
+            throw UpdateFailedException(exception)
         }
     }
 
@@ -162,8 +162,8 @@ class ProtectedValue<T : JSONSerializable> private constructor(
                         ProtectedValue(newInitializationVector, encryptedValue, encryptionAlgorithm)
                     }
                 }
-            } catch (e: Exception) {
-                throw CreateFailedException(e)
+            } catch (exception: Exception) {
+                throw CreateFailedException(exception)
             }
         }
 
@@ -199,8 +199,8 @@ fun <T : JSONSerializable> JSONObject.getProtectedValueOrNull(name: String): Pro
     return try {
         val serialized = getJSONObject(name)
         ProtectedValue.Deserializer<T>().deserializeOrNull(serialized)
-    } catch (e: JSONException) {
-        L.d("JSON", "getProtectedValueOrNull(): The optional ProtectedValue with key '$name' could not be deserialized using the following JSON: $this (${e.message})")
+    } catch (exception: JSONException) {
+        L.d("JSON", "getProtectedValueOrNull(): The optional ProtectedValue with key '$name' could not be deserialized using the following JSON: $this (${exception.message})")
         null
     }
 }

@@ -48,8 +48,8 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
 
                     val secretKey = keyGenerator.generateKey()
                     secretKey.encoded
-                } catch (e: Exception) {
-                    throw GenerateEncryptionKeyFailedException(e)
+                } catch (exception: Exception) {
+                    throw GenerateEncryptionKeyFailedException(exception)
                 }
             }
 
@@ -74,8 +74,8 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
                     val encryptedData = encryptCipherInstance.doFinal(data)
 
                     encryptedData
-                } catch (e: Exception) {
-                    throw EncryptionFailedException(e)
+                } catch (exception: Exception) {
+                    throw EncryptionFailedException(exception)
                 }
             }
 
@@ -95,8 +95,8 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
                     val decryptedData = encryptCipherInstance.doFinal(data)
 
                     decryptedData
-                } catch (e: Exception) {
-                    throw DecryptionFailedException(e)
+                } catch (exception: Exception) {
+                    throw DecryptionFailedException(exception)
                 }
             }
         }
@@ -130,8 +130,8 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
                     }
 
                     initializedCipher.doFinal(data)
-                } catch (e: Exception) {
-                    throw EncryptionFailedException(e)
+                } catch (exception: Exception) {
+                    throw EncryptionFailedException(exception)
                 }
             }
 
@@ -145,8 +145,8 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
                     }
 
                     initializedCipher.doFinal(data)
-                } catch (e: Exception) {
-                    throw DecryptionFailedException(e)
+                } catch (exception: Exception) {
+                    throw DecryptionFailedException(exception)
                 }
             }
 

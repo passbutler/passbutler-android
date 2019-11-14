@@ -40,7 +40,7 @@ val AuthToken.expirationDate: Instant?
     get() {
         return try {
             JSONWebToken.getExpiration(token)
-        } catch (e: Exception) {
+        } catch (exception: Exception) {
             L.w("AuthToken", "The expirationDate date of the JWT could not be determined!")
             null
         }

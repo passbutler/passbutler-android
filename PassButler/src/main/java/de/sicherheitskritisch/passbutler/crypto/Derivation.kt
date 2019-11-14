@@ -37,8 +37,8 @@ object Derivation {
 
             val resultingBytes = performPBKDFWithSHA256(preparedPassword, salt, MASTER_PASSWORD_AUTHENTICATION_HASH_ITERATION_COUNT, MASTER_PASSWORD_AUTHENTICATION_HASH_BIT_LENGTH)
             resultingBytes.toHexString()
-        } catch (e: Exception) {
-            throw DerivationFailedException(e)
+        } catch (exception: Exception) {
+            throw DerivationFailedException(exception)
         }
     }
 
@@ -59,8 +59,8 @@ object Derivation {
             val hashString = hashBytes.toHexString()
 
             "pbkdf2:sha256:$iterationCount\$$saltString\$$hashString"
-        } catch (e: Exception) {
-            throw DerivationFailedException(e)
+        } catch (exception: Exception) {
+            throw DerivationFailedException(exception)
         }
     }
 
@@ -77,8 +77,8 @@ object Derivation {
         return try {
             val preparedPassword = normalizeString(trimString(password))
             performPBKDFWithSHA256(preparedPassword, keyDerivationInformation.salt, keyDerivationInformation.iterationCount, MASTER_KEY_BIT_LENGTH)
-        } catch (e: Exception) {
-            throw DerivationFailedException(e)
+        } catch (exception: Exception) {
+            throw DerivationFailedException(exception)
         }
     }
 
