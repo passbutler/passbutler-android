@@ -26,9 +26,7 @@ object Differentiation {
         return sortedCurrentItems.mapIndexedNotNull { index, currentUserItem ->
             val updatedItem = sortedUpdatedItems[index]
 
-            if (currentUserItem.primaryField != updatedItem.primaryField) {
-                throw IllegalStateException("The current item list and updated item list must contain the same items!")
-            }
+            check(currentUserItem.primaryField == updatedItem.primaryField) { "The current item list and updated item list must contain the same items!" }
 
             if (updatedItem.modified > currentUserItem.modified) {
                 updatedItem
