@@ -133,7 +133,7 @@ class UserViewModel private constructor(
 
             Success(Unit)
         } catch (exception: Exception) {
-            // If the operation failed, reset everything to avoid a dirty state
+            L.w("UserViewModel", "decryptSensibleData(): The sensible data could not be decrypted - clear sensible data to avoid corrupt state!")
             clearSensibleData()
 
             Failure(exception)
@@ -230,7 +230,7 @@ class UserViewModel private constructor(
 
                 Success(Unit)
             } catch (exception: Exception) {
-                // Try to rollback biometric unlock setup if anything failed
+                L.w("UserViewModel", "enableBiometricUnlock(): The biometric unlock could not be enabled - disable biometric unlock to avoid corrupt state!")
                 disableBiometricUnlock()
 
                 Failure(exception)
