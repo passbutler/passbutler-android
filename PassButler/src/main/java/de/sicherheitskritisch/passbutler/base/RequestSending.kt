@@ -9,18 +9,16 @@ import kotlinx.coroutines.withContext
 fun BaseFragment.launchRequestSending(
     handleSuccess: (() -> Unit)? = null,
     handleFailure: ((Throwable) -> Unit)? = null,
-    handleLoadingChanged: ((Boolean) -> Unit)? = null,
+    handleLoadingChanged: ((Boolean) -> Unit)? = blockingProgressScreen(),
     block: suspend () -> Result<*>
 ): Job {
     return launch {
-        showProgress()
         handleLoadingChanged?.invoke(true)
 
         val result = withContext(Dispatchers.IO) {
             block()
         }
 
-        hideProgress()
         handleLoadingChanged?.invoke(false)
 
         when (result) {
@@ -30,6 +28,16 @@ fun BaseFragment.launchRequestSending(
                 L.w(javaClass.simpleName, "launchRequestSending(): The operation failed with exception!", exception)
                 handleFailure?.invoke(exception)
             }
+        }
+    }
+}
+
+private fun BaseFragment.blockingProgressScreen(): (Boolean) -> Unit {
+    return { isLoading ->
+        if (isLoading) {
+            showProgress()
+        } else {
+            hideProgress()
         }
     }
 }
