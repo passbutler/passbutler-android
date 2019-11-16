@@ -74,18 +74,18 @@ class ProtectedValue<T : JSONSerializable> private constructor(
             when (encryptionAlgorithm) {
                 is EncryptionAlgorithm.Symmetric -> {
                     val newInitializationVector = encryptionAlgorithm.generateInitializationVector()
-                    val encryptedValue = encryptionAlgorithm.encrypt(newInitializationVector, encryptionKey, updatedValue.toByteArray())
+                    val newEncryptedValue = encryptionAlgorithm.encrypt(newInitializationVector, encryptionKey, updatedValue.toByteArray())
 
                     // Update values only if encryption was successful
-                    this.initializationVector = newInitializationVector
-                    this.encryptedValue = encryptedValue
+                    initializationVector = newInitializationVector
+                    encryptedValue = newEncryptedValue
                 }
                 is EncryptionAlgorithm.Asymmetric -> {
-                    val encryptedValue = encryptionAlgorithm.encrypt(encryptionKey, updatedValue.toByteArray())
+                    val newEncryptedValue = encryptionAlgorithm.encrypt(encryptionKey, updatedValue.toByteArray())
 
                     // Update values only if encryption was successful
-                    this.initializationVector = ByteArray(0)
-                    this.encryptedValue = encryptedValue
+                    initializationVector = ByteArray(0)
+                    encryptedValue = newEncryptedValue
                 }
             }
 
