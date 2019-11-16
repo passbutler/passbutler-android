@@ -3,6 +3,7 @@ package de.sicherheitskritisch.passbutler.crypto
 import de.sicherheitskritisch.passbutler.base.bitSize
 import de.sicherheitskritisch.passbutler.base.toHexString
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
+import java.security.NoSuchAlgorithmException
 import java.text.Normalizer
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
@@ -24,12 +25,13 @@ object Derivation {
      * Derives a authentication hash based on given username/password using PBKDF2 with SHA-256.
      * This method is used to avoid sending master password from client to server in clear text.
      */
-    @Throws(IllegalArgumentException::class, DerivationFailedException::class)
+    @Throws(DerivationFailedException::class)
     fun deriveLocalAuthenticationHash(username: String, password: String): String {
-        require(!username.isBlank()) { "The username must not be empty!" }
-        require(!password.isBlank()) { "The password must not be empty!" }
 
         return try {
+            require(!username.isBlank()) { "The username must not be empty!" }
+            require(!password.isBlank()) { "The password must not be empty!" }
+
             val preparedPassword = normalizeString(trimString(password))
 
             val preparedUsername = normalizeString(trimString(username))
@@ -46,11 +48,11 @@ object Derivation {
      * Derives a authentication hash based on a given password using PBKDF2 with SHA-256.
      * This method re-implements `werkzeug.security.generate_password_hash` from Python Werkzeug framework.
      */
-    @Throws(IllegalArgumentException::class, DerivationFailedException::class)
+    @Throws(DerivationFailedException::class)
     fun deriveServerAuthenticationHash(password: String): String {
-        require(!password.isBlank()) { "The password must not be empty!" }
-
         return try {
+            require(!password.isBlank()) { "The password must not be empty!" }
+
             val saltString = RandomGenerator.generateRandomString(SERVER_AUTHENTICATION_HASH_SALT_LENGTH, SERVER_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS)
             val saltBytes = saltString.toByteArray(Charsets.UTF_8)
 
@@ -67,14 +69,14 @@ object Derivation {
     /**
      * Derives the symmetric master key from a password using PBKDF2 with SHA-256.
      */
-    @Throws(IllegalArgumentException::class, DerivationFailedException::class)
+    @Throws(DerivationFailedException::class)
     fun deriveMasterKey(password: String, keyDerivationInformation: KeyDerivationInformation): ByteArray {
-        require(!password.isBlank()) { "The password must not be empty!" }
-
-        // The salt should have the same size as the derived key
-        require(keyDerivationInformation.salt.bitSize == MASTER_KEY_BIT_LENGTH) { "The salt must be 256 bits long!" }
-
         return try {
+            require(!password.isBlank()) { "The password must not be empty!" }
+
+            // The salt should have the same size as the derived key
+            require(keyDerivationInformation.salt.bitSize == MASTER_KEY_BIT_LENGTH) { "The salt must be 256 bits long!" }
+
             val preparedPassword = normalizeString(trimString(password))
             performPBKDFWithSHA256(preparedPassword, keyDerivationInformation.salt, keyDerivationInformation.iterationCount, MASTER_KEY_BIT_LENGTH)
         } catch (exception: Exception) {
@@ -82,6 +84,7 @@ object Derivation {
         }
     }
 
+    @Throws(NoSuchAlgorithmException::class)
     private fun performPBKDFWithSHA256(password: String, salt: ByteArray, iterationCount: Int, resultLength: Int): ByteArray {
         val pbeKeySpec = PBEKeySpec(password.toCharArray(), salt, iterationCount, resultLength)
         val secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2withHmacSHA256")

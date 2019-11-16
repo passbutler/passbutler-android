@@ -24,11 +24,11 @@ class MasterKeyDerivationTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val exception = Assertions.assertThrows(IllegalArgumentException::class.java) {
+        val exception = Assertions.assertThrows(Derivation.DerivationFailedException::class.java) {
             Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         }
 
-        assertEquals("The password must not be empty!", exception.message)
+        assertEquals("The password must not be empty!", (exception.cause as IllegalArgumentException).message)
     }
 
     @Test
@@ -38,11 +38,11 @@ class MasterKeyDerivationTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val exception = Assertions.assertThrows(IllegalArgumentException::class.java) {
+        val exception = Assertions.assertThrows(Derivation.DerivationFailedException::class.java) {
             Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         }
 
-        assertEquals("The password must not be empty!", exception.message)
+        assertEquals("The password must not be empty!", (exception.cause as IllegalArgumentException).message)
     }
 
     /**
@@ -56,11 +56,11 @@ class MasterKeyDerivationTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val exception = Assertions.assertThrows(IllegalArgumentException::class.java) {
+        val exception = Assertions.assertThrows(Derivation.DerivationFailedException::class.java) {
             Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         }
 
-        assertEquals("The salt must be 256 bits long!", exception.message)
+        assertEquals("The salt must be 256 bits long!", (exception.cause as IllegalArgumentException).message)
     }
 
     @Test
@@ -70,11 +70,11 @@ class MasterKeyDerivationTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val exception = Assertions.assertThrows(IllegalArgumentException::class.java) {
+        val exception = Assertions.assertThrows(Derivation.DerivationFailedException::class.java) {
             Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         }
 
-        assertEquals("The salt must be 256 bits long!", exception.message)
+        assertEquals("The salt must be 256 bits long!", (exception.cause as IllegalArgumentException).message)
     }
 
     @Test
@@ -84,11 +84,11 @@ class MasterKeyDerivationTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val exception = Assertions.assertThrows(IllegalArgumentException::class.java) {
+        val exception = Assertions.assertThrows(Derivation.DerivationFailedException::class.java) {
             Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
         }
 
-        assertEquals("The salt must be 256 bits long!", exception.message)
+        assertEquals("The salt must be 256 bits long!", (exception.cause as IllegalArgumentException).message)
     }
 
     /**
