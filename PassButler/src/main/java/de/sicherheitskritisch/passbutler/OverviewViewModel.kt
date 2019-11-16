@@ -3,6 +3,7 @@ package de.sicherheitskritisch.passbutler
 import android.app.Application
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
+import kotlinx.coroutines.delay
 
 class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
@@ -17,6 +18,10 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
     }
 
     suspend fun logoutUser(): Result<Unit> {
-        return rootViewModel.logoutUser()
+        // Some artificial delay to look flow more natural
+        delay(500)
+
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged in user viewmodel is null!")
+        return loggedInUserViewModel.logout()
     }
 }

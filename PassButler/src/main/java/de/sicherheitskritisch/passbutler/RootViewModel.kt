@@ -1,7 +1,6 @@
 package de.sicherheitskritisch.passbutler
 
 import android.app.Application
-import android.net.Uri
 import android.text.format.DateUtils
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
@@ -30,7 +29,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
     val webserviceRestored = SignalEmitter()
 
-    private val userManager
+    val userManager
         get() = getApplication<AbstractPassButlerApplication>().userManager
 
     private val loggedInUserResultObserver = LoggedInUserResultObserver()
@@ -49,24 +48,6 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     override fun onCleared() {
         userManager.loggedInUserResult.removeObserver(loggedInUserResultObserver)
         super.onCleared()
-    }
-
-    suspend fun loginUser(serverUrlString: String?, username: String, masterPassword: String): Result<Unit> {
-        return when (serverUrlString) {
-            null -> userManager.loginLocalUser(username, masterPassword)
-            else -> {
-                val serverUrl = Uri.parse(serverUrlString)
-                userManager.loginRemoteUser(username, masterPassword, serverUrl)
-            }
-        }
-    }
-
-    suspend fun logoutUser(): Result<Unit> {
-        // Some artificial delay to look flow more natural
-        delay(500)
-
-        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged in user viewmodel is null!")
-        return loggedInUserViewModel.logout()
     }
 
     suspend fun unlockScreenWithPassword(masterPassword: String): Result<Unit> {
