@@ -19,8 +19,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
-import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
-import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
+import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.base.signal
 import de.sicherheitskritisch.passbutler.databinding.FragmentOverviewBinding
 import de.sicherheitskritisch.passbutler.databinding.ListItemEntryBinding
@@ -28,18 +27,16 @@ import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.VisibilityHideMode
 import de.sicherheitskritisch.passbutler.ui.applyTint
+import de.sicherheitskritisch.passbutler.ui.showError
 import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
 import de.sicherheitskritisch.passbutler.ui.showInformation
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
 
 class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment {
 
     override val transitionType = AnimatedFragment.TransitionType.SLIDE
-
-    private var synchronizeDataRequestSendingViewHandler: SynchronizeDataRequestSendingViewHandler? = null
-    private var logoutRequestSendingViewHandler: LogoutRequestSendingViewHandler? = null
 
     private var binding: FragmentOverviewBinding? = null
     private var navigationHeaderView: View? = null
@@ -48,12 +45,12 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     private val toolbarMenuIconSync
         get() = binding?.toolbar?.menu?.findItem(R.id.overview_menu_item_sync)
 
+    private var synchronizeDataRequestSendingJob: Job? = null
+    private var logoutRequestSendingJob: Job? = null
+
     private val webserviceRestoredSignal = signal {
-        launch {
-            // Start sync a bit delayed after unlock to made progress UI better visible
-            delay(500)
-            viewModel.synchronizeData()
-        }
+        // Start sync a bit delayed after unlock to made progress UI better visible
+        synchronizeData(startDelay = 500)
     }
 
     private val itemsChangedObserver = Observer<List<ItemViewModel>> { newItems ->
@@ -82,9 +79,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             setupEntryList(binding)
         }
 
-        synchronizeDataRequestSendingViewHandler = SynchronizeDataRequestSendingViewHandler(viewModel.synchronizeDataRequestSendingViewModel, WeakReference(this))
-        logoutRequestSendingViewHandler = LogoutRequestSendingViewHandler(viewModel.rootViewModel.loginRequestSendingViewModel, WeakReference(this))
-
         return binding?.root
     }
 
@@ -101,7 +95,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.overview_menu_item_sync -> {
-                    viewModel.synchronizeData()
+                    synchronizeData()
                     true
                 }
                 else -> false
@@ -112,6 +106,30 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             val menuIconColor = resources.getColor(R.color.white, null)
             icon.applyTint(menuIconColor)
             isVisible = viewModel.loggedInUserViewModel?.userType is UserType.Server
+        }
+    }
+
+    private fun synchronizeData(startDelay: Long = 0) {
+        synchronizeDataRequestSendingJob?.cancel()
+        synchronizeDataRequestSendingJob = launchRequestSending(
+            handleSuccess = { showInformation(getString(R.string.overview_sync_successful_message)) },
+            handleFailure = { showError(getString(R.string.overview_sync_failed_message)) },
+            handleLoadingChanged = { isLoading ->
+                toolbarMenuIconSync?.apply {
+                    isEnabled = !isLoading
+
+                    val menuIconTintColor = when (isLoading) {
+                        true -> resources.getColor(R.color.whiteDisabled, null)
+                        false -> resources.getColor(R.color.white, null)
+                    }
+                    icon?.applyTint(menuIconTintColor)
+                }
+
+                binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
+            }
+        ) {
+            delay(startDelay)
+            viewModel.synchronizeData()
         }
     }
 
@@ -149,19 +167,12 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     override fun onStart() {
         super.onStart()
 
-        synchronizeDataRequestSendingViewHandler?.registerObservers()
-        logoutRequestSendingViewHandler?.registerObservers()
-
         viewModel.rootViewModel.webserviceRestored.addSignal(webserviceRestoredSignal)
-
         viewModel.loggedInUserViewModel?.itemViewModels?.observe(viewLifecycleOwner, itemsChangedObserver)
     }
 
     override fun onStop() {
         viewModel.rootViewModel.webserviceRestored.removeSignal(webserviceRestoredSignal)
-
-        synchronizeDataRequestSendingViewHandler?.unregisterObservers()
-        logoutRequestSendingViewHandler?.unregisterObservers()
 
         super.onStop()
     }
@@ -192,7 +203,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
                     true
                 }
                 R.id.drawer_menu_item_logout -> {
-                    viewModel.rootViewModel.logoutUser()
+                    logoutUser()
                     true
                 }
                 R.id.drawer_menu_item_homepage -> {
@@ -213,6 +224,15 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             return true
         }
 
+        private fun logoutUser() {
+            logoutRequestSendingJob?.cancel()
+            logoutRequestSendingJob = launchRequestSending(
+                handleFailure = { showError(getString(R.string.overview_logout_failed_title)) }
+            ) {
+                viewModel.logoutUser()
+            }
+        }
+
         /**
          * Closes drawer a little delayed to make show new fragment transaction more pretty
          */
@@ -229,43 +249,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
             intent.data = Uri.parse(uriString)
             startActivity(intent)
         }
-    }
-
-    private class SynchronizeDataRequestSendingViewHandler(
-        requestSendingViewModel: RequestSendingViewModel,
-        fragmentWeakReference: WeakReference<OverviewFragment>
-    ) : DefaultRequestSendingViewHandler<OverviewFragment>(requestSendingViewModel, fragmentWeakReference) {
-
-        override fun handleIsLoadingChanged(isLoading: Boolean) {
-            fragment?.toolbarMenuIconSync?.apply {
-                isEnabled = !isLoading
-
-                val menuIconTintColor = when (isLoading) {
-                    true -> resources?.getColor(R.color.whiteDisabled, null)
-                    false -> resources?.getColor(R.color.white, null)
-                }
-                menuIconTintColor?.let {
-                    icon?.applyTint(it)
-                }
-            }
-
-            fragment?.binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
-        }
-
-        override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.overview_sync_failed_message
-
-        override fun handleRequestFinishedSuccessfully() {
-            fragment?.launch {
-                fragment?.showInformation(resources?.getString(R.string.overview_sync_successful_message))
-            }
-        }
-    }
-
-    private class LogoutRequestSendingViewHandler(
-        requestSendingViewModel: RequestSendingViewModel,
-        fragmentWeakReference: WeakReference<OverviewFragment>
-    ) : DefaultRequestSendingViewHandler<OverviewFragment>(requestSendingViewModel, fragmentWeakReference) {
-        override fun requestErrorMessageResourceId(requestError: Throwable) = R.string.overview_logout_failed_title
     }
 
     companion object {

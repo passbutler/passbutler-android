@@ -11,11 +11,13 @@ import androidx.biometric.BiometricConstants.ERROR_NEGATIVE_BUTTON
 import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
-import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
+import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
 import de.sicherheitskritisch.passbutler.base.L
-import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
+import de.sicherheitskritisch.passbutler.base.Result
+import de.sicherheitskritisch.passbutler.base.Success
+import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.base.validateForm
 import de.sicherheitskritisch.passbutler.crypto.BiometricAuthenticationCallbackExecutor
 import de.sicherheitskritisch.passbutler.databinding.FragmentLockedScreenBinding
@@ -24,8 +26,8 @@ import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.Keyboard
 import de.sicherheitskritisch.passbutler.ui.showError
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
 
 class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFragment {
 
@@ -34,7 +36,8 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     private var formPassword: String? = null
 
     private var binding: FragmentLockedScreenBinding? = null
-    private var unlockRequestSendingViewHandler: UnlockRequestSendingViewHandler? = null
+
+    private var unlockRequestSendingJob: Job? = null
 
     private val biometricCallbackExecutor by lazy {
         BiometricAuthenticationCallbackExecutor(this, Dispatchers.Main)
@@ -63,8 +66,6 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
             applyRestoredViewStates(binding)
         }
 
-        unlockRequestSendingViewHandler = UnlockRequestSendingViewHandler(viewModel.unlockScreenRequestSendingViewModel, WeakReference(this))
-
         return binding?.root
     }
 
@@ -79,8 +80,6 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
             setupUnlockWithPasswordButton(it)
             setupUnlockWithBiometricsButton(it)
         }
-
-        unlockRequestSendingViewHandler?.registerObservers()
     }
 
     private fun setupUnlockWithPasswordButton(binding: FragmentLockedScreenBinding) {
@@ -109,7 +108,10 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
                 val password = binding.textInputEditTextPassword.text?.toString()
 
                 if (password != null) {
-                    viewModel.unlockScreenWithPassword(password)
+                    unlockRequestSendingJob?.cancel()
+                    unlockRequestSendingJob = launchUnlockRequestSending {
+                        viewModel.unlockScreenWithPassword(password)
+                    }
                 }
             }
             is FormValidationResult.Invalid -> {
@@ -134,25 +136,28 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
 
     private fun showBiometricPrompt() {
         launch {
-            try {
-                val initializedBiometricUnlockCipher = viewModel.initializeBiometricUnlockCipher()
+            val initializedBiometricUnlockCipherResult = viewModel.initializeBiometricUnlockCipher()
 
-                activity?.let { activity ->
-                    val biometricAuthenticationCallback = BiometricAuthenticationCallback()
-                    val biometricPrompt = BiometricPrompt(activity, biometricCallbackExecutor, biometricAuthenticationCallback)
-                    val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
-                        .setTitle(getString(R.string.locked_screen_biometrics_prompt_title))
-                        .setDescription(getString(R.string.locked_screen_biometrics_prompt_description))
-                        .setNegativeButtonText(getString(R.string.locked_screen_biometrics_prompt_cancel_button_text))
-                        .build()
+            when (initializedBiometricUnlockCipherResult) {
+                is Success -> {
+                    activity?.let { activity ->
+                        val biometricAuthenticationCallback = BiometricAuthenticationCallback()
+                        val biometricPrompt = BiometricPrompt(activity, biometricCallbackExecutor, biometricAuthenticationCallback)
+                        val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
+                            .setTitle(getString(R.string.locked_screen_biometrics_prompt_title))
+                            .setDescription(getString(R.string.locked_screen_biometrics_prompt_description))
+                            .setNegativeButtonText(getString(R.string.locked_screen_biometrics_prompt_cancel_button_text))
+                            .build()
 
-                    val cryptoObject = BiometricPrompt.CryptoObject(initializedBiometricUnlockCipher)
-                    biometricPrompt.authenticate(biometricPromptInfo, cryptoObject)
+                        val initializedBiometricUnlockCipher = initializedBiometricUnlockCipherResult.result
+                        val cryptoObject = BiometricPrompt.CryptoObject(initializedBiometricUnlockCipher)
+                        biometricPrompt.authenticate(biometricPromptInfo, cryptoObject)
+                    }
                 }
-
-            } catch (e: Exception) {
-                L.w("LockedScreenFragment", "showBiometricPrompt(): The biometric authentication failed!", e)
-                showError(getString(R.string.locked_screen_biometrics_unlock_failed_missing_key_title))
+                is Failure -> {
+                    L.w("LockedScreenFragment", "showBiometricPrompt(): The biometric authentication failed!", initializedBiometricUnlockCipherResult.throwable)
+                    showError(getString(R.string.locked_screen_biometrics_unlock_failed_missing_key_title))
+                }
             }
         }
     }
@@ -169,8 +174,6 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
     }
 
     override fun onStop() {
-        unlockRequestSendingViewHandler?.unregisterObservers()
-
         // Always hide keyboard if fragment gets stopped
         Keyboard.hideKeyboard(context, this)
 
@@ -204,7 +207,10 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
             val initializedBiometricUnlockCipher = result.cryptoObject?.cipher
 
             if (initializedBiometricUnlockCipher != null) {
-                viewModel.unlockScreenWithBiometrics(initializedBiometricUnlockCipher)
+                unlockRequestSendingJob?.cancel()
+                unlockRequestSendingJob = launchUnlockRequestSending {
+                    viewModel.unlockScreenWithBiometrics(initializedBiometricUnlockCipher)
+                }
             } else {
                 showError(getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
             }
@@ -216,28 +222,27 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFra
         }
     }
 
-    private class UnlockRequestSendingViewHandler(
-        requestSendingViewModel: RequestSendingViewModel,
-        fragmentWeakReference: WeakReference<LockedScreenFragment>
-    ) : DefaultRequestSendingViewHandler<LockedScreenFragment>(requestSendingViewModel, fragmentWeakReference) {
-
-        override fun requestErrorMessageResourceId(requestError: Throwable): Int {
-            return when ((requestError as? UserViewModel.UnlockFailedException)?.cause) {
-                is UserViewModel.DecryptMasterEncryptionKeyFailedException -> R.string.locked_screen_unlock_failed_wrong_master_password_title
-                else -> R.string.locked_screen_unlock_failed_general_title
-            }
-        }
-
-        override fun handleRequestFinishedSuccessfully() {
-            fragment?.launch {
-                fragment?.popBackstack()
-            }
-        }
-    }
-
     companion object {
         private const val FORM_FIELD_PASSWORD = "FORM_FIELD_PASSWORD"
 
         fun newInstance() = LockedScreenFragment()
+    }
+}
+
+private fun LockedScreenFragment.launchUnlockRequestSending(
+    block: suspend () -> Result<*>
+): Job {
+    return launchRequestSending(
+        handleSuccess = { popBackstack() },
+        handleFailure = {
+            val errorStringResourceId = when (it) {
+                is UserViewModel.DecryptMasterEncryptionKeyFailedException -> R.string.locked_screen_unlock_failed_wrong_master_password_title
+                else -> R.string.locked_screen_unlock_failed_general_title
+            }
+
+            showError(getString(errorStringResourceId))
+        }
+    ) {
+        block()
     }
 }

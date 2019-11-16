@@ -111,11 +111,6 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
         viewModel.rootFragmentWasResumed()
     }
 
-    override fun onStop() {
-        super.onStop()
-        viewModel.rootFragmentWasStopped()
-    }
-
     override fun onPause() {
         super.onPause()
         viewModel.rootFragmentWasPaused()

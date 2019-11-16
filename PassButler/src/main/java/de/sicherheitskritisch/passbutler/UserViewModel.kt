@@ -5,8 +5,10 @@ import androidx.lifecycle.Observer
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
+import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.clear
+import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.viewmodels.ManualCancelledCoroutineScopeViewModel
 import de.sicherheitskritisch.passbutler.base.viewmodels.ModelBasedViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
@@ -94,47 +96,45 @@ class UserViewModel private constructor(
         // If the master password was supplied (only on login), directly unlock resources
         if (masterPassword != null) {
             launch {
-                try {
-                    decryptSensibleData(masterPassword)
-                } catch (e: UnlockFailedException) {
-                    L.w("UserViewModel", "init(): The initial unlock of the resources after login failed - logout user because of unusable state!", e)
+                val decryptSensibleDataResult = decryptSensibleData(masterPassword)
+
+                if (decryptSensibleDataResult is Failure) {
+                    L.w("UserViewModel", "init(): The initial unlock of the resources after login failed - logout user because of unusable state!", decryptSensibleDataResult.throwable)
                     logout()
                 }
             }
         }
     }
 
-    @Throws(UnlockFailedException::class)
-    suspend fun decryptSensibleData(masterPassword: String) {
+    suspend fun decryptSensibleData(masterPassword: String): Result<Unit> {
         L.d("UserViewModel", "decryptSensibleData()")
 
-        try {
-            masterEncryptionKey = withContext(Dispatchers.Default) {
-                decryptMasterEncryptionKey(masterPassword).also { masterEncryptionKey ->
-                    itemEncryptionSecretKey = decryptItemEncryptionSecretKey(masterEncryptionKey)
+        return try {
+            masterEncryptionKey = decryptMasterEncryptionKey(masterPassword).resultOrThrowException().also { masterEncryptionKey ->
+                itemEncryptionSecretKey = decryptItemEncryptionSecretKey(masterEncryptionKey).resultOrThrowException()
 
-                    withContext(Dispatchers.Main) {
-                        items.observeForever(itemsObserver)
-                    }
+                withContext(Dispatchers.Main) {
+                    items.observeForever(itemsObserver)
+                }
 
-                    val decryptedSettings = decryptUserSettings(masterEncryptionKey)
+                val decryptedSettings = decryptUserSettings(masterEncryptionKey).resultOrThrowException()
 
-                    withContext(Dispatchers.Main) {
-                        automaticLockTimeout.value = decryptedSettings.automaticLockTimeout
-                        hidePasswordsEnabled.value = decryptedSettings.hidePasswords
+                withContext(Dispatchers.Main) {
+                    automaticLockTimeout.value = decryptedSettings.automaticLockTimeout
+                    hidePasswordsEnabled.value = decryptedSettings.hidePasswords
 
-                        // Register observers after field initialisations to avoid initial observer calls (but actually `LiveData` notifies observer nevertheless)
-                        automaticLockTimeout.observeForever(automaticLockTimeoutChangedObserver)
-                        hidePasswordsEnabled.observeForever(hidePasswordsEnabledChangedObserver)
-                    }
+                    // Register observers after field initialisations to avoid initial observer calls (but actually `LiveData` notifies observer nevertheless)
+                    automaticLockTimeout.observeForever(automaticLockTimeoutChangedObserver)
+                    hidePasswordsEnabled.observeForever(hidePasswordsEnabledChangedObserver)
                 }
             }
 
-        } catch (e: Exception) {
+            Success(Unit)
+        } catch (exception: Exception) {
             // If the operation failed, reset everything to avoid a dirty state
             clearSensibleData()
 
-            throw UnlockFailedException(e)
+            Failure(exception)
         }
     }
 
@@ -165,18 +165,21 @@ class UserViewModel private constructor(
         }
     }
 
-    @Throws(SynchronizeDataFailedException::class)
-    suspend fun synchronizeData() {
-        try {
+    suspend fun synchronizeData(): Result<Unit> {
+        L.d("UserViewModel", "synchronizeData()")
+
+        return try {
             userManager.synchronize()
-        } catch (e: Exception) {
-            throw SynchronizeDataFailedException(e)
+            Success(Unit)
+        } catch (exception: Exception) {
+            Failure(exception)
         }
     }
 
-    @Throws(UpdateMasterPasswordFailedException::class)
-    suspend fun updateMasterPassword(newMasterPassword: String) {
-        withContext(Dispatchers.Default) {
+    suspend fun updateMasterPassword(newMasterPassword: String): Result<Unit> {
+        L.d("UserViewModel", "updateMasterPassword()")
+
+        return withContext(Dispatchers.Default) {
             var newMasterKey: ByteArray? = null
 
             try {
@@ -190,24 +193,27 @@ class UserViewModel private constructor(
                 protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey))
 
                 // Disable biometric unlock because master password re-encryption would require biometric authentication and made flow more complex
-                disableBiometricUnlock()
+                disableBiometricUnlock().resultOrThrowException()
 
                 val user = createModel()
                 userManager.updateUser(user)
 
                 // The auth webservice needs to re-initialized because of master password change
                 userManager.initializeAuthWebservice(newMasterPassword)
-            } catch (e: Exception) {
-                throw UpdateMasterPasswordFailedException(e)
+
+                Success(Unit)
+            } catch (exception: Exception) {
+                Failure(exception)
             } finally {
                 newMasterKey?.clear()
             }
         }
     }
 
-    @Throws(EnableBiometricUnlockFailedException::class)
-    suspend fun enableBiometricUnlock(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String) {
-        withContext(Dispatchers.Default) {
+    suspend fun enableBiometricUnlock(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String): Result<Unit> {
+        L.d("UserViewModel", "enableBiometricUnlock()")
+
+        return withContext(Dispatchers.Default) {
             try {
                 // Test if master password is correct via thrown exception
                 decryptMasterEncryptionKey(masterPassword)
@@ -219,18 +225,21 @@ class UserViewModel private constructor(
                 userManager.loggedInStateStorage.persist()
 
                 biometricUnlockEnabled.notifyChange()
-            } catch (e: Exception) {
+
+                Success(Unit)
+            } catch (exception: Exception) {
                 // Try to rollback biometric unlock setup if anything failed
                 disableBiometricUnlock()
 
-                throw EnableBiometricUnlockFailedException(e)
+                Failure(exception)
             }
         }
     }
 
-    @Throws(DisableBiometricUnlockFailedException::class)
-    suspend fun disableBiometricUnlock() {
-        withContext(Dispatchers.IO) {
+    suspend fun disableBiometricUnlock(): Result<Unit> {
+        L.d("UserViewModel", "disableBiometricUnlock()")
+
+        return withContext(Dispatchers.IO) {
             try {
                 Biometrics.removeKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
 
@@ -238,47 +247,58 @@ class UserViewModel private constructor(
                 userManager.loggedInStateStorage.persist()
 
                 biometricUnlockEnabled.notifyChange()
-            } catch (e: Exception) {
-                throw DisableBiometricUnlockFailedException(e)
+
+                Success(Unit)
+            } catch (exception: Exception) {
+                Failure(exception)
             }
         }
     }
 
-    suspend fun logout() {
+    suspend fun logout(): Result<Unit> {
         userManager.logoutUser()
+        return Success(Unit)
     }
 
-    @Throws(DecryptMasterEncryptionKeyFailedException::class)
-    private fun decryptMasterEncryptionKey(masterPassword: String): ByteArray {
-        var masterKey: ByteArray? = null
+    private suspend fun decryptMasterEncryptionKey(masterPassword: String): Result<ByteArray> {
+        return withContext(Dispatchers.Default) {
+            var masterKey: ByteArray? = null
 
-        return try {
-            masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation)
+            try {
+                masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation)
 
-            val decryptedProtectedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer)
-            decryptedProtectedMasterEncryptionKey.key
-        } catch (e: Exception) {
-            throw DecryptMasterEncryptionKeyFailedException(e)
-        } finally {
-            masterKey?.clear()
+                val decryptedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer)
+                Success(decryptedMasterEncryptionKey.key)
+            } catch (exception: Exception) {
+                // Wrap the thrown exception to be able to determine if this call failed (used to show concrete error string in UI)
+                val wrappedException = DecryptMasterEncryptionKeyFailedException(exception)
+
+                Failure(wrappedException)
+            } finally {
+                masterKey?.clear()
+            }
         }
     }
 
-    @Throws(DecryptItemEncryptionSecretKeyFailedException::class)
-    private fun decryptItemEncryptionSecretKey(masterEncryptionKey: ByteArray): ByteArray {
-        return try {
-            protectedItemEncryptionSecretKey.decrypt(masterEncryptionKey, CryptographicKey.Deserializer).key
-        } catch (e: Exception) {
-            throw DecryptItemEncryptionSecretKeyFailedException(e)
+    private suspend fun decryptItemEncryptionSecretKey(masterEncryptionKey: ByteArray): Result<ByteArray> {
+        return withContext(Dispatchers.Default) {
+            try {
+                val decryptedItemEncryptionSecretKey = protectedItemEncryptionSecretKey.decrypt(masterEncryptionKey, CryptographicKey.Deserializer)
+                Success(decryptedItemEncryptionSecretKey.key)
+            } catch (exception: Exception) {
+                Failure(exception)
+            }
         }
     }
 
-    @Throws(DecryptUserSettingsFailedException::class)
-    private fun decryptUserSettings(masterEncryptionKey: ByteArray): UserSettings {
-        return try {
-            protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer)
-        } catch (e: Exception) {
-            throw DecryptUserSettingsFailedException(e)
+    private suspend fun decryptUserSettings(masterEncryptionKey: ByteArray): Result<UserSettings> {
+        return withContext(Dispatchers.Default) {
+            try {
+                val decryptedUserSettings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer)
+                Success(decryptedUserSettings)
+            } catch (exception: Exception) {
+                Failure(exception)
+            }
         }
     }
 
@@ -327,14 +347,7 @@ class UserViewModel private constructor(
         )
     }
 
-    class UnlockFailedException(cause: Exception? = null) : Exception(cause)
     class DecryptMasterEncryptionKeyFailedException(cause: Exception? = null) : Exception(cause)
-    class DecryptItemEncryptionSecretKeyFailedException(cause: Exception? = null) : Exception(cause)
-    class DecryptUserSettingsFailedException(cause: Exception? = null) : Exception(cause)
-    class SynchronizeDataFailedException(cause: Exception? = null) : Exception(cause)
-    class UpdateMasterPasswordFailedException(cause: Exception? = null) : Exception(cause)
-    class EnableBiometricUnlockFailedException(cause: Exception? = null) : Exception(cause)
-    class DisableBiometricUnlockFailedException(cause: Exception? = null) : Exception(cause)
 
     private inner class ItemsChangedObserver : Observer<List<Item>?> {
         override fun onChanged(newItems: List<Item>?) {

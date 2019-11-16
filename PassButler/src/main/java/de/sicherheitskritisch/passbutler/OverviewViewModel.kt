@@ -1,10 +1,8 @@
 package de.sicherheitskritisch.passbutler
 
 import android.app.Application
-import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
-import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
+import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
-import kotlinx.coroutines.Job
 
 class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
@@ -13,14 +11,12 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
     val loggedInUserViewModel
         get() = rootViewModel.loggedInUserViewModel
 
-    val synchronizeDataRequestSendingViewModel = DefaultRequestSendingViewModel()
+    suspend fun synchronizeData(): Result<Unit> {
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged in user viewmodel is null!")
+        return loggedInUserViewModel.synchronizeData()
+    }
 
-    private var synchronizeDataCoroutineJob: Job? = null
-
-    fun synchronizeData() {
-        synchronizeDataCoroutineJob?.cancel()
-        synchronizeDataCoroutineJob = createRequestSendingJob(synchronizeDataRequestSendingViewModel) {
-            loggedInUserViewModel?.synchronizeData()
-        }
+    suspend fun logoutUser(): Result<Unit> {
+        return rootViewModel.logoutUser()
     }
 }

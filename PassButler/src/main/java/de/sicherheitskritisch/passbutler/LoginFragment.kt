@@ -12,10 +12,9 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import de.sicherheitskritisch.passbutler.base.BuildType
-import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewHandler
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
-import de.sicherheitskritisch.passbutler.base.RequestSendingViewModel
+import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.base.validateForm
 import de.sicherheitskritisch.passbutler.database.RequestUnauthorizedException
 import de.sicherheitskritisch.passbutler.databinding.FragmentLoginBinding
@@ -23,8 +22,9 @@ import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.Keyboard
 import de.sicherheitskritisch.passbutler.ui.VisibilityHideMode
+import de.sicherheitskritisch.passbutler.ui.showError
 import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
-import java.lang.ref.WeakReference
+import kotlinx.coroutines.Job
 
 class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment {
 
@@ -35,7 +35,8 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
     private var formPassword: String? = null
 
     private var binding: FragmentLoginBinding? = null
-    private var loginRequestSendingViewHandler: LoginRequestSendingViewHandler? = null
+
+    private var loginRequestSendingJob: Job? = null
 
     private val isLocalLoginObserver = Observer<Boolean> { isLocalLoginValue ->
         val shouldShowServerUrl = !isLocalLoginValue
@@ -68,8 +69,6 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
             applyRestoredViewStates(binding)
         }
 
-        loginRequestSendingViewHandler = LoginRequestSendingViewHandler(viewModel.rootViewModel.loginRequestSendingViewModel, WeakReference(this))
-
         return binding?.root
     }
 
@@ -87,8 +86,6 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
             setupLocalLoginCheckbox()
             setupLoginButton(it)
         }
-
-        loginRequestSendingViewHandler?.registerObservers()
     }
 
     @SuppressLint("SetTextI18n")
@@ -148,7 +145,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
                 val password = binding.textInputEditTextPassword.text?.toString()
 
                 if (username != null && password != null) {
-                    viewModel.rootViewModel.loginUser(serverUrl, username, password)
+                    loginUser(serverUrl, username, password)
                 }
             }
             is FormValidationResult.Invalid -> {
@@ -157,13 +154,27 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         }
     }
 
+    private fun loginUser(serverUrl: String?, username: String, password: String) {
+        loginRequestSendingJob?.cancel()
+        loginRequestSendingJob = launchRequestSending(
+            handleFailure = {
+                val errorStringResourceId = when (it.cause) {
+                    is RequestUnauthorizedException -> R.string.login_failed_unauthorized_title
+                    else -> R.string.login_failed_general_title
+                }
+
+                showError(getString(errorStringResourceId))
+            }
+        ) {
+            viewModel.loginUser(serverUrl, username, password)
+        }
+    }
+
     private fun removeFormFieldsFocus() {
         binding?.constraintLayoutLoginScreenContainer?.requestFocus()
     }
 
     override fun onStop() {
-        loginRequestSendingViewHandler?.unregisterObservers()
-
         // Always hide keyboard if fragment gets stopped
         Keyboard.hideKeyboard(context, this)
 
@@ -176,22 +187,6 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment 
         outState.putString(FORM_FIELD_PASSWORD, binding?.textInputEditTextPassword?.text?.toString())
 
         super.onSaveInstanceState(outState)
-    }
-
-    private class LoginRequestSendingViewHandler(
-        requestSendingViewModel: RequestSendingViewModel,
-        fragmentWeakReference: WeakReference<LoginFragment>
-    ) : DefaultRequestSendingViewHandler<LoginFragment>(requestSendingViewModel, fragmentWeakReference) {
-
-        override fun requestErrorMessageResourceId(requestError: Throwable): Int {
-            val loginFailedExceptionCause = (requestError as? UserManager.LoginFailedException)?.cause
-            val subOperationExceptionCause = loginFailedExceptionCause?.cause
-
-            return when (subOperationExceptionCause) {
-                is RequestUnauthorizedException -> R.string.login_failed_unauthorized_title
-                else -> R.string.login_failed_general_title
-            }
-        }
     }
 
     companion object {

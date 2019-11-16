@@ -6,7 +6,10 @@ import android.content.SharedPreferences
 import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.Result
+import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.byteSize
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.crypto.Derivation
@@ -54,9 +57,8 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     private var authWebservice: AuthWebservice? = null
     private var userWebservice: UserWebservice? = null
 
-    @Throws(LoginFailedException::class)
-    suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrl: Uri) {
-        try {
+    suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrl: Uri): Result<Unit> {
+        return try {
             val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword)
             authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
 
@@ -72,20 +74,21 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
             loggedInUser = remoteUser
             loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(remoteUser, masterPassword))
+
+            Success(Unit)
         } catch (exception: Exception) {
             // If the operation failed, reset all states to avoid a dirty state
             resetLoggedInUser()
 
-            throw LoginFailedException("The remote login failed with an exception!", exception)
+            Failure(exception)
         }
     }
 
-    @Throws(LoginFailedException::class)
-    suspend fun loginLocalUser(username: String, masterPassword: String) {
+    suspend fun loginLocalUser(username: String, masterPassword: String): Result<Unit> {
         var masterKey: ByteArray? = null
         var masterEncryptionKey: ByteArray? = null
 
-        try {
+        return try {
             val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword)
             val serverMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(masterPasswordAuthenticationHash)
 
@@ -130,11 +133,13 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
             loggedInUser = localUser
             loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(localUser, masterPassword))
+
+            Success(Unit)
         } catch (exception: Exception) {
             // If the operation failed, reset all states to avoid a dirty state
             resetLoggedInUser()
 
-            throw LoginFailedException("The local login failed with an exception!", exception)
+            Failure(exception)
         } finally {
             // Always active clear all sensible data before returning method
             masterKey?.clear()
@@ -196,7 +201,6 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         }
     }
 
-    @Throws(IllegalStateException::class)
     suspend fun initializeAuthWebservice(masterPassword: String) {
         L.d("UserManager", "initializeAuthWebservice()")
 
@@ -253,8 +257,8 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
     @Throws(Synchronization.SynchronizationFailedException::class)
     override suspend fun synchronize() {
-        val userWebservice = userWebservice ?: throw Synchronization.SynchronizationFailedException("The user webservice is not initialized!")
-        val loggedInUser = loggedInUser ?: throw Synchronization.SynchronizationFailedException("The logged-in user is not initialized!")
+        val userWebservice = userWebservice ?: throw IllegalStateException("The user webservice is not initialized!")
+        val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is not initialized!")
 
         val userSynchronizationTask = UserSynchronizationTask(localRepository, userWebservice, loggedInUser)
         userSynchronizationTask.synchronize()
@@ -272,8 +276,6 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         localRepository.reset()
         loggedInStateStorage.reset()
     }
-
-    class LoginFailedException(message: String, cause: Throwable? = null) : Exception(message, cause)
 }
 
 class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {

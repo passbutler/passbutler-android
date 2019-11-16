@@ -1,12 +1,12 @@
 package de.sicherheitskritisch.passbutler
 
 import android.app.Application
-import de.sicherheitskritisch.passbutler.base.DefaultRequestSendingViewModel
+import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
-import de.sicherheitskritisch.passbutler.base.createRequestSendingJob
+import de.sicherheitskritisch.passbutler.base.Result
+import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
-import kotlinx.coroutines.Job
 import javax.crypto.Cipher
 
 class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
@@ -46,55 +46,40 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
     val biometricUnlockEnabledSetting: Boolean
         get() = biometricUnlockEnabled?.value ?: false
 
-    val generateBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
-    val cancelSetupBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
-    val enableBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
-    val disableBiometricUnlockKeyViewModel = DefaultRequestSendingViewModel()
-
-    private var setupBiometricUnlockKeyJob: Job? = null
-
-    @Throws(InitializeSetupBiometricUnlockCipherFailedException::class)
-    suspend fun initializeSetupBiometricUnlockCipher(): Cipher {
+    suspend fun initializeSetupBiometricUnlockCipher(): Result<Cipher> {
         return try {
             val biometricUnlockCipher = Biometrics.obtainKeyInstance()
             Biometrics.initializeKeyForEncryption(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, biometricUnlockCipher)
 
-            biometricUnlockCipher
-        } catch (e: Exception) {
-            throw InitializeSetupBiometricUnlockCipherFailedException(e)
+            Success(biometricUnlockCipher)
+        } catch (exception: Exception) {
+            Failure(exception)
         }
     }
 
-    fun generateBiometricUnlockKey() {
-        setupBiometricUnlockKeyJob?.cancel()
-        setupBiometricUnlockKeyJob = createRequestSendingJob(generateBiometricUnlockKeyViewModel) {
+    suspend fun generateBiometricUnlockKey(): Result<Unit> {
+        return try {
             Biometrics.generateKey(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
+            Success(Unit)
+        } catch (exception: Exception) {
+            Failure(exception)
         }
     }
 
-    fun enableBiometricUnlock(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String) {
-        setupBiometricUnlockKeyJob?.cancel()
-        setupBiometricUnlockKeyJob = createRequestSendingJob(enableBiometricUnlockKeyViewModel) {
-            loggedInUserViewModel?.enableBiometricUnlock(initializedSetupBiometricUnlockCipher, masterPassword)
-        }
+    suspend fun enableBiometricUnlock(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String): Result<Unit> {
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged in user viewmodel is null!")
+        return loggedInUserViewModel.enableBiometricUnlock(initializedSetupBiometricUnlockCipher, masterPassword)
     }
 
-    fun cancelBiometricUnlockSetup() {
-        setupBiometricUnlockKeyJob?.cancel()
-        setupBiometricUnlockKeyJob = createRequestSendingJob(cancelSetupBiometricUnlockKeyViewModel) {
-            // Discard all generated keys and persisted data if the setup is canceled to avoid incomplete setup state
-            loggedInUserViewModel?.disableBiometricUnlock()
-        }
+    suspend fun cancelBiometricUnlockSetup(): Result<Unit> {
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged in user viewmodel is null!")
+        return loggedInUserViewModel.disableBiometricUnlock()
     }
 
-    fun disableBiometricUnlock() {
-        setupBiometricUnlockKeyJob?.cancel()
-        setupBiometricUnlockKeyJob = createRequestSendingJob(disableBiometricUnlockKeyViewModel) {
-            loggedInUserViewModel?.disableBiometricUnlock()
-        }
+    suspend fun disableBiometricUnlock(): Result<Unit> {
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged in user viewmodel is null!")
+        return loggedInUserViewModel.disableBiometricUnlock()
     }
-
-    class InitializeSetupBiometricUnlockCipherFailedException(cause: Throwable) : Exception(cause)
 }
 
 class AutomaticLockTimeoutSettingMapping(

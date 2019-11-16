@@ -148,7 +148,11 @@ fun BaseFragment.launchRequestSending(
 
         when (result) {
             is Success -> handleSuccess?.invoke()
-            is Failure -> handleFailure?.invoke(result.throwable)
+            is Failure -> {
+                val exception = result.throwable
+                L.w(javaClass.simpleName, "launchRequestSending(): The operation failed with exception!", exception)
+                handleFailure?.invoke(exception)
+            }
         }
     }
 }
