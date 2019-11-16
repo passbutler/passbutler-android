@@ -79,6 +79,8 @@ class UserViewModel private constructor(
     private var itemEncryptionSecretKey: ByteArray? = null
     private var settings: UserSettings? = null
 
+    private var persistUserSettingsJob: Job? = null
+
     @Throws(IllegalArgumentException::class)
     constructor(userManager: UserManager, user: User, masterPassword: String?) : this(
         userManager,
@@ -319,16 +321,21 @@ class UserViewModel private constructor(
     }
 
     private fun persistUserSettings(settings: UserSettings) {
-        launch(Dispatchers.Default) {
+        persistUserSettingsJob?.cancel()
+        persistUserSettingsJob = launch {
             val masterEncryptionKey = masterEncryptionKey
 
             // Only persist if master encryption key is set (user logged-in and state unlocked)
             if (masterEncryptionKey != null) {
                 try {
-                    protectedSettings.update(masterEncryptionKey, settings)
+                    withContext(Dispatchers.Default) {
+                        protectedSettings.update(masterEncryptionKey, settings)
+                    }
 
-                    val user = createModel()
-                    userManager.updateUser(user)
+                    withContext(Dispatchers.IO) {
+                        val user = createModel()
+                        userManager.updateUser(user)
+                    }
                 } catch (exception: Exception) {
                     L.w("UserViewModel", "persistUserSettings(): The user settings could not be updated!", exception)
                 }
