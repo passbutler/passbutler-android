@@ -90,27 +90,23 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         var masterEncryptionKey: ByteArray? = null
 
         return try {
-            val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword)
-            val serverMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(masterPasswordAuthenticationHash)
+            val serverMasterPasswordAuthenticationHash = deriveServerMasterPasswordAuthenticationHash(username, masterPassword)
 
-            val masterKeySalt = RandomGenerator.generateRandomBytes(MASTER_KEY_BIT_LENGTH.byteSize)
-            val masterKeyIterationCount = MASTER_KEY_ITERATION_COUNT
-            val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
-            masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation)
+            val masterKeyDerivationInformation = createMasterKeyDerivationInformation()
 
-            masterEncryptionKey = EncryptionAlgorithm.Symmetric.AES256GCM.generateEncryptionKey()
+            masterKey = withContext(Dispatchers.Default) {
+                Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation)
+            }
+
+            masterEncryptionKey = withContext(Dispatchers.IO) {
+                EncryptionAlgorithm.Symmetric.AES256GCM.generateEncryptionKey()
+            }
+
             val serializableMasterEncryptionKey = CryptographicKey(masterEncryptionKey)
             val protectedMasterEncryptionKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterKey, serializableMasterEncryptionKey)
 
-            val itemEncryptionKeyPair = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.generateKeyPair()
-
-            val itemEncryptionPublicKey = CryptographicKey(itemEncryptionKeyPair.public.encoded)
-
-            val serializableItemEncryptionSecretKey = CryptographicKey(itemEncryptionKeyPair.private.encoded)
-            val protectedItemEncryptionSecretKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, serializableItemEncryptionSecretKey)
-
-            val userSettings = UserSettings()
-            val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, userSettings)
+            val (itemEncryptionPublicKey, protectedItemEncryptionSecretKey) = generateItemEncryptionKeyPair(masterEncryptionKey)
+            val protectedUserSettings = createUserSettings(masterEncryptionKey)
             val currentDate = Date()
 
             val localUser = User(
@@ -145,6 +141,46 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             // Always active clear all sensible data before returning method
             masterKey?.clear()
             masterEncryptionKey?.clear()
+        }
+    }
+
+    private suspend fun deriveServerMasterPasswordAuthenticationHash(username: String, masterPassword: String): String {
+        return withContext(Dispatchers.Default) {
+            val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword)
+            val serverMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(masterPasswordAuthenticationHash)
+
+            serverMasterPasswordAuthenticationHash
+        }
+    }
+
+    private suspend fun createMasterKeyDerivationInformation(): KeyDerivationInformation {
+        return withContext(Dispatchers.IO) {
+            val masterKeySalt = RandomGenerator.generateRandomBytes(MASTER_KEY_BIT_LENGTH.byteSize)
+            val masterKeyIterationCount = MASTER_KEY_ITERATION_COUNT
+            val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
+
+            masterKeyDerivationInformation
+        }
+    }
+
+    private suspend fun generateItemEncryptionKeyPair(masterEncryptionKey: ByteArray): Pair<CryptographicKey, ProtectedValue<CryptographicKey>> {
+        return withContext(Dispatchers.Default) {
+            val itemEncryptionKeyPair = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.generateKeyPair()
+
+            val serializableItemEncryptionPublicKey = CryptographicKey(itemEncryptionKeyPair.public.encoded)
+
+            val serializableItemEncryptionSecretKey = CryptographicKey(itemEncryptionKeyPair.private.encoded)
+            val protectedItemEncryptionSecretKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, serializableItemEncryptionSecretKey)
+
+            Pair(serializableItemEncryptionPublicKey, protectedItemEncryptionSecretKey)
+        }
+    }
+
+    private suspend fun createUserSettings(masterEncryptionKey: ByteArray): ProtectedValue<UserSettings> {
+        return withContext(Dispatchers.Default) {
+            val userSettings = UserSettings()
+            val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, userSettings)
+            protectedUserSettings
         }
     }
 

@@ -27,7 +27,6 @@ object Derivation {
      */
     @Throws(DerivationFailedException::class)
     fun deriveLocalAuthenticationHash(username: String, password: String): String {
-
         return try {
             require(!username.isBlank()) { "The username must not be empty!" }
             require(!password.isBlank()) { "The password must not be empty!" }
