@@ -122,6 +122,8 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
                 currentDate
             )
 
+            L.d("UserManager", "localuser = $localUser")
+
             localRepository.insertUser(localUser)
 
             loggedInStateStorage.reset()
@@ -200,6 +202,8 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         val restoredLoggedInUser = loggedInStateStorage.userType?.username?.let { loggedInUsername ->
             localRepository.findUser(loggedInUsername)
         }
+
+        loggedInUser = restoredLoggedInUser
 
         if (restoredLoggedInUser != null) {
             loggedInUserResult.postValue(LoggedInUserResult.RestoredLogin(restoredLoggedInUser))
