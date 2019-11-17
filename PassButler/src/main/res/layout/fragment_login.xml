@@ -45,7 +45,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textInputLayout_serverurl"
                 style="@style/TextInputLayout"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/login_margin_horizontal"
                 android:layout_marginTop="@dimen/default_vertical_spacing"
@@ -72,7 +72,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textInputLayout_username"
                 style="@style/TextInputLayout"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/login_margin_horizontal"
                 android:layout_marginTop="0dp"
@@ -99,7 +99,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textInputLayout_password"
                 style="@style/TextInputLayout"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/login_margin_horizontal"
                 android:layout_marginEnd="@dimen/login_margin_horizontal"
@@ -125,7 +125,7 @@
             <CheckBox
                 android:id="@+id/checkBox_local_login"
                 style="@style/Checkbox"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/login_margin_horizontal"
                 android:layout_marginTop="@dimen/small_vertical_spacing"
@@ -142,7 +142,7 @@
             <Button
                 android:id="@+id/button_login"
                 style="@style/PrimaryButton"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/login_margin_horizontal"
                 android:layout_marginTop="@dimen/large_vertical_spacing"

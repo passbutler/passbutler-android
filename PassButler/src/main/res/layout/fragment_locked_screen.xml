@@ -110,7 +110,7 @@
             <Button
                 android:id="@+id/button_unlock_password"
                 style="@style/PrimaryButton"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="64dp"
                 android:layout_marginTop="@dimen/small_vertical_spacing"
@@ -128,7 +128,7 @@
             <Button
                 android:id="@+id/button_unlock_biometric"
                 style="@style/PrimaryButton"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="64dp"
                 android:layout_marginTop="@dimen/large_vertical_spacing"
@@ -148,7 +148,7 @@
             <TextView
                 android:id="@+id/textView_button_unlock_biometric_disabled_hint"
                 style="@style/TextPassageSmall"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="64dp"
                 android:layout_marginTop="@dimen/small_vertical_spacing"
