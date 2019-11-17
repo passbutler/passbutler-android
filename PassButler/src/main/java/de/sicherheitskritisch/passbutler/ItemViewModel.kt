@@ -81,7 +81,7 @@ class ItemViewModel(
         // Pass a copy of the item key to `ItemEditingViewModel` to avoid it get cleared via reference
         val itemKeyCopy = itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite a ItemEditingViewModel is created!")
 
-        val itemModel = ItemModel.Existing(item, itemData, itemKeyCopy)
+        val itemModel = ItemModel.Existing(item, itemAuthorization, itemData, itemKeyCopy)
         return ItemEditingViewModel(itemModel, userManager)
     }
 
@@ -120,7 +120,7 @@ class ItemEditingViewModel(
     val password = NonNullMutableLiveData(itemModel.asExisting()?.itemData?.password ?: "")
 
     init {
-        L.d("ItemEditingViewModel", "init(): id = ${itemModel.asExisting()?.item?.id}")
+        L.d("ItemEditingViewModel", "init(): item = ${itemModel.asExisting()?.item}, itemAuthorization = ${itemModel.asExisting()?.itemAuthorization}")
     }
 
     suspend fun save(): Result<Unit> {
@@ -242,11 +242,37 @@ class ItemEditingViewModel(
     private fun createItemData(): ItemData {
         return ItemData(title.value, password.value)
     }
+
+    suspend fun delete(): Result<Unit> {
+        val itemModel = itemModel
+
+        // TODO: Check if is readonly
+
+        return if (itemModel is ItemModel.Existing) {
+            val currentData = Date()
+
+            val deletedItem = itemModel.item.copy(
+                deleted = true,
+                modified = currentData
+            )
+            userManager.updateItem(deletedItem)
+
+            val deletedItemAuthorization = itemModel.itemAuthorization.copy(
+                deleted = true,
+                modified = currentData
+            )
+            userManager.updateItemAuthorization(deletedItemAuthorization)
+
+            Success(Unit)
+        } else {
+            throw IllegalStateException("A new item can't be deleted!")
+        }
+    }
 }
 
 sealed class ItemModel {
     class New(val loggedInUserViewModel: UserViewModel) : ItemModel()
-    class Existing(val item: Item, val itemData: ItemData, val itemKey: ByteArray) : ItemModel()
+    class Existing(val item: Item, val itemAuthorization: ItemAuthorization, val itemData: ItemData, val itemKey: ByteArray) : ItemModel()
 }
 
 private fun ItemModel.asExisting(): ItemModel.Existing? {

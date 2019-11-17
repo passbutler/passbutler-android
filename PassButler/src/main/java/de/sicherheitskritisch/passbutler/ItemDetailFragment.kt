@@ -17,6 +17,7 @@ import de.sicherheitskritisch.passbutler.ui.Keyboard
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
 import de.sicherheitskritisch.passbutler.ui.applyTint
 import de.sicherheitskritisch.passbutler.ui.showError
+import de.sicherheitskritisch.passbutler.ui.showInformation
 import kotlinx.coroutines.Job
 
 class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
@@ -28,6 +29,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     }
 
     private var saveRequestSendingJob: Job? = null
+    private var deleteRequestSendingJob: Job? = null
 
     override fun getToolBarTitle(): String {
         return if (viewModel.isNewEntry) {
@@ -89,7 +91,10 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     private fun saveClicked() {
         saveRequestSendingJob?.cancel()
         saveRequestSendingJob = launchRequestSending(
-            handleSuccess = { popBackstack() },
+            handleSuccess = {
+                popBackstack()
+                showInformation(getString(R.string.itemdetail_save_successful_message))
+            },
             handleFailure = { showError(getString(R.string.itemdetail_save_failed_general_title)) }
         ) {
             viewModel.save()
@@ -100,6 +105,25 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         super.onStart()
 
         viewModel.title.observe(viewLifecycleOwner, titleObserver)
+
+        binding?.let {
+            setupDeleteButton(it)
+        }
+    }
+
+    private fun setupDeleteButton(binding: FragmentItemdetailBinding) {
+        binding.buttonDelete.setOnClickListener {
+            deleteRequestSendingJob?.cancel()
+            deleteRequestSendingJob = launchRequestSending(
+                handleSuccess = {
+                    popBackstack()
+                    showInformation(getString(R.string.itemdetail_delete_successful_message))
+                },
+                handleFailure = { showError(getString(R.string.itemdetail_delete_failed_general_title)) }
+            ) {
+                viewModel.delete()
+            }
+        }
     }
 
     override fun onStop() {

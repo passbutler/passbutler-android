@@ -275,10 +275,6 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         localRepository.updateItem(item)
     }
 
-    suspend fun deleteItem(item: Item) {
-        localRepository.deleteItem(item)
-    }
-
     suspend fun findItemAuthorization(item: Item): ItemAuthorization? {
         return localRepository.findItemAuthorization(item.id)
     }
@@ -289,10 +285,6 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
     suspend fun updateItemAuthorization(itemAuthorization: ItemAuthorization) {
         localRepository.updateItemAuthorization(itemAuthorization)
-    }
-
-    suspend fun deleteItemAuthorization(itemAuthorization: ItemAuthorization) {
-        localRepository.deleteItemAuthorization(itemAuthorization)
     }
 
     override suspend fun synchronize(): Result<Unit> {
