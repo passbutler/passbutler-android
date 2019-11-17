@@ -370,8 +370,9 @@ class UserViewModel private constructor(
         private suspend fun createItemViewModelList(newItems: List<Item>?): List<ItemViewModel> {
             val oldItemViewModels = itemViewModels.value
             val newItemViewModels = newItems
+                ?.filter { !it.deleted }
                 ?.mapNotNull { item ->
-                    val itemAuthorization = userManager.findItemAuthorization(item)
+                    val itemAuthorization = userManager.findItemAuthorization(item)?.takeIf { !it.deleted }
 
                     if (itemAuthorization != null) {
                         oldItemViewModels
