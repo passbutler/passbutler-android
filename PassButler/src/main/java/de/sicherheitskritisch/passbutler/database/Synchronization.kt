@@ -1,5 +1,6 @@
 package de.sicherheitskritisch.passbutler.database
 
+import de.sicherheitskritisch.passbutler.base.Result
 import java.util.*
 
 object Differentiation {
@@ -57,10 +58,5 @@ interface Synchronization {
      * Implements actual synchronization code. Code should be called in a `coroutineScope` block
      * to be sure a failed tasks cancel others but does not affect outer coroutine scope.
      */
-    suspend fun synchronize()
-
-    open class SynchronizationFailedException(message: String?, cause: Throwable?) : Exception(message, cause) {
-        constructor(message: String): this(message, null)
-        constructor(cause: Throwable): this(null, cause)
-    }
+    suspend fun synchronize(): Result<Unit>
 }

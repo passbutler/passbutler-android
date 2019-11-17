@@ -3,6 +3,9 @@ package de.sicherheitskritisch.passbutler.database
 import android.net.Uri
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import de.sicherheitskritisch.passbutler.base.BuildType
+import de.sicherheitskritisch.passbutler.base.Failure
+import de.sicherheitskritisch.passbutler.base.Result
+import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.asJSONObjectSequence
 import de.sicherheitskritisch.passbutler.base.isHttpsScheme
 import de.sicherheitskritisch.passbutler.crypto.models.AuthToken
@@ -69,12 +72,9 @@ interface AuthWebservice {
             return retrofitBuilder.create(AuthWebservice::class.java)
         }
     }
-
-    class GetAuthTokenFailedException(cause: Throwable? = null) : Exception(cause)
 }
 
-@Throws(AuthWebservice.GetAuthTokenFailedException::class)
-suspend fun AuthWebservice?.requestAuthToken(): AuthToken {
+suspend fun AuthWebservice?.requestAuthToken(): Result<AuthToken> {
     val authWebservice = this
     return withContext(Dispatchers.IO) {
         try {
@@ -82,7 +82,7 @@ suspend fun AuthWebservice?.requestAuthToken(): AuthToken {
             val getTokenResponse = getTokenRequest?.await()
             getTokenResponse.completeRequestWithResult()
         } catch (exception: Exception) {
-            throw AuthWebservice.GetAuthTokenFailedException(exception)
+            Failure(exception)
         }
     }
 }
@@ -149,14 +149,9 @@ interface UserWebservice {
             return retrofitBuilder.create(UserWebservice::class.java)
         }
     }
-
-    class GetUsersFailedException(cause: Throwable? = null) : Exception(cause)
-    class GetUserDetailsFailedException(cause: Throwable? = null) : Exception(cause)
-    class SetUserDetailsFailedException(cause: Throwable? = null) : Exception(cause)
 }
 
-@Throws(UserWebservice.GetUsersFailedException::class)
-suspend fun UserWebservice?.requestPublicUserList(): List<User> {
+suspend fun UserWebservice?.requestPublicUserList(): Result<List<User>> {
     val userWebservice = this
     return withContext(Dispatchers.IO) {
         try {
@@ -164,13 +159,12 @@ suspend fun UserWebservice?.requestPublicUserList(): List<User> {
             val getUsersListResponse = getUsersListRequest?.await()
             getUsersListResponse.completeRequestWithResult()
         } catch (exception: Exception) {
-            throw UserWebservice.GetUsersFailedException(exception)
+            Failure(exception)
         }
     }
 }
 
-@Throws(UserWebservice.GetUserDetailsFailedException::class)
-suspend fun UserWebservice?.requestUser(username: String): User {
+suspend fun UserWebservice?.requestUser(username: String): Result<User> {
     val userWebservice = this
     return withContext(Dispatchers.IO) {
         try {
@@ -178,21 +172,20 @@ suspend fun UserWebservice?.requestUser(username: String): User {
             val getUserDetailsResponse = getUserDetailsRequest?.await()
             getUserDetailsResponse.completeRequestWithResult()
         } catch (exception: Exception) {
-            throw UserWebservice.GetUserDetailsFailedException(exception)
+            Failure(exception)
         }
     }
 }
 
-@Throws(UserWebservice.SetUserDetailsFailedException::class)
-suspend fun UserWebservice?.updateUser(user: User) {
+suspend fun UserWebservice?.updateUser(user: User): Result<Unit> {
     val userWebservice = this
-    withContext(Dispatchers.IO) {
+    return withContext(Dispatchers.IO) {
         try {
             val setUserDetailsRequest = userWebservice?.setUserDetailsAsync(user.username, user)
             val setUserDetailsResponse = setUserDetailsRequest?.await()
             setUserDetailsResponse.completeRequestWithoutResult()
         } catch (exception: Exception) {
-            throw UserWebservice.SetUserDetailsFailedException(exception)
+            Failure(exception)
         }
     }
 }
@@ -236,25 +229,23 @@ class UnitConverterFactory : Converter.Factory() {
     }
 }
 
-@Throws(RequestUnauthorizedException::class, RequestFailedException::class)
-private fun <T> Response<T>?.completeRequestWithResult(): T {
+private fun <T> Response<T>?.completeRequestWithResult(): Result<T> {
     val responseResult = this?.body()
 
     return when {
-        this?.isSuccessful == true && responseResult != null -> responseResult
-        this?.code() == HTTP_UNAUTHORIZED -> throw RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}")
-        this?.code() == HTTP_FORBIDDEN -> throw RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}")
-        else -> throw RequestFailedException("The request result could not be get ${this.technicalErrorDescription}")
+        this?.isSuccessful == true && responseResult != null -> Success(responseResult)
+        this?.code() == HTTP_UNAUTHORIZED -> Failure(RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}"))
+        this?.code() == HTTP_FORBIDDEN -> Failure(RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}"))
+        else -> Failure(RequestFailedException("The request result could not be get ${this.technicalErrorDescription}"))
     }
 }
 
-@Throws(RequestUnauthorizedException::class, RequestFailedException::class)
-private fun <T> Response<T>?.completeRequestWithoutResult() {
-    when {
-        this?.isSuccessful == true -> Unit
-        this?.code() == HTTP_UNAUTHORIZED -> throw RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}")
-        this?.code() == HTTP_FORBIDDEN -> throw RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}")
-        else -> throw RequestFailedException("The request result could not be get ${this.technicalErrorDescription}")
+private fun <T> Response<T>?.completeRequestWithoutResult(): Result<Unit> {
+    return when {
+        this?.isSuccessful == true -> Success(Unit)
+        this?.code() == HTTP_UNAUTHORIZED -> Failure(RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}"))
+        this?.code() == HTTP_FORBIDDEN -> Failure(RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}"))
+        else -> Failure(RequestFailedException("The request result could not be get ${this.technicalErrorDescription}"))
     }
 }
 

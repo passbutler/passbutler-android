@@ -169,13 +169,7 @@ class UserViewModel private constructor(
 
     suspend fun synchronizeData(): Result<Unit> {
         L.d("UserViewModel", "synchronizeData()")
-
-        return try {
-            userManager.synchronize()
-            Success(Unit)
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
+        return userManager.synchronize()
     }
 
     suspend fun updateMasterPassword(newMasterPassword: String): Result<Unit> {
