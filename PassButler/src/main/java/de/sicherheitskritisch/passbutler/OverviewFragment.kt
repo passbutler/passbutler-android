@@ -54,7 +54,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     }
 
     private val itemsChangedObserver = Observer<List<ItemViewModel>> { newItems ->
-        if (newItems != null && newItems.isNotEmpty()) {
+        if (newItems != null) {
             val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemAdapter
             adapter?.submitList(newItems)
         }
