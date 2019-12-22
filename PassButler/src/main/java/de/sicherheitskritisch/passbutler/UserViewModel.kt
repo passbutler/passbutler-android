@@ -168,7 +168,6 @@ class UserViewModel private constructor(
     }
 
     suspend fun synchronizeData(): Result<Unit> {
-        L.d("UserViewModel", "synchronizeData()")
         return userManager.synchronize()
     }
 
