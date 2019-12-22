@@ -66,7 +66,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             val authToken = authWebservice.requestAuthToken().resultOrThrowException()
             userWebservice = UserWebservice.create(serverUrl, authToken.token)
 
-            val remoteUser = userWebservice.requestUser(username).resultOrThrowException()
+            val remoteUser = userWebservice.requestUser().resultOrThrowException()
             localRepository.insertUser(remoteUser)
 
             loggedInStateStorage.reset()
@@ -444,7 +444,7 @@ private class UserSynchronizationTask(private val localRepository: LocalReposito
     private suspend fun synchronizeLoggedInUser(): Result<Unit> {
         return try {
             val localLoggedInUser = loggedInUser
-            val remoteLoggedInUser = userWebservice.requestUser(loggedInUser.username).resultOrThrowException()
+            val remoteLoggedInUser = userWebservice.requestUser().resultOrThrowException()
 
             when {
                 localLoggedInUser.modified > remoteLoggedInUser.modified -> {

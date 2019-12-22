@@ -27,7 +27,6 @@ import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PUT
-import retrofit2.http.Path
 import java.io.IOException
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -36,8 +35,10 @@ import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
 
 typealias OkHttpResponse = okhttp3.Response
 
+private const val API_VERSION_PREFIX = "v1"
+
 interface AuthWebservice {
-    @GET("/token")
+    @GET("/$API_VERSION_PREFIX/token")
     fun getTokenAsync(): Deferred<Response<AuthToken>>
 
     private class ConverterFactory : Converter.Factory() {
@@ -88,14 +89,14 @@ suspend fun AuthWebservice?.requestAuthToken(): Result<AuthToken> {
 }
 
 interface UserWebservice {
-    @GET("/users")
+    @GET("/$API_VERSION_PREFIX/users")
     fun getUsersAsync(): Deferred<Response<List<User>>>
 
-    @GET("/user/{username}")
-    fun getUserDetailsAsync(@Path("username") username: String): Deferred<Response<User>>
+    @GET("/$API_VERSION_PREFIX/user")
+    fun getUserDetailsAsync(): Deferred<Response<User>>
 
-    @PUT("/user/{username}")
-    fun setUserDetailsAsync(@Path("username") username: String, @Body user: User): Deferred<Response<Unit>>
+    @PUT("/$API_VERSION_PREFIX/user")
+    fun setUserDetailsAsync(@Body user: User): Deferred<Response<Unit>>
 
     private class ConverterFactory : Converter.Factory() {
         override fun requestBodyConverter(type: Type, parameterAnnotations: Array<Annotation>, methodAnnotations: Array<Annotation>, retrofit: Retrofit): Converter<*, RequestBody>? {
@@ -164,11 +165,11 @@ suspend fun UserWebservice?.requestPublicUserList(): Result<List<User>> {
     }
 }
 
-suspend fun UserWebservice?.requestUser(username: String): Result<User> {
+suspend fun UserWebservice?.requestUser(): Result<User> {
     val userWebservice = this
     return withContext(Dispatchers.IO) {
         try {
-            val getUserDetailsRequest = userWebservice?.getUserDetailsAsync(username)
+            val getUserDetailsRequest = userWebservice?.getUserDetailsAsync()
             val getUserDetailsResponse = getUserDetailsRequest?.await()
             getUserDetailsResponse.completeRequestWithResult()
         } catch (exception: Exception) {
@@ -181,7 +182,7 @@ suspend fun UserWebservice?.updateUser(user: User): Result<Unit> {
     val userWebservice = this
     return withContext(Dispatchers.IO) {
         try {
-            val setUserDetailsRequest = userWebservice?.setUserDetailsAsync(user.username, user)
+            val setUserDetailsRequest = userWebservice?.setUserDetailsAsync(user)
             val setUserDetailsResponse = setUserDetailsRequest?.await()
             setUserDetailsResponse.completeRequestWithoutResult()
         } catch (exception: Exception) {
