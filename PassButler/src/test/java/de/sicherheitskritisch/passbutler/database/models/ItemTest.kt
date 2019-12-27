@@ -5,6 +5,7 @@ import de.sicherheitskritisch.passbutler.assertJSONObjectEquals
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.hexToBytes
+import de.sicherheitskritisch.passbutler.toDate
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll

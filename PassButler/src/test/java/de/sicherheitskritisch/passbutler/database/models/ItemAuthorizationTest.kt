@@ -6,6 +6,7 @@ import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.hexToBytes
+import de.sicherheitskritisch.passbutler.toDate
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
@@ -14,8 +15,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.text.SimpleDateFormat
-import java.util.*
 
 class ItemAuthorizationTest {
 
@@ -107,8 +106,4 @@ class ItemAuthorizationTest {
             )
         }
     }
-}
-
-internal fun String.toDate(): Date {
-    return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").parse(this)!!
 }
