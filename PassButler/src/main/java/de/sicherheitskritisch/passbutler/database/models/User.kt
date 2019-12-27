@@ -11,6 +11,7 @@ import de.sicherheitskritisch.passbutler.base.getJSONSerializableOrNull
 import de.sicherheitskritisch.passbutler.base.getStringOrNull
 import de.sicherheitskritisch.passbutler.base.putBoolean
 import de.sicherheitskritisch.passbutler.base.putDate
+import de.sicherheitskritisch.passbutler.base.putInt
 import de.sicherheitskritisch.passbutler.base.putJSONSerializable
 import de.sicherheitskritisch.passbutler.base.putString
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
@@ -110,5 +111,35 @@ data class User(
         private const val SERIALIZATION_KEY_DELETED = "deleted"
         private const val SERIALIZATION_KEY_MODIFIED = "modified"
         private const val SERIALIZATION_KEY_CREATED = "created"
+    }
+}
+
+// TODO: Add tests
+
+data class UserSettings(
+    val automaticLockTimeout: Int = 0,
+    val hidePasswords: Boolean = true
+) : JSONSerializable {
+
+    override fun serialize(): JSONObject {
+        return JSONObject().apply {
+            putInt(SERIALIZATION_KEY_AUTOMATIC_LOCK_TIMEOUT, automaticLockTimeout)
+            putBoolean(SERIALIZATION_KEY_HIDE_PASSWORDS, hidePasswords)
+        }
+    }
+
+    object Deserializer : JSONSerializableDeserializer<UserSettings>() {
+        @Throws(JSONException::class)
+        override fun deserialize(jsonObject: JSONObject): UserSettings {
+            return UserSettings(
+                jsonObject.getInt(SERIALIZATION_KEY_AUTOMATIC_LOCK_TIMEOUT),
+                jsonObject.getBoolean(SERIALIZATION_KEY_HIDE_PASSWORDS)
+            )
+        }
+    }
+
+    companion object {
+        private const val SERIALIZATION_KEY_AUTOMATIC_LOCK_TIMEOUT = "automaticLockTimeout"
+        private const val SERIALIZATION_KEY_HIDE_PASSWORDS = "hidePasswords"
     }
 }
