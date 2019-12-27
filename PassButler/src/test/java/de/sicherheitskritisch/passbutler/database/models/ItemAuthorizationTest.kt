@@ -106,9 +106,9 @@ class ItemAuthorizationTest {
                 """.trimIndent()
             )
         }
-
-        private fun String.toDate(): Date {
-            return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").parse(this)!!
-        }
     }
+}
+
+internal fun String.toDate(): Date {
+    return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").parse(this)!!
 }
