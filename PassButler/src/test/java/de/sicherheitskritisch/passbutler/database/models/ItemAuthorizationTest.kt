@@ -101,7 +101,7 @@ class ItemAuthorizationTest {
                   "readOnly": true,
                   "deleted": true,
                   "modified": 1577448001000,
-                  "created": 1577448000000,
+                  "created": 1577448000000
                 }
                 """.trimIndent()
             )
