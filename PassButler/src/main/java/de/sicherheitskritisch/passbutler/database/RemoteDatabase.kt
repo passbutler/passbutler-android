@@ -8,7 +8,10 @@ import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.asJSONObjectSequence
 import de.sicherheitskritisch.passbutler.base.isHttpsScheme
+import de.sicherheitskritisch.passbutler.base.serialize
 import de.sicherheitskritisch.passbutler.crypto.models.AuthToken
+import de.sicherheitskritisch.passbutler.database.models.Item
+import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.User
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -98,22 +101,46 @@ interface UserWebservice {
     @PUT("/$API_VERSION_PREFIX/user")
     fun setUserDetailsAsync(@Body user: User): Deferred<Response<Unit>>
 
+    @GET("/$API_VERSION_PREFIX/user/itemauthorizations")
+    fun getUserItemAuthorizationsAsync(): Deferred<Response<List<ItemAuthorization>>>
+
+    @PUT("/$API_VERSION_PREFIX/user/itemauthorizations")
+    fun setUserItemAuthorizationsAsync(@Body itemAuthorizations: List<ItemAuthorization>): Deferred<Response<Unit>>
+
+    @GET("/$API_VERSION_PREFIX/user/items")
+    fun getUserItemsAsync(): Deferred<Response<List<Item>>>
+
+    @PUT("/$API_VERSION_PREFIX/user/items")
+    fun setUserItemsAsync(@Body items: List<Item>): Deferred<Response<Unit>>
+
     private class ConverterFactory : Converter.Factory() {
         override fun requestBodyConverter(type: Type, parameterAnnotations: Array<Annotation>, methodAnnotations: Array<Annotation>, retrofit: Retrofit): Converter<*, RequestBody>? {
-            return when (type) {
-                User::class.java -> createUserRequestConverter()
+            return when {
+                type == User::class.java -> createUserRequestConverter()
+                type.isListType(ItemAuthorization::class.java) -> createItemAuthorizationListRequestConverter()
+                type.isListType(Item::class.java) -> createItemListRequestConverter()
                 else -> null
             }
         }
 
         private fun createUserRequestConverter() = Converter<User, RequestBody> {
-            RequestBody.create(MediaType.get("application/json"), it.serialize().toString())
+            RequestBody.create(MEDIA_TYPE_JSON, it.serialize().toString())
+        }
+
+        private fun createItemAuthorizationListRequestConverter() = Converter<List<ItemAuthorization>, RequestBody> {
+            RequestBody.create(MEDIA_TYPE_JSON, it.serialize().toString())
+        }
+
+        private fun createItemListRequestConverter() = Converter<List<Item>, RequestBody> {
+            RequestBody.create(MEDIA_TYPE_JSON, it.serialize().toString())
         }
 
         override fun responseBodyConverter(type: Type, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
             return when {
-                (type == User::class.java) -> createUserResponseConverter()
-                (type as? ParameterizedType)?.let { it.rawType == List::class.java && it.actualTypeArguments.firstOrNull() == User::class.java } == true -> createUserListResponseConverter()
+                type == User::class.java -> createUserResponseConverter()
+                type.isListType(User::class.java) -> createUserListResponseConverter()
+                type.isListType(ItemAuthorization::class.java) -> createItemAuthorizationListResponseConverter()
+                type.isListType(Item::class.java) -> createItemListResponseConverter()
                 else -> null
             }
         }
@@ -129,9 +156,25 @@ interface UserWebservice {
                 User.PartialUserDeserializer.deserialize(userJsonObject)
             }.toList()
         }
+
+        @Throws(JSONException::class)
+        private fun createItemAuthorizationListResponseConverter() = Converter<ResponseBody, List<ItemAuthorization>> {
+            JSONArray(it.string()).asJSONObjectSequence().mapNotNull { itemAuthorizationJsonObject ->
+                ItemAuthorization.Deserializer.deserialize(itemAuthorizationJsonObject)
+            }.toList()
+        }
+
+        @Throws(JSONException::class)
+        private fun createItemListResponseConverter() = Converter<ResponseBody, List<Item>> {
+            JSONArray(it.string()).asJSONObjectSequence().mapNotNull { itemJsonObject ->
+                Item.Deserializer.deserialize(itemJsonObject)
+            }.toList()
+        }
     }
 
     companion object {
+        private val MEDIA_TYPE_JSON = MediaType.get("application/json")
+
         fun create(serverUrl: Uri, authToken: String): UserWebservice {
             require(!(BuildType.isReleaseBuild && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
 
@@ -156,9 +199,9 @@ suspend fun UserWebservice?.requestPublicUserList(): Result<List<User>> {
     val userWebservice = this
     return withContext(Dispatchers.IO) {
         try {
-            val getUsersListRequest = userWebservice?.getUsersAsync()
-            val getUsersListResponse = getUsersListRequest?.await()
-            getUsersListResponse.completeRequestWithResult()
+            val request = userWebservice?.getUsersAsync()
+            val response = request?.await()
+            response.completeRequestWithResult()
         } catch (exception: Exception) {
             Failure(exception)
         }
@@ -169,9 +212,9 @@ suspend fun UserWebservice?.requestUser(): Result<User> {
     val userWebservice = this
     return withContext(Dispatchers.IO) {
         try {
-            val getUserDetailsRequest = userWebservice?.getUserDetailsAsync()
-            val getUserDetailsResponse = getUserDetailsRequest?.await()
-            getUserDetailsResponse.completeRequestWithResult()
+            val request = userWebservice?.getUserDetailsAsync()
+            val response = request?.await()
+            response.completeRequestWithResult()
         } catch (exception: Exception) {
             Failure(exception)
         }
@@ -182,9 +225,61 @@ suspend fun UserWebservice?.updateUser(user: User): Result<Unit> {
     val userWebservice = this
     return withContext(Dispatchers.IO) {
         try {
-            val setUserDetailsRequest = userWebservice?.setUserDetailsAsync(user)
-            val setUserDetailsResponse = setUserDetailsRequest?.await()
-            setUserDetailsResponse.completeRequestWithoutResult()
+            val request = userWebservice?.setUserDetailsAsync(user)
+            val response = request?.await()
+            response.completeRequestWithoutResult()
+        } catch (exception: Exception) {
+            Failure(exception)
+        }
+    }
+}
+
+suspend fun UserWebservice?.requestItemAuthorizationList(): Result<List<ItemAuthorization>> {
+    val userWebservice = this
+    return withContext(Dispatchers.IO) {
+        try {
+            val request = userWebservice?.getUserItemAuthorizationsAsync()
+            val response = request?.await()
+            response.completeRequestWithResult()
+        } catch (exception: Exception) {
+            Failure(exception)
+        }
+    }
+}
+
+suspend fun UserWebservice?.updateItemAuthorizationList(itemAuthorizations: List<ItemAuthorization>): Result<Unit> {
+    val userWebservice = this
+    return withContext(Dispatchers.IO) {
+        try {
+            val request = userWebservice?.setUserItemAuthorizationsAsync(itemAuthorizations)
+            val response = request?.await()
+            response.completeRequestWithoutResult()
+        } catch (exception: Exception) {
+            Failure(exception)
+        }
+    }
+}
+
+suspend fun UserWebservice?.requestItemList(): Result<List<Item>> {
+    val userWebservice = this
+    return withContext(Dispatchers.IO) {
+        try {
+            val request = userWebservice?.getUserItemsAsync()
+            val response = request?.await()
+            response.completeRequestWithResult()
+        } catch (exception: Exception) {
+            Failure(exception)
+        }
+    }
+}
+
+suspend fun UserWebservice?.updateItemList(items: List<Item>): Result<Unit> {
+    val userWebservice = this
+    return withContext(Dispatchers.IO) {
+        try {
+            val request = userWebservice?.setUserItemsAsync(items)
+            val response = request?.await()
+            response.completeRequestWithoutResult()
         } catch (exception: Exception) {
             Failure(exception)
         }
@@ -258,6 +353,10 @@ private fun String.minimized(): String {
         .trim()
         .replace("\n", "")
         .replace(" ", "")
+}
+
+private fun Type.isListType(clazz: Class<*>): Boolean {
+    return (this as? ParameterizedType)?.let { it.rawType == List::class.java && it.actualTypeArguments.firstOrNull() == clazz } ?: false
 }
 
 class RequestUnauthorizedException(message: String? = null) : Exception(message)

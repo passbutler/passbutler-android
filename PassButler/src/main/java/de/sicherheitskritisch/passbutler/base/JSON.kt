@@ -56,6 +56,15 @@ fun JSONArray.asJSONObjectSequence(): Sequence<JSONObject> {
     return (0 until length()).asSequence().mapNotNull { get(it) as? JSONObject }
 }
 
+fun List<JSONSerializable>.serialize(): JSONArray {
+    val jsonSerializableList = this
+    return JSONArray().apply {
+        jsonSerializableList.forEach {
+            put(it.serialize())
+        }
+    }
+}
+
 /**
  * The following `get*OrNull()` extension methods provide a consistent way to access optional values.
  */
