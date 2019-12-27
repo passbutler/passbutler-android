@@ -3,6 +3,7 @@ package de.sicherheitskritisch.passbutler.base
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.util.*
 
 interface JSONSerializable {
     fun serialize(): JSONObject
@@ -161,4 +162,18 @@ fun <T : JSONSerializable> JSONObject.getJSONSerializableOrNull(name: String, de
 fun <T : JSONSerializable> JSONObject.putJSONSerializable(name: String, value: T?): JSONObject {
     val serialized = value?.serialize()
     return putJSONObject(name, serialized)
+}
+
+/**
+ * Extensions to serialize/deserialize `Date`.
+ */
+
+@Throws(JSONException::class)
+fun JSONObject.getDate(name: String): Date {
+    val serialized = getLong(name)
+    return Date(serialized)
+}
+
+fun JSONObject.putDate(name: String, value: Date): JSONObject {
+    return putLong(name, value.time)
 }

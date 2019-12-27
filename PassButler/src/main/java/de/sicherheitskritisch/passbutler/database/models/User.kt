@@ -5,18 +5,19 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.JSONSerializableDeserializer
+import de.sicherheitskritisch.passbutler.base.getDate
 import de.sicherheitskritisch.passbutler.base.getJSONSerializable
 import de.sicherheitskritisch.passbutler.base.getJSONSerializableOrNull
 import de.sicherheitskritisch.passbutler.base.getStringOrNull
 import de.sicherheitskritisch.passbutler.base.putBoolean
+import de.sicherheitskritisch.passbutler.base.putDate
 import de.sicherheitskritisch.passbutler.base.putJSONSerializable
-import de.sicherheitskritisch.passbutler.base.putLong
 import de.sicherheitskritisch.passbutler.base.putString
+import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
+import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.models.getProtectedValue
 import de.sicherheitskritisch.passbutler.crypto.models.getProtectedValueOrNull
-import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
-import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.crypto.models.putProtectedValue
 import de.sicherheitskritisch.passbutler.database.Synchronizable
 import org.json.JSONException
@@ -51,8 +52,8 @@ data class User(
             putProtectedValue(SERIALIZATION_KEY_ITEM_ENCRYPTION_SECRET_KEY, itemEncryptionSecretKey)
             putProtectedValue(SERIALIZATION_KEY_SETTINGS, settings)
             putBoolean(SERIALIZATION_KEY_DELETED, deleted)
-            putLong(SERIALIZATION_KEY_MODIFIED, modified.time)
-            putLong(SERIALIZATION_KEY_CREATED, created.time)
+            putDate(SERIALIZATION_KEY_MODIFIED, modified)
+            putDate(SERIALIZATION_KEY_CREATED, created)
         }
     }
 
@@ -71,8 +72,8 @@ data class User(
                 itemEncryptionSecretKey = jsonObject.getProtectedValue(SERIALIZATION_KEY_ITEM_ENCRYPTION_SECRET_KEY),
                 settings = jsonObject.getProtectedValue(SERIALIZATION_KEY_SETTINGS),
                 deleted = jsonObject.getBoolean(SERIALIZATION_KEY_DELETED),
-                modified = Date(jsonObject.getLong(SERIALIZATION_KEY_MODIFIED)),
-                created = Date(jsonObject.getLong(SERIALIZATION_KEY_CREATED))
+                modified = jsonObject.getDate(SERIALIZATION_KEY_MODIFIED),
+                created = jsonObject.getDate(SERIALIZATION_KEY_CREATED)
             )
         }
     }
@@ -92,8 +93,8 @@ data class User(
                 itemEncryptionSecretKey = jsonObject.getProtectedValueOrNull(SERIALIZATION_KEY_ITEM_ENCRYPTION_SECRET_KEY),
                 settings = jsonObject.getProtectedValueOrNull(SERIALIZATION_KEY_SETTINGS),
                 deleted = jsonObject.getBoolean(SERIALIZATION_KEY_DELETED),
-                modified = Date(jsonObject.getLong(SERIALIZATION_KEY_MODIFIED)),
-                created = Date(jsonObject.getLong(SERIALIZATION_KEY_CREATED))
+                modified = jsonObject.getDate(SERIALIZATION_KEY_MODIFIED),
+                created = jsonObject.getDate(SERIALIZATION_KEY_CREATED)
             )
         }
     }

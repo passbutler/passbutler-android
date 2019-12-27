@@ -16,8 +16,8 @@ class UserTest {
     fun `Serialize and deserialize a User should result an equal object`() {
         mockkObject(ProtectedValue.Companion)
 
-        val modifiedDate: Long = 12345678
-        val createdDate: Long = 12345679
+        val modifiedDate = 12345678L
+        val createdDate = 12345679L
 
         val exampleUser = User(
             "myUserName",
