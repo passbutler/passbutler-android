@@ -114,8 +114,6 @@ data class User(
     }
 }
 
-// TODO: Add tests
-
 data class UserSettings(
     val automaticLockTimeout: Int = 0,
     val hidePasswords: Boolean = true
