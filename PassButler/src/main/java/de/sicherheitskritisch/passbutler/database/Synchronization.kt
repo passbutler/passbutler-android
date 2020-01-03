@@ -62,5 +62,5 @@ interface Synchronization {
 }
 
 fun List<Synchronizable>.compactRepresentation(): List<String> {
-    return map { "'${it.primaryField}' (${it.modified})" }
+    return map { "'${it.primaryField}' (${it.modified.time})" }
 }

@@ -304,6 +304,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
         return withContext(Dispatchers.IO) {
             try {
+                // TODO: Do logging here
                 // TODO: Do not stop other tasks if one tasked failed (otherwise e.g. item authorizations are never synched if items sync failed)
                 val synchronizeTasks = listOf(
                     UserSynchronizationTask(localRepository, userWebservice, loggedInUser),
@@ -466,66 +467,54 @@ private class UserSynchronizationTask(private val localRepository: LocalReposito
     }
 }
 
-
 private class ItemsSynchronizationTask(private val localRepository: LocalRepository, private var userWebservice: UserWebservice, private val loggedInUserName: String) : Synchronization {
 
     override suspend fun synchronize(): Result<Unit> {
         return try {
             coroutineScope {
-                L.d("ItemsSynchronizationTask", "synchronize(): Started")
-
-                val localItemListDeferred = async {
-                    localRepository.findAllItems()
-                }
-
-                val remoteItemListDeferred = async {
-                    userWebservice.requestItemList().resultOrThrowException()
-                }
-
+                val localItemListDeferred = async { localRepository.findAllItems() }
+                val remoteItemListDeferred = async { userWebservice.requestItemList().resultOrThrowException() }
 
                 val localItems = localItemListDeferred.await()
                 val remoteItems = remoteItemListDeferred.await()
 
-
+                // Determine new items both on local and remote side
                 val newLocalItems = Differentiation.collectNewItems(localItems, remoteItems)
-                L.d("ItemsSynchronizationTask", "synchronize(): New local items: ${newLocalItems.compactRepresentation()}")
-                localRepository.insertItem(*newLocalItems.toTypedArray())
-
-
                 val newRemoteItems = Differentiation.collectNewItems(remoteItems, localItems)
-                L.d("ItemsSynchronizationTask", "synchronize(): New remote items: ${newRemoteItems.compactRepresentation()}")
+
+                // Merge current items and new items to one list to avoid query/request lists again
+                val mergedLocalItems = localItems + newLocalItems
+                val mergedRemoteItems = remoteItems + newRemoteItems
+
+                // Determine modified items both on local and remote side
+                val modifiedLocalItems = Differentiation.collectModifiedItems(mergedLocalItems, mergedRemoteItems)
+                val modifiedRemoteItems = Differentiation.collectModifiedItems(mergedRemoteItems, mergedLocalItems)
 
 
-                val updatedLocalItems = localItems + newLocalItems
-                val updatedRemoteItems = remoteItems + newRemoteItems
 
-
-                val modifiedLocalItems = Differentiation.collectModifiedItems(updatedLocalItems, updatedRemoteItems)
-                L.d("ItemsSynchronizationTask", "synchronize(): Modified local items: ${modifiedLocalItems.compactRepresentation()}")
+                // Update local database
+                localRepository.insertItem(*newLocalItems.toTypedArray())
                 localRepository.updateItem(*modifiedLocalItems.toTypedArray())
 
-
-                val modifiedRemoteItems = Differentiation.collectModifiedItems(updatedRemoteItems, updatedLocalItems)
-                L.d("ItemsSynchronizationTask", "synchronize(): Modified remote items: ${modifiedRemoteItems.compactRepresentation()}")
-
-                // Only update item authorizations which corresponding item is owned by the logged-in user
-                val changedItems = (newRemoteItems + modifiedRemoteItems)
+                // Update remote webservice
+                // TODO: Duplicates via newRemoteItems?
+                val remoteChangedItems = (newRemoteItems + modifiedRemoteItems)
                     .filter { item ->
-                        // TODO: userId check needed?
-                        localRepository.findItemAuthorizationForItem(item).find { it.userId == loggedInUserName && it.readOnly == false } != null
+                        // Only update items where the user has a non-deleted, non-readonly item authorization
+                        localRepository.findItemAuthorizationForItem(item).any { it.userId == loggedInUserName && !it.readOnly && !it.deleted }
                     }
 
                 // Only send network request if necessary
-                if (changedItems.isNotEmpty()) {
-                    userWebservice.updateItemList(changedItems).resultOrThrowException()
+                if (remoteChangedItems.isNotEmpty()) {
+                    userWebservice.updateItemList(remoteChangedItems).resultOrThrowException()
                 }
 
-
-
-
-
-
-                L.d("ItemsSynchronizationTask", "synchronize(): Finished successfully")
+                L.d(
+                    "ItemsSynchronizationTask", "synchronize(): " +
+                    "New local items: ${newLocalItems.compactRepresentation()}, " +
+                    "Modified local items: ${modifiedLocalItems.compactRepresentation()}, " +
+                    "Updated remote items: ${remoteChangedItems.compactRepresentation()}"
+                )
 
                 Success(Unit)
             }
@@ -552,7 +541,6 @@ private class ItemAuthorizationsSynchronizationTask(private val localRepository:
                 }
 
 
-
                 val localItemAuthorizations = localItemAuthorizationListDeferred.await()
                 val remoteItemAuthorizations = remoteItemAuthorizationListDeferred.await()
 
@@ -562,11 +550,8 @@ private class ItemAuthorizationsSynchronizationTask(private val localRepository:
                 localRepository.insertItemAuthorization(*newLocalItemAuthorizations.toTypedArray())
 
 
-
                 val newRemoteItemAuthorizations = Differentiation.collectNewItems(remoteItemAuthorizations, localItemAuthorizations)
                 L.d("ItemAuthorizationsSynchronizationTask", "synchronize(): New remote items: ${newRemoteItemAuthorizations.compactRepresentation()}")
-
-
 
 
                 val updatedLocalItemAuthorizations = localItemAuthorizations + newLocalItemAuthorizations
@@ -576,7 +561,6 @@ private class ItemAuthorizationsSynchronizationTask(private val localRepository:
                 val modifiedLocalItemAuthorizations = Differentiation.collectModifiedItems(updatedLocalItemAuthorizations, updatedRemoteItemAuthorizations)
                 L.d("ItemAuthorizationsSynchronizationTask", "synchronize(): Modified local items: ${modifiedLocalItemAuthorizations.compactRepresentation()}")
                 localRepository.updateItemAuthorization(*modifiedLocalItemAuthorizations.toTypedArray())
-
 
 
                 val modifiedRemoteItemAuthorizations = Differentiation.collectModifiedItems(updatedRemoteItemAuthorizations, updatedLocalItemAuthorizations)
