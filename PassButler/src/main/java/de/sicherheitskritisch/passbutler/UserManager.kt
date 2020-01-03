@@ -27,8 +27,10 @@ import de.sicherheitskritisch.passbutler.crypto.models.isExpired
 import de.sicherheitskritisch.passbutler.database.AuthWebservice
 import de.sicherheitskritisch.passbutler.database.Differentiation
 import de.sicherheitskritisch.passbutler.database.LocalRepository
+import de.sicherheitskritisch.passbutler.database.Synchronizable
 import de.sicherheitskritisch.passbutler.database.Synchronization
 import de.sicherheitskritisch.passbutler.database.UserWebservice
+import de.sicherheitskritisch.passbutler.database.compactRepresentation
 import de.sicherheitskritisch.passbutler.database.models.Item
 import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.User
@@ -449,10 +451,6 @@ private class UserSynchronizationTask(private val localRepository: LocalReposito
         val loggedInUsername = loggedInUser.username
         return filterNot { it.username == loggedInUsername }
     }
-
-    private fun List<User>.compactRepresentation(): List<String> {
-        return map { "'${it.username}' (${it.modified})" }
-    }
 }
 
 private class ItemAuthorizationsSynchronizationTask(private val localRepository: LocalRepository, private var userWebservice: UserWebservice, private val loggedInUserName: String) : Synchronization {
@@ -522,9 +520,5 @@ private class ItemAuthorizationsSynchronizationTask(private val localRepository:
         } catch (exception: Exception) {
             Failure(exception)
         }
-    }
-
-    private fun List<ItemAuthorization>.compactRepresentation(): List<String> {
-        return map { "'${it.id}' (${it.modified})" }
     }
 }

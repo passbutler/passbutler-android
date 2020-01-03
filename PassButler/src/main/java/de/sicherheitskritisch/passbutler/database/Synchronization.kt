@@ -60,3 +60,7 @@ interface Synchronization {
      */
     suspend fun synchronize(): Result<Unit>
 }
+
+fun List<Synchronizable>.compactRepresentation(): List<String> {
+    return map { "'${it.primaryField}' (${it.modified})" }
+}
