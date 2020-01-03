@@ -8,8 +8,8 @@ import kotlinx.coroutines.withContext
 
 fun BaseFragment.launchRequestSending(
     handleSuccess: (() -> Unit)? = null,
-    handleFailure: ((Throwable) -> Unit)? = null,
-    handleLoadingChanged: ((Boolean) -> Unit)? = blockingProgressScreen(),
+    handleFailure: ((error: Throwable) -> Unit)? = null,
+    handleLoadingChanged: ((isLoading: Boolean) -> Unit)? = blockingProgressScreen(),
     block: suspend () -> Result<*>
 ): Job {
     return launch {
