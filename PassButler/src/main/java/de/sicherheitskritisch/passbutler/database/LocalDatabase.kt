@@ -86,6 +86,12 @@ class LocalRepository(applicationContext: Context) {
 
     suspend fun itemsObservable(): LiveData<List<Item>> {
         return withContext(Dispatchers.IO) {
+            localDatabase.itemDao().itemsObservable()
+        }
+    }
+
+    suspend fun findAllItems(): List<Item> {
+        return withContext(Dispatchers.IO) {
             localDatabase.itemDao().findAll()
         }
     }
@@ -124,7 +130,7 @@ class LocalRepository(applicationContext: Context) {
         }
     }
 
-    suspend fun findItemAuthorizationForItem(item: Item): ItemAuthorization? {
+    suspend fun findItemAuthorizationForItem(item: Item): List<ItemAuthorization> {
         return withContext(Dispatchers.IO) {
             localDatabase.itemAuthorizationDao().findForItem(item.id)
         }
@@ -161,7 +167,10 @@ interface UserDao {
 @Dao
 interface ItemDao {
     @Query("SELECT * FROM items ORDER BY created")
-    fun findAll(): LiveData<List<Item>>
+    fun itemsObservable(): LiveData<List<Item>>
+
+    @Query("SELECT * FROM items ORDER BY created")
+    fun findAll(): List<Item>
 
     @Query("SELECT * FROM items WHERE id = :id")
     fun find(id: String): Item?
@@ -182,7 +191,7 @@ interface ItemAuthorizationDao {
     fun find(id: String): ItemAuthorization?
 
     @Query("SELECT * FROM item_authorizations WHERE itemId = :itemId")
-    fun findForItem(itemId: String): ItemAuthorization?
+    fun findForItem(itemId: String): List<ItemAuthorization>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg itemAuthorizations: ItemAuthorization)

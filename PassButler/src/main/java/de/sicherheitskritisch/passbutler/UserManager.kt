@@ -27,7 +27,6 @@ import de.sicherheitskritisch.passbutler.crypto.models.isExpired
 import de.sicherheitskritisch.passbutler.database.AuthWebservice
 import de.sicherheitskritisch.passbutler.database.Differentiation
 import de.sicherheitskritisch.passbutler.database.LocalRepository
-import de.sicherheitskritisch.passbutler.database.Synchronizable
 import de.sicherheitskritisch.passbutler.database.Synchronization
 import de.sicherheitskritisch.passbutler.database.UserWebservice
 import de.sicherheitskritisch.passbutler.database.compactRepresentation
@@ -37,9 +36,11 @@ import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import de.sicherheitskritisch.passbutler.database.requestAuthToken
 import de.sicherheitskritisch.passbutler.database.requestItemAuthorizationList
+import de.sicherheitskritisch.passbutler.database.requestItemList
 import de.sicherheitskritisch.passbutler.database.requestPublicUserList
 import de.sicherheitskritisch.passbutler.database.requestUser
 import de.sicherheitskritisch.passbutler.database.updateItemAuthorizationList
+import de.sicherheitskritisch.passbutler.database.updateItemList
 import de.sicherheitskritisch.passbutler.database.updateUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -279,7 +280,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         localRepository.updateItem(item)
     }
 
-    suspend fun findItemAuthorizationForItem(item: Item): ItemAuthorization? {
+    suspend fun findItemAuthorizationForItem(item: Item): List<ItemAuthorization> {
         return localRepository.findItemAuthorizationForItem(item)
     }
 
@@ -301,6 +302,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             try {
                 val synchronizeTasks = listOf(
                     UserSynchronizationTask(localRepository, userWebservice, loggedInUser),
+                    ItemsSynchronizationTask(localRepository, userWebservice, loggedInUser.username),
                     ItemAuthorizationsSynchronizationTask(localRepository, userWebservice, loggedInUser.username)
                 )
 
@@ -452,6 +454,76 @@ private class UserSynchronizationTask(private val localRepository: LocalReposito
         return filterNot { it.username == loggedInUsername }
     }
 }
+
+
+private class ItemsSynchronizationTask(private val localRepository: LocalRepository, private var userWebservice: UserWebservice, private val loggedInUserName: String) : Synchronization {
+
+    override suspend fun synchronize(): Result<Unit> {
+        return try {
+            coroutineScope {
+                L.d("ItemsSynchronizationTask", "synchronize(): Started")
+
+                val localItemListDeferred = async {
+                    localRepository.findAllItems()
+                }
+
+                val remoteItemListDeferred = async {
+                    userWebservice.requestItemList().resultOrThrowException()
+                }
+
+
+                val localItems = localItemListDeferred.await()
+                val remoteItems = remoteItemListDeferred.await()
+
+
+                val newLocalItems = Differentiation.collectNewItems(localItems, remoteItems)
+                L.d("ItemsSynchronizationTask", "synchronize(): New local items: ${newLocalItems.compactRepresentation()}")
+                localRepository.insertItem(*newLocalItems.toTypedArray())
+
+
+                val newRemoteItems = Differentiation.collectNewItems(remoteItems, localItems)
+                L.d("ItemsSynchronizationTask", "synchronize(): New remote items: ${newRemoteItems.compactRepresentation()}")
+
+
+                val updatedLocalItems = localItems + newLocalItems
+                val updatedRemoteItems = remoteItems + newRemoteItems
+
+
+                val modifiedLocalItems = Differentiation.collectModifiedItems(updatedLocalItems, updatedRemoteItems)
+                L.d("ItemsSynchronizationTask", "synchronize(): Modified local items: ${modifiedLocalItems.compactRepresentation()}")
+                localRepository.updateItem(*modifiedLocalItems.toTypedArray())
+
+
+                val modifiedRemoteItems = Differentiation.collectModifiedItems(updatedRemoteItems, updatedLocalItems)
+                L.d("ItemsSynchronizationTask", "synchronize(): Modified remote items: ${modifiedRemoteItems.compactRepresentation()}")
+
+                // Only update item authorizations which corresponding item is owned by the logged-in user
+                val changedItems = (newRemoteItems + modifiedRemoteItems)
+                    .filter { item ->
+                        // TODO: userId check needed?
+                        localRepository.findItemAuthorizationForItem(item).find { it.userId == loggedInUserName && it.readOnly == false } != null
+                    }
+
+                // Only send network request if necessary
+                if (changedItems.isNotEmpty()) {
+                    userWebservice.updateItemList(changedItems).resultOrThrowException()
+                }
+
+
+
+
+
+
+                L.d("ItemsSynchronizationTask", "synchronize(): Finished successfully")
+
+                Success(Unit)
+            }
+        } catch (exception: Exception) {
+            Failure(exception)
+        }
+    }
+}
+
 
 private class ItemAuthorizationsSynchronizationTask(private val localRepository: LocalRepository, private var userWebservice: UserWebservice, private val loggedInUserName: String) : Synchronization {
 

@@ -373,7 +373,10 @@ class UserViewModel private constructor(
             val newItemViewModels = newItems
                 ?.filter { !it.deleted }
                 ?.mapNotNull { item ->
-                    val itemAuthorization = userManager.findItemAuthorizationForItem(item)?.takeIf { !it.deleted }
+                    val itemAuthorization = userManager.findItemAuthorizationForItem(item).firstOrNull {
+                        // TODO: userId check needed?
+                        it.userId == username && !it.deleted
+                    }
 
                     if (itemAuthorization != null) { // TODO: Does not always work when create new item
                         oldItemViewModels
