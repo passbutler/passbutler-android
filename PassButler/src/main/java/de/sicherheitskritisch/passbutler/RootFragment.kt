@@ -55,6 +55,7 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
     override fun onStart() {
         super.onStart()
 
+        // TODO: Order of screen state and lock screen state always correct?
         viewModel.rootScreenState.observe(viewLifecycleOwner, rootScreenStateObserver)
         viewModel.lockScreenState.observe(viewLifecycleOwner, lockScreenStateObserver)
     }
