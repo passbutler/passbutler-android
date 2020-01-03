@@ -393,6 +393,8 @@ class UserViewModel private constructor(
 
         private suspend fun createItemViewModelList(newItems: List<Item>?): List<ItemViewModel> {
             val oldItemViewModels = itemViewModels.value
+
+            // TODO: remove deleted checks because that item must be editable for trash etc.?
             val newItemViewModels = newItems
                 ?.filter { !it.deleted }
                 ?.mapNotNull { item ->

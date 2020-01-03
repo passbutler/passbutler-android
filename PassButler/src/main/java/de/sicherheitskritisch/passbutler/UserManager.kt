@@ -304,6 +304,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
         return withContext(Dispatchers.IO) {
             try {
+                // TODO: Do not stop other tasks if one tasked failed (otherwise e.g. item authorizations are never synched if items sync failed)
                 val synchronizeTasks = listOf(
                     UserSynchronizationTask(localRepository, userWebservice, loggedInUser),
                     ItemsSynchronizationTask(localRepository, userWebservice, loggedInUser.username),
