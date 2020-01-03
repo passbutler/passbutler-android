@@ -75,11 +75,13 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             localRepository.insertUser(remoteUser)
 
             loggedInStateStorage.reset()
-            loggedInStateStorage.userType = UserType.Server(remoteUser.username, serverUrl, authToken)
+            loggedInStateStorage.userType = UserType.Server(remoteUser.username, serverUrl, authToken, null)
             loggedInStateStorage.persist()
 
             loggedInUser = remoteUser
             loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(remoteUser, masterPassword))
+
+            // TODO: Trigger sync
 
             Success(Unit)
         } catch (exception: Exception) {
@@ -297,6 +299,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
         val userWebservice = userWebservice ?: throw IllegalStateException("The user webservice is not initialized!")
         val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is not initialized!")
+        val userType = loggedInStateStorage.userType as? UserType.Server ?: throw IllegalStateException("The logged-in user type is local!")
 
         return withContext(Dispatchers.IO) {
             try {
@@ -308,6 +311,9 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
                 // Execute tasks synchronously
                 synchronizeTasks.forEach { it.synchronize().resultOrThrowException() }
+
+                userType.lastSuccessfulSync = Date()
+                loggedInStateStorage.persist()
 
                 Success(Unit)
             } catch (exception: Exception) {
@@ -339,9 +345,10 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
             val username = sharedPreferences.getString(SHARED_PREFERENCES_KEY_USERNAME, null)
             val serverUrl = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SERVERURL, null)?.let { Uri.parse(it) }
             val authToken = sharedPreferences.getString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, null)?.let { AuthToken.Deserializer.deserializeOrNull(it) }
+            val lastSuccessfulSync = sharedPreferences.getLong(SHARED_PREFERENCES_KEY_LAST_SUCCESSFUL_SYNC, 0).takeIf { it > 0 }?.let { Date(it) }
 
             userType = when {
-                (username != null && serverUrl != null && authToken != null) -> UserType.Server(username, serverUrl, authToken)
+                (username != null && serverUrl != null && authToken != null) -> UserType.Server(username, serverUrl, authToken, lastSuccessfulSync)
                 (username != null) -> UserType.Local(username)
                 else -> null
             }
@@ -356,6 +363,7 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
                 putString(SHARED_PREFERENCES_KEY_USERNAME, userType?.username)
                 putString(SHARED_PREFERENCES_KEY_SERVERURL, (userType as? UserType.Server)?.serverUrl?.toString())
                 putString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, (userType as? UserType.Server)?.authToken?.serialize()?.toString())
+                putLong(SHARED_PREFERENCES_KEY_LAST_SUCCESSFUL_SYNC, (userType as? UserType.Server)?.lastSuccessfulSync?.time ?: 0)
                 putString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, encryptedMasterPassword?.serialize()?.toString())
             }.commit()
         }
@@ -371,13 +379,14 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
         private const val SHARED_PREFERENCES_KEY_USERNAME = "username"
         private const val SHARED_PREFERENCES_KEY_SERVERURL = "serverUrl"
         private const val SHARED_PREFERENCES_KEY_AUTH_TOKEN = "authToken"
+        private const val SHARED_PREFERENCES_KEY_LAST_SUCCESSFUL_SYNC = "lastSuccessfulSync"
         private const val SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD = "encryptedMasterPassword"
     }
 }
 
 sealed class UserType(val username: String) {
     class Local(username: String) : UserType(username)
-    class Server(username: String, val serverUrl: Uri, var authToken: AuthToken) : UserType(username)
+    class Server(username: String, val serverUrl: Uri, var authToken: AuthToken, var lastSuccessfulSync: Date?) : UserType(username)
 }
 
 sealed class LoggedInUserResult(val newLoggedInUser: User) {

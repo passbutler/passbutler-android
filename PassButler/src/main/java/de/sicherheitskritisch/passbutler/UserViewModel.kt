@@ -8,6 +8,7 @@ import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
+import de.sicherheitskritisch.passbutler.base.ValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.viewmodels.ManualCancelledCoroutineScopeViewModel
@@ -65,6 +66,10 @@ class UserViewModel private constructor(
 
     val biometricUnlockEnabled = NonNullValueGetterLiveData {
         biometricUnlockAvailable.value && userManager.loggedInStateStorage.encryptedMasterPassword != null
+    }
+
+    val lastSuccessfulSync = ValueGetterLiveData {
+        (userType as? UserType.Server)?.lastSuccessfulSync
     }
 
     private var itemsObservable: LiveData<List<Item>>? = null
@@ -170,7 +175,10 @@ class UserViewModel private constructor(
     }
 
     suspend fun synchronizeData(): Result<Unit> {
-        return userManager.synchronize()
+        val synchronizeResult = userManager.synchronize()
+        lastSuccessfulSync.notifyChange()
+
+        return synchronizeResult
     }
 
     suspend fun updateMasterPassword(newMasterPassword: String): Result<Unit> {

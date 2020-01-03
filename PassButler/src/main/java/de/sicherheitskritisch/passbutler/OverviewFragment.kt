@@ -33,6 +33,7 @@ import de.sicherheitskritisch.passbutler.ui.showInformation
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.*
 
 class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment {
 
@@ -57,6 +58,15 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         if (newItems != null) {
             val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemAdapter
             adapter?.submitList(newItems)
+        }
+    }
+
+    private val lastSuccessfulSyncChangedObserver = Observer<Date?> { newDate ->
+        binding?.toolbar?.subtitle = if (viewModel.loggedInUserViewModel?.userType is UserType.Server) {
+            val formattedLastSuccessfulSync = newDate ?: getString(R.string.overview_last_sync_never)
+            getString(R.string.overview_last_sync_subtitle, formattedLastSuccessfulSync)
+        } else {
+            null
         }
     }
 
@@ -169,6 +179,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
         viewModel.rootViewModel.webserviceRestored.addSignal(webserviceRestoredSignal)
         viewModel.loggedInUserViewModel?.itemViewModels?.observe(viewLifecycleOwner, itemsChangedObserver)
+        viewModel.loggedInUserViewModel?.lastSuccessfulSync?.observe(viewLifecycleOwner, lastSuccessfulSyncChangedObserver)
     }
 
     override fun onStop() {
