@@ -34,6 +34,7 @@ import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import de.sicherheitskritisch.passbutler.database.requestAuthToken
+import de.sicherheitskritisch.passbutler.database.requestItemAuthorizationList
 import de.sicherheitskritisch.passbutler.database.requestPublicUserList
 import de.sicherheitskritisch.passbutler.database.requestUser
 import de.sicherheitskritisch.passbutler.database.updateUser
@@ -293,16 +294,20 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         val userWebservice = userWebservice ?: throw IllegalStateException("The user webservice is not initialized!")
         val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is not initialized!")
 
-        return try {
-            val userSynchronizationTask = UserSynchronizationTask(localRepository, userWebservice, loggedInUser)
-            userSynchronizationTask.synchronize().resultOrThrowException()
+        return withContext(Dispatchers.IO) {
+            try {
+                val synchronizeTasks = listOf(
+                    UserSynchronizationTask(localRepository, userWebservice, loggedInUser),
+                    ItemAuthorizationsSynchronizationTask(localRepository, userWebservice, loggedInUser.username)
+                )
 
-            val itemsSynchronizationTask = ItemsSynchronizationTask(localRepository, userWebservice)
-            itemsSynchronizationTask.synchronize().resultOrThrowException()
+                // Execute tasks synchronously
+                synchronizeTasks.forEach { it.synchronize().resultOrThrowException() }
 
-            Success(Unit)
-        } catch (exception: Exception) {
-            Failure(exception)
+                Success(Unit)
+            } catch (exception: Exception) {
+                Failure(exception)
+            }
         }
     }
 
@@ -392,95 +397,98 @@ private class UserSynchronizationTask(private val localRepository: LocalReposito
         }
     }
 
-    private suspend fun synchronizePublicUsersList(coroutineScope: CoroutineScope): Result<Unit> {
-        return try {
-            // Start both operations parallel because they are independent from each other
-            val localUserListDeferred = coroutineScope.async {
-                val localUserList = localRepository.findAllUsers()
-                localUserList.takeIf { it.isNotEmpty() } ?: throw IllegalStateException("The local user list is null - can't process with synchronization!")
+    @Throws(Exception::class)
+    private suspend fun synchronizePublicUsersList(coroutineScope: CoroutineScope) {
+        // Start both operations parallel because they are independent from each other
+        val localUserListDeferred = coroutineScope.async {
+            val localUserList = localRepository.findAllUsers()
+            localUserList.takeIf { it.isNotEmpty() } ?: throw IllegalStateException("The local user list is null - can't process with synchronization!")
+        }
+
+        val remoteUserListDeferred = coroutineScope.async {
+            userWebservice.requestPublicUserList().resultOrThrowException()
+        }
+
+        // Only update the other users, not the logged-in user
+        var localUserList = localUserListDeferred.await().excludeLoggedInUsername()
+        val remoteUserList = remoteUserListDeferred.await().excludeLoggedInUsername()
+
+        val newLocalUsers = Differentiation.collectNewItems(localUserList, remoteUserList)
+        L.d("UserSynchronizationTask", "synchronizePublicUsersList(): New user items for local database: ${newLocalUsers.buildShortUserList()}")
+        localRepository.insertUser(*newLocalUsers.toTypedArray())
+
+        // Merge list to avoid query updated local user list again
+        localUserList = localUserList + newLocalUsers
+
+        val modifiedLocalUsers = Differentiation.collectModifiedItems(localUserList, remoteUserList)
+        L.d("UserSynchronizationTask", "synchronizePublicUsersList(): Modified user items for local database: ${modifiedLocalUsers.buildShortUserList()}")
+        localRepository.updateUser(*modifiedLocalUsers.toTypedArray())
+    }
+
+    @Throws(Exception::class)
+    private suspend fun synchronizeLoggedInUser() {
+        val localLoggedInUser = loggedInUser
+        val remoteLoggedInUser = userWebservice.requestUser().resultOrThrowException()
+
+        when {
+            localLoggedInUser.modified > remoteLoggedInUser.modified -> {
+                L.d("UserSynchronizationTask", "synchronizeLoggedInUser(): Update remote user because local user was lastly modified")
+                userWebservice.updateUser(localLoggedInUser)
             }
-
-            val remoteUserListDeferred = coroutineScope.async {
-                userWebservice.requestPublicUserList().resultOrThrowException()
+            localLoggedInUser.modified < remoteLoggedInUser.modified -> {
+                L.d("UserSynchronizationTask", "synchronizeLoggedInUser(): Update local user because remote user was lastly modified")
+                localRepository.updateUser(remoteLoggedInUser)
             }
-
-            val loggedInUsername = loggedInUser.username
-
-            // Only update the public users, not the logged-in user in this step
-            var localUserList = localUserListDeferred.await().filterNot { it.username == loggedInUsername }
-            val remoteUserList = remoteUserListDeferred.await().filterNot { it.username == loggedInUsername }
-
-            val newLocalUsers = Differentiation.collectNewItems(localUserList, remoteUserList)
-            L.d("UserSynchronizationTask", "synchronizePublicUsersList(): New user items for local database: ${newLocalUsers.buildShortUserList()}")
-
-            if (newLocalUsers.isNotEmpty()) {
-                createNewUsersInLocalDatabase(newLocalUsers)
+            else -> {
+                L.d("UserSynchronizationTask", "synchronizeLoggedInUser(): No update needed because local and remote user are equal")
             }
-
-            // Merge list to avoid query updated local user list again
-            localUserList = localUserList + newLocalUsers
-
-            val modifiedLocalUsers = Differentiation.collectModifiedItems(localUserList, remoteUserList)
-            L.d("UserSynchronizationTask", "synchronizePublicUsersList(): Modified user items for local database: ${modifiedLocalUsers.buildShortUserList()}")
-
-            if (modifiedLocalUsers.isNotEmpty()) {
-                updateModifiedUsersToLocalDatabase(modifiedLocalUsers)
-            }
-
-            Success(Unit)
-        } catch (exception: Exception) {
-            Failure(exception)
         }
     }
 
-    private suspend fun createNewUsersInLocalDatabase(newUsers: List<User>) {
-        localRepository.insertUser(*newUsers.toTypedArray())
-    }
-
-    private suspend fun updateModifiedUsersToLocalDatabase(modifiedUsers: List<User>) {
-        localRepository.updateUser(*modifiedUsers.toTypedArray())
-    }
-
-    private suspend fun synchronizeLoggedInUser(): Result<Unit> {
-        return try {
-            val localLoggedInUser = loggedInUser
-            val remoteLoggedInUser = userWebservice.requestUser().resultOrThrowException()
-
-            when {
-                localLoggedInUser.modified > remoteLoggedInUser.modified -> {
-                    L.d("UserSynchronizationTask", "synchronizeLoggedInUser(): Update remote user because local user was lastly modified")
-                    userWebservice.updateUser(localLoggedInUser)
-                }
-                localLoggedInUser.modified < remoteLoggedInUser.modified -> {
-                    L.d("UserSynchronizationTask", "synchronizeLoggedInUser(): Update local user because remote user was lastly modified")
-                    localRepository.updateUser(remoteLoggedInUser)
-                }
-                else -> {
-                    L.d("UserSynchronizationTask", "synchronizeLoggedInUser(): No update needed because local and remote user are equal")
-                }
-            }
-
-            Success(Unit)
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
+    private fun List<User>.excludeLoggedInUsername(): List<User> {
+        val loggedInUsername = loggedInUser.username
+        return filterNot { it.username == loggedInUsername }
     }
 
     private fun List<User>.buildShortUserList(): List<String> {
-        return this.map { "'${it.username}' (${it.modified})" }
+        return map { "'${it.username}' (${it.modified})" }
     }
 }
 
-private class ItemsSynchronizationTask(private val localRepository: LocalRepository, private var userWebservice: UserWebservice) : Synchronization {
+private class ItemAuthorizationsSynchronizationTask(private val localRepository: LocalRepository, private var userWebservice: UserWebservice, private val loggedInUserName: String) : Synchronization {
 
     override suspend fun synchronize(): Result<Unit> {
         return try {
             coroutineScope {
-                L.d("ItemsSynchronizationTask", "synchronize(): Started")
+                L.d("ItemAuthorizationsSynchronizationTask", "synchronize(): Started")
 
-                // TODO: Implement
+                val localItemAuthorizationListDeferred = async {
+                    localRepository.findAllItemAuthorizations()
+                }
 
-                L.d("ItemsSynchronizationTask", "synchronize(): Finished successfully")
+                val remoteItemAuthorizationListDeferred = async {
+                    userWebservice.requestItemAuthorizationList().resultOrThrowException()
+                }
+
+                val localItemAuthorizations = localItemAuthorizationListDeferred.await()
+                val remoteItemAuthorizations = remoteItemAuthorizationListDeferred.await()
+
+                val newLocalItemAuthorizations = Differentiation.collectNewItems(localItemAuthorizations, remoteItemAuthorizations)
+                localRepository.insertItemAuthorization(*newLocalItemAuthorizations.toTypedArray())
+
+                val modifiedLocalItemAuthorizations = Differentiation.collectModifiedItems(localItemAuthorizations, remoteItemAuthorizations)
+                localRepository.updateItemAuthorization(*modifiedLocalItemAuthorizations.toTypedArray())
+
+                val newRemoteItemAuthorizations = Differentiation.collectNewItems(remoteItemAuthorizations, localItemAuthorizations)
+
+                val localItemAuthorizationsUpdated = localItemAuthorizations + newLocalItemAuthorizations
+                val modifiedRemoteItemAuthorizations = Differentiation.collectModifiedItems(remoteItemAuthorizations, localItemAuthorizationsUpdated)
+
+                val remoteUpdateItemAuthorizations = (newRemoteItemAuthorizations + modifiedRemoteItemAuthorizations)
+                    .filter { localRepository.findItem(it.itemId)?.userId == loggedInUserName }
+                userWebservice.setUserItemAuthorizationsAsync(remoteUpdateItemAuthorizations).await()
+
+                L.d("ItemAuthorizationsSynchronizationTask", "synchronize(): Finished successfully")
 
                 Success(Unit)
             }
