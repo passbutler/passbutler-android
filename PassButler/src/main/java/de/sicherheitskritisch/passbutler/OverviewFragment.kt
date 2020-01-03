@@ -20,6 +20,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
+import de.sicherheitskritisch.passbutler.base.observe
+import de.sicherheitskritisch.passbutler.base.relativeDateTime
 import de.sicherheitskritisch.passbutler.base.signal
 import de.sicherheitskritisch.passbutler.databinding.FragmentOverviewBinding
 import de.sicherheitskritisch.passbutler.databinding.ListItemEntryBinding
@@ -62,11 +64,13 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     }
 
     private val lastSuccessfulSyncChangedObserver = Observer<Date?> { newDate ->
-        binding?.toolbar?.subtitle = if (viewModel.loggedInUserViewModel?.userType is UserType.Server) {
-            val formattedLastSuccessfulSync = newDate ?: getString(R.string.overview_last_sync_never)
-            getString(R.string.overview_last_sync_subtitle, formattedLastSuccessfulSync)
-        } else {
-            null
+        binding?.toolbar?.let { toolbar ->
+            binding?.toolbar?.subtitle = if (viewModel.loggedInUserViewModel?.userType is UserType.Server) {
+                val formattedLastSuccessfulSync = newDate?.relativeDateTime(toolbar.context) ?: getString(R.string.overview_last_sync_never)
+                getString(R.string.overview_last_sync_subtitle, formattedLastSuccessfulSync)
+            } else {
+                null
+            }
         }
     }
 
@@ -179,7 +183,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
         viewModel.rootViewModel.webserviceRestored.addSignal(webserviceRestoredSignal)
         viewModel.loggedInUserViewModel?.itemViewModels?.observe(viewLifecycleOwner, itemsChangedObserver)
-        viewModel.loggedInUserViewModel?.lastSuccessfulSync?.observe(viewLifecycleOwner, lastSuccessfulSyncChangedObserver)
+        viewModel.loggedInUserViewModel?.lastSuccessfulSync?.observe(viewLifecycleOwner, true, lastSuccessfulSyncChangedObserver)
     }
 
     override fun onStop() {

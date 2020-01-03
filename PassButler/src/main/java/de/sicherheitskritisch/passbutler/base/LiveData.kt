@@ -1,7 +1,10 @@
 package de.sicherheitskritisch.passbutler.base
 
+import androidx.annotation.MainThread
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 
 /**
  * A `MutableLiveData<T>` that only excepts non-null values.
@@ -61,5 +64,14 @@ class ValueGetterLiveData<T : Any?>(private val valueGetter: () -> T) : LiveData
     fun notifyChange() {
         val newValue = valueGetter()
         postValue(newValue)
+    }
+}
+
+@MainThread
+fun <T> LiveData<T>.observe(owner: LifecycleOwner, notifyOnRegister: Boolean, observer: Observer<T>) {
+    observe(owner, observer)
+
+    if (notifyOnRegister) {
+        observer.onChanged(value)
     }
 }
