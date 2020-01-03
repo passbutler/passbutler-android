@@ -414,13 +414,13 @@ private class UserSynchronizationTask(private val localRepository: LocalReposito
         val remoteUsers = remoteUserListDeferred.await().excludeLoggedInUsername()
 
         val newLocalUsers = Differentiation.collectNewItems(localUsers, remoteUsers)
-        L.d("UserSynchronizationTask", "synchronizePublicUsersList(): New user items for local database: ${newLocalUsers.buildShortUserList()}")
+        L.d("UserSynchronizationTask", "synchronizePublicUsersList(): New local items: ${newLocalUsers.compactList()}")
         localRepository.insertUser(*newLocalUsers.toTypedArray())
 
         // Merge local users and new local users to avoid query local users list again
         val updatedLocalUsers = localUsers + newLocalUsers
         val modifiedLocalUsers = Differentiation.collectModifiedItems(updatedLocalUsers, remoteUsers)
-        L.d("UserSynchronizationTask", "synchronizePublicUsersList(): Modified user items for local database: ${modifiedLocalUsers.buildShortUserList()}")
+        L.d("UserSynchronizationTask", "synchronizePublicUsersList(): Modified local items: ${modifiedLocalUsers.compactList()}")
         localRepository.updateUser(*modifiedLocalUsers.toTypedArray())
     }
 
@@ -449,7 +449,7 @@ private class UserSynchronizationTask(private val localRepository: LocalReposito
         return filterNot { it.username == loggedInUsername }
     }
 
-    private fun List<User>.buildShortUserList(): List<String> {
+    private fun List<User>.compactList(): List<String> {
         return map { "'${it.username}' (${it.modified})" }
     }
 }
@@ -473,19 +473,24 @@ private class ItemAuthorizationsSynchronizationTask(private val localRepository:
                 val remoteItemAuthorizations = remoteItemAuthorizationListDeferred.await()
 
                 val newLocalItemAuthorizations = Differentiation.collectNewItems(localItemAuthorizations, remoteItemAuthorizations)
+                L.d("ItemAuthorizationsSynchronizationTask", "synchronize(): New local items: ${newLocalItemAuthorizations.compactList()}")
                 localRepository.insertItemAuthorization(*newLocalItemAuthorizations.toTypedArray())
 
                 val modifiedLocalItemAuthorizations = Differentiation.collectModifiedItems(localItemAuthorizations, remoteItemAuthorizations)
+                L.d("ItemAuthorizationsSynchronizationTask", "synchronize(): Modified local items: ${modifiedLocalItemAuthorizations.compactList()}")
                 localRepository.updateItemAuthorization(*modifiedLocalItemAuthorizations.toTypedArray())
 
                 val newRemoteItemAuthorizations = Differentiation.collectNewItems(remoteItemAuthorizations, localItemAuthorizations)
+                L.d("ItemAuthorizationsSynchronizationTask", "synchronize(): New remote items: ${newRemoteItemAuthorizations.compactList()}")
 
                 val localItemAuthorizationsUpdated = localItemAuthorizations + newLocalItemAuthorizations
                 val modifiedRemoteItemAuthorizations = Differentiation.collectModifiedItems(remoteItemAuthorizations, localItemAuthorizationsUpdated)
+                L.d("ItemAuthorizationsSynchronizationTask", "synchronize(): Modified remote items: ${modifiedRemoteItemAuthorizations.compactList()}")
 
-                val remoteUpdateItemAuthorizations = (newRemoteItemAuthorizations + modifiedRemoteItemAuthorizations)
+                // Only update item authorizations which corresponding item is owned by the logged-in user
+                val changedItemAuthorizations = (newRemoteItemAuthorizations + modifiedRemoteItemAuthorizations)
                     .filter { localRepository.findItem(it.itemId)?.userId == loggedInUserName }
-                userWebservice.setUserItemAuthorizationsAsync(remoteUpdateItemAuthorizations).await()
+                userWebservice.setUserItemAuthorizationsAsync(changedItemAuthorizations).await()
 
                 L.d("ItemAuthorizationsSynchronizationTask", "synchronize(): Finished successfully")
 
@@ -494,5 +499,9 @@ private class ItemAuthorizationsSynchronizationTask(private val localRepository:
         } catch (exception: Exception) {
             Failure(exception)
         }
+    }
+
+    private fun List<ItemAuthorization>.compactList(): List<String> {
+        return map { "'${it.id}' (${it.modified})" }
     }
 }
