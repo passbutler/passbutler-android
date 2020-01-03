@@ -71,8 +71,6 @@
     <string name="overview_last_sync_subtitle">Zuletzt synchronisiert: %s</string>
     <string name="overview_last_sync_never">Nie</string>
 
-    <string name="overview_menu_sync_item_title">Synchronisieren</string>
-
     <string name="overview_sync_successful_message">Synchronisation war erfolgreich</string>
     <string name="overview_sync_failed_message">Synchronisation hat nicht geklappt</string>
 

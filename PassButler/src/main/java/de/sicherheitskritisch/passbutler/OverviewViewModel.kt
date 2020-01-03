@@ -9,9 +9,6 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
     var loggedInUserViewModel: UserViewModel? = null
 
-    val isSynchronizationVisible
-        get() = loggedInUserViewModel?.isServerUserType ?: false
-
     suspend fun synchronizeData(): Result<Unit> {
         val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
         return loggedInUserViewModel.synchronizeData()

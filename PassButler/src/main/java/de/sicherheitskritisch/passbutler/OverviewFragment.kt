@@ -10,7 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -27,7 +26,6 @@ import de.sicherheitskritisch.passbutler.databinding.ListItemEntryBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.VisibilityHideMode
-import de.sicherheitskritisch.passbutler.ui.applyTint
 import de.sicherheitskritisch.passbutler.ui.showError
 import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
 import de.sicherheitskritisch.passbutler.ui.showInformation
@@ -44,8 +42,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     private var navigationHeaderView: View? = null
     private val navigationItemSelectedListener = NavigationItemSelectedListener()
 
-    private val toolbarMenuIconSync
-        get() = binding?.toolbar?.menu?.findItem(R.id.overview_menu_item_sync)
+    private val isSynchronizationVisible
+        get() = viewModel.loggedInUserViewModel?.isServerUserType ?: false
 
     private var synchronizeDataRequestSendingJob: Job? = null
     private var logoutRequestSendingJob: Job? = null
@@ -59,7 +57,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
     private val lastSuccessfulSyncChangedObserver = Observer<Date?> { newDate ->
         binding?.toolbar?.let { toolbar ->
-            binding?.toolbar?.subtitle = if (viewModel.isSynchronizationVisible) {
+            binding?.toolbar?.subtitle = if (isSynchronizationVisible) {
                 val formattedLastSuccessfulSync = newDate?.relativeDateTime(toolbar.context) ?: getString(R.string.overview_last_sync_never)
                 getString(R.string.overview_last_sync_subtitle, formattedLastSuccessfulSync)
             } else {
@@ -93,6 +91,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
             setupToolBar(binding)
             setupDrawerLayout(binding)
+            setupSwipeRefreshLayout(binding)
             setupEntryList(binding)
         }
 
@@ -102,51 +101,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     private fun setupToolBar(binding: FragmentOverviewBinding) {
         binding.toolbar.apply {
             title = getString(R.string.app_name)
-            setupToolbarMenu(this)
-        }
-    }
-
-    private fun setupToolbarMenu(toolbar: Toolbar) {
-        toolbar.inflateMenu(R.menu.overview_menu)
-
-        toolbar.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                R.id.overview_menu_item_sync -> {
-                    synchronizeData()
-                    true
-                }
-                else -> false
-            }
-        }
-
-        toolbar.menu.findItem(R.id.overview_menu_item_sync).apply {
-            val menuIconColor = resources.getColor(R.color.white, null)
-            icon.applyTint(menuIconColor)
-            isVisible = viewModel.isSynchronizationVisible
-        }
-    }
-
-    private fun synchronizeData(startDelay: Long = 0) {
-        synchronizeDataRequestSendingJob?.cancel()
-        synchronizeDataRequestSendingJob = launchRequestSending(
-            handleSuccess = { showInformation(getString(R.string.overview_sync_successful_message)) },
-            handleFailure = { showError(getString(R.string.overview_sync_failed_message)) },
-            handleLoadingChanged = { isLoading ->
-                toolbarMenuIconSync?.apply {
-                    isEnabled = !isLoading
-
-                    val menuIconTintColor = when (isLoading) {
-                        true -> resources.getColor(R.color.whiteDisabled, null)
-                        false -> resources.getColor(R.color.white, null)
-                    }
-                    icon?.applyTint(menuIconTintColor)
-                }
-
-                binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
-            }
-        ) {
-            delay(startDelay)
-            viewModel.synchronizeData()
         }
     }
 
@@ -170,6 +124,31 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         navigationHeaderView = binding.navigationView.inflateHeaderView(R.layout.main_drawer_header)
         navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_subtitle)?.also { subtitleView ->
             subtitleView.text = viewModel.loggedInUserViewModel?.username
+        }
+    }
+
+    private fun setupSwipeRefreshLayout(binding: FragmentOverviewBinding) {
+        val swipeRefreshLayout = binding.layoutOverviewContent.swipeRefreshLayout
+        swipeRefreshLayout.setOnRefreshListener {
+            synchronizeData()
+        }
+    }
+
+    private fun synchronizeData(startDelay: Long = 0) {
+        synchronizeDataRequestSendingJob?.cancel()
+        synchronizeDataRequestSendingJob = launchRequestSending(
+            handleSuccess = { showInformation(getString(R.string.overview_sync_successful_message)) },
+            handleFailure = { showError(getString(R.string.overview_sync_failed_message)) },
+            handleLoadingChanged = { isLoading ->
+                binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
+
+                if (!isLoading) {
+                    binding?.layoutOverviewContent?.swipeRefreshLayout?.isRefreshing = false
+                }
+            }
+        ) {
+            delay(startDelay)
+            viewModel.synchronizeData()
         }
     }
 
