@@ -10,7 +10,6 @@ import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.Result
-import de.sicherheitskritisch.passbutler.base.SignalEmitter
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.toUTF8String
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
@@ -26,8 +25,6 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
     val rootScreenState = MutableLiveData<RootScreenState?>()
     val lockScreenState = MutableLiveData<LockScreenState?>()
-
-    val webserviceRestored = SignalEmitter()
 
     val userManager
         get() = getApplication<AbstractPassButlerApplication>().userManager
@@ -51,13 +48,13 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     suspend fun unlockScreenWithPassword(masterPassword: String): Result<Unit> {
-        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged in user viewmodel is null!")
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
         val decryptSensibleDataResult = loggedInUserViewModel.decryptSensibleData(masterPassword)
 
-        if (decryptSensibleDataResult is Success) {
+        if (decryptSensibleDataResult is Success && loggedInUserViewModel.isServerUserType) {
             // Restore webservices asynchronously to avoid slow network is blocking unlock progress
             launch {
-                restoreWebservices(masterPassword)
+                userManager.restoreWebservices(masterPassword)
             }
         }
 
@@ -82,17 +79,17 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     suspend fun unlockScreenWithBiometrics(initializedBiometricUnlockCipher: Cipher): Result<Unit> {
-        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged in user viewmodel is null!")
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
         val encryptedMasterPassword = loggedInUserViewModel.encryptedMasterPassword?.encryptedValue
             ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
 
         val masterPassword = Biometrics.decryptData(initializedBiometricUnlockCipher, encryptedMasterPassword).toUTF8String()
         val decryptSensibleDataResult = loggedInUserViewModel.decryptSensibleData(masterPassword)
 
-        if (decryptSensibleDataResult is Success) {
+        if (decryptSensibleDataResult is Success && loggedInUserViewModel.isServerUserType) {
             // Restore webservices asynchronously to avoid slow network is blocking unlock progress
             launch {
-                restoreWebservices(masterPassword)
+                userManager.restoreWebservices(masterPassword)
             }
         }
 
@@ -110,13 +107,6 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
     fun rootFragmentWasResumed() {
         cancelLockScreenTimer()
-    }
-
-    private suspend fun restoreWebservices(masterPassword: String) {
-        if (loggedInUserViewModel?.userType is UserType.Server) {
-            userManager.restoreWebservices(masterPassword)
-            webserviceRestored.emit()
-        }
     }
 
     private fun startLockScreenTimer() {

@@ -67,17 +67,17 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
     }
 
     suspend fun enableBiometricUnlock(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String): Result<Unit> {
-        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged in user viewmodel is null!")
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
         return loggedInUserViewModel.enableBiometricUnlock(initializedSetupBiometricUnlockCipher, masterPassword)
     }
 
     suspend fun cancelBiometricUnlockSetup(): Result<Unit> {
-        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged in user viewmodel is null!")
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
         return loggedInUserViewModel.disableBiometricUnlock()
     }
 
     suspend fun disableBiometricUnlock(): Result<Unit> {
-        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged in user viewmodel is null!")
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
         return loggedInUserViewModel.disableBiometricUnlock()
     }
 }

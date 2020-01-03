@@ -35,7 +35,7 @@ import javax.crypto.Cipher
  * The method `cancelJobs()` is manually called by `RootViewModel`.
  */
 class UserViewModel private constructor(
-    val userManager: UserManager,
+    private val userManager: UserManager,
     private val user: User,
     private var masterPasswordAuthenticationHash: String,
     private val masterKeyDerivationInformation: KeyDerivationInformation,
@@ -46,8 +46,8 @@ class UserViewModel private constructor(
     masterPassword: String?
 ) : ManualCancelledCoroutineScopeViewModel(), ModelBasedViewModel<User> {
 
-    val userType
-        get() = userManager.loggedInStateStorage.userType
+    val isServerUserType
+        get() = userType is UserType.Server
 
     val encryptedMasterPassword
         get() = userManager.loggedInStateStorage.encryptedMasterPassword
@@ -68,9 +68,15 @@ class UserViewModel private constructor(
         biometricUnlockAvailable.value && userManager.loggedInStateStorage.encryptedMasterPassword != null
     }
 
+    val isSynchronizationPossible
+        get() = userManager.webservicesInitialized
+
     val lastSuccessfulSync = ValueGetterLiveData {
         (userType as? UserType.Server)?.lastSuccessfulSync
     }
+
+    private val userType
+        get() = userManager.loggedInStateStorage.userType
 
     private var itemsObservable: LiveData<List<Item>>? = null
 
@@ -111,6 +117,11 @@ class UserViewModel private constructor(
                 }
             }
         }
+    }
+
+    fun createNewItemEditingViewModel(): ItemEditingViewModel {
+        val itemModel = ItemModel.New(this)
+        return ItemEditingViewModel(itemModel, userManager)
     }
 
     suspend fun decryptSensibleData(masterPassword: String): Result<Unit> {
@@ -176,7 +187,10 @@ class UserViewModel private constructor(
 
     suspend fun synchronizeData(): Result<Unit> {
         val synchronizeResult = userManager.synchronize()
-        lastSuccessfulSync.notifyChange()
+
+        if (synchronizeResult is Success) {
+            lastSuccessfulSync.notifyChange()
+        }
 
         return synchronizeResult
     }

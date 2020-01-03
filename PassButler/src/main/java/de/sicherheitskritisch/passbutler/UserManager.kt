@@ -58,6 +58,9 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         LoggedInStateStorage(sharedPreferences)
     }
 
+    val webservicesInitialized
+        get() = authWebservice != null && userWebservice != null
+
     private var loggedInUser: User? = null
 
     private var authWebservice: AuthWebservice? = null
@@ -81,11 +84,9 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             loggedInUser = remoteUser
             loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(remoteUser, masterPassword))
 
-            // TODO: Trigger sync
-
             Success(Unit)
         } catch (exception: Exception) {
-            L.w("UserManager", "loginRemoteUser(): The user could not be logged in - reset logged in user to avoid corrupt state!")
+            L.w("UserManager", "loginRemoteUser(): The user could not be logged in - reset logged-in user to avoid corrupt state!")
             resetLoggedInUser()
 
             Failure(exception)
@@ -142,7 +143,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
             Success(Unit)
         } catch (exception: Exception) {
-            L.w("UserManager", "loginLocalUser(): The user could not be logged in - reset logged in user to avoid corrupt state!")
+            L.w("UserManager", "loginLocalUser(): The user could not be logged in - reset logged-in user to avoid corrupt state!")
             resetLoggedInUser()
 
             Failure(exception)

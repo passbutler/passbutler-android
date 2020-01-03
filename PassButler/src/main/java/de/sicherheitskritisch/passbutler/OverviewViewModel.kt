@@ -7,16 +7,16 @@ import kotlinx.coroutines.delay
 
 class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
-    lateinit var rootViewModel: RootViewModel
+    var loggedInUserViewModel: UserViewModel? = null
 
-    val loggedInUserViewModel: UserViewModel?
-        get() {
-            // TODO: Put IllegalStateException here instead across the code?
-            return rootViewModel.loggedInUserViewModel
-        }
+    val isSynchronizationVisible
+        get() = loggedInUserViewModel?.isServerUserType ?: false
+
+    val isSynchronizationPossible
+        get() = loggedInUserViewModel?.isSynchronizationPossible ?: false
 
     suspend fun synchronizeData(): Result<Unit> {
-        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged in user viewmodel is null!")
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
         return loggedInUserViewModel.synchronizeData()
     }
 
@@ -24,7 +24,7 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
         // Some artificial delay to look flow more natural
         delay(500)
 
-        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged in user viewmodel is null!")
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
         return loggedInUserViewModel.logout()
     }
 }

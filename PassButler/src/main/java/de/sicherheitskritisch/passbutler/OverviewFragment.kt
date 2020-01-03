@@ -22,7 +22,6 @@ import com.google.android.material.navigation.NavigationView
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.base.observe
 import de.sicherheitskritisch.passbutler.base.relativeDateTime
-import de.sicherheitskritisch.passbutler.base.signal
 import de.sicherheitskritisch.passbutler.databinding.FragmentOverviewBinding
 import de.sicherheitskritisch.passbutler.databinding.ListItemEntryBinding
 import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
@@ -51,11 +50,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     private var synchronizeDataRequestSendingJob: Job? = null
     private var logoutRequestSendingJob: Job? = null
 
-    private val webserviceRestoredSignal = signal {
-        // Start sync a bit delayed after unlock to made progress UI better visible
-        synchronizeData(startDelay = 500)
-    }
-
     private val itemsChangedObserver = Observer<List<ItemViewModel>> { newItems ->
         if (newItems != null) {
             val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemAdapter
@@ -65,7 +59,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
     private val lastSuccessfulSyncChangedObserver = Observer<Date?> { newDate ->
         binding?.toolbar?.let { toolbar ->
-            binding?.toolbar?.subtitle = if (viewModel.loggedInUserViewModel?.userType is UserType.Server) {
+            binding?.toolbar?.subtitle = if (viewModel.isSynchronizationVisible) {
                 val formattedLastSuccessfulSync = newDate?.relativeDateTime(toolbar.context) ?: getString(R.string.overview_last_sync_never)
                 getString(R.string.overview_last_sync_subtitle, formattedLastSuccessfulSync)
             } else {
@@ -80,7 +74,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         viewModel = ViewModelProviders.of(this).get(OverviewViewModel::class.java)
 
         activity?.let {
-            viewModel.rootViewModel = getRootViewModel(it)
+            viewModel.loggedInUserViewModel = getRootViewModel(it).loggedInUserViewModel
         }
     }
 
@@ -119,7 +113,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         toolbar.menu.findItem(R.id.overview_menu_item_sync).apply {
             val menuIconColor = resources.getColor(R.color.white, null)
             icon.applyTint(menuIconColor)
-            isVisible = viewModel.loggedInUserViewModel?.userType is UserType.Server
+            isVisible = viewModel.isSynchronizationVisible
         }
     }
 
@@ -181,15 +175,14 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     override fun onStart() {
         super.onStart()
 
-        viewModel.rootViewModel.webserviceRestored.addSignal(webserviceRestoredSignal)
         viewModel.loggedInUserViewModel?.itemViewModels?.observe(viewLifecycleOwner, itemsChangedObserver)
         viewModel.loggedInUserViewModel?.lastSuccessfulSync?.observe(viewLifecycleOwner, true, lastSuccessfulSyncChangedObserver)
-    }
 
-    override fun onStop() {
-        viewModel.rootViewModel.webserviceRestored.removeSignal(webserviceRestoredSignal)
-
-        super.onStop()
+        // Only trigger automatic sync if possible to avoid error messages without user interaction
+        if (viewModel.isSynchronizationPossible) {
+            // Start sync a bit delayed to made progress UI better visible
+            synchronizeData(startDelay = 500)
+        }
     }
 
     override fun onHandleBackPress(): Boolean {

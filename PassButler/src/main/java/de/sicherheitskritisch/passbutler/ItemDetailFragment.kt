@@ -44,14 +44,13 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
         activity?.let {
             val rootViewModel = getRootViewModel(it)
-            val loggedInUserViewModel = rootViewModel.loggedInUserViewModel
-            val userManager = loggedInUserViewModel?.userManager ?: throw IllegalStateException("The user manager is null!")
+            val loggedInUserViewModel = rootViewModel.loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
 
             val itemId = arguments?.getString(ARGUMENT_ITEM_ID)
-            val itemViewModel = loggedInUserViewModel.itemViewModels.value?.find { itemViewModel -> itemViewModel.id == itemId }?.createEditingViewModel()
-                ?: ItemEditingViewModel(ItemModel.New(loggedInUserViewModel), userManager)
+            val itemEditingViewModel = loggedInUserViewModel.itemViewModels.value?.find { itemViewModel -> itemViewModel.id == itemId }?.createEditingViewModel()
+                ?: loggedInUserViewModel.createNewItemEditingViewModel()
 
-            val factory = ItemEditingViewModelFactory(itemViewModel)
+            val factory = ItemEditingViewModelFactory(itemEditingViewModel)
 
             // Use actual fragment (not the activity) for provider because we want always want to get a new `ItemEditingViewModel`
             viewModel = ViewModelProviders.of(this, factory).get(ItemEditingViewModel::class.java)
