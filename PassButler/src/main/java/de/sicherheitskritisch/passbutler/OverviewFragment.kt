@@ -68,6 +68,15 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
         }
     }
 
+    private val synchronizationPossibleChangedObserver = Observer<Boolean> { isPossible ->
+        // TODO: Only start sync if unlocked?
+        // Only trigger automatic sync if possible to avoid error messages without user interaction
+        if (isPossible) {
+            // Start sync a bit delayed to made progress UI better visible
+            synchronizeData(startDelay = 500)
+        }
+    }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
@@ -177,12 +186,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
 
         viewModel.loggedInUserViewModel?.itemViewModels?.observe(viewLifecycleOwner, itemsChangedObserver)
         viewModel.loggedInUserViewModel?.lastSuccessfulSync?.observe(viewLifecycleOwner, true, lastSuccessfulSyncChangedObserver)
-
-        // Only trigger automatic sync if possible to avoid error messages without user interaction
-        if (viewModel.isSynchronizationPossible) {
-            // Start sync a bit delayed to made progress UI better visible
-            synchronizeData(startDelay = 500)
-        }
+        viewModel.loggedInUserViewModel?.isSynchronizationPossible?.observe(viewLifecycleOwner, true, synchronizationPossibleChangedObserver)
     }
 
     override fun onHandleBackPress(): Boolean {

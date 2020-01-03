@@ -68,8 +68,9 @@ class UserViewModel private constructor(
         biometricUnlockAvailable.value && userManager.loggedInStateStorage.encryptedMasterPassword != null
     }
 
-    val isSynchronizationPossible
-        get() = userManager.webservicesInitialized
+    val isSynchronizationPossible = NonNullValueGetterLiveData {
+        userManager.webservicesInitialized
+    }
 
     val lastSuccessfulSync = ValueGetterLiveData {
         (userType as? UserType.Server)?.lastSuccessfulSync
