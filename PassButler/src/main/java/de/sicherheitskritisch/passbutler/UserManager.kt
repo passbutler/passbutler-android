@@ -410,17 +410,16 @@ private class UserSynchronizationTask(private val localRepository: LocalReposito
         }
 
         // Only update the other users, not the logged-in user
-        var localUserList = localUserListDeferred.await().excludeLoggedInUsername()
-        val remoteUserList = remoteUserListDeferred.await().excludeLoggedInUsername()
+        val localUsers = localUserListDeferred.await().excludeLoggedInUsername()
+        val remoteUsers = remoteUserListDeferred.await().excludeLoggedInUsername()
 
-        val newLocalUsers = Differentiation.collectNewItems(localUserList, remoteUserList)
+        val newLocalUsers = Differentiation.collectNewItems(localUsers, remoteUsers)
         L.d("UserSynchronizationTask", "synchronizePublicUsersList(): New user items for local database: ${newLocalUsers.buildShortUserList()}")
         localRepository.insertUser(*newLocalUsers.toTypedArray())
 
-        // Merge list to avoid query updated local user list again
-        localUserList = localUserList + newLocalUsers
-
-        val modifiedLocalUsers = Differentiation.collectModifiedItems(localUserList, remoteUserList)
+        // Merge local users and new local users to avoid query local users list again
+        val updatedLocalUsers = localUsers + newLocalUsers
+        val modifiedLocalUsers = Differentiation.collectModifiedItems(updatedLocalUsers, remoteUsers)
         L.d("UserSynchronizationTask", "synchronizePublicUsersList(): Modified user items for local database: ${modifiedLocalUsers.buildShortUserList()}")
         localRepository.updateUser(*modifiedLocalUsers.toTypedArray())
     }
