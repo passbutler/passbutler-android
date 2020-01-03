@@ -263,8 +263,8 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         localRepository.updateUser(user)
     }
 
-    fun findItems(): LiveData<List<Item>> {
-        return localRepository.findAllItems()
+    suspend fun itemsObservable(): LiveData<List<Item>> {
+        return localRepository.itemsObservable()
     }
 
     suspend fun createItem(item: Item) {
@@ -275,8 +275,8 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         localRepository.updateItem(item)
     }
 
-    suspend fun findItemAuthorization(item: Item): ItemAuthorization? {
-        return localRepository.findItemAuthorization(item.id)
+    suspend fun findItemAuthorizationForItem(item: Item): ItemAuthorization? {
+        return localRepository.findItemAuthorizationForItem(item)
     }
 
     suspend fun createItemAuthorization(itemAuthorization: ItemAuthorization) {

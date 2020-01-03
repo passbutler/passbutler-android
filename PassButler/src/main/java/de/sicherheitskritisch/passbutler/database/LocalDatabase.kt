@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Database
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -47,6 +46,16 @@ class LocalRepository(applicationContext: Context) {
         Room.databaseBuilder(applicationContext, PassButlerDatabase::class.java, "PassButlerDatabase").build()
     }
 
+    suspend fun reset() {
+        withContext(Dispatchers.IO) {
+            localDatabase.clearAllTables()
+        }
+    }
+
+    /**
+     * User
+     */
+
     suspend fun findAllUsers(): List<User> {
         return withContext(Dispatchers.IO) {
             localDatabase.userDao().findAll()
@@ -71,8 +80,20 @@ class LocalRepository(applicationContext: Context) {
         }
     }
 
-    fun findAllItems(): LiveData<List<Item>> {
-        return localDatabase.itemDao().findAll()
+    /**
+     * Item
+     */
+
+    suspend fun itemsObservable(): LiveData<List<Item>> {
+        return withContext(Dispatchers.IO) {
+            localDatabase.itemDao().findAll()
+        }
+    }
+
+    suspend fun findItem(id: String): Item? {
+        return withContext(Dispatchers.IO) {
+            localDatabase.itemDao().find(id)
+        }
     }
 
     suspend fun insertItem(vararg item: Item) {
@@ -87,15 +108,25 @@ class LocalRepository(applicationContext: Context) {
         }
     }
 
-    suspend fun deleteItem(vararg item: Item) {
-        withContext(Dispatchers.IO) {
-            localDatabase.itemDao().delete(*item)
+    /**
+     * ItemAuthorization
+     */
+
+    suspend fun findAllItemAuthorizations(): List<ItemAuthorization> {
+        return withContext(Dispatchers.IO) {
+            localDatabase.itemAuthorizationDao().findAll()
         }
     }
 
-    suspend fun findItemAuthorization(itemId: String): ItemAuthorization? {
+    suspend fun findItemAuthorization(id: String): ItemAuthorization? {
         return withContext(Dispatchers.IO) {
-            localDatabase.itemAuthorizationDao().find(itemId)
+            localDatabase.itemAuthorizationDao().find(id)
+        }
+    }
+
+    suspend fun findItemAuthorizationForItem(item: Item): ItemAuthorization? {
+        return withContext(Dispatchers.IO) {
+            localDatabase.itemAuthorizationDao().findForItem(item.id)
         }
     }
 
@@ -108,18 +139,6 @@ class LocalRepository(applicationContext: Context) {
     suspend fun updateItemAuthorization(vararg itemAuthorization: ItemAuthorization) {
         withContext(Dispatchers.IO) {
             localDatabase.itemAuthorizationDao().update(*itemAuthorization)
-        }
-    }
-
-    suspend fun deleteItemAuthorization(vararg itemAuthorization: ItemAuthorization) {
-        withContext(Dispatchers.IO) {
-            localDatabase.itemAuthorizationDao().delete(*itemAuthorization)
-        }
-    }
-
-    suspend fun reset() {
-        withContext(Dispatchers.IO) {
-            localDatabase.clearAllTables()
         }
     }
 }
@@ -137,9 +156,6 @@ interface UserDao {
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun update(vararg users: User)
-
-    @Delete
-    fun delete(user: User)
 }
 
 @Dao
@@ -147,29 +163,32 @@ interface ItemDao {
     @Query("SELECT * FROM items ORDER BY created")
     fun findAll(): LiveData<List<Item>>
 
+    @Query("SELECT * FROM items WHERE id = :id")
+    fun find(id: String): Item?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg items: Item)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun update(vararg items: Item)
-
-    @Delete
-    fun delete(vararg items: Item)
 }
 
 @Dao
 interface ItemAuthorizationDao {
+    @Query("SELECT * FROM item_authorizations ORDER BY created")
+    fun findAll(): List<ItemAuthorization>
+
+    @Query("SELECT * FROM item_authorizations WHERE id = :id")
+    fun find(id: String): ItemAuthorization?
+
     @Query("SELECT * FROM item_authorizations WHERE itemId = :itemId")
-    fun find(itemId: String): ItemAuthorization?
+    fun findForItem(itemId: String): ItemAuthorization?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg itemAuthorizations: ItemAuthorization)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun update(vararg itemAuthorizations: ItemAuthorization)
-
-    @Delete
-    fun delete(vararg itemAuthorizations: ItemAuthorization)
 }
 
 class ModelConverters {

@@ -1,5 +1,6 @@
 package de.sicherheitskritisch.passbutler
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import de.sicherheitskritisch.passbutler.base.Failure
@@ -66,8 +67,7 @@ class UserViewModel private constructor(
         biometricUnlockAvailable.value && userManager.loggedInStateStorage.encryptedMasterPassword != null
     }
 
-    // Save instance to be able to unregister observer on this instance
-    private val items = userManager.findItems()
+    private var itemsObservable: LiveData<List<Item>>? = null
 
     private val itemsObserver = ItemsChangedObserver()
     private var itemsObserverUpdateJob: Job? = null
@@ -116,7 +116,9 @@ class UserViewModel private constructor(
                 itemEncryptionSecretKey = decryptItemEncryptionSecretKey(masterEncryptionKey).resultOrThrowException()
 
                 withContext(Dispatchers.Main) {
-                    items.observeForever(itemsObserver)
+                    // Save instance to be able to unregister observer on exact this instance
+                    itemsObservable = userManager.itemsObservable()
+                    itemsObservable?.observeForever(itemsObserver)
                 }
 
                 val decryptedSettings = decryptUserSettings(masterEncryptionKey).resultOrThrowException()
@@ -151,7 +153,7 @@ class UserViewModel private constructor(
 
         withContext(Dispatchers.Main) {
             // First remove observer and than cancel the (possible) running update `ItemViewModel` list job
-            items.removeObserver(itemsObserver)
+            itemsObservable?.removeObserver(itemsObserver)
             itemsObserverUpdateJob?.cancel()
 
             itemViewModels.value?.forEach { it.clearSensibleData() }
@@ -371,7 +373,7 @@ class UserViewModel private constructor(
             val newItemViewModels = newItems
                 ?.filter { !it.deleted }
                 ?.mapNotNull { item ->
-                    val itemAuthorization = userManager.findItemAuthorization(item)?.takeIf { !it.deleted }
+                    val itemAuthorization = userManager.findItemAuthorizationForItem(item)?.takeIf { !it.deleted }
 
                     if (itemAuthorization != null) {
                         oldItemViewModels
