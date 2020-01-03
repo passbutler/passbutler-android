@@ -9,8 +9,11 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
     lateinit var rootViewModel: RootViewModel
 
-    val loggedInUserViewModel
-        get() = rootViewModel.loggedInUserViewModel
+    val loggedInUserViewModel: UserViewModel?
+        get() {
+            // TODO: Put IllegalStateException here instead across the code?
+            return rootViewModel.loggedInUserViewModel
+        }
 
     suspend fun synchronizeData(): Result<Unit> {
         val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged in user viewmodel is null!")
