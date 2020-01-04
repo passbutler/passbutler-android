@@ -126,12 +126,18 @@ class FragmentPresentingDelegate(
     companion object {
         private const val SHOW_FRAGMENT_DEBOUNCE_TIME_MILLISECONDS = 450L
 
+        private val Class<*>.fragmentInstanceIdentification: String
+            get() {
+                // Use class name with full package
+                return name
+            }
+
         fun getFragmentTag(fragment: Fragment): String {
-            return fragment.javaClass.canonicalName ?: fragment.javaClass.toString()
+            return fragment.javaClass.fragmentInstanceIdentification
         }
 
         fun <T : Fragment> getFragmentTag(fragmentClass: Class<T>): String {
-            return fragmentClass.canonicalName ?: fragmentClass.toString()
+            return fragmentClass.fragmentInstanceIdentification
         }
 
         fun applyTransitionToAnimatedFragment(fragment: Fragment) {
