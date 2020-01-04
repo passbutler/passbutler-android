@@ -128,8 +128,10 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     }
 
     private fun setupSwipeRefreshLayout(binding: FragmentOverviewBinding) {
-        binding.layoutOverviewContent.swipeRefreshLayout.setOnRefreshListener {
-            synchronizeData()
+        if (isSynchronizationVisible) {
+            binding.layoutOverviewContent.swipeRefreshLayout.setOnRefreshListener {
+                synchronizeData()
+            }
         }
     }
 
