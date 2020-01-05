@@ -68,11 +68,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 
     private val synchronizationPossibleChangedObserver = Observer<Boolean> { isPossible ->
-        // TODO: Only start sync if unlocked?
-        // Only trigger automatic sync if possible to avoid error messages without user interaction
         if (isPossible) {
-            // Start sync a bit delayed to made progress UI better visible
-            synchronizeData(startDelay = 500)
+            synchronizeData(userTriggered = false)
         }
     }
 
@@ -132,17 +129,27 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         if (isSynchronizationVisible) {
             binding.layoutOverviewContent.swipeRefreshLayout.setOnRefreshListener {
                 if (isSynchronizationPossible) {
-                    synchronizeData()
+                    synchronizeData(userTriggered = true)
                 }
             }
         }
     }
 
-    private fun synchronizeData(startDelay: Long = 0) {
+    private fun synchronizeData(userTriggered: Boolean) {
         synchronizeDataRequestSendingJob?.cancel()
         synchronizeDataRequestSendingJob = launchRequestSending(
-            handleSuccess = { showInformation(getString(R.string.overview_sync_successful_message)) },
-            handleFailure = { showError(getString(R.string.overview_sync_failed_message)) },
+            handleSuccess = {
+                // Only show user feedback if it was user triggered to avoid confusing the user
+                if (userTriggered) {
+                    showInformation(getString(R.string.overview_sync_successful_message))
+                }
+            },
+            handleFailure = {
+                // Only show user feedback if it was user triggered to avoid confusing the user
+                if (userTriggered) {
+                    showError(getString(R.string.overview_sync_failed_message))
+                }
+            },
             handleLoadingChanged = { isLoading ->
                 binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
 
@@ -151,7 +158,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
                 }
             }
         ) {
-            delay(startDelay)
             viewModel.synchronizeData()
         }
     }
