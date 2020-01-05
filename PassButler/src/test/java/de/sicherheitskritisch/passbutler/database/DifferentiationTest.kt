@@ -190,6 +190,50 @@ class DifferentiationTest {
 
         assertEquals(expectedItems, collectModifiedItems(currentItems, updatedItems))
     }
+
+    /**
+     * `collectChanges()` tests
+     */
+
+    @Test
+    fun `Collect changes for both sides`() {
+        val localItems = listOf(
+            createItem("item a", modified = "2020-01-04T18:00:00Z"), // synced
+            createItem("item b", modified = "2020-01-04T18:00:00Z"), // synced - modified on remote side
+            createItem("item c", modified = "2020-01-04T18:02:00Z"), // synced - modified on local side
+            createItem("item l", modified = "2020-01-04T18:00:00Z") // created on local side
+        )
+
+        val remoteItems = listOf(
+            createItem("item a", modified = "2020-01-04T18:00:00Z"), // synced
+            createItem("item b", modified = "2020-01-04T18:01:00Z"), // synced - modified on remote side
+            createItem("item c", modified = "2020-01-04T18:00:00Z"), // synced - modified on local side
+            createItem("item r", modified = "2020-01-04T18:00:00Z") // created on remote side
+        )
+
+        val result = Differentiation.collectChanges(localItems, remoteItems)
+
+        assertEquals(listOf(
+            createItem("item r", modified = "2020-01-04T18:00:00Z")
+        ), result.newItemsForLocal)
+
+        assertEquals(listOf(
+            createItem("item b", modified = "2020-01-04T18:01:00Z")
+        ), result.modifiedItemsForLocal)
+
+        assertEquals(listOf(
+            createItem("item l", modified = "2020-01-04T18:00:00Z")
+        ), result.newItemsForRemote)
+
+        assertEquals(listOf(
+            createItem("item c", modified = "2020-01-04T18:02:00Z")
+        ), result.modifiedItemsForRemote)
+
+        assertEquals(listOf(
+            createItem("item l", modified = "2020-01-04T18:00:00Z"),
+            createItem("item c", modified = "2020-01-04T18:02:00Z")
+        ), result.remoteChangedItems)
+    }
 }
 
 private fun createItem(identification: String, modified: String? = null): TestItem {

@@ -34,6 +34,7 @@ import de.sicherheitskritisch.passbutler.database.models.Item
 import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
+import de.sicherheitskritisch.passbutler.database.remoteChangedItems
 import de.sicherheitskritisch.passbutler.database.requestAuthToken
 import de.sicherheitskritisch.passbutler.database.requestItemAuthorizationList
 import de.sicherheitskritisch.passbutler.database.requestItemList
@@ -420,6 +421,7 @@ private class UserSynchronizationTask(private val localRepository: LocalReposito
         }
     }
 
+    // TODO: Use `Differentiation.collectChanges`
     @Throws(Exception::class)
     private suspend fun synchronizePublicUsersList(coroutineScope: CoroutineScope) {
         // Start both operations parallel because they are independent from each other
@@ -447,6 +449,7 @@ private class UserSynchronizationTask(private val localRepository: LocalReposito
         localRepository.updateUser(*modifiedLocalUsers.toTypedArray())
     }
 
+    // TODO: Use `Differentiation.collectChanges`
     @Throws(Exception::class)
     private suspend fun synchronizeLoggedInUser() {
         val localLoggedInUser = loggedInUser
@@ -478,49 +481,28 @@ private class ItemsSynchronizationTask(private val localRepository: LocalReposit
     override suspend fun synchronize(): Result<Unit> {
         return try {
             coroutineScope {
-                val localItemListDeferred = async { localRepository.findAllItems() }
-                val remoteItemListDeferred = async { userWebservice.requestItemList().resultOrThrowException() }
+                val localItemsDeferred = async { localRepository.findAllItems() }
+                val remoteItemsDeferred = async { userWebservice.requestItemList().resultOrThrowException() }
 
-                val localItems = localItemListDeferred.await()
-                val remoteItems = remoteItemListDeferred.await()
+                val localItems = localItemsDeferred.await()
+                val remoteItems = remoteItemsDeferred.await()
 
-                // Determine new items both on local and remote side
-                val newLocalItems = Differentiation.collectNewItems(localItems, remoteItems)
-                val newRemoteItems = Differentiation.collectNewItems(remoteItems, localItems)
-
-                // Merge current items and new items to one list to avoid query/request lists again
-                val mergedLocalItems = localItems + newLocalItems
-                val mergedRemoteItems = remoteItems + newRemoteItems
-
-                // Determine modified items both on local and remote side
-                val modifiedLocalItems = Differentiation.collectModifiedItems(mergedLocalItems, mergedRemoteItems)
-                val modifiedRemoteItems = Differentiation.collectModifiedItems(mergedRemoteItems, mergedLocalItems)
-
-
+                val differentiationResult = Differentiation.collectChanges(localItems, remoteItems)
+                L.d("ItemsSynchronizationTask", "synchronize(): differentiationResult = $differentiationResult")
 
                 // Update local database
-                localRepository.insertItem(*newLocalItems.toTypedArray())
-                localRepository.updateItem(*modifiedLocalItems.toTypedArray())
+                localRepository.insertItem(*differentiationResult.newItemsForLocal.toTypedArray())
+                localRepository.updateItem(*differentiationResult.modifiedItemsForLocal.toTypedArray())
 
-                // Update remote webservice
-                // TODO: Duplicates via newRemoteItems?
-                val remoteChangedItems = (newRemoteItems + modifiedRemoteItems)
-                    .filter { item ->
-                        // Only update items where the user has a non-deleted, non-readonly item authorization
-                        localRepository.findItemAuthorizationForItem(item).any { it.userId == loggedInUserName && !it.readOnly && !it.deleted }
-                    }
+                val remoteChangedItems = differentiationResult.remoteChangedItems.filter { item ->
+                    // Only update items where the user has a non-deleted, non-readonly item authorization
+                    localRepository.findItemAuthorizationForItem(item).any { it.userId == loggedInUserName && !it.readOnly && !it.deleted }
+                }
 
-                // Only send network request if necessary
+                // Update remote webservice if necessary
                 if (remoteChangedItems.isNotEmpty()) {
                     userWebservice.updateItemList(remoteChangedItems).resultOrThrowException()
                 }
-
-                L.d(
-                    "ItemsSynchronizationTask", "synchronize(): " +
-                    "New local items: ${newLocalItems.compactRepresentation()}, " +
-                    "Modified local items: ${modifiedLocalItems.compactRepresentation()}, " +
-                    "Updated remote items: ${remoteChangedItems.compactRepresentation()}"
-                )
 
                 Success(Unit)
             }
@@ -530,9 +512,9 @@ private class ItemsSynchronizationTask(private val localRepository: LocalReposit
     }
 }
 
-
 private class ItemAuthorizationsSynchronizationTask(private val localRepository: LocalRepository, private var userWebservice: UserWebservice, private val loggedInUserName: String) : Synchronization {
 
+    // TODO: Use `Differentiation.collectChanges`
     override suspend fun synchronize(): Result<Unit> {
         return try {
             coroutineScope {

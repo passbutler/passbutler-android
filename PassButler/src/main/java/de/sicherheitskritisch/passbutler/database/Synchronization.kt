@@ -38,7 +38,42 @@ object Differentiation {
             }
         }
     }
+
+    /**
+     * Collects differentiation result from two list states.
+     */
+    fun <T : Synchronizable> collectChanges(localItems: List<T>, remoteItems: List<T>): Result<T> {
+        val newItemsForLocal = collectNewItems(localItems, remoteItems)
+        val newItemsForRemote = collectNewItems(remoteItems, localItems)
+
+        // Merge current items and new items to be able to collect modifications
+        val mergedLocalItems = localItems + newItemsForLocal
+        val mergedRemoteItems = remoteItems + newItemsForRemote
+
+        val modifiedItemsForLocal = collectModifiedItems(mergedLocalItems, mergedRemoteItems)
+        val modifiedItemsForRemote = collectModifiedItems(mergedRemoteItems, mergedLocalItems)
+
+        return Result(
+            newItemsForLocal = newItemsForLocal,
+            modifiedItemsForLocal = modifiedItemsForLocal,
+            newItemsForRemote = newItemsForRemote,
+            modifiedItemsForRemote = modifiedItemsForRemote
+        )
+    }
+
+    data class Result<T : Synchronizable>(
+        val newItemsForLocal: List<T>,
+        val modifiedItemsForLocal: List<T>,
+        val newItemsForRemote: List<T>,
+        val modifiedItemsForRemote: List<T>
+    )
 }
+
+/**
+ * Contains the items to upload to remote side (new and modified items)
+ */
+val <T : Synchronizable> Differentiation.Result<T>.remoteChangedItems
+    get() = newItemsForRemote + modifiedItemsForRemote
 
 /**
  * Interface to mark models as synchronizable. The `primaryField` is needed to differentiate between the model items when comparing,
