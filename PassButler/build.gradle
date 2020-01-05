@@ -79,7 +79,7 @@ dependencies {
     kapt "androidx.room:room-compiler:2.2.0-rc01"
 
     // Android Biometrics framework
-    implementation 'androidx.biometric:biometric:1.0.0-beta02'
+    implementation 'androidx.biometric:biometric:1.0.1'
 
     // Android Preference framework
     implementation 'androidx.preference:preference:1.1.0'
