@@ -5,7 +5,7 @@ import java.util.*
 
 object Differentiation {
     /**
-     * Detects new items between two lists. To detect new items, the item primary key must be specified (e.g. `username` or `id`).
+     * Collects new items (determined by identifying field) from two list states.
      */
     fun <T : Synchronizable> collectNewItems(currentItems: List<T>, newItems: List<T>): List<T> {
         return newItems.filter { newItem ->
@@ -15,11 +15,13 @@ object Differentiation {
     }
 
     /**
-     * Collects a list of items of modified items (determined by modified date) based on current item and potentially updated item list.
+     * Collects modified items (determined by modified date) from two list states.
+     *
+     * Note: The lists must have the same size to be able to compare them!
      */
     @Throws(IllegalStateException::class)
     fun <T : Synchronizable> collectModifiedItems(currentItems: List<T>, updatedItems: List<T>): List<T> {
-        require(currentItems.size == updatedItems.size) { "The current user list and updated user list size must be the same!" }
+        require(currentItems.size == updatedItems.size) { "The current list and updated list must have the same size!" }
 
         val sortedCurrentItems = currentItems.sortedBy { it.primaryField }
         val sortedUpdatedItems = updatedItems.sortedBy { it.primaryField }
@@ -27,7 +29,7 @@ object Differentiation {
         return sortedCurrentItems.mapIndexedNotNull { index, currentUserItem ->
             val updatedItem = sortedUpdatedItems[index]
 
-            check(currentUserItem.primaryField == updatedItem.primaryField) { "The current item list and updated item list must contain the same items!" }
+            check(currentUserItem.primaryField == updatedItem.primaryField) { "The current list and updated list must contain the same items!" }
 
             if (updatedItem.modified > currentUserItem.modified) {
                 updatedItem
