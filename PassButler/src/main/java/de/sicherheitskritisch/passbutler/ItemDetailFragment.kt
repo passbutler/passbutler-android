@@ -22,6 +22,9 @@ import kotlinx.coroutines.Job
 
 class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
+    private var formTitle: String? = null
+    private var formPassword: String? = null
+
     private var binding: FragmentItemdetailBinding? = null
 
     private val titleObserver = Observer<String> {
@@ -55,6 +58,13 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
             // Use actual fragment (not the activity) for provider because we want always want to get a new `ItemEditingViewModel`
             viewModel = ViewModelProviders.of(this, factory).get(ItemEditingViewModel::class.java)
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        formTitle = savedInstanceState?.getString(FORM_FIELD_TITLE)
+        formPassword = savedInstanceState?.getString(FORM_FIELD_PASSWORD)
     }
 
     override fun setupToolbarMenu(toolbar: Toolbar) {
@@ -94,10 +104,15 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
             binding.lifecycleOwner = viewLifecycleOwner
             binding.viewModel = viewModel
 
-            // TODO: Handle view rotation
+            applyRestoredViewStates(binding)
         }
 
         return binding?.root
+    }
+
+    private fun applyRestoredViewStates(binding: FragmentItemdetailBinding) {
+        formTitle?.let { binding.editTextTitle.setText(it) }
+        formPassword?.let { binding.editTextPassword.setText(it) }
     }
 
     override fun onStart() {
@@ -132,8 +147,18 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         super.onStop()
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString(FORM_FIELD_TITLE, binding?.editTextTitle?.text?.toString())
+        outState.putString(FORM_FIELD_PASSWORD, binding?.editTextPassword?.text?.toString())
+
+        super.onSaveInstanceState(outState)
+    }
+
     companion object {
         private const val ARGUMENT_ITEM_ID = "ARGUMENT_ITEM_ID"
+
+        private const val FORM_FIELD_TITLE = "FORM_FIELD_TITLE"
+        private const val FORM_FIELD_PASSWORD = "FORM_FIELD_PASSWORD"
 
         fun newInstance(itemId: String?) = ItemDetailFragment().apply {
             arguments = Bundle().apply {
