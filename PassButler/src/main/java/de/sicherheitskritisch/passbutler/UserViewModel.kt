@@ -403,7 +403,8 @@ class UserViewModel private constructor(
                         it.userId == username && !it.deleted
                     }
 
-                    if (itemAuthorization != null) { // TODO: Does not always work when create new item
+                    // TODO: Does not always work when create new item
+                    if (itemAuthorization != null) {
                         oldItemViewModels
                             ?.find { it.id == item.id }
                             ?.takeIf { it.item == item && it.itemAuthorization == itemAuthorization }
