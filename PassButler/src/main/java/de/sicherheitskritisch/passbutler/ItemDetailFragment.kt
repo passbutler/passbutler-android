@@ -57,17 +57,6 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         }
     }
 
-    override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate<FragmentItemdetailBinding>(inflater, R.layout.fragment_itemdetail, container, false).also { binding ->
-            binding.lifecycleOwner = viewLifecycleOwner
-            binding.viewModel = viewModel
-
-            // TODO: Handle view rotation
-        }
-
-        return binding?.root
-    }
-
     override fun setupToolbarMenu(toolbar: Toolbar) {
         toolbar.inflateMenu(R.menu.item_detail_menu)
 
@@ -98,6 +87,17 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         ) {
             viewModel.save()
         }
+    }
+
+    override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        binding = DataBindingUtil.inflate<FragmentItemdetailBinding>(inflater, R.layout.fragment_itemdetail, container, false).also { binding ->
+            binding.lifecycleOwner = viewLifecycleOwner
+            binding.viewModel = viewModel
+
+            // TODO: Handle view rotation
+        }
+
+        return binding?.root
     }
 
     override fun onStart() {
