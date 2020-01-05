@@ -47,17 +47,16 @@ class FragmentPresentingDelegate(
 
     private var lastShowFragmentTransactionTimestamp: Long = 0
 
-    override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean, debounce: Boolean, animated: Boolean) {
+    override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean, debounce: Boolean, transitionType: TransitionType) {
         val noRecentTransactionWasDone = checkNoRecentShowFragmentTransactionWasDone().takeIf { debounce } ?: true
 
         if (activity.isNotFinished && noRecentTransactionWasDone) {
             rootFragmentManager?.beginTransaction()?.let { fragmentTransaction ->
 
-                if (animated) {
-                    applyTransitionToAnimatedFragment(fragment)
-                }
-
                 if (fragment is BaseFragment) {
+                    fragment.transitionType = transitionType
+                    applyTransitionToFragment(fragment)
+
                     fragment.fragmentPresentingDelegate = this
                 }
 
@@ -126,12 +125,6 @@ class FragmentPresentingDelegate(
     companion object {
         private const val SHOW_FRAGMENT_DEBOUNCE_TIME_MILLISECONDS = 450L
 
-        private val Class<*>.fragmentInstanceIdentification: String
-            get() {
-                // Use class name with full package
-                return name
-            }
-
         fun getFragmentTag(fragment: Fragment): String {
             return fragment.javaClass.fragmentInstanceIdentification
         }
@@ -140,21 +133,22 @@ class FragmentPresentingDelegate(
             return fragmentClass.fragmentInstanceIdentification
         }
 
-        fun applyTransitionToAnimatedFragment(fragment: Fragment) {
-            if (fragment is AnimatedFragment) {
-                when (fragment.transitionType) {
-                    AnimatedFragment.TransitionType.SLIDE -> {
-                        fragment.enterTransition = createHorizontalSlideInTransition()
-                        fragment.exitTransition = createHorizontalSlideOutTransition()
-                    }
-                    AnimatedFragment.TransitionType.MODAL -> {
-                        fragment.enterTransition = createVerticalSlideInTransition()
-                        fragment.exitTransition = createVerticalSlideOutTransition()
-                    }
-                    AnimatedFragment.TransitionType.FADE -> {
-                        fragment.enterTransition = createFadeInOutTransition()
-                        fragment.exitTransition = createFadeInOutTransition()
-                    }
+        fun applyTransitionToFragment(fragment: BaseFragment) {
+            when (fragment.transitionType) {
+                TransitionType.SLIDE -> {
+                    fragment.enterTransition = createHorizontalSlideInTransition()
+                    fragment.exitTransition = createHorizontalSlideOutTransition()
+                }
+                TransitionType.MODAL -> {
+                    fragment.enterTransition = createVerticalSlideInTransition()
+                    fragment.exitTransition = createVerticalSlideOutTransition()
+                }
+                TransitionType.FADE -> {
+                    fragment.enterTransition = createFadeInOutTransition()
+                    fragment.exitTransition = createFadeInOutTransition()
+                }
+                TransitionType.NONE -> {
+                    // No transition
                 }
             }
         }
@@ -197,6 +191,12 @@ class FragmentPresentingDelegate(
         }
     }
 }
+
+private val Class<*>.fragmentInstanceIdentification: String
+    get() {
+        // Use class name with full package
+        return name
+    }
 
 private val Activity?.isNotFinished
     get() = this?.isFinishing != true

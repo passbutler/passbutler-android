@@ -9,6 +9,7 @@ import androidx.lifecycle.Observer
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
+import de.sicherheitskritisch.passbutler.ui.TransitionType
 import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
 import java.lang.ref.WeakReference
 
@@ -78,7 +79,11 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
             showFragmentAsFirstScreen(
                 fragment = OverviewFragment.newInstance(),
-                animated = viewWasInitialized
+                transitionType = if (viewWasInitialized) {
+                    TransitionType.SLIDE
+                } else {
+                    TransitionType.NONE
+                }
             )
         }
     }
@@ -89,7 +94,11 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
             showFragmentAsFirstScreen(
                 fragment = LoginFragment.newInstance(),
-                animated = viewWasInitialized
+                transitionType = if (viewWasInitialized) {
+                    TransitionType.SLIDE
+                } else {
+                    TransitionType.NONE
+                }
             )
         }
     }
@@ -102,7 +111,11 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
             showFragment(
                 fragment = LockedScreenFragment.newInstance(),
                 debounce = false,
-                animated = viewWasInitialized
+                transitionType = if (viewWasInitialized) {
+                    TransitionType.FADE
+                } else {
+                    TransitionType.NONE
+                }
             )
         }
     }

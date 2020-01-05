@@ -21,7 +21,6 @@ import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.base.validateForm
 import de.sicherheitskritisch.passbutler.crypto.BiometricAuthenticationCallbackExecutor
 import de.sicherheitskritisch.passbutler.databinding.FragmentLockedScreenBinding
-import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.Keyboard
 import de.sicherheitskritisch.passbutler.ui.showError
@@ -29,9 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-class LockedScreenFragment : BaseViewModelFragment<RootViewModel>(), AnimatedFragment {
-
-    override val transitionType = AnimatedFragment.TransitionType.FADE
+class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
 
     private var formPassword: String? = null
 

@@ -10,10 +10,7 @@ import androidx.lifecycle.ViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import de.sicherheitskritisch.passbutler.R
 
-abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragment<ViewModelType>(), AnimatedFragment {
-
-    // TODO: This should not control the shown but showing fragment
-    override val transitionType = AnimatedFragment.TransitionType.SLIDE
+abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragment<ViewModelType>() {
 
     private var toolBar: Toolbar? = null
     private var floatingActionButton: FloatingActionButton? = null
@@ -25,13 +22,16 @@ abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragmen
 
         toolBar = rootView.findViewById<Toolbar>(R.id.toolbar)?.apply {
             val toolBarIconDrawableId = when (transitionType) {
-                AnimatedFragment.TransitionType.MODAL -> R.drawable.icon_clear_24dp
-                AnimatedFragment.TransitionType.SLIDE,
-                AnimatedFragment.TransitionType.FADE -> R.drawable.icon_arrow_back_24dp
+                TransitionType.MODAL -> R.drawable.icon_clear_24dp
+                TransitionType.SLIDE,
+                TransitionType.FADE -> R.drawable.icon_arrow_back_24dp
+                TransitionType.NONE -> null
             }
 
-            navigationIcon = resources.getDrawable(toolBarIconDrawableId, null)?.apply {
-                setTint(resources.getColor(R.color.white, null))
+            navigationIcon = toolBarIconDrawableId?.let {
+                resources.getDrawable(it, null)?.apply {
+                    setTint(resources.getColor(R.color.white, null))
+                }
             }
 
             setNavigationOnClickListener {

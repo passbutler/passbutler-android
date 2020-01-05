@@ -23,20 +23,18 @@ import de.sicherheitskritisch.passbutler.base.observe
 import de.sicherheitskritisch.passbutler.base.relativeDateTime
 import de.sicherheitskritisch.passbutler.databinding.FragmentOverviewBinding
 import de.sicherheitskritisch.passbutler.databinding.ListItemEntryBinding
-import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.VisibilityHideMode
 import de.sicherheitskritisch.passbutler.ui.showError
 import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
+import de.sicherheitskritisch.passbutler.ui.showFragmentModally
 import de.sicherheitskritisch.passbutler.ui.showInformation
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.*
 
-class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFragment {
-
-    override val transitionType = AnimatedFragment.TransitionType.SLIDE
+class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
     private var binding: FragmentOverviewBinding? = null
     private var navigationHeaderView: View? = null
@@ -192,11 +190,11 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
                     true
                 }
                 R.id.drawer_menu_item_settings -> {
-                    showFragment(SettingsFragment.newInstance())
+                    showFragmentModally(SettingsFragment.newInstance())
                     true
                 }
                 R.id.drawer_menu_item_about -> {
-                    showFragment(AboutFragment.newInstance())
+                    showFragmentModally(AboutFragment.newInstance())
                     true
                 }
                 R.id.drawer_menu_item_logout -> {

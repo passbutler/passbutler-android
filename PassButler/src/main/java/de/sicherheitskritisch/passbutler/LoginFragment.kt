@@ -18,7 +18,6 @@ import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.base.validateForm
 import de.sicherheitskritisch.passbutler.database.RequestUnauthorizedException
 import de.sicherheitskritisch.passbutler.databinding.FragmentLoginBinding
-import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.Keyboard
 import de.sicherheitskritisch.passbutler.ui.VisibilityHideMode
@@ -26,9 +25,7 @@ import de.sicherheitskritisch.passbutler.ui.showError
 import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
 import kotlinx.coroutines.Job
 
-class LoginFragment : BaseViewModelFragment<LoginViewModel>(), AnimatedFragment {
-
-    override val transitionType = AnimatedFragment.TransitionType.SLIDE
+class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
 
     private var formServerUrl: String? = null
     private var formUsername: String? = null

@@ -18,6 +18,7 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
 
     private val coroutineJob = SupervisorJob()
 
+    var transitionType = TransitionType.NONE
     var fragmentPresentingDelegate: FragmentPresentingDelegate? = null
 
     override fun onAttach(context: Context) {
@@ -42,7 +43,7 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
             }
 
             // Re-apply fragment transition after configuration change
-            FragmentPresentingDelegate.applyTransitionToAnimatedFragment(this)
+            FragmentPresentingDelegate.applyTransitionToFragment(this)
         }
     }
 
@@ -51,8 +52,8 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
         super.onDestroy()
     }
 
-    override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean, debounce: Boolean, animated: Boolean) {
-        fragmentPresentingDelegate?.showFragment(fragment, replaceFragment, addToBackstack, debounce, animated)
+    override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean, debounce: Boolean, transitionType: TransitionType) {
+        fragmentPresentingDelegate?.showFragment(fragment, replaceFragment, addToBackstack, debounce, transitionType)
     }
 
     override fun <T : Fragment> isFragmentShown(fragmentClass: Class<T>): Boolean {

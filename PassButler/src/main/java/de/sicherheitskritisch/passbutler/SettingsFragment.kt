@@ -26,7 +26,6 @@ import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.crypto.BiometricAuthenticationCallbackExecutor
 import de.sicherheitskritisch.passbutler.databinding.FragmentSettingsBinding
-import de.sicherheitskritisch.passbutler.ui.AnimatedFragment
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
 import de.sicherheitskritisch.passbutler.ui.showEditTextDialog
@@ -38,8 +37,6 @@ import kotlinx.coroutines.launch
 import javax.crypto.Cipher
 
 class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
-
-    override val transitionType = AnimatedFragment.TransitionType.MODAL
 
     private var binding: FragmentSettingsBinding? = null
     private var settingsPreferenceFragment: SettingsPreferenceFragment? = null
