@@ -45,6 +45,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     private val isSynchronizationVisible
         get() = viewModel.loggedInUserViewModel?.isServerUserType ?: false
 
+    private val isSynchronizationPossible
+        get() = viewModel.loggedInUserViewModel?.isSynchronizationPossible?.value ?: false
+
     private var synchronizeDataRequestSendingJob: Job? = null
     private var logoutRequestSendingJob: Job? = null
 
@@ -130,7 +133,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>(), AnimatedFra
     private fun setupSwipeRefreshLayout(binding: FragmentOverviewBinding) {
         if (isSynchronizationVisible) {
             binding.layoutOverviewContent.swipeRefreshLayout.setOnRefreshListener {
-                synchronizeData()
+                if (isSynchronizationPossible) {
+                    synchronizeData()
+                }
             }
         }
     }
