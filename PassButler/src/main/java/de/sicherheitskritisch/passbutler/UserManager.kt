@@ -297,20 +297,11 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     suspend fun synchronize(): Result<Unit> {
         L.d("UserManager", "synchronize()")
 
-        val userWebservice = userWebservice ?: throw IllegalStateException("The user webservice is not initialized!")
-        val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is not initialized!")
         val userType = loggedInStateStorage.userType as? UserType.Server ?: throw IllegalStateException("The logged-in user type is local!")
 
         return withContext(Dispatchers.IO) {
-            val synchronizeTasks = listOf(
-                UsersSynchronizationTask(localRepository, userWebservice, loggedInUser),
-                UserDetailsSynchronizationTask(localRepository, userWebservice, loggedInUser),
-                ItemsSynchronizationTask(localRepository, userWebservice, loggedInUser.username),
-                ItemAuthorizationsSynchronizationTask(localRepository, userWebservice, loggedInUser.username)
-            )
-
             // Execute tasks synchronously, do not stop if any task failed (otherwise other tasks are never synced if first task failed)
-            val synchronizeResults = synchronizeTasks.map {
+            val synchronizeResults = createSynchronizationTasks().map {
                 val synchronizeTaskName = it.javaClass.simpleName
 
                 L.d("UserManager", "synchronize(): Starting '$synchronizeTaskName'")
@@ -336,6 +327,18 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
                 Success(Unit)
             }
         }
+    }
+
+    private fun createSynchronizationTasks(): List<SynchronizationTask> {
+        val userWebservice = userWebservice ?: throw IllegalStateException("The user webservice is not initialized!")
+        val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is not initialized!")
+
+        return listOf(
+            UsersSynchronizationTask(localRepository, userWebservice, loggedInUser),
+            UserDetailsSynchronizationTask(localRepository, userWebservice, loggedInUser),
+            ItemsSynchronizationTask(localRepository, userWebservice, loggedInUser.username),
+            ItemAuthorizationsSynchronizationTask(localRepository, userWebservice, loggedInUser.username)
+        )
     }
 
     private suspend fun resetLoggedInUser() {
