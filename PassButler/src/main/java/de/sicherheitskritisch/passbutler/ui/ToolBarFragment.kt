@@ -17,6 +17,17 @@ abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragmen
 
     abstract fun getToolBarTitle(): String
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // Restore fragment transition type after configuration change
+        savedInstanceState?.getInt(BUNDLE_TRANSITION_TYPE)?.let { transitionTypeOrdinal ->
+            TransitionType.values().getOrNull(transitionTypeOrdinal)?.let {
+                transitionType = it
+            }
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_toolbar, container, false)
 
@@ -62,4 +73,14 @@ abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragmen
     }
 
     abstract fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt(BUNDLE_TRANSITION_TYPE, transitionType.ordinal)
+
+        super.onSaveInstanceState(outState)
+    }
+
+    companion object {
+        private const val BUNDLE_TRANSITION_TYPE = "TRANSITION_TYPE"
+    }
 }
