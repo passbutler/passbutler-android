@@ -11,6 +11,7 @@ import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
 import de.sicherheitskritisch.passbutler.ui.TransitionType
 import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 class RootFragment : BaseViewModelFragment<RootViewModel>() {
@@ -56,9 +57,13 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
     override fun onStart() {
         super.onStart()
 
-        // TODO: Order of screen state and lock screen state always correct?
         viewModel.rootScreenState.observe(viewLifecycleOwner, rootScreenStateObserver)
         viewModel.lockScreenState.observe(viewLifecycleOwner, lockScreenStateObserver)
+
+        // Try to restore logged-in user after the observer were added
+        launch {
+            viewModel.restoreLoggedInUser()
+        }
     }
 
     private fun showRootScreen() {

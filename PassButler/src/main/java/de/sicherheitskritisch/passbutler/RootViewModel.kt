@@ -35,16 +35,15 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
     init {
         userManager.loggedInUserResult.observeForever(loggedInUserResultObserver)
-
-        // Try to restore logged-in user after the observer was added
-        launch {
-            userManager.restoreLoggedInUser()
-        }
     }
 
     override fun onCleared() {
         userManager.loggedInUserResult.removeObserver(loggedInUserResultObserver)
         super.onCleared()
+    }
+
+    suspend fun restoreLoggedInUser() {
+        userManager.restoreLoggedInUser()
     }
 
     suspend fun unlockScreenWithPassword(masterPassword: String): Result<Unit> {
@@ -129,7 +128,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
                 loggedInUserViewModel?.clearSensibleData()
             }
         } else {
-            L.d("RootViewModel", "startLockScreenTimer(): Do not start timer (user not logged in / unlocked)")
+            L.d("RootViewModel", "startLockScreenTimer(): Do not start timer (user not logged in or screen not unlocked)")
         }
     }
 
