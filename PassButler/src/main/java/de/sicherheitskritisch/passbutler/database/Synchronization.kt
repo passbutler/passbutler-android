@@ -66,7 +66,11 @@ object Differentiation {
         val modifiedItemsForLocal: List<T>,
         val newItemsForRemote: List<T>,
         val modifiedItemsForRemote: List<T>
-    )
+    ) {
+        override fun toString(): String {
+            return "Differentiation.Result(newItemsForLocal=$newItemsForLocal, modifiedItemsForLocal=$modifiedItemsForLocal, newItemsForRemote=$newItemsForRemote, modifiedItemsForRemote=$modifiedItemsForRemote)"
+        }
+    }
 }
 
 /**
@@ -89,13 +93,13 @@ interface Synchronizable {
 /**
  * Interface for classes that implement a synchronization functionality.
  */
-interface Synchronization {
+interface SynchronizationTask {
 
     /**
      * Implements actual synchronization code. Code should be called in a `coroutineScope` block
      * to be sure a failed tasks cancel others but does not affect outer coroutine scope.
      */
-    suspend fun synchronize(): Result<Unit>
+    suspend fun synchronize(): Result<Differentiation.Result<*>>
 }
 
 fun List<Synchronizable>.compactRepresentation(): List<String> {
