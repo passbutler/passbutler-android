@@ -303,24 +303,30 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         val userType = loggedInStateStorage.userType as? UserType.Server ?: throw IllegalStateException("The logged-in user type is local!")
 
         return withContext(Dispatchers.IO) {
-            try {
-                // TODO: Do logging here
-                // TODO: Do not stop other tasks if one tasked failed (otherwise e.g. item authorizations are never synched if items sync failed)
-                val synchronizeTasks = listOf(
-                    UserSynchronizationTask(localRepository, userWebservice, loggedInUser),
-                    ItemsSynchronizationTask(localRepository, userWebservice, loggedInUser.username),
-                    ItemAuthorizationsSynchronizationTask(localRepository, userWebservice, loggedInUser.username)
-                )
+            val synchronizeTasks = listOf(
+                UserSynchronizationTask(localRepository, userWebservice, loggedInUser),
+                ItemsSynchronizationTask(localRepository, userWebservice, loggedInUser.username),
+                ItemAuthorizationsSynchronizationTask(localRepository, userWebservice, loggedInUser.username)
+            )
 
-                // Execute tasks synchronously
-                synchronizeTasks.forEach { it.synchronize().resultOrThrowException() }
+            // Execute tasks synchronously, do not stop if any task failed (otherwise other tasks are never synced if first task failed)
+            val synchronizeResults = synchronizeTasks.map {
+                val synchronizeTaskName = it.javaClass.simpleName
+                L.d("UserManager", "synchronize(): Starting '$synchronizeTaskName'")
+                val result = it.synchronize()
+                L.d("UserManager", "synchronize(): Finished '$synchronizeTaskName' with result '${result.javaClass.simpleName}'")
+                result
+            }
 
+            val firstFailedTask = synchronizeResults.filterIsInstance(Failure::class.java).firstOrNull()
+
+            if (firstFailedTask != null) {
+                Failure(firstFailedTask.throwable)
+            } else {
                 userType.lastSuccessfulSync = Date()
                 loggedInStateStorage.persist()
 
                 Success(Unit)
-            } catch (exception: Exception) {
-                Failure(exception)
             }
         }
     }
