@@ -254,17 +254,12 @@ class ItemEditingViewModel(
         return if (itemModel is ItemModel.Existing) {
             val currentData = Date()
 
+            // Only mark item as deleted (item authorization deletion is only managed via item shared screen)
             val deletedItem = itemModel.item.copy(
                 deleted = true,
                 modified = currentData
             )
             userManager.updateItem(deletedItem)
-
-            val deletedItemAuthorization = itemModel.itemAuthorization.copy(
-                deleted = true,
-                modified = currentData
-            )
-            userManager.updateItemAuthorization(deletedItemAuthorization)
 
             Success(Unit)
         } else {
