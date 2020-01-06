@@ -382,7 +382,7 @@ class UserViewModel private constructor(
                 val decryptedItemViewModels = decryptItemViewModels(updatedItemViewModels)
 
                 withContext(Dispatchers.Main) {
-                    L.d("ItemsChangedObserver", "onChanged(): itemViewModels.size() = ${decryptedItemViewModels.size}")
+                    L.d("ItemsChangedObserver", "onChanged(): itemViewModels.size = ${decryptedItemViewModels.size}")
                     itemViewModels.value = decryptedItemViewModels
                 }
             }
@@ -398,7 +398,6 @@ class UserViewModel private constructor(
                         it.userId == username && !it.deleted
                     }
 
-                    // TODO: Does not always work when create new item
                     if (itemAuthorization != null) {
                         oldItemViewModels
                             ?.find {
@@ -414,7 +413,7 @@ class UserViewModel private constructor(
                                 ItemViewModel(item, itemAuthorization, userManager)
                             }
                     } else {
-                        L.w("ItemsChangedObserver", "createItemViewModels(): A non-deleted item authorization of user for item ${item.id} was not found - skip item!")
+                        L.d("ItemsChangedObserver", "createItemViewModels(): A non-deleted item authorization of user for item ${item.id} was not found - skip item!")
                         null
                     }
                 }
@@ -428,11 +427,15 @@ class UserViewModel private constructor(
             val itemEncryptionSecretKey = itemEncryptionSecretKey ?: throw IllegalStateException("The item encryption key is null despite item decryption was started!")
 
             return itemViewModels
-                .filter { it.itemData == null }
                 .map {
                     // Start parallel decryption
                     it to async {
-                        it.decryptSensibleData(itemEncryptionSecretKey)
+                        // Only decrypt if not already decrypted
+                        if (it.itemData == null) {
+                            it.decryptSensibleData(itemEncryptionSecretKey)
+                        } else {
+                            Success(Unit)
+                        }
                     }
                 }
                 .mapNotNull {

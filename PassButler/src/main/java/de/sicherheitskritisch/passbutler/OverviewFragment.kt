@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
+import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.base.observe
 import de.sicherheitskritisch.passbutler.base.relativeDateTime
@@ -50,6 +51,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     private var logoutRequestSendingJob: Job? = null
 
     private val itemViewModelsChangedObserver = Observer<List<ItemViewModel>> { newItemViewModels ->
+        L.d("OverviewFragment", "itemViewModelsChangedObserver(): newItemViewModels.size = ${newItemViewModels?.size}")
+
         if (newItemViewModels != null) {
             val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemAdapter
             adapter?.submitList(newItemViewModels)
@@ -178,7 +181,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     override fun onStart() {
         super.onStart()
 
-        viewModel.itemViewModels.observe(viewLifecycleOwner, itemViewModelsChangedObserver)
+        viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsChangedObserver)
         viewModel.loggedInUserViewModel?.lastSuccessfulSync?.observe(viewLifecycleOwner, true, lastSuccessfulSyncChangedObserver)
         viewModel.loggedInUserViewModel?.isSynchronizationPossible?.observe(viewLifecycleOwner, true, synchronizationPossibleChangedObserver)
     }
