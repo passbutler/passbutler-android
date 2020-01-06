@@ -90,8 +90,8 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         saveRequestSendingJob?.cancel()
         saveRequestSendingJob = launchRequestSending(
             handleSuccess = {
+                // No success message because it was not a destructive action
                 popBackstack()
-                showInformation(getString(R.string.itemdetail_save_successful_message))
             },
             handleFailure = { showError(getString(R.string.itemdetail_save_failed_general_title)) }
         ) {

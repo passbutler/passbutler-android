@@ -87,7 +87,6 @@
     <string name="itemdetail_save_button_title">Speichern</string>
 
     <string name="itemdetail_save_failed_general_title">Speichern hat nicht geklappt</string>
-    <string name="itemdetail_save_successful_message">Speichern erfolgreich</string>
 
     <string name="itemdetail_delete_button_title">Eintrag löschen</string>
 
