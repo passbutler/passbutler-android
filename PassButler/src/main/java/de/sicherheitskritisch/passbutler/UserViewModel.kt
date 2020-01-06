@@ -378,22 +378,17 @@ class UserViewModel private constructor(
         override fun onChanged(newItems: List<Item>?) {
             itemsObserverUpdateJob?.cancel()
             itemsObserverUpdateJob = launch {
-                val newItemViewModels = createItemViewModelList(newItems)
-                val failedDecryptionItemViewModels = decryptAndCollectFailedItemViewModels(newItemViewModels)
-
-                // Exclude items whose decryption failed
-                val updatedItemViewModels = newItemViewModels
-                    .subtract(failedDecryptionItemViewModels)
-                    .sortedBy { it.created }
+                val updatedItemViewModels = createItemViewModels(newItems)
+                val decryptedItemViewModels = decryptItemViewModels(updatedItemViewModels)
 
                 withContext(Dispatchers.Main) {
-                    L.d("ItemsChangedObserver", "onChanged(): Updated size of itemViewModels = ${updatedItemViewModels.size}")
-                    itemViewModels.value = updatedItemViewModels
+                    L.d("ItemsChangedObserver", "onChanged(): itemViewModels.size() = ${decryptedItemViewModels.size}")
+                    itemViewModels.value = decryptedItemViewModels
                 }
             }
         }
 
-        private suspend fun createItemViewModelList(newItems: List<Item>?): List<ItemViewModel> {
+        private suspend fun createItemViewModels(newItems: List<Item>?): List<ItemViewModel> {
             val oldItemViewModels = itemViewModels.value
 
             // TODO: remove deleted checks because that item must be editable for trash etc.?
@@ -421,37 +416,40 @@ class UserViewModel private constructor(
                                 ItemViewModel(item, itemAuthorization, userManager)
                             }
                     } else {
-                        L.w("ItemsChangedObserver", "createItemViewModelList(): The item authorization of item ${item.id} was not found - skip item!")
+                        L.w("ItemsChangedObserver", "createItemViewModels(): A non-deleted item authorization of user for item ${item.id} was not found - skip item!")
                         null
                     }
                 }
+                ?.sortedBy { it.created }
                 ?: emptyList()
 
             return newItemViewModels
         }
 
-        private suspend fun decryptAndCollectFailedItemViewModels(itemViewModels: List<ItemViewModel>): List<ItemViewModel> {
+        private suspend fun decryptItemViewModels(itemViewModels: List<ItemViewModel>): List<ItemViewModel> {
             val itemEncryptionSecretKey = itemEncryptionSecretKey ?: throw IllegalStateException("The item encryption key is null despite item decryption was started!")
 
             return itemViewModels
                 .filter { it.itemData == null }
                 .map {
+                    // Start parallel decryption
                     it to async {
                         it.decryptSensibleData(itemEncryptionSecretKey)
                     }
                 }
                 .mapNotNull {
+                    // Await results afterwards
                     val itemViewModel = it.first
                     val itemDecryptSensibleDataResult = it.second.await()
 
                     when (itemDecryptSensibleDataResult) {
                         is Success -> {
-                            L.d("ItemsChangedObserver", "collectFailedDecryptionItemViewModels(): The item ${itemViewModel.id} was decrypted successfully!")
-                            null
+                            L.d("ItemsChangedObserver", "decryptItemViewModels(): The item ${itemViewModel.id} was decrypted successfully!")
+                            itemViewModel
                         }
                         is Failure -> {
-                            L.w("ItemsChangedObserver", "collectFailedDecryptionItemViewModels(): The item ${itemViewModel.id} could not be decrypted!", itemDecryptSensibleDataResult.throwable)
-                            itemViewModel
+                            L.w("ItemsChangedObserver", "decryptItemViewModels(): The item ${itemViewModel.id} could not be decrypted!", itemDecryptSensibleDataResult.throwable)
+                            null
                         }
                     }
                 }
