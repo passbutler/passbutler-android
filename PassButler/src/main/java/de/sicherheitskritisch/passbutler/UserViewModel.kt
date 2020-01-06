@@ -379,7 +379,9 @@ class UserViewModel private constructor(
             itemsObserverUpdateJob?.cancel()
             itemsObserverUpdateJob = launch {
                 val newItemViewModels = createItemViewModelList(newItems)
-                val failedDecryptionItemViewModels = collectFailedDecryptionItemViewModels(newItemViewModels)
+                val failedDecryptionItemViewModels = decryptAndCollectFailedItemViewModels(newItemViewModels)
+
+                // Exclude items whose decryption failed
                 val updatedItemViewModels = newItemViewModels
                     .subtract(failedDecryptionItemViewModels)
                     .sortedBy { it.created }
@@ -398,17 +400,26 @@ class UserViewModel private constructor(
             val newItemViewModels = newItems
                 ?.filter { !it.deleted }
                 ?.mapNotNull { item ->
+                    // Check if the user has a non-deleted item authorization to access the item
                     val itemAuthorization = userManager.findItemAuthorizationForItem(item).firstOrNull {
-                        // TODO: userId check needed?
                         it.userId == username && !it.deleted
                     }
 
                     // TODO: Does not always work when create new item
                     if (itemAuthorization != null) {
                         oldItemViewModels
-                            ?.find { it.id == item.id }
-                            ?.takeIf { it.item == item && it.itemAuthorization == itemAuthorization }
-                            ?: ItemViewModel(item, itemAuthorization, userManager)
+                            ?.find {
+                                // Try to find an existing (already decrypted) item viewmodel to avoid decrypting again
+                                it.id == item.id
+                            }
+                            ?.takeIf {
+                                // Only take existing item viewmodel if model of item and item authorization is the same
+                                it.item == item && it.itemAuthorization == itemAuthorization
+                            }
+                            ?: run {
+                                // No existing item viewmodel was found, thus a new must be created for item
+                                ItemViewModel(item, itemAuthorization, userManager)
+                            }
                     } else {
                         L.w("ItemsChangedObserver", "createItemViewModelList(): The item authorization of item ${item.id} was not found - skip item!")
                         null
@@ -419,7 +430,7 @@ class UserViewModel private constructor(
             return newItemViewModels
         }
 
-        private suspend fun collectFailedDecryptionItemViewModels(itemViewModels: List<ItemViewModel>): List<ItemViewModel> {
+        private suspend fun decryptAndCollectFailedItemViewModels(itemViewModels: List<ItemViewModel>): List<ItemViewModel> {
             val itemEncryptionSecretKey = itemEncryptionSecretKey ?: throw IllegalStateException("The item encryption key is null despite item decryption was started!")
 
             return itemViewModels
