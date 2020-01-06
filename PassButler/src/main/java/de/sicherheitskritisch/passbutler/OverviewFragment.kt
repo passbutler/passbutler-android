@@ -127,9 +127,14 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
     private fun setupSwipeRefreshLayout(binding: FragmentOverviewBinding) {
         if (isSynchronizationVisible) {
-            binding.layoutOverviewContent.swipeRefreshLayout.setOnRefreshListener {
+            val swipeRefreshLayout = binding.layoutOverviewContent.swipeRefreshLayout
+
+            swipeRefreshLayout.setOnRefreshListener {
                 if (isSynchronizationPossible) {
                     synchronizeData(userTriggered = true)
+                } else {
+                    // Immediately stop refreshing if is not possible
+                    swipeRefreshLayout.isRefreshing = false
                 }
             }
         }
