@@ -37,6 +37,9 @@ class ItemViewModel(
     val subtitle
         get() = item.id
 
+    val deleted
+        get() = item.deleted
+
     val created
         get() = item.created
 

@@ -1,6 +1,8 @@
 package de.sicherheitskritisch.passbutler
 
 import android.app.Application
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import kotlinx.coroutines.delay
@@ -8,6 +10,24 @@ import kotlinx.coroutines.delay
 class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
     var loggedInUserViewModel: UserViewModel? = null
+        set(value) {
+            field = value
+
+            unregisterItemViewModelsObserver()
+            registerItemViewModelsObserver()
+        }
+
+    val itemViewModels = MutableLiveData<List<ItemViewModel>>()
+
+    private val itemViewModelsChangedObserver = Observer<List<ItemViewModel>> { unfilteredItemViewModels ->
+        // Only show non-deleted item viewmodels in overview list
+        itemViewModels.value = unfilteredItemViewModels.filter { !it.deleted }
+    }
+
+    override fun onCleared() {
+        unregisterItemViewModelsObserver()
+        super.onCleared()
+    }
 
     suspend fun synchronizeData(): Result<Unit> {
         val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
@@ -20,5 +40,13 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
         val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
         return loggedInUserViewModel.logout()
+    }
+
+    private fun registerItemViewModelsObserver() {
+        loggedInUserViewModel?.itemViewModels?.observeForever(itemViewModelsChangedObserver)
+    }
+
+    private fun unregisterItemViewModelsObserver() {
+        loggedInUserViewModel?.itemViewModels?.removeObserver(itemViewModelsChangedObserver)
     }
 }

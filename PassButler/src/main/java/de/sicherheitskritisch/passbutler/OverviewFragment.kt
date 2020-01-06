@@ -49,10 +49,10 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     private var synchronizeDataRequestSendingJob: Job? = null
     private var logoutRequestSendingJob: Job? = null
 
-    private val itemsChangedObserver = Observer<List<ItemViewModel>> { newItems ->
-        if (newItems != null) {
+    private val itemViewModelsChangedObserver = Observer<List<ItemViewModel>> { newItemViewModels ->
+        if (newItemViewModels != null) {
             val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemAdapter
-            adapter?.submitList(newItems)
+            adapter?.submitList(newItemViewModels)
         }
     }
 
@@ -173,7 +173,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     override fun onStart() {
         super.onStart()
 
-        viewModel.loggedInUserViewModel?.itemViewModels?.observe(viewLifecycleOwner, itemsChangedObserver)
+        viewModel.itemViewModels.observe(viewLifecycleOwner, itemViewModelsChangedObserver)
         viewModel.loggedInUserViewModel?.lastSuccessfulSync?.observe(viewLifecycleOwner, true, lastSuccessfulSyncChangedObserver)
         viewModel.loggedInUserViewModel?.isSynchronizationPossible?.observe(viewLifecycleOwner, true, synchronizationPossibleChangedObserver)
     }

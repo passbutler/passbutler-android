@@ -391,9 +391,7 @@ class UserViewModel private constructor(
         private suspend fun createItemViewModels(newItems: List<Item>?): List<ItemViewModel> {
             val oldItemViewModels = itemViewModels.value
 
-            // TODO: remove deleted checks because that item must be editable for trash etc.?
             val newItemViewModels = newItems
-                ?.filter { !it.deleted }
                 ?.mapNotNull { item ->
                     // Check if the user has a non-deleted item authorization to access the item
                     val itemAuthorization = userManager.findItemAuthorizationForItem(item).firstOrNull {
