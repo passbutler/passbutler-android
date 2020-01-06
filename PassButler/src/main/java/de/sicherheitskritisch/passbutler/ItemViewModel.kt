@@ -66,6 +66,7 @@ class ItemViewModel(
         this.itemKey = itemKey
         this.itemData = itemData
 
+        // TODO: Fix missing titles after lock and unlock app
         title.notifyChange()
     }
 
