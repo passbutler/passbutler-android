@@ -51,12 +51,10 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     private var logoutRequestSendingJob: Job? = null
 
     private val itemViewModelsChangedObserver = Observer<List<ItemViewModel>> { newItemViewModels ->
-        L.d("OverviewFragment", "itemViewModelsChangedObserver(): newItemViewModels.size = ${newItemViewModels?.size}")
+        L.d("OverviewFragment", "itemViewModelsChangedObserver(): newItemViewModels.size = ${newItemViewModels.size}")
 
-        if (newItemViewModels != null) {
-            val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemAdapter
-            adapter?.submitList(newItemViewModels)
-        }
+        val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemAdapter
+        adapter?.submitList(newItemViewModels)
     }
 
     private val lastSuccessfulSyncChangedObserver = Observer<Date?> { newDate ->

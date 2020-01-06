@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
@@ -55,7 +56,7 @@ class UserViewModel private constructor(
     val username
         get() = user.username
 
-    val itemViewModels = MutableLiveData<List<ItemViewModel>>()
+    val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
 
     val automaticLockTimeout = MutableLiveData<Int?>()
     val hidePasswordsEnabled = MutableLiveData<Boolean?>()
@@ -173,7 +174,7 @@ class UserViewModel private constructor(
             itemsObservable?.removeObserver(itemsObserver)
             itemsObserverUpdateJob?.cancel()
 
-            itemViewModels.value?.forEach { it.clearSensibleData() }
+            itemViewModels.value.forEach { it.clearSensibleData() }
         }
 
         withContext(Dispatchers.Main) {
@@ -400,7 +401,7 @@ class UserViewModel private constructor(
 
                     if (itemAuthorization != null) {
                         oldItemViewModels
-                            ?.find {
+                            .find {
                                 // Try to find an existing (already decrypted) item viewmodel to avoid decrypting again
                                 it.id == item.id
                             }

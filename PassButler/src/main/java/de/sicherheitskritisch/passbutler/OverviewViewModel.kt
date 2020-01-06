@@ -1,8 +1,8 @@
 package de.sicherheitskritisch.passbutler
 
 import android.app.Application
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import kotlinx.coroutines.delay
@@ -17,11 +17,11 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
             registerItemViewModelsObserver()
         }
 
-    val itemViewModels = MutableLiveData<List<ItemViewModel>>()
+    val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
 
-    private val itemViewModelsChangedObserver = Observer<List<ItemViewModel>> { unfilteredItemViewModels ->
+    private val itemViewModelsChangedObserver = Observer<List<ItemViewModel>> { newUnfilteredItemViewModels ->
         // Only show non-deleted item viewmodels in overview list
-        itemViewModels.value = unfilteredItemViewModels.filter { !it.deleted }
+        itemViewModels.value = newUnfilteredItemViewModels.filter { !it.deleted }
     }
 
     override fun onCleared() {
