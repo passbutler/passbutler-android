@@ -392,8 +392,8 @@ class UserViewModel private constructor(
         }
 
         private suspend fun createItemViewModels(newItems: List<Item>?): List<ItemViewModel> {
-            val oldItemViewModels = itemViewModels.value
-            L.d("ItemsChangedObserver", "createItemViewModels(): newItems.size = ${newItems?.size}, oldItemViewModels.size = ${oldItemViewModels.size}")
+            val existingItemViewModels = itemViewModels.value
+            L.d("ItemsChangedObserver", "createItemViewModels(): newItems.size = ${newItems?.size}, existingItemViewModels.size = ${existingItemViewModels.size}")
 
             val newItemViewModels = newItems
                 ?.mapNotNull { item ->
@@ -403,7 +403,7 @@ class UserViewModel private constructor(
                     }
 
                     if (itemAuthorization != null) {
-                        oldItemViewModels
+                        existingItemViewModels
                             .find {
                                 // Try to find an existing (already decrypted) item viewmodel to avoid decrypting again
                                 it.id == item.id
