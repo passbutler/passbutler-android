@@ -44,7 +44,12 @@ class ItemViewModel(
         get() = item.created
 
     var itemData: ItemData? = null
-        private set
+        private set(value) {
+            field = value
+
+            // Notify `itemData` dependent observables
+            title.notifyChange()
+        }
 
     private var itemKey: ByteArray? = null
 
@@ -52,8 +57,10 @@ class ItemViewModel(
         return withContext(Dispatchers.Default) {
             try {
                 val decryptedItemKey = itemAuthorization.itemKey.decrypt(userItemEncryptionSecretKey, CryptographicKey.Deserializer).key
+                itemKey = decryptedItemKey
+
                 val decryptedItemData = item.data.decrypt(decryptedItemKey, ItemData.Deserializer)
-                updateSensibleDataFields(decryptedItemKey, decryptedItemData)
+                itemData = decryptedItemData
 
                 Success(Unit)
             } catch (exception: Exception) {
@@ -62,21 +69,11 @@ class ItemViewModel(
         }
     }
 
-    private fun updateSensibleDataFields(itemKey: ByteArray, itemData: ItemData) {
-        this.itemKey = itemKey
-        this.itemData = itemData
-
-        // TODO: Fix missing titles after lock and unlock app
-        title.notifyChange()
-    }
-
     fun clearSensibleData() {
         itemKey?.clear()
         itemKey = null
 
         itemData = null
-
-        title.notifyChange()
     }
 
     override fun createEditingViewModel(): ItemEditingViewModel {

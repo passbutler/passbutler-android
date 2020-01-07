@@ -51,6 +51,7 @@ class NonNullValueGetterLiveData<T : Any>(private val valueGetter: () -> T) : Li
     }
 
     fun notifyChange() {
+        // TODO: Do not use `postValue`
         val newValue = valueGetter()
         postValue(newValue)
     }
@@ -62,10 +63,12 @@ class NonNullValueGetterLiveData<T : Any>(private val valueGetter: () -> T) : Li
  */
 class ValueGetterLiveData<T : Any?>(private val valueGetter: () -> T) : LiveData<T>() {
     init {
+        // TODO: Do not use `postValue` like all other customizations of LiveData
         postValue(valueGetter())
     }
 
     fun notifyChange() {
+        // TODO: Do not use `postValue`
         val newValue = valueGetter()
         postValue(newValue)
     }
