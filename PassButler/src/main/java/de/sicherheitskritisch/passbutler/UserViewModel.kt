@@ -81,11 +81,9 @@ class UserViewModel private constructor(
     private val userType
         get() = userManager.loggedInStateStorage.userType
 
-    // Save "item observable" instance to be able to unregister observer on exact this instance
     private var itemsObservable: LiveData<List<Item>>? = null
     private val itemsObserver = ItemsChangedObserver()
 
-    // Save "item authorization observable" instance to be able to unregister observer on exact this instance
     private var itemAuthorizationsObservable: LiveData<List<ItemAuthorization>>? = null
     private val itemAuthorizationsObserver = ItemAuthorizationsChangedObserver()
 
@@ -152,24 +150,10 @@ class UserViewModel private constructor(
             masterEncryptionKey = decryptMasterEncryptionKey(masterPassword).resultOrThrowException().also { masterEncryptionKey ->
                 itemEncryptionSecretKey = decryptItemEncryptionSecretKey(masterEncryptionKey).resultOrThrowException()
 
-                withContext(Dispatchers.Main) {
-                    itemsObservable = userManager.itemsObservable()
-                    itemsObservable?.observeForever(itemsObserver)
-
-                    itemAuthorizationsObservable = userManager.itemAuthorizationsObservable()
-                    itemAuthorizationsObservable?.observeForever(itemAuthorizationsObserver)
-                }
+                registerModelChangedObservers()
 
                 val decryptedSettings = decryptUserSettings(masterEncryptionKey).resultOrThrowException()
-
-                withContext(Dispatchers.Main) {
-                    automaticLockTimeout.value = decryptedSettings.automaticLockTimeout
-                    hidePasswordsEnabled.value = decryptedSettings.hidePasswords
-
-                    // Register observers after field initialisations to avoid initial observer calls (but actually `LiveData` notifies observer nevertheless)
-                    automaticLockTimeout.observeForever(automaticLockTimeoutChangedObserver)
-                    hidePasswordsEnabled.observeForever(hidePasswordsEnabledChangedObserver)
-                }
+                registerUserSettingObservers(decryptedSettings)
             }
 
             Success(Unit)
@@ -178,6 +162,29 @@ class UserViewModel private constructor(
             clearSensibleData()
 
             Failure(exception)
+        }
+    }
+
+    private suspend fun registerModelChangedObservers() {
+        withContext(Dispatchers.Main) {
+            // Save "item observable" instance to be able to unregister observer on exact this instance later
+            itemsObservable = userManager.itemsObservable()
+            itemsObservable?.observeForever(itemsObserver)
+
+            // Save "item authorization observable" instance to be able to unregister observer on exact this instance later
+            itemAuthorizationsObservable = userManager.itemAuthorizationsObservable()
+            itemAuthorizationsObservable?.observeForever(itemAuthorizationsObserver)
+        }
+    }
+
+    private suspend fun registerUserSettingObservers(decryptedSettings: UserSettings) {
+        withContext(Dispatchers.Main) {
+            automaticLockTimeout.value = decryptedSettings.automaticLockTimeout
+            hidePasswordsEnabled.value = decryptedSettings.hidePasswords
+
+            // Register observers after field initialisations to avoid initial observer calls (but actually `LiveData` notifies observer nevertheless)
+            automaticLockTimeout.observeForever(automaticLockTimeoutChangedObserver)
+            hidePasswordsEnabled.observeForever(hidePasswordsEnabledChangedObserver)
         }
     }
 
@@ -190,14 +197,27 @@ class UserViewModel private constructor(
         itemEncryptionSecretKey?.clear()
         itemEncryptionSecretKey = null
 
+        unregisterModelChangedObservers()
+
+        itemViewModels.value.forEach {
+            it.clearSensibleData()
+        }
+
+        unregisterUserSettingObservers()
+    }
+
+    private suspend fun unregisterModelChangedObservers() {
         withContext(Dispatchers.Main) {
-            // First remove observers and than cancel the (possible) running update item viewmodels job
+            // First remove observers and than cancel the (possible) running "update item viewmodels" job
             itemsObservable?.removeObserver(itemsObserver)
             itemAuthorizationsObservable?.removeObserver(itemAuthorizationsObserver)
+
             itemViewModelsUpdateJob?.cancel()
+        }
+    }
 
-            itemViewModels.value.forEach { it.clearSensibleData() }
-
+    private suspend fun unregisterUserSettingObservers() {
+        withContext(Dispatchers.Main) {
             // Unregister observers before setting field reset to avoid unnecessary observer calls
             automaticLockTimeout.removeObserver(automaticLockTimeoutChangedObserver)
             hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
@@ -384,97 +404,101 @@ class UserViewModel private constructor(
 
     class DecryptMasterEncryptionKeyFailedException(cause: Exception? = null) : Exception(cause)
 
-    private inner class ItemsChangedObserver : Observer<List<Item>> {
-        override fun onChanged(newItems: List<Item>) {
-            itemViewModelsUpdateJob?.cancel()
-            itemViewModelsUpdateJob = launch {
-                val updatedItemViewModels = createItemViewModels(newItems)
-                val decryptedItemViewModels = decryptItemViewModels(updatedItemViewModels)
+    private fun updateItemViewModels(newItems: List<Item>) {
+        itemViewModelsUpdateJob?.cancel()
+        itemViewModelsUpdateJob = launch {
+            val updatedItemViewModels = createItemViewModels(newItems)
+            val decryptedItemViewModels = decryptItemViewModels(updatedItemViewModels)
 
-                withContext(Dispatchers.Main) {
-                    L.d("ItemsChangedObserver", "onChanged(): itemViewModels.size = ${decryptedItemViewModels.size}")
-                    itemViewModels.value = decryptedItemViewModels
-                }
+            withContext(Dispatchers.Main) {
+                L.d("ItemsChangedObserver", "onChanged(): itemViewModels.size = ${decryptedItemViewModels.size}")
+                itemViewModels.value = decryptedItemViewModels
             }
         }
+    }
 
-        private suspend fun createItemViewModels(newItems: List<Item>): List<ItemViewModel> {
-            val existingItemViewModels = itemViewModels.value
-            L.d("ItemsChangedObserver", "createItemViewModels(): newItems.size = ${newItems.size}, existingItemViewModels.size = ${existingItemViewModels.size}")
+    private suspend fun createItemViewModels(newItems: List<Item>): List<ItemViewModel> {
+        val existingItemViewModels = itemViewModels.value
+        L.d("ItemsChangedObserver", "createItemViewModels(): newItems.size = ${newItems.size}, existingItemViewModels.size = ${existingItemViewModels.size}")
 
-            val newItemViewModels = newItems
-                .mapNotNull { item ->
-                    // Check if the user has a non-deleted item authorization to access the item
-                    val itemAuthorization = userManager.findItemAuthorizationForItem(item).firstOrNull {
-                        it.userId == username && !it.deleted
-                    }
-
-                    if (itemAuthorization != null) {
-                        existingItemViewModels
-                            .find {
-                                // Try to find an existing (already decrypted) item viewmodel to avoid decrypting again
-                                it.id == item.id
-                            }
-                            ?.takeIf {
-                                // Only take existing item viewmodel if model of item and item authorization is the same
-                                it.item == item && it.itemAuthorization == itemAuthorization
-                            }
-                            ?: run {
-                                L.d("ItemsChangedObserver", "createItemViewModels(): Create new viewmodel for item '${item.id}' because recycling was not possible")
-
-                                // No existing item viewmodel was found, thus a new must be created for item
-                                ItemViewModel(item, itemAuthorization, userManager)
-                            }
-                    } else {
-                        L.d("ItemsChangedObserver", "createItemViewModels(): A non-deleted item authorization of user for item '${item.id}' was not found - skip item")
-                        null
-                    }
+        val newItemViewModels = newItems
+            .mapNotNull { item ->
+                // Check if the user has a non-deleted item authorization to access the item
+                val itemAuthorization = userManager.findItemAuthorizationForItem(item).firstOrNull {
+                    it.userId == username && !it.deleted
                 }
-                .sortedBy { it.created }
 
-            return newItemViewModels
-        }
-
-        private suspend fun decryptItemViewModels(itemViewModels: List<ItemViewModel>): List<ItemViewModel> {
-            val itemEncryptionSecretKey = itemEncryptionSecretKey ?: throw IllegalStateException("The item encryption key is null despite item decryption was started!")
-
-            return itemViewModels
-                .map { itemViewModel ->
-                    // Start parallel decryption
-                    itemViewModel to async {
-                        // Only decrypt if not already decrypted
-                        if (itemViewModel.itemData == null) {
-                            val itemDecryptionResult = itemViewModel.decryptSensibleData(itemEncryptionSecretKey)
-
-                            when (itemDecryptionResult) {
-                                is Success -> L.d("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' was decrypted successfully")
-                                is Failure -> L.w("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' could not be decrypted!", itemDecryptionResult.throwable)
-                            }
-
-                            itemDecryptionResult
-                        } else {
-                            L.d("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' is already decrypted")
-                            Success(Unit)
+                if (itemAuthorization != null) {
+                    existingItemViewModels
+                        .find {
+                            // Try to find an existing (already decrypted) item viewmodel to avoid decrypting again
+                            it.id == item.id
                         }
-                    }
-                }
-                .mapNotNull {
-                    // Await results afterwards
-                    val itemViewModel = it.first
-                    val itemDecryptionResult = it.second.await()
+                        ?.takeIf {
+                            // Only take existing item viewmodel if model of item and item authorization is the same
+                            it.item == item && it.itemAuthorization == itemAuthorization
+                        }
+                        ?: run {
+                            L.d("ItemsChangedObserver", "createItemViewModels(): Create new viewmodel for item '${item.id}' because recycling was not possible")
 
-                    when (itemDecryptionResult) {
-                        is Success -> itemViewModel
-                        is Failure -> null
+                            // No existing item viewmodel was found, thus a new must be created for item
+                            ItemViewModel(item, itemAuthorization, userManager)
+                        }
+                } else {
+                    L.d("ItemsChangedObserver", "createItemViewModels(): A non-deleted item authorization of user for item '${item.id}' was not found - skip item")
+                    null
+                }
+            }
+            .sortedBy { it.created }
+
+        return newItemViewModels
+    }
+
+    private suspend fun decryptItemViewModels(itemViewModels: List<ItemViewModel>): List<ItemViewModel> {
+        val itemEncryptionSecretKey = itemEncryptionSecretKey ?: throw IllegalStateException("The item encryption key is null despite item decryption was started!")
+
+        return itemViewModels
+            .map { itemViewModel ->
+                // Start parallel decryption
+                itemViewModel to async {
+                    // Only decrypt if not already decrypted
+                    if (itemViewModel.itemData == null) {
+                        val itemDecryptionResult = itemViewModel.decryptSensibleData(itemEncryptionSecretKey)
+
+                        when (itemDecryptionResult) {
+                            is Success -> L.d("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' was decrypted successfully")
+                            is Failure -> L.w("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' could not be decrypted!", itemDecryptionResult.throwable)
+                        }
+
+                        itemDecryptionResult
+                    } else {
+                        L.d("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' is already decrypted")
+                        Success(Unit)
                     }
                 }
+            }
+            .mapNotNull {
+                // Await results afterwards
+                val itemViewModel = it.first
+                val itemDecryptionResult = it.second.await()
+
+                when (itemDecryptionResult) {
+                    is Success -> itemViewModel
+                    is Failure -> null
+                }
+            }
+    }
+
+    private inner class ItemsChangedObserver : Observer<List<Item>> {
+        override fun onChanged(newItems: List<Item>) {
+            updateItemViewModels(newItems)
         }
     }
 
     private inner class ItemAuthorizationsChangedObserver : Observer<List<ItemAuthorization>> {
         override fun onChanged(newItemAuthorizations: List<ItemAuthorization>) {
             itemsObservable?.value?.let { newItems ->
-                itemsObserver.onChanged(newItems)
+                updateItemViewModels(newItems)
             }
         }
     }
