@@ -123,6 +123,17 @@ class UserViewModel private constructor(
         }
     }
 
+    override fun createModel(): User {
+        // Only update fields that are allowed to modify (server reject changes on non-allowed field anyway)
+        return user.copy(
+            masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
+            masterKeyDerivationInformation = masterKeyDerivationInformation,
+            masterEncryptionKey = protectedMasterEncryptionKey,
+            settings = protectedSettings,
+            modified = Date()
+        )
+    }
+
     fun createNewItemEditingViewModel(): ItemEditingViewModel {
         val itemModel = ItemModel.New(this)
         return ItemEditingViewModel(itemModel, userManager)
@@ -362,17 +373,6 @@ class UserViewModel private constructor(
                 }
             }
         }
-    }
-
-    override fun createModel(): User {
-        // Only update fields that are allowed to modify (server reject changes on non-allowed field anyway)
-        return user.copy(
-            masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
-            masterKeyDerivationInformation = masterKeyDerivationInformation,
-            masterEncryptionKey = protectedMasterEncryptionKey,
-            settings = protectedSettings,
-            modified = Date()
-        )
     }
 
     class DecryptMasterEncryptionKeyFailedException(cause: Exception? = null) : Exception(cause)
