@@ -257,7 +257,7 @@ class UserViewModel private constructor(
         return withContext(Dispatchers.Default) {
             try {
                 // Test if master password is correct via thrown exception
-                decryptMasterEncryptionKey(masterPassword)
+                decryptMasterEncryptionKey(masterPassword).resultOrThrowException()
 
                 val encryptedMasterPasswordInitializationVector = initializedSetupBiometricUnlockCipher.iv
                 val encryptedMasterPassword = Biometrics.encryptData(initializedSetupBiometricUnlockCipher, masterPassword.toByteArray())
