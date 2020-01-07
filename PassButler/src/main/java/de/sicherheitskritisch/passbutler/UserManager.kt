@@ -280,6 +280,10 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         localRepository.updateItem(item)
     }
 
+    suspend fun itemAuthorizationsObservable(): LiveData<List<ItemAuthorization>> {
+        return localRepository.itemAuthorizationsObservable()
+    }
+
     suspend fun findItemAuthorizationForItem(item: Item): List<ItemAuthorization> {
         return localRepository.findItemAuthorizationForItem(item)
     }

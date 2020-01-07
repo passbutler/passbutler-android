@@ -21,6 +21,7 @@ import de.sicherheitskritisch.passbutler.crypto.models.EncryptedValue
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.database.models.Item
+import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import kotlinx.coroutines.Dispatchers
@@ -80,10 +81,15 @@ class UserViewModel private constructor(
     private val userType
         get() = userManager.loggedInStateStorage.userType
 
+    // Save "item observable" instance to be able to unregister observer on exact this instance
     private var itemsObservable: LiveData<List<Item>>? = null
-
     private val itemsObserver = ItemsChangedObserver()
-    private var itemsObserverUpdateJob: Job? = null
+
+    // Save "item authorization observable" instance to be able to unregister observer on exact this instance
+    private var itemAuthorizationsObservable: LiveData<List<ItemAuthorization>>? = null
+    private val itemAuthorizationsObserver = ItemAuthorizationsChangedObserver()
+
+    private var itemViewModelsUpdateJob: Job? = null
 
     private val automaticLockTimeoutChangedObserver = Observer<Int?> { applyUserSettings() }
     private val hidePasswordsEnabledChangedObserver = Observer<Boolean?> { applyUserSettings() }
@@ -147,9 +153,11 @@ class UserViewModel private constructor(
                 itemEncryptionSecretKey = decryptItemEncryptionSecretKey(masterEncryptionKey).resultOrThrowException()
 
                 withContext(Dispatchers.Main) {
-                    // Save instance to be able to unregister observer on exact this instance
                     itemsObservable = userManager.itemsObservable()
                     itemsObservable?.observeForever(itemsObserver)
+
+                    itemAuthorizationsObservable = userManager.itemAuthorizationsObservable()
+                    itemAuthorizationsObservable?.observeForever(itemAuthorizationsObserver)
                 }
 
                 val decryptedSettings = decryptUserSettings(masterEncryptionKey).resultOrThrowException()
@@ -183,14 +191,13 @@ class UserViewModel private constructor(
         itemEncryptionSecretKey = null
 
         withContext(Dispatchers.Main) {
-            // First remove observer and than cancel the (possible) running update `ItemViewModel` list job
+            // First remove observers and than cancel the (possible) running update item viewmodels job
             itemsObservable?.removeObserver(itemsObserver)
-            itemsObserverUpdateJob?.cancel()
+            itemAuthorizationsObservable?.removeObserver(itemAuthorizationsObserver)
+            itemViewModelsUpdateJob?.cancel()
 
             itemViewModels.value.forEach { it.clearSensibleData() }
-        }
 
-        withContext(Dispatchers.Main) {
             // Unregister observers before setting field reset to avoid unnecessary observer calls
             automaticLockTimeout.removeObserver(automaticLockTimeoutChangedObserver)
             hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
@@ -379,8 +386,8 @@ class UserViewModel private constructor(
 
     private inner class ItemsChangedObserver : Observer<List<Item>?> {
         override fun onChanged(newItems: List<Item>?) {
-            itemsObserverUpdateJob?.cancel()
-            itemsObserverUpdateJob = launch {
+            itemViewModelsUpdateJob?.cancel()
+            itemViewModelsUpdateJob = launch {
                 val updatedItemViewModels = createItemViewModels(newItems)
                 val decryptedItemViewModels = decryptItemViewModels(updatedItemViewModels)
 
@@ -462,6 +469,13 @@ class UserViewModel private constructor(
                         is Failure -> null
                     }
                 }
+        }
+    }
+
+    private inner class ItemAuthorizationsChangedObserver : Observer<List<ItemAuthorization>?> {
+        override fun onChanged(newItemAuthorizations: List<ItemAuthorization>?) {
+            val newItems = itemsObservable?.value
+            itemsObserver.onChanged(newItems)
         }
     }
 

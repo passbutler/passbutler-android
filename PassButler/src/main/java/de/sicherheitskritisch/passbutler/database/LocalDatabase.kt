@@ -86,7 +86,7 @@ class LocalRepository(applicationContext: Context) {
 
     suspend fun itemsObservable(): LiveData<List<Item>> {
         return withContext(Dispatchers.IO) {
-            localDatabase.itemDao().itemsObservable()
+            localDatabase.itemDao().changesObservable()
         }
     }
 
@@ -117,6 +117,12 @@ class LocalRepository(applicationContext: Context) {
     /**
      * ItemAuthorization
      */
+
+    suspend fun itemAuthorizationsObservable(): LiveData<List<ItemAuthorization>> {
+        return withContext(Dispatchers.IO) {
+            localDatabase.itemAuthorizationDao().changesObservable()
+        }
+    }
 
     suspend fun findAllItemAuthorizations(): List<ItemAuthorization> {
         return withContext(Dispatchers.IO) {
@@ -167,7 +173,7 @@ interface UserDao {
 @Dao
 interface ItemDao {
     @Query("SELECT * FROM items ORDER BY created")
-    fun itemsObservable(): LiveData<List<Item>>
+    fun changesObservable(): LiveData<List<Item>>
 
     @Query("SELECT * FROM items ORDER BY created")
     fun findAll(): List<Item>
@@ -184,6 +190,9 @@ interface ItemDao {
 
 @Dao
 interface ItemAuthorizationDao {
+    @Query("SELECT * FROM item_authorizations ORDER BY created")
+    fun changesObservable(): LiveData<List<ItemAuthorization>>
+
     @Query("SELECT * FROM item_authorizations ORDER BY created")
     fun findAll(): List<ItemAuthorization>
 
