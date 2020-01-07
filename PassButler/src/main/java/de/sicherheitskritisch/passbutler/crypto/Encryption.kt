@@ -157,7 +157,7 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
         }
     }
 
-
+    // TODO: Use `Result` instead
     class GenerateEncryptionKeyFailedException(cause: Exception? = null) : Exception(cause)
     class EncryptionFailedException(cause: Exception? = null) : Exception(cause)
     class DecryptionFailedException(cause: Exception? = null) : Exception(cause)

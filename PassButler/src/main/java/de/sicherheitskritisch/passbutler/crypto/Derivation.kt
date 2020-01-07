@@ -107,5 +107,6 @@ object Derivation {
         return Normalizer.normalize(input, Normalizer.Form.NFKD)
     }
 
+    // TODO: Use `Result` instead
     class DerivationFailedException(cause: Exception? = null) : Exception(cause)
 }

@@ -172,6 +172,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
         }
     }
 
+    // TODO: Use `Result` instead
     class CreateFailedException(cause: Exception? = null) : Exception(cause)
     class DecryptFailedException(message: String, cause: Exception? = null) : Exception(message, cause)
     class UpdateFailedException(cause: Exception? = null) : Exception(cause)

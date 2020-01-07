@@ -183,6 +183,7 @@ object Biometrics {
         androidKeyStore.load(loadKeyStoreParameter)
     }
 
+    // TODO: Use `Result` instead
     class ObtainKeyFailedException(cause: Throwable) : Exception(cause)
     class GenerateKeyFailedException(cause: Throwable) : Exception(cause)
     class InitializeKeyFailedException(cause: Throwable) : Exception(cause)
