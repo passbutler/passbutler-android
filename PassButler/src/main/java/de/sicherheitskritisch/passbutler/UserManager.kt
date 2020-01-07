@@ -201,21 +201,25 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     }
 
     suspend fun restoreLoggedInUser() {
-        L.d("UserManager", "restoreLoggedInUser()")
+        if (loggedInUser == null) {
+            L.d("UserManager", "restoreLoggedInUser(): Try to restore logged-in user")
 
-        // Restore logged-in state storage first to be able to access its data
-        loggedInStateStorage.restore()
+            // Restore logged-in state storage first to be able to access its data
+            loggedInStateStorage.restore()
 
-        val restoredLoggedInUser = loggedInStateStorage.userType?.username?.let { loggedInUsername ->
-            localRepository.findUser(loggedInUsername)
-        }
+            val restoredLoggedInUser = loggedInStateStorage.userType?.username?.let { loggedInUsername ->
+                localRepository.findUser(loggedInUsername)
+            }
 
-        loggedInUser = restoredLoggedInUser
+            loggedInUser = restoredLoggedInUser
 
-        if (restoredLoggedInUser != null) {
-            loggedInUserResult.postValue(LoggedInUserResult.RestoredLogin(restoredLoggedInUser))
+            if (restoredLoggedInUser != null) {
+                loggedInUserResult.postValue(LoggedInUserResult.RestoredLogin(restoredLoggedInUser))
+            } else {
+                loggedInUserResult.postValue(null)
+            }
         } else {
-            loggedInUserResult.postValue(null)
+            L.d("UserManager", "restoreLoggedInUser(): Not needed because already restored")
         }
     }
 

@@ -108,6 +108,8 @@ class UserViewModel private constructor(
     )
 
     init {
+        L.d("UserViewModel", "init(): Create new UserViewModel ($this)")
+
         // If the master password was supplied (only on login), directly unlock resources
         if (masterPassword != null) {
             launch {
@@ -391,6 +393,7 @@ class UserViewModel private constructor(
 
         private suspend fun createItemViewModels(newItems: List<Item>?): List<ItemViewModel> {
             val oldItemViewModels = itemViewModels.value
+            L.d("ItemsChangedObserver", "createItemViewModels(): newItems.size = ${newItems?.size}, oldItemViewModels.size = ${oldItemViewModels.size}")
 
             val newItemViewModels = newItems
                 ?.mapNotNull { item ->
@@ -410,11 +413,13 @@ class UserViewModel private constructor(
                                 it.item == item && it.itemAuthorization == itemAuthorization
                             }
                             ?: run {
+                                L.d("ItemsChangedObserver", "createItemViewModels(): Create new viewmodel for item '${item.id}' because recycling was not possible")
+
                                 // No existing item viewmodel was found, thus a new must be created for item
                                 ItemViewModel(item, itemAuthorization, userManager)
                             }
                     } else {
-                        L.d("ItemsChangedObserver", "createItemViewModels(): A non-deleted item authorization of user for item ${item.id} was not found - skip item!")
+                        L.d("ItemsChangedObserver", "createItemViewModels(): A non-deleted item authorization of user for item '${item.id}' was not found - skip item")
                         null
                     }
                 }
@@ -446,11 +451,11 @@ class UserViewModel private constructor(
 
                     when (itemDecryptSensibleDataResult) {
                         is Success -> {
-                            L.d("ItemsChangedObserver", "decryptItemViewModels(): The item ${itemViewModel.id} was decrypted successfully!")
+                            L.d("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' was decrypted successfully!")
                             itemViewModel
                         }
                         is Failure -> {
-                            L.w("ItemsChangedObserver", "decryptItemViewModels(): The item ${itemViewModel.id} could not be decrypted!", itemDecryptSensibleDataResult.throwable)
+                            L.w("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' could not be decrypted!", itemDecryptSensibleDataResult.throwable)
                             null
                         }
                     }
