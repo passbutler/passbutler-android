@@ -68,7 +68,7 @@ object Differentiation {
         val modifiedItemsForRemote: List<T>
     ) {
         override fun toString(): String {
-            return "Differentiation.Result(newItemsForLocal=$newItemsForLocal, modifiedItemsForLocal=$modifiedItemsForLocal, newItemsForRemote=$newItemsForRemote, modifiedItemsForRemote=$modifiedItemsForRemote)"
+            return "Differentiation.Result(newItemsForLocal=${newItemsForLocal.compactRepresentation()}, modifiedItemsForLocal=${modifiedItemsForLocal.compactRepresentation()}, newItemsForRemote=${newItemsForRemote.compactRepresentation()}, modifiedItemsForRemote=${modifiedItemsForRemote.compactRepresentation()})"
         }
     }
 }
@@ -90,6 +90,10 @@ interface Synchronizable {
     val created: Date
 }
 
+fun List<Synchronizable>.compactRepresentation(): List<String> {
+    return map { "'${it.primaryField}' (${it.modified.time})" }
+}
+
 /**
  * Interface for classes that implement a synchronization functionality.
  */
@@ -100,8 +104,4 @@ interface SynchronizationTask {
      * to be sure a failed tasks cancel others but does not affect outer coroutine scope.
      */
     suspend fun synchronize(): Result<Differentiation.Result<*>>
-}
-
-fun List<Synchronizable>.compactRepresentation(): List<String> {
-    return map { "'${it.primaryField}' (${it.modified.time})" }
 }
