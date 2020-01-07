@@ -193,13 +193,6 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         }
     }
 
-    suspend fun logoutUser() {
-        L.d("UserManager", "logoutUser()")
-
-        resetLoggedInUser()
-        loggedInUserResult.postValue(null)
-    }
-
     suspend fun restoreLoggedInUser() {
         if (loggedInUser == null) {
             L.d("UserManager", "restoreLoggedInUser(): Try to restore logged-in user")
@@ -343,6 +336,13 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             ItemsSynchronizationTask(localRepository, userWebservice, loggedInUser.username),
             ItemAuthorizationsSynchronizationTask(localRepository, userWebservice, loggedInUser.username)
         )
+    }
+
+    suspend fun logoutUser() {
+        L.d("UserManager", "logoutUser()")
+
+        resetLoggedInUser()
+        loggedInUserResult.postValue(null)
     }
 
     private suspend fun resetLoggedInUser() {
