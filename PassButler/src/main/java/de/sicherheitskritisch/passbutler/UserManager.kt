@@ -197,11 +197,12 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         if (loggedInUser == null) {
             L.d("UserManager", "restoreLoggedInUser(): Try to restore logged-in user")
 
-            // Restore logged-in state storage first to be able to access its data
-            loggedInStateStorage.restore()
-
-            val restoredLoggedInUser = loggedInStateStorage.userType?.username?.let { loggedInUsername ->
-                localRepository.findUser(loggedInUsername)
+            // Explicitly dispatch lazy initialisation `loggedInStateStorage` to IO
+            val restoredLoggedInUser = withContext(Dispatchers.IO) {
+                loggedInStateStorage.restore()
+                loggedInStateStorage.userType?.username?.let { loggedInUsername ->
+                    localRepository.findUser(loggedInUsername)
+                }
             }
 
             loggedInUser = restoredLoggedInUser
