@@ -384,8 +384,8 @@ class UserViewModel private constructor(
 
     class DecryptMasterEncryptionKeyFailedException(cause: Exception? = null) : Exception(cause)
 
-    private inner class ItemsChangedObserver : Observer<List<Item>?> {
-        override fun onChanged(newItems: List<Item>?) {
+    private inner class ItemsChangedObserver : Observer<List<Item>> {
+        override fun onChanged(newItems: List<Item>) {
             itemViewModelsUpdateJob?.cancel()
             itemViewModelsUpdateJob = launch {
                 val updatedItemViewModels = createItemViewModels(newItems)
@@ -398,12 +398,12 @@ class UserViewModel private constructor(
             }
         }
 
-        private suspend fun createItemViewModels(newItems: List<Item>?): List<ItemViewModel> {
+        private suspend fun createItemViewModels(newItems: List<Item>): List<ItemViewModel> {
             val existingItemViewModels = itemViewModels.value
-            L.d("ItemsChangedObserver", "createItemViewModels(): newItems.size = ${newItems?.size}, existingItemViewModels.size = ${existingItemViewModels.size}")
+            L.d("ItemsChangedObserver", "createItemViewModels(): newItems.size = ${newItems.size}, existingItemViewModels.size = ${existingItemViewModels.size}")
 
             val newItemViewModels = newItems
-                ?.mapNotNull { item ->
+                .mapNotNull { item ->
                     // Check if the user has a non-deleted item authorization to access the item
                     val itemAuthorization = userManager.findItemAuthorizationForItem(item).firstOrNull {
                         it.userId == username && !it.deleted
@@ -430,8 +430,7 @@ class UserViewModel private constructor(
                         null
                     }
                 }
-                ?.sortedBy { it.created }
-                ?: emptyList()
+                .sortedBy { it.created }
 
             return newItemViewModels
         }
@@ -472,10 +471,11 @@ class UserViewModel private constructor(
         }
     }
 
-    private inner class ItemAuthorizationsChangedObserver : Observer<List<ItemAuthorization>?> {
-        override fun onChanged(newItemAuthorizations: List<ItemAuthorization>?) {
-            val newItems = itemsObservable?.value
-            itemsObserver.onChanged(newItems)
+    private inner class ItemAuthorizationsChangedObserver : Observer<List<ItemAuthorization>> {
+        override fun onChanged(newItemAuthorizations: List<ItemAuthorization>) {
+            itemsObservable?.value?.let { newItems ->
+                itemsObserver.onChanged(newItems)
+            }
         }
     }
 
