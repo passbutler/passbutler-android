@@ -233,7 +233,7 @@ private fun LockedScreenFragment.launchUnlockRequestSending(
         handleSuccess = { popBackstack() },
         handleFailure = {
             val errorStringResourceId = when (it) {
-                is UserViewModel.DecryptMasterEncryptionKeyFailedException -> R.string.locked_screen_unlock_failed_wrong_master_password_title
+                is DecryptMasterEncryptionKeyFailedException -> R.string.locked_screen_unlock_failed_wrong_master_password_title
                 else -> R.string.locked_screen_unlock_failed_general_title
             }
 

@@ -240,7 +240,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
                 },
                 handleFailure = {
                     val errorStringResourceId = when (it) {
-                        is UserViewModel.DecryptMasterEncryptionKeyFailedException -> R.string.settings_setup_biometric_unlock_failed_wrong_master_password_title
+                        is DecryptMasterEncryptionKeyFailedException -> R.string.settings_setup_biometric_unlock_failed_wrong_master_password_title
                         else -> R.string.settings_setup_biometric_unlock_failed_general_title
                     }
 

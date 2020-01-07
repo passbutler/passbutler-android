@@ -165,6 +165,48 @@ class UserViewModel private constructor(
         }
     }
 
+    private suspend fun decryptMasterEncryptionKey(masterPassword: String): Result<ByteArray> {
+        return withContext(Dispatchers.Default) {
+            var masterKey: ByteArray? = null
+
+            try {
+                masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation)
+
+                val decryptedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer)
+                Success(decryptedMasterEncryptionKey.key)
+            } catch (exception: Exception) {
+                // Wrap the thrown exception to be able to determine if this call failed (used to show concrete error string in UI)
+                val wrappedException = DecryptMasterEncryptionKeyFailedException(exception)
+
+                Failure(wrappedException)
+            } finally {
+                masterKey?.clear()
+            }
+        }
+    }
+
+    private suspend fun decryptItemEncryptionSecretKey(masterEncryptionKey: ByteArray): Result<ByteArray> {
+        return withContext(Dispatchers.Default) {
+            try {
+                val decryptedItemEncryptionSecretKey = protectedItemEncryptionSecretKey.decrypt(masterEncryptionKey, CryptographicKey.Deserializer)
+                Success(decryptedItemEncryptionSecretKey.key)
+            } catch (exception: Exception) {
+                Failure(exception)
+            }
+        }
+    }
+
+    private suspend fun decryptUserSettings(masterEncryptionKey: ByteArray): Result<UserSettings> {
+        return withContext(Dispatchers.Default) {
+            try {
+                val decryptedUserSettings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer)
+                Success(decryptedUserSettings)
+            } catch (exception: Exception) {
+                Failure(exception)
+            }
+        }
+    }
+
     private suspend fun registerModelChangedObservers() {
         withContext(Dispatchers.Main) {
             // Save "item observable" instance to be able to unregister observer on exact this instance later
@@ -321,48 +363,6 @@ class UserViewModel private constructor(
         return Success(Unit)
     }
 
-    private suspend fun decryptMasterEncryptionKey(masterPassword: String): Result<ByteArray> {
-        return withContext(Dispatchers.Default) {
-            var masterKey: ByteArray? = null
-
-            try {
-                masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation)
-
-                val decryptedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer)
-                Success(decryptedMasterEncryptionKey.key)
-            } catch (exception: Exception) {
-                // Wrap the thrown exception to be able to determine if this call failed (used to show concrete error string in UI)
-                val wrappedException = DecryptMasterEncryptionKeyFailedException(exception)
-
-                Failure(wrappedException)
-            } finally {
-                masterKey?.clear()
-            }
-        }
-    }
-
-    private suspend fun decryptItemEncryptionSecretKey(masterEncryptionKey: ByteArray): Result<ByteArray> {
-        return withContext(Dispatchers.Default) {
-            try {
-                val decryptedItemEncryptionSecretKey = protectedItemEncryptionSecretKey.decrypt(masterEncryptionKey, CryptographicKey.Deserializer)
-                Success(decryptedItemEncryptionSecretKey.key)
-            } catch (exception: Exception) {
-                Failure(exception)
-            }
-        }
-    }
-
-    private suspend fun decryptUserSettings(masterEncryptionKey: ByteArray): Result<UserSettings> {
-        return withContext(Dispatchers.Default) {
-            try {
-                val decryptedUserSettings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer)
-                Success(decryptedUserSettings)
-            } catch (exception: Exception) {
-                Failure(exception)
-            }
-        }
-    }
-
     private fun applyUserSettings() {
         val automaticLockTimeoutValue = automaticLockTimeout.value
         val hidePasswordsEnabledValue = hidePasswordsEnabled.value
@@ -401,8 +401,6 @@ class UserViewModel private constructor(
             }
         }
     }
-
-    class DecryptMasterEncryptionKeyFailedException(cause: Exception? = null) : Exception(cause)
 
     private fun updateItemViewModels(newItems: List<Item>) {
         itemViewModelsUpdateJob?.cancel()
@@ -507,3 +505,5 @@ class UserViewModel private constructor(
         const val BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME = "MasterPasswordEncryptionKey"
     }
 }
+
+class DecryptMasterEncryptionKeyFailedException(cause: Exception? = null) : Exception(cause)
