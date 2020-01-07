@@ -87,6 +87,8 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     }
 
     private fun saveClicked() {
+        Keyboard.hideKeyboard(context, this)
+
         saveRequestSendingJob?.cancel()
         saveRequestSendingJob = launchRequestSending(
             handleSuccess = {
@@ -127,16 +129,22 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
     private fun setupDeleteButton(binding: FragmentItemdetailBinding) {
         binding.buttonDelete.setOnClickListener {
-            deleteRequestSendingJob?.cancel()
-            deleteRequestSendingJob = launchRequestSending(
-                handleSuccess = {
-                    popBackstack()
-                    showInformation(getString(R.string.itemdetail_delete_successful_message))
-                },
-                handleFailure = { showError(getString(R.string.itemdetail_delete_failed_general_title)) }
-            ) {
-                viewModel.delete()
-            }
+            deleteClicked()
+        }
+    }
+
+    private fun deleteClicked() {
+        Keyboard.hideKeyboard(context, this)
+
+        deleteRequestSendingJob?.cancel()
+        deleteRequestSendingJob = launchRequestSending(
+            handleSuccess = {
+                popBackstack()
+                showInformation(getString(R.string.itemdetail_delete_successful_message))
+            },
+            handleFailure = { showError(getString(R.string.itemdetail_delete_failed_general_title)) }
+        ) {
+            viewModel.delete()
         }
     }
 
