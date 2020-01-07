@@ -391,10 +391,8 @@ class UserViewModel private constructor(
                         protectedSettings.update(masterEncryptionKey, settings)
                     }
 
-                    withContext(Dispatchers.IO) {
-                        val user = createModel()
-                        userManager.updateUser(user)
-                    }
+                    val user = createModel()
+                    userManager.updateUser(user)
                 } catch (exception: Exception) {
                     L.w("UserViewModel", "persistUserSettings(): The user settings could not be updated!", exception)
                 }
