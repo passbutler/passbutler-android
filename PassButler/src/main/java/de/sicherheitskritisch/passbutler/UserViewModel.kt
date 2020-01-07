@@ -273,6 +273,7 @@ class UserViewModel private constructor(
         return withContext(Dispatchers.Default) {
             var newMasterKey: ByteArray? = null
 
+            // TODO: Proper rollback concept
             try {
                 val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to update the master password!")
 
