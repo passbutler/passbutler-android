@@ -433,13 +433,21 @@ class UserViewModel private constructor(
             val itemEncryptionSecretKey = itemEncryptionSecretKey ?: throw IllegalStateException("The item encryption key is null despite item decryption was started!")
 
             return itemViewModels
-                .map {
+                .map { itemViewModel ->
                     // Start parallel decryption
-                    it to async {
+                    itemViewModel to async {
                         // Only decrypt if not already decrypted
-                        if (it.itemData == null) {
-                            it.decryptSensibleData(itemEncryptionSecretKey)
+                        if (itemViewModel.itemData == null) {
+                            val itemDecryptionResult = itemViewModel.decryptSensibleData(itemEncryptionSecretKey)
+
+                            when (itemDecryptionResult) {
+                                is Success -> L.d("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' was decrypted successfully")
+                                is Failure -> L.w("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' could not be decrypted!", itemDecryptionResult.throwable)
+                            }
+
+                            itemDecryptionResult
                         } else {
+                            L.d("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' is already decrypted")
                             Success(Unit)
                         }
                     }
@@ -447,17 +455,11 @@ class UserViewModel private constructor(
                 .mapNotNull {
                     // Await results afterwards
                     val itemViewModel = it.first
-                    val itemDecryptSensibleDataResult = it.second.await()
+                    val itemDecryptionResult = it.second.await()
 
-                    when (itemDecryptSensibleDataResult) {
-                        is Success -> {
-                            L.d("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' was decrypted successfully!")
-                            itemViewModel
-                        }
-                        is Failure -> {
-                            L.w("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' could not be decrypted!", itemDecryptSensibleDataResult.throwable)
-                            null
-                        }
+                    when (itemDecryptionResult) {
+                        is Success -> itemViewModel
+                        is Failure -> null
                     }
                 }
         }
