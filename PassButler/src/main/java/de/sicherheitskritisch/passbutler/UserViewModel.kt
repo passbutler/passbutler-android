@@ -305,45 +305,41 @@ class UserViewModel private constructor(
     suspend fun enableBiometricUnlock(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String): Result<Unit> {
         L.d("UserViewModel", "enableBiometricUnlock()")
 
-        return withContext(Dispatchers.Default) {
-            try {
-                // Test if master password is correct via thrown exception
-                decryptMasterEncryptionKey(masterPassword).resultOrThrowException()
+        return try {
+            // Test if master password is correct via thrown exception
+            decryptMasterEncryptionKey(masterPassword).resultOrThrowException()
 
-                val encryptedMasterPasswordInitializationVector = initializedSetupBiometricUnlockCipher.iv
-                val encryptedMasterPassword = Biometrics.encryptData(initializedSetupBiometricUnlockCipher, masterPassword.toByteArray())
+            val encryptedMasterPasswordInitializationVector = initializedSetupBiometricUnlockCipher.iv
+            val encryptedMasterPassword = Biometrics.encryptData(initializedSetupBiometricUnlockCipher, masterPassword.toByteArray())
 
-                userManager.loggedInStateStorage.encryptedMasterPassword = EncryptedValue(encryptedMasterPasswordInitializationVector, encryptedMasterPassword)
-                userManager.loggedInStateStorage.persist()
+            userManager.loggedInStateStorage.encryptedMasterPassword = EncryptedValue(encryptedMasterPasswordInitializationVector, encryptedMasterPassword)
+            userManager.loggedInStateStorage.persist()
 
-                biometricUnlockEnabled.notifyChange()
+            biometricUnlockEnabled.notifyChange()
 
-                Success(Unit)
-            } catch (exception: Exception) {
-                L.w("UserViewModel", "enableBiometricUnlock(): The biometric unlock could not be enabled - disable biometric unlock to avoid corrupt state!")
-                disableBiometricUnlock()
+            Success(Unit)
+        } catch (exception: Exception) {
+            L.w("UserViewModel", "enableBiometricUnlock(): The biometric unlock could not be enabled - disable biometric unlock to avoid corrupt state!")
+            disableBiometricUnlock()
 
-                Failure(exception)
-            }
+            Failure(exception)
         }
     }
 
     suspend fun disableBiometricUnlock(): Result<Unit> {
         L.d("UserViewModel", "disableBiometricUnlock()")
 
-        return withContext(Dispatchers.IO) {
-            try {
-                Biometrics.removeKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
+        return try {
+            Biometrics.removeKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
 
-                userManager.loggedInStateStorage.encryptedMasterPassword = null
-                userManager.loggedInStateStorage.persist()
+            userManager.loggedInStateStorage.encryptedMasterPassword = null
+            userManager.loggedInStateStorage.persist()
 
-                biometricUnlockEnabled.notifyChange()
+            biometricUnlockEnabled.notifyChange()
 
-                Success(Unit)
-            } catch (exception: Exception) {
-                Failure(exception)
-            }
+            Success(Unit)
+        } catch (exception: Exception) {
+            Failure(exception)
         }
     }
 
