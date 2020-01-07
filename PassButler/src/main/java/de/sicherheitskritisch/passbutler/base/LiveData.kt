@@ -8,6 +8,8 @@ import androidx.lifecycle.Observer
 
 /**
  * A `MutableLiveData<T>` that only excepts non-null values.
+ *
+ * Note: The instance must be created on main-thread to set initial value without `postValue` dispatching!
  */
 class NonNullMutableLiveData<T : Any>(initialValue: T) : MutableLiveData<T>() {
     init {
@@ -35,6 +37,8 @@ class NonNullMutableLiveData<T : Any>(initialValue: T) : MutableLiveData<T>() {
 /**
  * A non-null value enforcing `LiveData<T>` that retrieves its value via lambda.
  * On a known change of values used in the lambda, `notifyChange()` must be called!
+ *
+ * Note: The instance must be created on main-thread to set initial value without `postValue` dispatching!
  */
 class NonNullValueGetterLiveData<T : Any>(private val valueGetter: () -> T) : LiveData<T>() {
     init {
