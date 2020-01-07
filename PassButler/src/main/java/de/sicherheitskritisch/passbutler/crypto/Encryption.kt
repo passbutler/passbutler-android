@@ -29,6 +29,7 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
 
     sealed class Symmetric(stringRepresentation: String) : EncryptionAlgorithm(stringRepresentation) {
 
+        // TODO: Convert to suspend functions
         abstract fun generateEncryptionKey(): ByteArray
         abstract fun generateInitializationVector(): ByteArray
         abstract fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): ByteArray

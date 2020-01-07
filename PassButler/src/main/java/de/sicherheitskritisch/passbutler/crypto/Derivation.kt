@@ -19,6 +19,7 @@ const val SERVER_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS = "abcdefghijklmnopqr
 const val SERVER_AUTHENTICATION_HASH_ITERATION_COUNT = 150_000
 const val SERVER_AUTHENTICATION_HASH_BIT_LENGTH = 256
 
+// TODO: Convert to suspend functions
 object Derivation {
 
     /**

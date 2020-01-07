@@ -2,6 +2,7 @@ package de.sicherheitskritisch.passbutler.crypto
 
 import java.security.SecureRandom
 
+// TODO: Convert to suspend functions
 object RandomGenerator {
 
     /**

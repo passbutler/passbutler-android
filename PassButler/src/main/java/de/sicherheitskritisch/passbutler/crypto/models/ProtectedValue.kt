@@ -18,6 +18,7 @@ import org.json.JSONObject
 /**
  * Wraps a `JSONSerializable` object to store it encrypted as a `JSONSerializable`.
  */
+// TODO: Convert to suspend functions
 class ProtectedValue<T : JSONSerializable> private constructor(
     initializationVector: ByteArray,
     encryptedValue: ByteArray,
