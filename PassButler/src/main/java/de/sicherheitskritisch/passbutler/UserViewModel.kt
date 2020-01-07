@@ -13,7 +13,6 @@ import de.sicherheitskritisch.passbutler.base.ValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.viewmodels.ManualCancelledCoroutineScopeViewModel
-import de.sicherheitskritisch.passbutler.base.viewmodels.ModelBasedViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
 import de.sicherheitskritisch.passbutler.crypto.Derivation
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
@@ -46,7 +45,7 @@ class UserViewModel private constructor(
     private val protectedItemEncryptionSecretKey: ProtectedValue<CryptographicKey>,
     private val protectedSettings: ProtectedValue<UserSettings>,
     masterPassword: String?
-) : ManualCancelledCoroutineScopeViewModel(), ModelBasedViewModel<User> {
+) : ManualCancelledCoroutineScopeViewModel() {
 
     val isServerUserType
         get() = userType is UserType.Server
@@ -125,17 +124,6 @@ class UserViewModel private constructor(
                 }
             }
         }
-    }
-
-    override fun createModel(): User {
-        // Only update fields that are allowed to modify (server reject changes on non-allowed field anyway)
-        return user.copy(
-            masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
-            masterKeyDerivationInformation = masterKeyDerivationInformation,
-            masterEncryptionKey = protectedMasterEncryptionKey,
-            settings = protectedSettings,
-            modified = Date()
-        )
     }
 
     fun createNewItemEditingViewModel(): ItemEditingViewModel {
@@ -398,6 +386,17 @@ class UserViewModel private constructor(
                 }
             }
         }
+    }
+
+    private fun createModel(): User {
+        // Only update fields that are allowed to modify (server reject changes on non-allowed field anyway)
+        return user.copy(
+            masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
+            masterKeyDerivationInformation = masterKeyDerivationInformation,
+            masterEncryptionKey = protectedMasterEncryptionKey,
+            settings = protectedSettings,
+            modified = Date()
+        )
     }
 
     private fun updateItemViewModels(newItems: List<Item>) {
