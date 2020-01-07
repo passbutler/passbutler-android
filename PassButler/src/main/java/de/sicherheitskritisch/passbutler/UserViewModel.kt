@@ -406,7 +406,7 @@ class UserViewModel private constructor(
             val decryptedItemViewModels = decryptItemViewModels(updatedItemViewModels)
 
             withContext(Dispatchers.Main) {
-                L.d("ItemsChangedObserver", "onChanged(): itemViewModels.size = ${decryptedItemViewModels.size}")
+                L.d("UserViewModel", "updateItemViewModels(): itemViewModels.size = ${decryptedItemViewModels.size}")
                 itemViewModels.value = decryptedItemViewModels
             }
         }
@@ -414,7 +414,7 @@ class UserViewModel private constructor(
 
     private suspend fun createItemViewModels(newItems: List<Item>): List<ItemViewModel> {
         val existingItemViewModels = itemViewModels.value
-        L.d("ItemsChangedObserver", "createItemViewModels(): newItems.size = ${newItems.size}, existingItemViewModels.size = ${existingItemViewModels.size}")
+        L.d("UserViewModel", "createItemViewModels(): newItems.size = ${newItems.size}, existingItemViewModels.size = ${existingItemViewModels.size}")
 
         val newItemViewModels = newItems
             .mapNotNull { item ->
@@ -434,13 +434,13 @@ class UserViewModel private constructor(
                             it.item == item && it.itemAuthorization == itemAuthorization
                         }
                         ?: run {
-                            L.d("ItemsChangedObserver", "createItemViewModels(): Create new viewmodel for item '${item.id}' because recycling was not possible")
+                            L.d("UserViewModel", "createItemViewModels(): Create new viewmodel for item '${item.id}' because recycling was not possible")
 
                             // No existing item viewmodel was found, thus a new must be created for item
                             ItemViewModel(item, itemAuthorization, userManager)
                         }
                 } else {
-                    L.d("ItemsChangedObserver", "createItemViewModels(): A non-deleted item authorization of user for item '${item.id}' was not found - skip item")
+                    L.d("UserViewModel", "createItemViewModels(): A non-deleted item authorization of user for item '${item.id}' was not found - skip item")
                     null
                 }
             }
@@ -461,13 +461,13 @@ class UserViewModel private constructor(
                         val itemDecryptionResult = itemViewModel.decryptSensibleData(itemEncryptionSecretKey)
 
                         when (itemDecryptionResult) {
-                            is Success -> L.d("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' was decrypted successfully")
-                            is Failure -> L.w("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' could not be decrypted!", itemDecryptionResult.throwable)
+                            is Success -> L.d("UserViewModel", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' was decrypted successfully")
+                            is Failure -> L.w("UserViewModel", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' could not be decrypted!", itemDecryptionResult.throwable)
                         }
 
                         itemDecryptionResult
                     } else {
-                        L.d("ItemsChangedObserver", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' is already decrypted")
+                        L.d("UserViewModel", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' is already decrypted")
                         Success(Unit)
                     }
                 }
