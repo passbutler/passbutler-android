@@ -1,5 +1,8 @@
 package de.sicherheitskritisch.passbutler.crypto
 
+import de.sicherheitskritisch.passbutler.base.Failure
+import de.sicherheitskritisch.passbutler.base.Result
+import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.bitSize
 import de.sicherheitskritisch.passbutler.base.toHexString
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
@@ -26,8 +29,7 @@ object Derivation {
      * Derives a authentication hash based on given username/password using PBKDF2 with SHA-256.
      * This method is used to avoid sending master password from client to server in clear text.
      */
-    @Throws(DerivationFailedException::class)
-    fun deriveLocalAuthenticationHash(username: String, password: String): String {
+    fun deriveLocalAuthenticationHash(username: String, password: String): Result<String> {
         return try {
             require(!username.isBlank()) { "The username must not be empty!" }
             require(!password.isBlank()) { "The password must not be empty!" }
@@ -38,9 +40,9 @@ object Derivation {
             val salt = preparedUsername.toByteArray(Charsets.UTF_8)
 
             val resultingBytes = performPBKDFWithSHA256(preparedPassword, salt, MASTER_PASSWORD_AUTHENTICATION_HASH_ITERATION_COUNT, MASTER_PASSWORD_AUTHENTICATION_HASH_BIT_LENGTH)
-            resultingBytes.toHexString()
+            Success(resultingBytes.toHexString())
         } catch (exception: Exception) {
-            throw DerivationFailedException(exception)
+            Failure(exception)
         }
     }
 
@@ -48,8 +50,7 @@ object Derivation {
      * Derives a authentication hash based on a given password using PBKDF2 with SHA-256.
      * This method re-implements `werkzeug.security.generate_password_hash` from Python Werkzeug framework.
      */
-    @Throws(DerivationFailedException::class)
-    fun deriveServerAuthenticationHash(password: String): String {
+    fun deriveServerAuthenticationHash(password: String): Result<String> {
         return try {
             require(!password.isBlank()) { "The password must not be empty!" }
 
@@ -59,18 +60,18 @@ object Derivation {
             val iterationCount = SERVER_AUTHENTICATION_HASH_ITERATION_COUNT
             val hashBytes = performPBKDFWithSHA256(password, saltBytes, iterationCount, SERVER_AUTHENTICATION_HASH_BIT_LENGTH)
             val hashString = hashBytes.toHexString()
+            val hashStringWithMetaInformation = "pbkdf2:sha256:$iterationCount\$$saltString\$$hashString"
 
-            "pbkdf2:sha256:$iterationCount\$$saltString\$$hashString"
+            Success(hashStringWithMetaInformation)
         } catch (exception: Exception) {
-            throw DerivationFailedException(exception)
+            Failure(exception)
         }
     }
 
     /**
      * Derives the symmetric master key from a password using PBKDF2 with SHA-256.
      */
-    @Throws(DerivationFailedException::class)
-    fun deriveMasterKey(password: String, keyDerivationInformation: KeyDerivationInformation): ByteArray {
+    fun deriveMasterKey(password: String, keyDerivationInformation: KeyDerivationInformation): Result<ByteArray> {
         return try {
             require(!password.isBlank()) { "The password must not be empty!" }
 
@@ -78,9 +79,11 @@ object Derivation {
             require(keyDerivationInformation.salt.bitSize == MASTER_KEY_BIT_LENGTH) { "The salt must be 256 bits long!" }
 
             val preparedPassword = normalizeString(trimString(password))
-            performPBKDFWithSHA256(preparedPassword, keyDerivationInformation.salt, keyDerivationInformation.iterationCount, MASTER_KEY_BIT_LENGTH)
+            val hashBytes = performPBKDFWithSHA256(preparedPassword, keyDerivationInformation.salt, keyDerivationInformation.iterationCount, MASTER_KEY_BIT_LENGTH)
+
+            Success(hashBytes)
         } catch (exception: Exception) {
-            throw DerivationFailedException(exception)
+            Failure(exception)
         }
     }
 
@@ -107,7 +110,4 @@ object Derivation {
     private fun normalizeString(input: String): String {
         return Normalizer.normalize(input, Normalizer.Form.NFKD)
     }
-
-    // TODO: Use `Result` instead
-    class DerivationFailedException(cause: Exception? = null) : Exception(cause)
 }

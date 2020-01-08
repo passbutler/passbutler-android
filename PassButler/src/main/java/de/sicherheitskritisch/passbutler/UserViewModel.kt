@@ -158,7 +158,7 @@ class UserViewModel private constructor(
             var masterKey: ByteArray? = null
 
             try {
-                masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation)
+                masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation).resultOrThrowException()
 
                 val decryptedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer)
                 Success(decryptedMasterEncryptionKey.key)
@@ -277,11 +277,11 @@ class UserViewModel private constructor(
             try {
                 val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to update the master password!")
 
-                val newLocalMasterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, newMasterPassword)
-                val newServerMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(newLocalMasterPasswordAuthenticationHash)
+                val newLocalMasterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, newMasterPassword).resultOrThrowException()
+                val newServerMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(newLocalMasterPasswordAuthenticationHash).resultOrThrowException()
                 masterPasswordAuthenticationHash = newServerMasterPasswordAuthenticationHash
 
-                newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation)
+                newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation).resultOrThrowException()
                 protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey))
 
                 // Disable biometric unlock because master password re-encryption would require biometric authentication and made flow more complex

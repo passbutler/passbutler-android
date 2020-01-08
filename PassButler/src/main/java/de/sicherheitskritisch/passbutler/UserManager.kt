@@ -67,7 +67,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
     suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrl: Uri): Result<Unit> {
         return try {
-            val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword)
+            val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
             authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
 
             val authToken = authWebservice.requestAuthToken().resultOrThrowException()
@@ -102,7 +102,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             val masterKeyDerivationInformation = createMasterKeyDerivationInformation()
 
             masterKey = withContext(Dispatchers.Default) {
-                Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation)
+                Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation).resultOrThrowException()
             }
 
             masterEncryptionKey = withContext(Dispatchers.IO) {
@@ -155,8 +155,8 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
     private suspend fun deriveServerMasterPasswordAuthenticationHash(username: String, masterPassword: String): String {
         return withContext(Dispatchers.Default) {
-            val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword)
-            val serverMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(masterPasswordAuthenticationHash)
+            val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
+            val serverMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(masterPasswordAuthenticationHash).resultOrThrowException()
 
             serverMasterPasswordAuthenticationHash
         }
@@ -255,7 +255,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         val serverUrl = userType.serverUrl
 
         val masterPasswordAuthenticationHash = withContext(Dispatchers.Default) {
-            Derivation.deriveLocalAuthenticationHash(username, masterPassword)
+            Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
         }
 
         authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)

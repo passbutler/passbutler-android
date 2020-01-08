@@ -1,5 +1,7 @@
 package de.sicherheitskritisch.passbutler.crypto
 
+import de.sicherheitskritisch.passbutler.base.Failure
+import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.hexToBytes
 import io.mockk.every
@@ -8,6 +10,7 @@ import io.mockk.unmockkAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -24,11 +27,11 @@ class MasterKeyDerivationTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val exception = Assertions.assertThrows(Derivation.DerivationFailedException::class.java) {
-            Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
-        }
+        val result = Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
+        val exception = (result as Failure).throwable
 
-        assertEquals("The password must not be empty!", (exception.cause as IllegalArgumentException).message)
+        assertTrue(exception is IllegalArgumentException)
+        assertEquals("The password must not be empty!", exception.message)
     }
 
     @Test
@@ -38,11 +41,11 @@ class MasterKeyDerivationTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val exception = Assertions.assertThrows(Derivation.DerivationFailedException::class.java) {
-            Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
-        }
+        val result = Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
+        val exception = (result as Failure).throwable
 
-        assertEquals("The password must not be empty!", (exception.cause as IllegalArgumentException).message)
+        assertTrue(exception is IllegalArgumentException)
+        assertEquals("The password must not be empty!", exception.message)
     }
 
     /**
@@ -56,11 +59,11 @@ class MasterKeyDerivationTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val exception = Assertions.assertThrows(Derivation.DerivationFailedException::class.java) {
-            Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
-        }
+        val result = Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
+        val exception = (result as Failure).throwable
 
-        assertEquals("The salt must be 256 bits long!", (exception.cause as IllegalArgumentException).message)
+        assertTrue(exception is IllegalArgumentException)
+        assertEquals("The salt must be 256 bits long!", exception.message)
     }
 
     @Test
@@ -70,11 +73,11 @@ class MasterKeyDerivationTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val exception = Assertions.assertThrows(Derivation.DerivationFailedException::class.java) {
-            Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
-        }
+        val result = Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
+        val exception = (result as Failure).throwable
 
-        assertEquals("The salt must be 256 bits long!", (exception.cause as IllegalArgumentException).message)
+        assertTrue(exception is IllegalArgumentException)
+        assertEquals("The salt must be 256 bits long!", exception.message)
     }
 
     @Test
@@ -84,11 +87,11 @@ class MasterKeyDerivationTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val exception = Assertions.assertThrows(Derivation.DerivationFailedException::class.java) {
-            Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
-        }
+        val result = Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
+        val exception = (result as Failure).throwable
 
-        assertEquals("The salt must be 256 bits long!", (exception.cause as IllegalArgumentException).message)
+        assertTrue(exception is IllegalArgumentException)
+        assertEquals("The salt must be 256 bits long!", exception.message)
     }
 
     /**
@@ -105,7 +108,7 @@ class MasterKeyDerivationTest {
         val iterationCount = 1000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val derivedKey = Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
+        val derivedKey = Derivation.deriveMasterKey(userPassword, keyDerivationInformation).resultOrThrowException()
         Assertions.assertArrayEquals("8A803738E7D84E90A607ABB9CCE4E6C10E14F4856B4B8F6D3A2DB0EFC48456EB".hexToBytes(), derivedKey)
     }
 
@@ -116,7 +119,7 @@ class MasterKeyDerivationTest {
         val iterationCount = 100_000
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
-        val derivedKey = Derivation.deriveMasterKey(userPassword, keyDerivationInformation)
+        val derivedKey = Derivation.deriveMasterKey(userPassword, keyDerivationInformation).resultOrThrowException()
         Assertions.assertArrayEquals("10869F0AB3966CA9EF91660167EA6416C30CCE8A1F6C4A7DAB0E465E6D608598".hexToBytes(), derivedKey)
     }
 
@@ -131,10 +134,10 @@ class MasterKeyDerivationTest {
         val keyDerivationInformation = KeyDerivationInformation(salt, iterationCount)
 
         val userPasswordWithSpaces = "  1234abcd  "
-        val derivedKeyWithSpaces = Derivation.deriveMasterKey(userPasswordWithSpaces, keyDerivationInformation)
+        val derivedKeyWithSpaces = Derivation.deriveMasterKey(userPasswordWithSpaces, keyDerivationInformation).resultOrThrowException()
 
         val userPasswordWithoutSpaces = "1234abcd"
-        val derivedKeyWithoutSpaces = Derivation.deriveMasterKey(userPasswordWithoutSpaces, keyDerivationInformation)
+        val derivedKeyWithoutSpaces = Derivation.deriveMasterKey(userPasswordWithoutSpaces, keyDerivationInformation).resultOrThrowException()
 
         Assertions.assertArrayEquals(derivedKeyWithSpaces, derivedKeyWithoutSpaces)
     }
@@ -156,7 +159,7 @@ class LocalAuthenticationHashDerivationTest {
         val username = "testuser"
         val password = "1234abcd"
 
-        val derivedHash = Derivation.deriveLocalAuthenticationHash(username, password)
+        val derivedHash = Derivation.deriveLocalAuthenticationHash(username, password).resultOrThrowException()
         assertEquals("e8dcda8125dbbaf57893ad24490096c28c0c079762cb48ce045d770e8cf41d45", derivedHash)
     }
 
@@ -165,10 +168,10 @@ class LocalAuthenticationHashDerivationTest {
         val password = "1234abcd"
 
         val usernameWithSpaces = " testuser  "
-        val derivedHashWithSpaces = Derivation.deriveLocalAuthenticationHash(usernameWithSpaces, password)
+        val derivedHashWithSpaces = Derivation.deriveLocalAuthenticationHash(usernameWithSpaces, password).resultOrThrowException()
 
         val usernameWithoutSpaces = "testuser"
-        val derivedHashWithoutSpaces = Derivation.deriveLocalAuthenticationHash(usernameWithoutSpaces, password)
+        val derivedHashWithoutSpaces = Derivation.deriveLocalAuthenticationHash(usernameWithoutSpaces, password).resultOrThrowException()
 
         assertEquals(derivedHashWithSpaces, derivedHashWithoutSpaces)
     }
@@ -178,10 +181,10 @@ class LocalAuthenticationHashDerivationTest {
         val username = "testuser"
 
         val passwordWithSpaces = " 1234abcd  "
-        val derivedHashWithSpaces = Derivation.deriveLocalAuthenticationHash(username, passwordWithSpaces)
+        val derivedHashWithSpaces = Derivation.deriveLocalAuthenticationHash(username, passwordWithSpaces).resultOrThrowException()
 
         val passwordWithoutSpaces = "1234abcd"
-        val derivedHashWithoutSpaces = Derivation.deriveLocalAuthenticationHash(username, passwordWithoutSpaces)
+        val derivedHashWithoutSpaces = Derivation.deriveLocalAuthenticationHash(username, passwordWithoutSpaces).resultOrThrowException()
 
         assertEquals(derivedHashWithSpaces, derivedHashWithoutSpaces)
     }
