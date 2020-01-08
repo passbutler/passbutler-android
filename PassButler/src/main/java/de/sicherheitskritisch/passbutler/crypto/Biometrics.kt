@@ -26,6 +26,7 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
+// TODO: Remove deprecations
 object Biometrics {
 
     private const val AES_KEY_BIT_SIZE = 256
