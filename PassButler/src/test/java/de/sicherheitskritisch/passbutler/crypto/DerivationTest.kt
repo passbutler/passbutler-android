@@ -4,7 +4,7 @@ import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.hexToBytes
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import kotlinx.coroutines.runBlocking
@@ -199,7 +199,7 @@ class ServerAuthenticationHashDerivationTest {
         mockkObject(RandomGenerator)
 
         // Return static salt to be sure tests can be reproduced
-        every { RandomGenerator.generateRandomString(SERVER_AUTHENTICATION_HASH_SALT_LENGTH, SERVER_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS) } returns STATIC_SALT
+        coEvery { RandomGenerator.generateRandomString(SERVER_AUTHENTICATION_HASH_SALT_LENGTH, SERVER_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS) } returns STATIC_SALT
     }
 
     @AfterEach
@@ -220,7 +220,7 @@ class ServerAuthenticationHashDerivationTest {
     @Test
     fun `Derive a server authentication hash`() {
         val password = "1234abcd"
-        val derivedHash = runBlocking { Derivation.deriveServerAuthenticationHash(password) }
+        val derivedHash = runBlocking { Derivation.deriveServerAuthenticationHash(password).resultOrThrowException() }
 
         assertEquals("pbkdf2:sha256:150000\$abcdefgh\$e6b929bdae73863bff72d05be560a47c9b026a38233532fdd978ca315e5ea982", derivedHash)
     }

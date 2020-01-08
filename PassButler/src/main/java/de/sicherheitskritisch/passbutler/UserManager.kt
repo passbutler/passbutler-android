@@ -156,13 +156,11 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     }
 
     private suspend fun createMasterKeyDerivationInformation(): KeyDerivationInformation {
-        return withContext(Dispatchers.IO) {
-            val masterKeySalt = RandomGenerator.generateRandomBytes(MASTER_KEY_BIT_LENGTH.byteSize)
-            val masterKeyIterationCount = MASTER_KEY_ITERATION_COUNT
-            val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
+        val masterKeySalt = RandomGenerator.generateRandomBytes(MASTER_KEY_BIT_LENGTH.byteSize)
+        val masterKeyIterationCount = MASTER_KEY_ITERATION_COUNT
+        val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
 
-            masterKeyDerivationInformation
-        }
+        return masterKeyDerivationInformation
     }
 
     private suspend fun generateItemEncryptionKeyPair(masterEncryptionKey: ByteArray): Pair<CryptographicKey, ProtectedValue<CryptographicKey>> {

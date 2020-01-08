@@ -1,34 +1,39 @@
 package de.sicherheitskritisch.passbutler.crypto
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.security.SecureRandom
 
-// TODO: Convert to suspend functions
 object RandomGenerator {
 
     /**
      * Generates a desired amount of random bytes.
      */
-    fun generateRandomBytes(count: Int): ByteArray {
-        return createRandomInstance().let { nonBlockingSecureRandomInstance ->
-            val randomBytesArray = ByteArray(count)
-            nonBlockingSecureRandomInstance.nextBytes(randomBytesArray)
+    suspend fun generateRandomBytes(count: Int): ByteArray {
+        return withContext(Dispatchers.IO) {
+            createRandomInstance().let { nonBlockingSecureRandomInstance ->
+                val randomBytesArray = ByteArray(count)
+                nonBlockingSecureRandomInstance.nextBytes(randomBytesArray)
 
-            randomBytesArray
+                randomBytesArray
+            }
         }
     }
 
     /**
      * Generates a random string with desired length containing of given allowed characters.
      */
-    fun generateRandomString(length: Int, allowedCharacters: String): String {
+    suspend fun generateRandomString(length: Int, allowedCharacters: String): String {
         val allowedCharactersLength = allowedCharacters.length
         require(allowedCharactersLength != 0) { "The allowed characters string must not be empty!" }
 
-        return createRandomInstance().let { nonBlockingSecureRandomInstance ->
-            (1..length)
-                .map { nonBlockingSecureRandomInstance.nextInt(allowedCharactersLength) }
-                .map(allowedCharacters::get)
-                .joinToString("")
+        return withContext(Dispatchers.IO) {
+            createRandomInstance().let { nonBlockingSecureRandomInstance ->
+                (1..length)
+                    .map { nonBlockingSecureRandomInstance.nextInt(allowedCharactersLength) }
+                    .map(allowedCharacters::get)
+                    .joinToString("")
+            }
         }
     }
 

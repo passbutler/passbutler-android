@@ -4,6 +4,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -30,7 +31,7 @@ class RandomGeneratorTest {
 
     @Test
     fun `Generate random string`() {
-        val randomString = RandomGenerator.generateRandomString(5, ALLOWED_CHARACTERS)
+        val randomString = runBlocking { RandomGenerator.generateRandomString(5, ALLOWED_CHARACTERS) }
         assertEquals("ccccc", randomString)
     }
 
