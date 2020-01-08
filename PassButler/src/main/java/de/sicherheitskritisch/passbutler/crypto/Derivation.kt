@@ -6,6 +6,8 @@ import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.bitSize
 import de.sicherheitskritisch.passbutler.base.toHexString
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.security.NoSuchAlgorithmException
 import java.text.Normalizer
 import javax.crypto.SecretKeyFactory
@@ -22,27 +24,28 @@ const val SERVER_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS = "abcdefghijklmnopqr
 const val SERVER_AUTHENTICATION_HASH_ITERATION_COUNT = 150_000
 const val SERVER_AUTHENTICATION_HASH_BIT_LENGTH = 256
 
-// TODO: Convert to suspend functions
 object Derivation {
 
     /**
      * Derives a authentication hash based on given username/password using PBKDF2 with SHA-256.
      * This method is used to avoid sending master password from client to server in clear text.
      */
-    fun deriveLocalAuthenticationHash(username: String, password: String): Result<String> {
-        return try {
-            require(!username.isBlank()) { "The username must not be empty!" }
-            require(!password.isBlank()) { "The password must not be empty!" }
+    suspend fun deriveLocalAuthenticationHash(username: String, password: String): Result<String> {
+        return withContext(Dispatchers.Default) {
+            try {
+                require(!username.isBlank()) { "The username must not be empty!" }
+                require(!password.isBlank()) { "The password must not be empty!" }
 
-            val preparedPassword = normalizeString(trimString(password))
+                val preparedPassword = normalizeString(trimString(password))
 
-            val preparedUsername = normalizeString(trimString(username))
-            val salt = preparedUsername.toByteArray(Charsets.UTF_8)
+                val preparedUsername = normalizeString(trimString(username))
+                val salt = preparedUsername.toByteArray(Charsets.UTF_8)
 
-            val resultingBytes = performPBKDFWithSHA256(preparedPassword, salt, MASTER_PASSWORD_AUTHENTICATION_HASH_ITERATION_COUNT, MASTER_PASSWORD_AUTHENTICATION_HASH_BIT_LENGTH)
-            Success(resultingBytes.toHexString())
-        } catch (exception: Exception) {
-            Failure(exception)
+                val resultingBytes = performPBKDFWithSHA256(preparedPassword, salt, MASTER_PASSWORD_AUTHENTICATION_HASH_ITERATION_COUNT, MASTER_PASSWORD_AUTHENTICATION_HASH_BIT_LENGTH)
+                Success(resultingBytes.toHexString())
+            } catch (exception: Exception) {
+                Failure(exception)
+            }
         }
     }
 
@@ -50,40 +53,44 @@ object Derivation {
      * Derives a authentication hash based on a given password using PBKDF2 with SHA-256.
      * This method re-implements `werkzeug.security.generate_password_hash` from Python Werkzeug framework.
      */
-    fun deriveServerAuthenticationHash(password: String): Result<String> {
-        return try {
-            require(!password.isBlank()) { "The password must not be empty!" }
+    suspend fun deriveServerAuthenticationHash(password: String): Result<String> {
+        return withContext(Dispatchers.Default) {
+            try {
+                require(!password.isBlank()) { "The password must not be empty!" }
 
-            val saltString = RandomGenerator.generateRandomString(SERVER_AUTHENTICATION_HASH_SALT_LENGTH, SERVER_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS)
-            val saltBytes = saltString.toByteArray(Charsets.UTF_8)
+                val saltString = RandomGenerator.generateRandomString(SERVER_AUTHENTICATION_HASH_SALT_LENGTH, SERVER_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS)
+                val saltBytes = saltString.toByteArray(Charsets.UTF_8)
 
-            val iterationCount = SERVER_AUTHENTICATION_HASH_ITERATION_COUNT
-            val hashBytes = performPBKDFWithSHA256(password, saltBytes, iterationCount, SERVER_AUTHENTICATION_HASH_BIT_LENGTH)
-            val hashString = hashBytes.toHexString()
-            val hashStringWithMetaInformation = "pbkdf2:sha256:$iterationCount\$$saltString\$$hashString"
+                val iterationCount = SERVER_AUTHENTICATION_HASH_ITERATION_COUNT
+                val hashBytes = performPBKDFWithSHA256(password, saltBytes, iterationCount, SERVER_AUTHENTICATION_HASH_BIT_LENGTH)
+                val hashString = hashBytes.toHexString()
+                val hashStringWithMetaInformation = "pbkdf2:sha256:$iterationCount\$$saltString\$$hashString"
 
-            Success(hashStringWithMetaInformation)
-        } catch (exception: Exception) {
-            Failure(exception)
+                Success(hashStringWithMetaInformation)
+            } catch (exception: Exception) {
+                Failure(exception)
+            }
         }
     }
 
     /**
      * Derives the symmetric master key from a password using PBKDF2 with SHA-256.
      */
-    fun deriveMasterKey(password: String, keyDerivationInformation: KeyDerivationInformation): Result<ByteArray> {
-        return try {
-            require(!password.isBlank()) { "The password must not be empty!" }
+    suspend fun deriveMasterKey(password: String, keyDerivationInformation: KeyDerivationInformation): Result<ByteArray> {
+        return withContext(Dispatchers.Default) {
+            try {
+                require(!password.isBlank()) { "The password must not be empty!" }
 
-            // The salt should have the same size as the derived key
-            require(keyDerivationInformation.salt.bitSize == MASTER_KEY_BIT_LENGTH) { "The salt must be 256 bits long!" }
+                // The salt should have the same size as the derived key
+                require(keyDerivationInformation.salt.bitSize == MASTER_KEY_BIT_LENGTH) { "The salt must be 256 bits long!" }
 
-            val preparedPassword = normalizeString(trimString(password))
-            val hashBytes = performPBKDFWithSHA256(preparedPassword, keyDerivationInformation.salt, keyDerivationInformation.iterationCount, MASTER_KEY_BIT_LENGTH)
+                val preparedPassword = normalizeString(trimString(password))
+                val hashBytes = performPBKDFWithSHA256(preparedPassword, keyDerivationInformation.salt, keyDerivationInformation.iterationCount, MASTER_KEY_BIT_LENGTH)
 
-            Success(hashBytes)
-        } catch (exception: Exception) {
-            Failure(exception)
+                Success(hashBytes)
+            } catch (exception: Exception) {
+                Failure(exception)
+            }
         }
     }
 
