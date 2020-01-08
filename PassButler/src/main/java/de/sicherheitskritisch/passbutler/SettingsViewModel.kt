@@ -5,6 +5,7 @@ import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
+import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
 import javax.crypto.Cipher
@@ -48,8 +49,8 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
     suspend fun initializeSetupBiometricUnlockCipher(): Result<Cipher> {
         return try {
-            val biometricUnlockCipher = Biometrics.obtainKeyInstance()
-            Biometrics.initializeKeyForEncryption(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, biometricUnlockCipher)
+            val biometricUnlockCipher = Biometrics.obtainKeyInstance().resultOrThrowException()
+            Biometrics.initializeKeyForEncryption(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, biometricUnlockCipher).resultOrThrowException()
 
             Success(biometricUnlockCipher)
         } catch (exception: Exception) {
@@ -58,12 +59,7 @@ class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewMod
     }
 
     suspend fun generateBiometricUnlockKey(): Result<Unit> {
-        return try {
-            Biometrics.generateKey(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
-            Success(Unit)
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
+        return Biometrics.generateKey(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
     }
 
     suspend fun enableBiometricUnlock(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String): Result<Unit> {

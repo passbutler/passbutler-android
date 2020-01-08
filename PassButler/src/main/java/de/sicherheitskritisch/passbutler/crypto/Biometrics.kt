@@ -10,6 +10,9 @@ import android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE
 import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
 import androidx.core.hardware.fingerprint.FingerprintManagerCompat
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
+import de.sicherheitskritisch.passbutler.base.Failure
+import de.sicherheitskritisch.passbutler.base.Result
+import de.sicherheitskritisch.passbutler.base.Success
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -72,18 +75,16 @@ object Biometrics {
         KeyGenerator.getInstance(KEY_ALGORITHM_AES, "AndroidKeyStore")
     }
 
-    @Throws(ObtainKeyFailedException::class)
-    fun obtainKeyInstance(): Cipher {
+    fun obtainKeyInstance(): Result<Cipher> {
         return try {
-            Cipher.getInstance("$KEY_ALGORITHM_AES/${BLOCK_MODE_GCM}/${ENCRYPTION_PADDING_NONE}")
+            Success(Cipher.getInstance("$KEY_ALGORITHM_AES/${BLOCK_MODE_GCM}/${ENCRYPTION_PADDING_NONE}"))
         } catch (exception: Exception) {
-            throw ObtainKeyFailedException(exception)
+            Failure(exception)
         }
     }
 
-    @Throws(GenerateKeyFailedException::class)
-    suspend fun generateKey(keyName: String) {
-        withContext(Dispatchers.IO) {
+    suspend fun generateKey(keyName: String): Result<Unit> {
+        return withContext(Dispatchers.IO) {
             try {
                 initializeAndroidKeyStore()
 
@@ -109,71 +110,73 @@ object Biometrics {
                 androidKeyGenerator.init(keyParameters)
 
                 androidKeyGenerator.generateKey()
+
+                Success(Unit)
             } catch (exception: Exception) {
-                throw GenerateKeyFailedException(exception)
+                Failure(exception)
             }
         }
     }
 
-    @Throws(InitializeKeyFailedException::class)
-    suspend fun initializeKeyForEncryption(keyName: String, encryptionCipher: Cipher) {
-        withContext(Dispatchers.IO) {
+    suspend fun initializeKeyForEncryption(keyName: String, encryptionCipher: Cipher): Result<Unit> {
+        return withContext(Dispatchers.IO) {
             try {
                 initializeAndroidKeyStore()
 
                 val secretKey = androidKeyStore.getKey(keyName, null) as? SecretKey ?: throw InvalidKeyException("The key '$keyName' was not found!")
                 encryptionCipher.init(Cipher.ENCRYPT_MODE, secretKey)
+
+                Success(Unit)
             } catch (exception: Exception) {
-                throw InitializeKeyFailedException(exception)
+                Failure(exception)
             }
         }
     }
 
-    @Throws(InitializeKeyFailedException::class)
-    suspend fun initializeKeyForDecryption(keyName: String, decryptionCipher: Cipher, initializationVector: ByteArray) {
-        withContext(Dispatchers.IO) {
+    suspend fun initializeKeyForDecryption(keyName: String, decryptionCipher: Cipher, initializationVector: ByteArray): Result<Unit> {
+        return withContext(Dispatchers.IO) {
             try {
                 initializeAndroidKeyStore()
 
                 val secretKey = androidKeyStore.getKey(keyName, null) as? SecretKey ?: throw InvalidKeyException("The key '$keyName' was not found!")
                 decryptionCipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_AUTHENTICATION_TAG_BIT_SIZE, initializationVector))
+
+                Success(Unit)
             } catch (exception: Exception) {
-                throw InitializeKeyFailedException(exception)
+                Failure(exception)
             }
         }
     }
 
-    @Throws(EncryptionFailedException::class)
-    suspend fun encryptData(encryptionCipher: Cipher, data: ByteArray): ByteArray {
+    suspend fun encryptData(encryptionCipher: Cipher, data: ByteArray): Result<ByteArray> {
         return withContext(Dispatchers.Default) {
             try {
-                encryptionCipher.doFinal(data)
+                Success(encryptionCipher.doFinal(data))
             } catch (exception: Exception) {
-                throw EncryptionFailedException(exception)
+                Failure(exception)
             }
         }
     }
 
-    @Throws(DecryptionFailedException::class)
-    suspend fun decryptData(decryptionCipher: Cipher, data: ByteArray): ByteArray {
+    suspend fun decryptData(decryptionCipher: Cipher, data: ByteArray): Result<ByteArray> {
         return withContext(Dispatchers.Default) {
             try {
-                decryptionCipher.doFinal(data)
+                Success(decryptionCipher.doFinal(data))
             } catch (exception: Exception) {
-                throw DecryptionFailedException(exception)
+                Failure(exception)
             }
         }
     }
 
-    @Throws(RemoveKeyFailedException::class)
-    suspend fun removeKey(keyName: String) {
-        withContext(Dispatchers.IO) {
+    suspend fun removeKey(keyName: String): Result<Unit> {
+        return withContext(Dispatchers.IO) {
             try {
                 initializeAndroidKeyStore()
-
                 androidKeyStore.deleteEntry(keyName)
+
+                Success(Unit)
             } catch (exception: Exception) {
-                throw RemoveKeyFailedException(exception)
+                Failure(exception)
             }
         }
     }
@@ -183,14 +186,6 @@ object Biometrics {
         val loadKeyStoreParameter = null
         androidKeyStore.load(loadKeyStoreParameter)
     }
-
-    // TODO: Use `Result` instead
-    class ObtainKeyFailedException(cause: Throwable) : Exception(cause)
-    class GenerateKeyFailedException(cause: Throwable) : Exception(cause)
-    class InitializeKeyFailedException(cause: Throwable) : Exception(cause)
-    class EncryptionFailedException(cause: Throwable) : Exception(cause)
-    class DecryptionFailedException(cause: Throwable) : Exception(cause)
-    class RemoveKeyFailedException(cause: Throwable) : Exception(cause)
 }
 
 class BiometricAuthenticationCallbackExecutor(private val coroutineScope: CoroutineScope, private val coroutineDispatcher: CoroutineDispatcher) : Executor {

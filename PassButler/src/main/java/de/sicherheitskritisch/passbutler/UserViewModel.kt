@@ -310,7 +310,7 @@ class UserViewModel private constructor(
             decryptMasterEncryptionKey(masterPassword).resultOrThrowException()
 
             val encryptedMasterPasswordInitializationVector = initializedSetupBiometricUnlockCipher.iv
-            val encryptedMasterPassword = Biometrics.encryptData(initializedSetupBiometricUnlockCipher, masterPassword.toByteArray())
+            val encryptedMasterPassword = Biometrics.encryptData(initializedSetupBiometricUnlockCipher, masterPassword.toByteArray()).resultOrThrowException()
 
             userManager.loggedInStateStorage.encryptedMasterPassword = EncryptedValue(encryptedMasterPasswordInitializationVector, encryptedMasterPassword)
             userManager.loggedInStateStorage.persist()
@@ -330,7 +330,7 @@ class UserViewModel private constructor(
         L.d("UserViewModel", "disableBiometricUnlock()")
 
         return try {
-            Biometrics.removeKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
+            Biometrics.removeKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME).resultOrThrowException()
 
             userManager.loggedInStateStorage.encryptedMasterPassword = null
             userManager.loggedInStateStorage.persist()

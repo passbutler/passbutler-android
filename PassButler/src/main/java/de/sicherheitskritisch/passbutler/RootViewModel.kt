@@ -11,6 +11,7 @@ import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
+import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.toUTF8String
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
@@ -63,11 +64,12 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
     suspend fun initializeBiometricUnlockCipher(): Result<Cipher> {
         return try {
-            val biometricUnlockCipher = Biometrics.obtainKeyInstance()
+            val biometricUnlockCipher = Biometrics.obtainKeyInstance().resultOrThrowException()
             val encryptedMasterPasswordInitializationVector = loggedInUserViewModel?.encryptedMasterPassword?.initializationVector
                 ?: throw IllegalStateException("The encrypted master key initialization vector was not found, despite biometric unlock was tried!")
 
             Biometrics.initializeKeyForDecryption(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, biometricUnlockCipher, encryptedMasterPasswordInitializationVector)
+                .resultOrThrowException()
 
             Success(biometricUnlockCipher)
         } catch (exception: Exception) {
@@ -83,7 +85,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         val encryptedMasterPassword = loggedInUserViewModel.encryptedMasterPassword?.encryptedValue
             ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
 
-        val masterPassword = Biometrics.decryptData(initializedBiometricUnlockCipher, encryptedMasterPassword).toUTF8String()
+        val masterPassword = Biometrics.decryptData(initializedBiometricUnlockCipher, encryptedMasterPassword).resultOrThrowException().toUTF8String()
         val decryptSensibleDataResult = loggedInUserViewModel.decryptSensibleData(masterPassword)
 
         if (decryptSensibleDataResult is Success && loggedInUserViewModel.isServerUserType) {
