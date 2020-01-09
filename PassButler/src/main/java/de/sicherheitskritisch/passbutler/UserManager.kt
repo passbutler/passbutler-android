@@ -147,7 +147,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         }
     }
 
-    // TODO: Return `Result`?
+    @Throws(Exception::class)
     private suspend fun deriveServerMasterPasswordAuthenticationHash(username: String, masterPassword: String): String {
         val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
         val serverMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(masterPasswordAuthenticationHash).resultOrThrowException()
@@ -162,7 +162,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         return masterKeyDerivationInformation
     }
 
-    // TODO: Return `Result`?
+    @Throws(Exception::class)
     private suspend fun generateItemEncryptionKeyPair(masterEncryptionKey: ByteArray): Pair<CryptographicKey, ProtectedValue<CryptographicKey>> {
         val itemEncryptionKeyPair = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.generateKeyPair().resultOrThrowException()
 
@@ -174,6 +174,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         return Pair(serializableItemEncryptionPublicKey, protectedItemEncryptionSecretKey)
     }
 
+    @Throws(Exception::class)
     private suspend fun createUserSettings(masterEncryptionKey: ByteArray): ProtectedValue<UserSettings> {
         val userSettings = UserSettings()
         val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, userSettings).resultOrThrowException()
