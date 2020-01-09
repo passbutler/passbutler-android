@@ -206,6 +206,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         }
     }
 
+    // TODO: Implement better webservice init / token refresh logic
     suspend fun restoreWebservices(masterPassword: String) {
         L.d("UserManager", "restoreWebservices()")
 
