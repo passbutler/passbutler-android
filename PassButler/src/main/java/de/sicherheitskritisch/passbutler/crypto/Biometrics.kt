@@ -1,14 +1,13 @@
 package de.sicherheitskritisch.passbutler.crypto
 
 import android.app.KeyguardManager
-import android.hardware.biometrics.BiometricManager
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.security.keystore.KeyProperties.BLOCK_MODE_GCM
 import android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE
 import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
-import androidx.core.hardware.fingerprint.FingerprintManagerCompat
+import androidx.biometric.BiometricManager
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.Result
@@ -29,22 +28,19 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
-// TODO: Remove deprecations
 object Biometrics {
 
     private const val AES_KEY_BIT_SIZE = 256
     private const val GCM_AUTHENTICATION_TAG_BIT_SIZE = 128
 
     val isHardwareCapable: Boolean
-        get() = if (Build.VERSION.SDK_INT > 28) {
+        get() {
             val biometricManager = applicationContext.getSystemService(BiometricManager::class.java)
 
             val isHardwareSupportedConstants = listOf(BiometricManager.BIOMETRIC_SUCCESS, BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED)
             val canAuthenticateResult = biometricManager?.canAuthenticate()
-            isHardwareSupportedConstants.contains(canAuthenticateResult)
-        } else {
-            val fingerprintManagerCompat = FingerprintManagerCompat.from(applicationContext)
-            fingerprintManagerCompat.isHardwareDetected
+
+            return isHardwareSupportedConstants.contains(canAuthenticateResult)
         }
 
     val isKeyguardSecure: Boolean
@@ -54,12 +50,9 @@ object Biometrics {
         }
 
     val hasEnrolledBiometrics: Boolean
-        get() = if (Build.VERSION.SDK_INT > 28) {
+        get() {
             val biometricManager = applicationContext.getSystemService(BiometricManager::class.java)
-            biometricManager?.canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS
-        } else {
-            val fingerprintManagerCompat = FingerprintManagerCompat.from(applicationContext)
-            fingerprintManagerCompat.hasEnrolledFingerprints()
+            return biometricManager?.canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS
         }
 
     private val applicationContext
