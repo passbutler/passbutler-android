@@ -167,7 +167,8 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
         super.onResume()
 
         // The states may changed when user had the app in the background
-        viewModel.updateBiometricUnlockAvailability()
+        viewModel.loggedInUserViewModel?.biometricUnlockAvailable?.notifyChange()
+        viewModel.loggedInUserViewModel?.biometricUnlockEnabled?.notifyChange()
     }
 
     override fun onStop() {

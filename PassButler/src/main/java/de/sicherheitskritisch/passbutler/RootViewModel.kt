@@ -100,12 +100,6 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         return decryptSensibleDataResult
     }
 
-    // TODO: Remove call here?
-    fun updateBiometricUnlockAvailability() {
-        loggedInUserViewModel?.biometricUnlockAvailable?.notifyChange()
-        loggedInUserViewModel?.biometricUnlockEnabled?.notifyChange()
-    }
-
     fun rootFragmentWasPaused() {
         startLockScreenTimer()
     }
