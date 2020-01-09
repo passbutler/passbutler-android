@@ -243,6 +243,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         val username = userType.username
         val serverUrl = userType.serverUrl
 
+        // TODO: Exception handling?
         val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
         authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
     }
