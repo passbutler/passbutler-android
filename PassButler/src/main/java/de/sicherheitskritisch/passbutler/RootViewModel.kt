@@ -63,11 +63,11 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     suspend fun initializeBiometricUnlockCipher(): Result<Cipher> {
+        val encryptedMasterPasswordInitializationVector = loggedInUserViewModel?.encryptedMasterPassword?.initializationVector
+            ?: throw IllegalStateException("The encrypted master key initialization vector was not found, despite biometric unlock was tried!")
+
         return try {
             val biometricUnlockCipher = Biometrics.obtainKeyInstance().resultOrThrowException()
-            val encryptedMasterPasswordInitializationVector = loggedInUserViewModel?.encryptedMasterPassword?.initializationVector
-                ?: throw IllegalStateException("The encrypted master key initialization vector was not found, despite biometric unlock was tried!")
-
             Biometrics.initializeKeyForDecryption(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, biometricUnlockCipher, encryptedMasterPasswordInitializationVector)
                 .resultOrThrowException()
 

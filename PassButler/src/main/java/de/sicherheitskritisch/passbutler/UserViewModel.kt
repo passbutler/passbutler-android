@@ -245,12 +245,11 @@ class UserViewModel private constructor(
     suspend fun updateMasterPassword(newMasterPassword: String): Result<Unit> {
         L.d("UserViewModel", "updateMasterPassword()")
 
+        val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to update the master password!")
         var newMasterKey: ByteArray? = null
 
         // TODO: Proper rollback concept
         return try {
-            val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to update the master password!")
-
             val newLocalMasterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, newMasterPassword).resultOrThrowException()
             val newServerMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(newLocalMasterPasswordAuthenticationHash).resultOrThrowException()
             masterPasswordAuthenticationHash = newServerMasterPasswordAuthenticationHash
