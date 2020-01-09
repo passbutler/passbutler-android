@@ -136,11 +136,11 @@ class UserViewModel private constructor(
 
         return try {
             masterEncryptionKey = decryptMasterEncryptionKey(masterPassword).resultOrThrowException().also { masterEncryptionKey ->
-                itemEncryptionSecretKey = decryptItemEncryptionSecretKey(masterEncryptionKey).resultOrThrowException()
+                itemEncryptionSecretKey = protectedItemEncryptionSecretKey.decrypt(masterEncryptionKey, CryptographicKey.Deserializer).resultOrThrowException().key
 
                 registerModelChangedObservers()
 
-                val decryptedSettings = decryptUserSettings(masterEncryptionKey).resultOrThrowException()
+                val decryptedSettings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer).resultOrThrowException()
                 registerUserSettingObservers(decryptedSettings)
             }
 
@@ -154,44 +154,19 @@ class UserViewModel private constructor(
     }
 
     private suspend fun decryptMasterEncryptionKey(masterPassword: String): Result<ByteArray> {
-        return withContext(Dispatchers.Default) {
-            var masterKey: ByteArray? = null
+        var masterKey: ByteArray? = null
 
-            try {
-                masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation).resultOrThrowException()
+        return try {
+            masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation).resultOrThrowException()
 
-                val decryptedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer).resultOrThrowException()
-                Success(decryptedMasterEncryptionKey.key)
-            } catch (exception: Exception) {
-                // Wrap the thrown exception to be able to determine if this call failed (used to show concrete error string in UI)
-                val wrappedException = DecryptMasterEncryptionKeyFailedException(exception)
-
-                Failure(wrappedException)
-            } finally {
-                masterKey?.clear()
-            }
-        }
-    }
-
-    private suspend fun decryptItemEncryptionSecretKey(masterEncryptionKey: ByteArray): Result<ByteArray> {
-        return withContext(Dispatchers.Default) {
-            try {
-                val decryptedItemEncryptionSecretKey = protectedItemEncryptionSecretKey.decrypt(masterEncryptionKey, CryptographicKey.Deserializer).resultOrThrowException()
-                Success(decryptedItemEncryptionSecretKey.key)
-            } catch (exception: Exception) {
-                Failure(exception)
-            }
-        }
-    }
-
-    private suspend fun decryptUserSettings(masterEncryptionKey: ByteArray): Result<UserSettings> {
-        return withContext(Dispatchers.Default) {
-            try {
-                val decryptedUserSettings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer).resultOrThrowException()
-                Success(decryptedUserSettings)
-            } catch (exception: Exception) {
-                Failure(exception)
-            }
+            val decryptedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer).resultOrThrowException()
+            Success(decryptedMasterEncryptionKey.key)
+        } catch (exception: Exception) {
+            // Wrap the thrown exception to be able to determine if this call failed (used to show concrete error string in UI)
+            val wrappedException = DecryptMasterEncryptionKeyFailedException(exception)
+            Failure(wrappedException)
+        } finally {
+            masterKey?.clear()
         }
     }
 
@@ -270,35 +245,33 @@ class UserViewModel private constructor(
     suspend fun updateMasterPassword(newMasterPassword: String): Result<Unit> {
         L.d("UserViewModel", "updateMasterPassword()")
 
-        return withContext(Dispatchers.Default) {
-            var newMasterKey: ByteArray? = null
+        var newMasterKey: ByteArray? = null
 
-            // TODO: Proper rollback concept
-            try {
-                val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to update the master password!")
+        // TODO: Proper rollback concept
+        return try {
+            val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to update the master password!")
 
-                val newLocalMasterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, newMasterPassword).resultOrThrowException()
-                val newServerMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(newLocalMasterPasswordAuthenticationHash).resultOrThrowException()
-                masterPasswordAuthenticationHash = newServerMasterPasswordAuthenticationHash
+            val newLocalMasterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, newMasterPassword).resultOrThrowException()
+            val newServerMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(newLocalMasterPasswordAuthenticationHash).resultOrThrowException()
+            masterPasswordAuthenticationHash = newServerMasterPasswordAuthenticationHash
 
-                newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation).resultOrThrowException()
-                protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey)).resultOrThrowException()
+            newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation).resultOrThrowException()
+            protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey)).resultOrThrowException()
 
-                // Disable biometric unlock because master password re-encryption would require biometric authentication and made flow more complex
-                disableBiometricUnlock().resultOrThrowException()
+            // Disable biometric unlock because master password re-encryption would require biometric authentication and made flow more complex
+            disableBiometricUnlock().resultOrThrowException()
 
-                val user = createModel()
-                userManager.updateUser(user)
+            val user = createModel()
+            userManager.updateUser(user)
 
-                // The auth webservice needs to re-initialized because of master password change
-                userManager.initializeAuthWebservice(newMasterPassword)
+            // The auth webservice needs to re-initialized because of master password change
+            userManager.initializeAuthWebservice(newMasterPassword)
 
-                Success(Unit)
-            } catch (exception: Exception) {
-                Failure(exception)
-            } finally {
-                newMasterKey?.clear()
-            }
+            Success(Unit)
+        } catch (exception: Exception) {
+            Failure(exception)
+        } finally {
+            newMasterKey?.clear()
         }
     }
 
@@ -372,9 +345,7 @@ class UserViewModel private constructor(
             // Only persist if master encryption key is set (user logged-in and state unlocked)
             if (masterEncryptionKey != null) {
                 try {
-                    withContext(Dispatchers.Default) {
-                        protectedSettings.update(masterEncryptionKey, settings).resultOrThrowException()
-                    }
+                    protectedSettings.update(masterEncryptionKey, settings).resultOrThrowException()
 
                     val user = createModel()
                     userManager.updateUser(user)

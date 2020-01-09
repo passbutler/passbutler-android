@@ -16,13 +16,14 @@ import de.sicherheitskritisch.passbutler.base.toUTF8String
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.crypto.models.EncryptedValue.Companion.SERIALIZATION_KEY_ENCRYPTED_VALUE
 import de.sicherheitskritisch.passbutler.crypto.models.EncryptedValue.Companion.SERIALIZATION_KEY_INITIALIZATION_VECTOR
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONException
 import org.json.JSONObject
 
 /**
  * Wraps a `JSONSerializable` object to store it encrypted as a `JSONSerializable`.
  */
-// TODO: Convert to suspend functions
 class ProtectedValue<T : JSONSerializable> private constructor(
     initializationVector: ByteArray,
     encryptedValue: ByteArray,
@@ -45,7 +46,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
         )
     }
 
-    fun decrypt(encryptionKey: ByteArray, deserializer: JSONSerializableDeserializer<T>): Result<T> {
+    suspend fun decrypt(encryptionKey: ByteArray, deserializer: JSONSerializableDeserializer<T>): Result<T> {
         return try {
             require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 
@@ -58,8 +59,10 @@ class ProtectedValue<T : JSONSerializable> private constructor(
                 }
             }
 
-            val jsonSerializedString = decryptedBytes.toUTF8String()
-            val deserializedResultValue = deserializer.deserialize(jsonSerializedString)
+            val deserializedResultValue = withContext(Dispatchers.Default) {
+                val jsonSerializedString = decryptedBytes.toUTF8String()
+                deserializer.deserialize(jsonSerializedString)
+            }
 
             Success(deserializedResultValue)
         } catch (exception: JSONException) {
@@ -69,7 +72,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
         }
     }
 
-    fun update(encryptionKey: ByteArray, updatedValue: T): Result<Unit> {
+    suspend fun update(encryptionKey: ByteArray, updatedValue: T): Result<Unit> {
         return try {
             require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 
@@ -148,7 +151,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
     companion object {
         const val SERIALIZATION_KEY_ENCRYPTION_ALGORITHM = "encryptionAlgorithm"
 
-        fun <T : JSONSerializable> create(encryptionAlgorithm: EncryptionAlgorithm, encryptionKey: ByteArray, initialValue: T): Result<ProtectedValue<T>> {
+        suspend fun <T : JSONSerializable> create(encryptionAlgorithm: EncryptionAlgorithm, encryptionKey: ByteArray, initialValue: T): Result<ProtectedValue<T>> {
             return try {
                 require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 

@@ -17,8 +17,6 @@ import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.database.models.Item
 import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.ItemData
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.util.*
 
 class ItemViewModel(
@@ -54,18 +52,16 @@ class ItemViewModel(
     private var itemKey: ByteArray? = null
 
     suspend fun decryptSensibleData(userItemEncryptionSecretKey: ByteArray): Result<Unit> {
-        return withContext(Dispatchers.Default) {
-            try {
-                val decryptedItemKey = itemAuthorization.itemKey.decrypt(userItemEncryptionSecretKey, CryptographicKey.Deserializer).resultOrThrowException().key
-                itemKey = decryptedItemKey
+        return try {
+            val decryptedItemKey = itemAuthorization.itemKey.decrypt(userItemEncryptionSecretKey, CryptographicKey.Deserializer).resultOrThrowException().key
+            itemKey = decryptedItemKey
 
-                val decryptedItemData = item.data.decrypt(decryptedItemKey, ItemData.Deserializer).resultOrThrowException()
-                itemData = decryptedItemData
+            val decryptedItemData = item.data.decrypt(decryptedItemKey, ItemData.Deserializer).resultOrThrowException()
+            itemData = decryptedItemData
 
-                Success(Unit)
-            } catch (exception: Exception) {
-                Failure(exception)
-            }
+            Success(Unit)
+        } catch (exception: Exception) {
+            Failure(exception)
         }
     }
 
@@ -157,13 +153,8 @@ class ItemEditingViewModel(
         val symmetricEncryptionAlgorithm = EncryptionAlgorithm.Symmetric.AES256GCM
 
         return try {
-            val itemKey = withContext(Dispatchers.IO) {
-                symmetricEncryptionAlgorithm.generateEncryptionKey().resultOrThrowException()
-            }
-
-            val protectedItemData = withContext(Dispatchers.Default) {
-                ProtectedValue.create(symmetricEncryptionAlgorithm, itemKey, itemData).resultOrThrowException()
-            }
+            val itemKey = symmetricEncryptionAlgorithm.generateEncryptionKey().resultOrThrowException()
+            val protectedItemData = ProtectedValue.create(symmetricEncryptionAlgorithm, itemKey, itemData).resultOrThrowException()
 
             val currentDate = Date()
             val item = Item(
@@ -185,10 +176,7 @@ class ItemEditingViewModel(
         val asymmetricEncryptionAlgorithm = EncryptionAlgorithm.Asymmetric.RSA2048OAEP
 
         return try {
-            val protectedItemKey = withContext(Dispatchers.Default) {
-                ProtectedValue.create(asymmetricEncryptionAlgorithm, loggedInUserItemEncryptionPublicKey, CryptographicKey(itemKey)).resultOrThrowException()
-            }
-
+            val protectedItemKey = ProtectedValue.create(asymmetricEncryptionAlgorithm, loggedInUserItemEncryptionPublicKey, CryptographicKey(itemKey)).resultOrThrowException()
             val currentDate = Date()
             val itemAuthorization = ItemAuthorization(
                 id = UUID.randomUUID().toString(),
@@ -221,7 +209,7 @@ class ItemEditingViewModel(
         }
     }
 
-    private fun createUpdatedItem(item: Item, itemKey: ByteArray): Result<Item> {
+    private suspend fun createUpdatedItem(item: Item, itemKey: ByteArray): Result<Item> {
         val protectedItemData = item.data
         val itemData = createItemData()
 

@@ -11,6 +11,8 @@ import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.bitSize
 import de.sicherheitskritisch.passbutler.base.byteSize
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
@@ -32,11 +34,10 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
 
     sealed class Symmetric(stringRepresentation: String) : EncryptionAlgorithm(stringRepresentation) {
 
-        // TODO: Convert to suspend functions
-        abstract fun generateEncryptionKey(): Result<ByteArray>
-        abstract fun generateInitializationVector(): Result<ByteArray>
-        abstract fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): Result<ByteArray>
-        abstract fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): Result<ByteArray>
+        abstract suspend fun generateEncryptionKey(): Result<ByteArray>
+        abstract suspend fun generateInitializationVector(): Result<ByteArray>
+        abstract suspend fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): Result<ByteArray>
+        abstract suspend fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): Result<ByteArray>
 
         object AES256GCM : EncryptionAlgorithm.Symmetric("AES-256-GCM") {
 
@@ -44,59 +45,65 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
             private const val GCM_INITIALIZATION_VECTOR_BIT_SIZE = 96
             private const val GCM_AUTHENTICATION_TAG_BIT_SIZE = 128
 
-            override fun generateEncryptionKey(): Result<ByteArray> {
-                return try {
-                    val keyGenerator = KeyGenerator.getInstance(KEY_ALGORITHM_AES)
-                    keyGenerator.init(AES_KEY_BIT_SIZE)
+            override suspend fun generateEncryptionKey(): Result<ByteArray> {
+                return withContext(Dispatchers.IO) {
+                    try {
+                        val keyGenerator = KeyGenerator.getInstance(KEY_ALGORITHM_AES)
+                        keyGenerator.init(AES_KEY_BIT_SIZE)
 
-                    val secretKey = keyGenerator.generateKey()
-                    Success(secretKey.encoded)
-                } catch (exception: Exception) {
-                    Failure(exception)
+                        val secretKey = keyGenerator.generateKey()
+                        Success(secretKey.encoded)
+                    } catch (exception: Exception) {
+                        Failure(exception)
+                    }
                 }
             }
 
-            override fun generateInitializationVector(): Result<ByteArray> {
+            override suspend fun generateInitializationVector(): Result<ByteArray> {
                 val bytesCount = GCM_INITIALIZATION_VECTOR_BIT_SIZE.byteSize
                 val generatedInitializationVector = RandomGenerator.generateRandomBytes(bytesCount)
                 return Success(generatedInitializationVector)
             }
 
-            override fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): Result<ByteArray> {
-                return try {
-                    require(initializationVector.bitSize == GCM_INITIALIZATION_VECTOR_BIT_SIZE) { "The initialization vector must be $GCM_INITIALIZATION_VECTOR_BIT_SIZE bits long!" }
-                    require(encryptionKey.bitSize == AES_KEY_BIT_SIZE) { "The encryption key must be $AES_KEY_BIT_SIZE bits long!" }
+            override suspend fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): Result<ByteArray> {
+                return withContext(Dispatchers.Default) {
+                    try {
+                        require(initializationVector.bitSize == GCM_INITIALIZATION_VECTOR_BIT_SIZE) { "The initialization vector must be $GCM_INITIALIZATION_VECTOR_BIT_SIZE bits long!" }
+                        require(encryptionKey.bitSize == AES_KEY_BIT_SIZE) { "The encryption key must be $AES_KEY_BIT_SIZE bits long!" }
 
-                    val secretKeySpec = SecretKeySpec(encryptionKey, KEY_ALGORITHM_AES)
-                    val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_BIT_SIZE, initializationVector)
+                        val secretKeySpec = SecretKeySpec(encryptionKey, KEY_ALGORITHM_AES)
+                        val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_BIT_SIZE, initializationVector)
 
-                    // The GCM is no classic block mode and thus has no padding
-                    val encryptCipherInstance = Cipher.getInstance("$KEY_ALGORITHM_AES/${BLOCK_MODE_GCM}/${ENCRYPTION_PADDING_NONE}")
-                    encryptCipherInstance.init(Cipher.ENCRYPT_MODE, secretKeySpec, gcmParameterSpec)
+                        // The GCM is no classic block mode and thus has no padding
+                        val encryptCipherInstance = Cipher.getInstance("$KEY_ALGORITHM_AES/${BLOCK_MODE_GCM}/${ENCRYPTION_PADDING_NONE}")
+                        encryptCipherInstance.init(Cipher.ENCRYPT_MODE, secretKeySpec, gcmParameterSpec)
 
-                    val encryptedData = encryptCipherInstance.doFinal(data)
-                    Success(encryptedData)
-                } catch (exception: Exception) {
-                    Failure(exception)
+                        val encryptedData = encryptCipherInstance.doFinal(data)
+                        Success(encryptedData)
+                    } catch (exception: Exception) {
+                        Failure(exception)
+                    }
                 }
             }
 
-            override fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): Result<ByteArray> {
-                return try {
-                    require(initializationVector.bitSize == GCM_INITIALIZATION_VECTOR_BIT_SIZE) { "The initialization vector must be $GCM_INITIALIZATION_VECTOR_BIT_SIZE bits long!" }
-                    require(encryptionKey.bitSize == AES_KEY_BIT_SIZE) { "The encryption key must be $AES_KEY_BIT_SIZE bits long!" }
+            override suspend fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): Result<ByteArray> {
+                return withContext(Dispatchers.Default) {
+                    try {
+                        require(initializationVector.bitSize == GCM_INITIALIZATION_VECTOR_BIT_SIZE) { "The initialization vector must be $GCM_INITIALIZATION_VECTOR_BIT_SIZE bits long!" }
+                        require(encryptionKey.bitSize == AES_KEY_BIT_SIZE) { "The encryption key must be $AES_KEY_BIT_SIZE bits long!" }
 
-                    val secretKeySpec = SecretKeySpec(encryptionKey, KEY_ALGORITHM_AES)
-                    val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_BIT_SIZE, initializationVector)
+                        val secretKeySpec = SecretKeySpec(encryptionKey, KEY_ALGORITHM_AES)
+                        val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_BIT_SIZE, initializationVector)
 
-                    // The GCM is no classic block mode and thus has no padding
-                    val encryptCipherInstance = Cipher.getInstance("$KEY_ALGORITHM_AES/${BLOCK_MODE_GCM}/${ENCRYPTION_PADDING_NONE}")
-                    encryptCipherInstance.init(Cipher.DECRYPT_MODE, secretKeySpec, gcmParameterSpec)
+                        // The GCM is no classic block mode and thus has no padding
+                        val encryptCipherInstance = Cipher.getInstance("$KEY_ALGORITHM_AES/${BLOCK_MODE_GCM}/${ENCRYPTION_PADDING_NONE}")
+                        encryptCipherInstance.init(Cipher.DECRYPT_MODE, secretKeySpec, gcmParameterSpec)
 
-                    val decryptedData = encryptCipherInstance.doFinal(data)
-                    Success(decryptedData)
-                } catch (exception: Exception) {
-                    Failure(exception)
+                        val decryptedData = encryptCipherInstance.doFinal(data)
+                        Success(decryptedData)
+                    } catch (exception: Exception) {
+                        Failure(exception)
+                    }
                 }
             }
         }
@@ -104,53 +111,59 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
 
     sealed class Asymmetric(stringRepresentation: String) : EncryptionAlgorithm(stringRepresentation) {
 
-        abstract fun generateKeyPair(): Result<KeyPair>
-        abstract fun encrypt(publicKey: ByteArray, data: ByteArray): Result<ByteArray>
-        abstract fun decrypt(secretKey: ByteArray, data: ByteArray): Result<ByteArray>
+        abstract suspend fun generateKeyPair(): Result<KeyPair>
+        abstract suspend fun encrypt(publicKey: ByteArray, data: ByteArray): Result<ByteArray>
+        abstract suspend fun decrypt(secretKey: ByteArray, data: ByteArray): Result<ByteArray>
 
         object RSA2048OAEP : EncryptionAlgorithm.Asymmetric("RSA-2048-OAEP") {
 
             private const val RSA_KEY_LENGTH = 2048
 
-            override fun generateKeyPair(): Result<KeyPair> {
-                return try {
-                    val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGORITHM_RSA)
-                    keyPairGenerator.initialize(RSA_KEY_LENGTH)
+            override suspend fun generateKeyPair(): Result<KeyPair> {
+                return withContext(Dispatchers.IO) {
+                    try {
+                        val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGORITHM_RSA)
+                        keyPairGenerator.initialize(RSA_KEY_LENGTH)
 
-                    val keyPair = keyPairGenerator.genKeyPair()
-                    Success(keyPair)
-                } catch (exception: Exception) {
-                    Failure(exception)
+                        val keyPair = keyPairGenerator.genKeyPair()
+                        Success(keyPair)
+                    } catch (exception: Exception) {
+                        Failure(exception)
+                    }
                 }
             }
 
-            override fun encrypt(publicKey: ByteArray, data: ByteArray): Result<ByteArray> {
-                return try {
-                    val initializedCipher = Cipher.getInstance("$KEY_ALGORITHM_RSA/$BLOCK_MODE_ECB/$ENCRYPTION_PADDING_RSA_OAEP").apply {
-                        val publicKeyInstance = KeyFactory.getInstance(KEY_ALGORITHM_RSA).generatePublic(X509EncodedKeySpec(publicKey))
-                        val oaepParameterSpec = createOAEPParameterSpec()
-                        init(Cipher.ENCRYPT_MODE, publicKeyInstance, oaepParameterSpec)
-                    }
+            override suspend fun encrypt(publicKey: ByteArray, data: ByteArray): Result<ByteArray> {
+                return withContext(Dispatchers.Default) {
+                    try {
+                        val initializedCipher = Cipher.getInstance("$KEY_ALGORITHM_RSA/$BLOCK_MODE_ECB/$ENCRYPTION_PADDING_RSA_OAEP").apply {
+                            val publicKeyInstance = KeyFactory.getInstance(KEY_ALGORITHM_RSA).generatePublic(X509EncodedKeySpec(publicKey))
+                            val oaepParameterSpec = createOAEPParameterSpec()
+                            init(Cipher.ENCRYPT_MODE, publicKeyInstance, oaepParameterSpec)
+                        }
 
-                    val encryptedData = initializedCipher.doFinal(data)
-                    Success(encryptedData)
-                } catch (exception: Exception) {
-                    Failure(exception)
+                        val encryptedData = initializedCipher.doFinal(data)
+                        Success(encryptedData)
+                    } catch (exception: Exception) {
+                        Failure(exception)
+                    }
                 }
             }
 
-            override fun decrypt(secretKey: ByteArray, data: ByteArray): Result<ByteArray> {
-                return try {
-                    val initializedCipher = Cipher.getInstance("$KEY_ALGORITHM_RSA/$BLOCK_MODE_ECB/$ENCRYPTION_PADDING_RSA_OAEP").apply {
-                        val secretKeyInstance = KeyFactory.getInstance(KEY_ALGORITHM_RSA).generatePrivate(PKCS8EncodedKeySpec(secretKey))
-                        val oaepParameterSpec = createOAEPParameterSpec()
-                        init(Cipher.DECRYPT_MODE, secretKeyInstance, oaepParameterSpec)
-                    }
+            override suspend fun decrypt(secretKey: ByteArray, data: ByteArray): Result<ByteArray> {
+                return withContext(Dispatchers.Default) {
+                    try {
+                        val initializedCipher = Cipher.getInstance("$KEY_ALGORITHM_RSA/$BLOCK_MODE_ECB/$ENCRYPTION_PADDING_RSA_OAEP").apply {
+                            val secretKeyInstance = KeyFactory.getInstance(KEY_ALGORITHM_RSA).generatePrivate(PKCS8EncodedKeySpec(secretKey))
+                            val oaepParameterSpec = createOAEPParameterSpec()
+                            init(Cipher.DECRYPT_MODE, secretKeyInstance, oaepParameterSpec)
+                        }
 
-                    val decryptedData = initializedCipher.doFinal(data)
-                    Success(decryptedData)
-                } catch (exception: Exception) {
-                    Failure(exception)
+                        val decryptedData = initializedCipher.doFinal(data)
+                        Success(decryptedData)
+                    } catch (exception: Exception) {
+                        Failure(exception)
+                    }
                 }
             }
 
