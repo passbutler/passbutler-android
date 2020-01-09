@@ -85,19 +85,22 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         val encryptedMasterPassword = loggedInUserViewModel.encryptedMasterPassword?.encryptedValue
             ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
 
-        // TODO: Exception handling?
-        val masterPassword = Biometrics.decryptData(initializedBiometricUnlockCipher, encryptedMasterPassword).resultOrThrowException().toUTF8String()
-        val decryptSensibleDataResult = loggedInUserViewModel.decryptSensibleData(masterPassword)
+        return try {
+            val masterPassword = Biometrics.decryptData(initializedBiometricUnlockCipher, encryptedMasterPassword).resultOrThrowException().toUTF8String()
+            loggedInUserViewModel.decryptSensibleData(masterPassword).resultOrThrowException()
 
-        if (decryptSensibleDataResult is Success && loggedInUserViewModel.isServerUserType) {
-            // Restore webservices asynchronously to avoid slow network is blocking unlock progress
-            launch {
-                userManager.restoreWebservices(masterPassword)
-                loggedInUserViewModel.isSynchronizationPossible.notifyChange()
+            if (loggedInUserViewModel.isServerUserType) {
+                // Restore webservices asynchronously to avoid slow network is blocking unlock progress
+                launch {
+                    userManager.restoreWebservices(masterPassword)
+                    loggedInUserViewModel.isSynchronizationPossible.notifyChange()
+                }
             }
-        }
 
-        return decryptSensibleDataResult
+            Success(Unit)
+        } catch (exception: Exception) {
+            Failure(exception)
+        }
     }
 
     fun rootFragmentWasPaused() {
