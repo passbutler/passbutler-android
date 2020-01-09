@@ -160,7 +160,7 @@ class UserViewModel private constructor(
             try {
                 masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation).resultOrThrowException()
 
-                val decryptedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer)
+                val decryptedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer).resultOrThrowException()
                 Success(decryptedMasterEncryptionKey.key)
             } catch (exception: Exception) {
                 // Wrap the thrown exception to be able to determine if this call failed (used to show concrete error string in UI)
@@ -176,7 +176,7 @@ class UserViewModel private constructor(
     private suspend fun decryptItemEncryptionSecretKey(masterEncryptionKey: ByteArray): Result<ByteArray> {
         return withContext(Dispatchers.Default) {
             try {
-                val decryptedItemEncryptionSecretKey = protectedItemEncryptionSecretKey.decrypt(masterEncryptionKey, CryptographicKey.Deserializer)
+                val decryptedItemEncryptionSecretKey = protectedItemEncryptionSecretKey.decrypt(masterEncryptionKey, CryptographicKey.Deserializer).resultOrThrowException()
                 Success(decryptedItemEncryptionSecretKey.key)
             } catch (exception: Exception) {
                 Failure(exception)
@@ -187,7 +187,7 @@ class UserViewModel private constructor(
     private suspend fun decryptUserSettings(masterEncryptionKey: ByteArray): Result<UserSettings> {
         return withContext(Dispatchers.Default) {
             try {
-                val decryptedUserSettings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer)
+                val decryptedUserSettings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer).resultOrThrowException()
                 Success(decryptedUserSettings)
             } catch (exception: Exception) {
                 Failure(exception)
@@ -282,7 +282,7 @@ class UserViewModel private constructor(
                 masterPasswordAuthenticationHash = newServerMasterPasswordAuthenticationHash
 
                 newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation).resultOrThrowException()
-                protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey))
+                protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey)).resultOrThrowException()
 
                 // Disable biometric unlock because master password re-encryption would require biometric authentication and made flow more complex
                 disableBiometricUnlock().resultOrThrowException()
@@ -373,7 +373,7 @@ class UserViewModel private constructor(
             if (masterEncryptionKey != null) {
                 try {
                     withContext(Dispatchers.Default) {
-                        protectedSettings.update(masterEncryptionKey, settings)
+                        protectedSettings.update(masterEncryptionKey, settings).resultOrThrowException()
                     }
 
                     val user = createModel()

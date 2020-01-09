@@ -56,10 +56,10 @@ class ItemViewModel(
     suspend fun decryptSensibleData(userItemEncryptionSecretKey: ByteArray): Result<Unit> {
         return withContext(Dispatchers.Default) {
             try {
-                val decryptedItemKey = itemAuthorization.itemKey.decrypt(userItemEncryptionSecretKey, CryptographicKey.Deserializer).key
+                val decryptedItemKey = itemAuthorization.itemKey.decrypt(userItemEncryptionSecretKey, CryptographicKey.Deserializer).resultOrThrowException().key
                 itemKey = decryptedItemKey
 
-                val decryptedItemData = item.data.decrypt(decryptedItemKey, ItemData.Deserializer)
+                val decryptedItemData = item.data.decrypt(decryptedItemKey, ItemData.Deserializer).resultOrThrowException()
                 itemData = decryptedItemData
 
                 Success(Unit)
@@ -158,11 +158,11 @@ class ItemEditingViewModel(
 
         return try {
             val itemKey = withContext(Dispatchers.IO) {
-                symmetricEncryptionAlgorithm.generateEncryptionKey()
+                symmetricEncryptionAlgorithm.generateEncryptionKey().resultOrThrowException()
             }
 
             val protectedItemData = withContext(Dispatchers.Default) {
-                ProtectedValue.create(symmetricEncryptionAlgorithm, itemKey, itemData)
+                ProtectedValue.create(symmetricEncryptionAlgorithm, itemKey, itemData).resultOrThrowException()
             }
 
             val currentDate = Date()
@@ -186,7 +186,7 @@ class ItemEditingViewModel(
 
         return try {
             val protectedItemKey = withContext(Dispatchers.Default) {
-                ProtectedValue.create(asymmetricEncryptionAlgorithm, loggedInUserItemEncryptionPublicKey, CryptographicKey(itemKey))
+                ProtectedValue.create(asymmetricEncryptionAlgorithm, loggedInUserItemEncryptionPublicKey, CryptographicKey(itemKey)).resultOrThrowException()
             }
 
             val currentDate = Date()
@@ -226,7 +226,7 @@ class ItemEditingViewModel(
         val itemData = createItemData()
 
         return try {
-            protectedItemData.update(itemKey, itemData)
+            protectedItemData.update(itemKey, itemData).resultOrThrowException()
 
             val currentDate = Date()
             val updatedItem = item.copy(

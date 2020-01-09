@@ -2,10 +2,13 @@ package de.sicherheitskritisch.passbutler.crypto.models
 
 import android.util.Log
 import de.sicherheitskritisch.passbutler.assertJSONObjectEquals
+import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.JSONSerializableDeserializer
+import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.putString
+import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue.Companion.createInstanceForTesting
 import de.sicherheitskritisch.passbutler.hexToBytes
@@ -19,7 +22,6 @@ import org.json.JSONObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -98,11 +100,10 @@ class ProtectedValueTest {
         val unusedEncryptionKey = createNonClearedEncryptionKey()
         val testJSONSerializable = TestJSONSerializable("testValue")
 
-        val exception = assertThrows(ProtectedValue.CreateFailedException::class.java) {
-            ProtectedValue.create(mockAES256GCMAlgorithm, unusedEncryptionKey, testJSONSerializable)
-        }
+        val result = ProtectedValue.create(mockAES256GCMAlgorithm, unusedEncryptionKey, testJSONSerializable)
+        val exception = (result as Failure).throwable
 
-        assertTrue(exception.cause is EncryptionAlgorithm.EncryptionFailedException)
+        assertTrue(exception is EncryptionFailedException)
     }
 
     @Test
@@ -113,7 +114,7 @@ class ProtectedValueTest {
         val unusedEncryptionKey = createNonClearedEncryptionKey()
         val testJSONSerializable = TestJSONSerializable("testValue")
 
-        val protectedValue = ProtectedValue.create(mockAES256GCMAlgorithm, unusedEncryptionKey, testJSONSerializable)
+        val protectedValue = ProtectedValue.create(mockAES256GCMAlgorithm, unusedEncryptionKey, testJSONSerializable).resultOrThrowException()
 
         assertArrayEquals(initializationVector, protectedValue.initializationVector)
         assertEquals(mockAES256GCMAlgorithm, protectedValue.encryptionAlgorithm)
@@ -134,11 +135,10 @@ class ProtectedValueTest {
 
         val testJSONSerializable = TestJSONSerializable("testValue")
 
-        val exception = assertThrows(ProtectedValue.CreateFailedException::class.java) {
-            ProtectedValue.create(mockAES256GCMAlgorithm, encryptionKey, testJSONSerializable)
-        }
+        val result = ProtectedValue.create(mockAES256GCMAlgorithm, encryptionKey, testJSONSerializable)
+        val exception = (result as Failure).throwable
 
-        assertEquals("The given encryption key can't be used because it is cleared!", (exception.cause as IllegalArgumentException).message)
+        assertEquals("The given encryption key can't be used because it is cleared!", exception.message)
     }
 
     /**
@@ -160,7 +160,7 @@ class ProtectedValueTest {
 
         val unusedEncryptionKey = createNonClearedEncryptionKey()
         val updatedJSONSerializable = TestJSONSerializable("testValue")
-        protectedValue.update(unusedEncryptionKey, updatedJSONSerializable)
+        protectedValue.update(unusedEncryptionKey, updatedJSONSerializable).resultOrThrowException()
 
         assertArrayEquals(updatedInitializationVector, protectedValue.initializationVector)
         assertEquals(mockAES256GCMAlgorithm, protectedValue.encryptionAlgorithm)
@@ -183,11 +183,10 @@ class ProtectedValueTest {
         val unusedEncryptionKey = createNonClearedEncryptionKey()
         val updatedJSONSerializable = TestJSONSerializable("testValue")
 
-        val exception = assertThrows(ProtectedValue.UpdateFailedException::class.java) {
-            protectedValue.update(unusedEncryptionKey, updatedJSONSerializable)
-        }
+        val result = protectedValue.update(unusedEncryptionKey, updatedJSONSerializable)
+        val exception = (result as Failure).throwable
 
-        assertTrue(exception.cause is EncryptionAlgorithm.EncryptionFailedException)
+        assertTrue(exception is EncryptionFailedException)
 
         assertArrayEquals(initialInitializationVector, protectedValue.initializationVector)
         assertEquals(mockAES256GCMAlgorithm, protectedValue.encryptionAlgorithm)
@@ -215,11 +214,10 @@ class ProtectedValueTest {
 
         val unusedJSONSerializable = mockk<TestJSONSerializable>()
 
-        val exception = assertThrows(ProtectedValue.UpdateFailedException::class.java) {
-            protectedValue.update(encryptionKey, unusedJSONSerializable)
-        }
+        val result = protectedValue.update(encryptionKey, unusedJSONSerializable)
+        val exception = (result as Failure).throwable
 
-        assertEquals("The given encryption key can't be used because it is cleared!", (exception.cause as IllegalArgumentException).message)
+        assertEquals("The given encryption key can't be used because it is cleared!", exception.message)
     }
 
     /**
@@ -232,7 +230,7 @@ class ProtectedValueTest {
 
         val dataCaptureSlot = slot<ByteArray>()
         every { mockAES256GCMAlgorithm.decrypt(initializationVector = any(), encryptionKey = any(), data = capture(dataCaptureSlot)) } answers {
-            dataCaptureSlot.captured
+            Success(dataCaptureSlot.captured)
         }
 
         val unusedInitializationVector = ByteArray(0)
@@ -244,7 +242,7 @@ class ProtectedValueTest {
         )
 
         val unusedEncryptionKey = createNonClearedEncryptionKey()
-        val decryptedTestJSONSerializable = protectedValue.decrypt(unusedEncryptionKey, TestJSONSerializable.Deserializer)
+        val decryptedTestJSONSerializable = protectedValue.decrypt(unusedEncryptionKey, TestJSONSerializable.Deserializer).resultOrThrowException()
 
         assertEquals("testValue", decryptedTestJSONSerializable.testField)
     }
@@ -268,9 +266,8 @@ class ProtectedValueTest {
             it.clear()
         }
 
-        val exception = assertThrows(ProtectedValue.DecryptFailedException::class.java) {
-            protectedValue.decrypt(encryptionKey, TestJSONSerializable.Deserializer)
-        }
+        val result = protectedValue.decrypt(encryptionKey, TestJSONSerializable.Deserializer)
+        val exception = (result as Failure).throwable
 
         assertEquals("The given encryption key can't be used because it is cleared!", (exception.cause as IllegalArgumentException).message)
     }
@@ -314,14 +311,14 @@ class ProtectedValueTest {
         private fun createMockAlgorithmAES256GCMWithoutEncryption(generatedInitializationVector: ByteArray, shouldEncryptionFail: Boolean = false): EncryptionAlgorithm.Symmetric.AES256GCM {
             val mockAES256GCMAlgorithm = mockk<EncryptionAlgorithm.Symmetric.AES256GCM>()
             every { mockAES256GCMAlgorithm.stringRepresentation } returns EncryptionAlgorithm.Symmetric.AES256GCM.stringRepresentation
-            every { mockAES256GCMAlgorithm.generateInitializationVector() } returns generatedInitializationVector
+            every { mockAES256GCMAlgorithm.generateInitializationVector() } returns Success(generatedInitializationVector)
 
             val dataCaptureSlot = slot<ByteArray>()
             every { mockAES256GCMAlgorithm.encrypt(initializationVector = any(), encryptionKey = any(), data = capture(dataCaptureSlot)) } answers {
                 if (shouldEncryptionFail) {
-                    throw EncryptionAlgorithm.EncryptionFailedException()
+                    Failure(EncryptionFailedException())
                 } else {
-                    dataCaptureSlot.captured
+                    Success(dataCaptureSlot.captured)
                 }
             }
 
@@ -329,6 +326,8 @@ class ProtectedValueTest {
         }
     }
 }
+
+private class EncryptionFailedException: Exception()
 
 private fun createNonClearedEncryptionKey(): ByteArray {
     return ByteArray(1) { 1 }

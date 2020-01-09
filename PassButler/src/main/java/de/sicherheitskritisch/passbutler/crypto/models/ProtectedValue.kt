@@ -1,12 +1,16 @@
 package de.sicherheitskritisch.passbutler.crypto.models
 
+import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.JSONSerializableDeserializer
 import de.sicherheitskritisch.passbutler.base.L
+import de.sicherheitskritisch.passbutler.base.Result
+import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.getByteArray
 import de.sicherheitskritisch.passbutler.base.putByteArray
 import de.sicherheitskritisch.passbutler.base.putJSONSerializable
 import de.sicherheitskritisch.passbutler.base.putString
+import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.toHexString
 import de.sicherheitskritisch.passbutler.base.toUTF8String
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
@@ -41,48 +45,45 @@ class ProtectedValue<T : JSONSerializable> private constructor(
         )
     }
 
-    @Throws(DecryptFailedException::class)
-    fun decrypt(encryptionKey: ByteArray, deserializer: JSONSerializableDeserializer<T>): T {
+    fun decrypt(encryptionKey: ByteArray, deserializer: JSONSerializableDeserializer<T>): Result<T> {
+        return try {
+            require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
+
+            val decryptedBytes = when (encryptionAlgorithm) {
+                is EncryptionAlgorithm.Symmetric -> {
+                    encryptionAlgorithm.decrypt(initializationVector, encryptionKey, encryptedValue).resultOrThrowException()
+                }
+                is EncryptionAlgorithm.Asymmetric -> {
+                    encryptionAlgorithm.decrypt(encryptionKey, encryptedValue).resultOrThrowException()
+                }
+            }
+
+            val jsonSerializedString = decryptedBytes.toUTF8String()
+            val deserializedResultValue = deserializer.deserialize(jsonSerializedString)
+
+            Success(deserializedResultValue)
+        } catch (exception: JSONException) {
+            Failure(Exception("The value could not be deserialized!", exception))
+        } catch (exception: Exception) {
+            Failure(Exception("The value could not be decrypted!", exception))
+        }
+    }
+
+    fun update(encryptionKey: ByteArray, updatedValue: T): Result<Unit> {
         return try {
             require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 
             when (encryptionAlgorithm) {
                 is EncryptionAlgorithm.Symmetric -> {
-                    encryptionAlgorithm.decrypt(initializationVector, encryptionKey, encryptedValue).let { decryptedBytes ->
-                        val jsonSerializedString = decryptedBytes.toUTF8String()
-                        deserializer.deserialize(jsonSerializedString)
-                    }
-                }
-                is EncryptionAlgorithm.Asymmetric -> {
-                    encryptionAlgorithm.decrypt(encryptionKey, encryptedValue).let { decryptedBytes ->
-                        val jsonSerializedString = decryptedBytes.toUTF8String()
-                        deserializer.deserialize(jsonSerializedString)
-                    }
-                }
-            }
-        } catch (exception: JSONException) {
-            throw DecryptFailedException("The value could not be deserialized!", exception)
-        } catch (exception: Exception) {
-            throw DecryptFailedException("The value could not be decrypted!", exception)
-        }
-    }
-
-    @Throws(UpdateFailedException::class)
-    fun update(encryptionKey: ByteArray, updatedValue: T) {
-        try {
-            require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
-
-            when (encryptionAlgorithm) {
-                is EncryptionAlgorithm.Symmetric -> {
-                    val newInitializationVector = encryptionAlgorithm.generateInitializationVector()
-                    val newEncryptedValue = encryptionAlgorithm.encrypt(newInitializationVector, encryptionKey, updatedValue.toByteArray())
+                    val newInitializationVector = encryptionAlgorithm.generateInitializationVector().resultOrThrowException()
+                    val newEncryptedValue = encryptionAlgorithm.encrypt(newInitializationVector, encryptionKey, updatedValue.toByteArray()).resultOrThrowException()
 
                     // Update values only if encryption was successful
                     initializationVector = newInitializationVector
                     encryptedValue = newEncryptedValue
                 }
                 is EncryptionAlgorithm.Asymmetric -> {
-                    val newEncryptedValue = encryptionAlgorithm.encrypt(encryptionKey, updatedValue.toByteArray())
+                    val newEncryptedValue = encryptionAlgorithm.encrypt(encryptionKey, updatedValue.toByteArray()).resultOrThrowException()
 
                     // Update values only if encryption was successful
                     initializationVector = ByteArray(0)
@@ -90,8 +91,9 @@ class ProtectedValue<T : JSONSerializable> private constructor(
                 }
             }
 
+            Success(Unit)
         } catch (exception: Exception) {
-            throw UpdateFailedException(exception)
+            Failure(exception)
         }
     }
 
@@ -146,25 +148,26 @@ class ProtectedValue<T : JSONSerializable> private constructor(
     companion object {
         const val SERIALIZATION_KEY_ENCRYPTION_ALGORITHM = "encryptionAlgorithm"
 
-        @Throws(CreateFailedException::class)
-        fun <T : JSONSerializable> create(encryptionAlgorithm: EncryptionAlgorithm, encryptionKey: ByteArray, initialValue: T): ProtectedValue<T> {
+        fun <T : JSONSerializable> create(encryptionAlgorithm: EncryptionAlgorithm, encryptionKey: ByteArray, initialValue: T): Result<ProtectedValue<T>> {
             return try {
                 require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 
-                when (encryptionAlgorithm) {
+                val createdProtectedValue: ProtectedValue<T> = when (encryptionAlgorithm) {
                     is EncryptionAlgorithm.Symmetric -> {
-                        val newInitializationVector = encryptionAlgorithm.generateInitializationVector()
-                        val encryptedValue = encryptionAlgorithm.encrypt(newInitializationVector, encryptionKey, initialValue.toByteArray())
+                        val newInitializationVector = encryptionAlgorithm.generateInitializationVector().resultOrThrowException()
+                        val encryptedValue = encryptionAlgorithm.encrypt(newInitializationVector, encryptionKey, initialValue.toByteArray()).resultOrThrowException()
                         ProtectedValue(newInitializationVector, encryptedValue, encryptionAlgorithm)
                     }
                     is EncryptionAlgorithm.Asymmetric -> {
                         val newInitializationVector = ByteArray(0)
-                        val encryptedValue = encryptionAlgorithm.encrypt(encryptionKey, initialValue.toByteArray())
+                        val encryptedValue = encryptionAlgorithm.encrypt(encryptionKey, initialValue.toByteArray()).resultOrThrowException()
                         ProtectedValue(newInitializationVector, encryptedValue, encryptionAlgorithm)
                     }
                 }
+
+                Success(createdProtectedValue)
             } catch (exception: Exception) {
-                throw CreateFailedException(exception)
+                Failure(exception)
             }
         }
 
@@ -172,11 +175,6 @@ class ProtectedValue<T : JSONSerializable> private constructor(
             return ProtectedValue(initializationVector, encryptedValue, encryptionAlgorithm)
         }
     }
-
-    // TODO: Use `Result` instead
-    class CreateFailedException(cause: Exception? = null) : Exception(cause)
-    class DecryptFailedException(message: String, cause: Exception? = null) : Exception(message, cause)
-    class UpdateFailedException(cause: Exception? = null) : Exception(cause)
 }
 
 /**

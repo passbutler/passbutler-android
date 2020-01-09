@@ -1,10 +1,14 @@
 package de.sicherheitskritisch.passbutler.crypto
 
 import de.sicherheitskritisch.passbutler.assertByteArrayEquals
+import de.sicherheitskritisch.passbutler.base.Failure
+import de.sicherheitskritisch.passbutler.base.Result
+import de.sicherheitskritisch.passbutler.base.Success
+import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.toHexString
 import de.sicherheitskritisch.passbutler.hexToBytes
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.math.BigInteger
 import java.security.KeyFactory
@@ -21,50 +25,50 @@ class SymmetricEncryptionTest {
     fun `Encrypt with an empty initialization vector throws an exception`() {
         val testVector = invalidTestVectors.getValue("tooLongInitializationVector")
 
-        val exception = assertThrows(EncryptionAlgorithm.EncryptionFailedException::class.java) {
-            encryptAES256GCM(testVector)
-        }
+        val result = encryptAES256GCM(testVector)
+        val exception = (result as Failure).throwable
 
-        assertEquals("The initialization vector must be 96 bits long!", (exception.cause as IllegalArgumentException).message)
+        assertTrue(exception is IllegalArgumentException)
+        assertEquals("The initialization vector must be 96 bits long!", exception.message)
     }
 
     @Test
     fun `Encrypt with a too long initialization vector throws an exception`() {
         val testVector = invalidTestVectors.getValue("emptyInitializationVector")
 
-        val exception = assertThrows(EncryptionAlgorithm.EncryptionFailedException::class.java) {
-            encryptAES256GCM(testVector)
-        }
+        val result = encryptAES256GCM(testVector)
+        val exception = (result as Failure).throwable
 
-        assertEquals("The initialization vector must be 96 bits long!", (exception.cause as IllegalArgumentException).message)
+        assertTrue(exception is IllegalArgumentException)
+        assertEquals("The initialization vector must be 96 bits long!", exception.message)
     }
 
     @Test
     fun `Encrypt with an empty key throws an exception`() {
         val testVector = invalidTestVectors.getValue("emptyKey")
 
-        val exception = assertThrows(EncryptionAlgorithm.EncryptionFailedException::class.java) {
-            encryptAES256GCM(testVector)
-        }
+        val result = encryptAES256GCM(testVector)
+        val exception = (result as Failure).throwable
 
-        assertEquals("The encryption key must be 256 bits long!", (exception.cause as IllegalArgumentException).message)
+        assertTrue(exception is IllegalArgumentException)
+        assertEquals("The encryption key must be 256 bits long!", exception.message)
     }
 
     @Test
     fun `Encrypt with a too long key throws an exception`() {
         val testVector = invalidTestVectors.getValue("tooLongKey")
 
-        val exception = assertThrows(EncryptionAlgorithm.EncryptionFailedException::class.java) {
-            encryptAES256GCM(testVector)
-        }
+        val result = encryptAES256GCM(testVector)
+        val exception = (result as Failure).throwable
 
-        assertEquals("The encryption key must be 256 bits long!", (exception.cause as IllegalArgumentException).message)
+        assertTrue(exception is IllegalArgumentException)
+        assertEquals("The encryption key must be 256 bits long!", exception.message)
     }
 
     @Test
     fun `Encrypt AES-256-GCM valid test vectors`() {
         validTestVectors.forEach { testVector ->
-            val encryptionResult = encryptAES256GCM(testVector)
+            val encryptionResult = encryptAES256GCM(testVector).resultOrThrowException()
             assertEquals(testVector.cipherText + testVector.tag, encryptionResult)
         }
 
@@ -79,50 +83,50 @@ class SymmetricEncryptionTest {
     fun `Decrypt with an empty initialization vector throws an exception`() {
         val testVector = invalidTestVectors.getValue("tooLongInitializationVector")
 
-        val exception = assertThrows(EncryptionAlgorithm.DecryptionFailedException::class.java) {
-            decryptAES256GCM(testVector)
-        }
+        val result = decryptAES256GCM(testVector)
+        val exception = (result as Failure).throwable
 
-        assertEquals("The initialization vector must be 96 bits long!", (exception.cause as IllegalArgumentException).message)
+        assertTrue(exception is IllegalArgumentException)
+        assertEquals("The initialization vector must be 96 bits long!", exception.message)
     }
 
     @Test
     fun `Decrypt with a too long initialization vector throws an exception`() {
         val testVector = invalidTestVectors.getValue("emptyInitializationVector")
 
-        val exception = assertThrows(EncryptionAlgorithm.DecryptionFailedException::class.java) {
-            decryptAES256GCM(testVector)
-        }
+        val result = decryptAES256GCM(testVector)
+        val exception = (result as Failure).throwable
 
-        assertEquals("The initialization vector must be 96 bits long!", (exception.cause as IllegalArgumentException).message)
+        assertTrue(exception is IllegalArgumentException)
+        assertEquals("The initialization vector must be 96 bits long!", exception.message)
     }
 
     @Test
     fun `Decrypt with an empty key throws an exception`() {
         val testVector = invalidTestVectors.getValue("emptyKey")
 
-        val exception = assertThrows(EncryptionAlgorithm.DecryptionFailedException::class.java) {
-            decryptAES256GCM(testVector)
-        }
+        val result = decryptAES256GCM(testVector)
+        val exception = (result as Failure).throwable
 
-        assertEquals("The encryption key must be 256 bits long!", (exception.cause as IllegalArgumentException).message)
+        assertTrue(exception is IllegalArgumentException)
+        assertEquals("The encryption key must be 256 bits long!", exception.message)
     }
 
     @Test
     fun `Decrypt with a too long key throws an exception`() {
         val testVector = invalidTestVectors.getValue("tooLongKey")
 
-        val exception = assertThrows(EncryptionAlgorithm.DecryptionFailedException::class.java) {
-            decryptAES256GCM(testVector)
-        }
+        val result = decryptAES256GCM(testVector)
+        val exception = (result as Failure).throwable
 
-        assertEquals("The encryption key must be 256 bits long!", (exception.cause as IllegalArgumentException).message)
+        assertTrue(exception is IllegalArgumentException)
+        assertEquals("The encryption key must be 256 bits long!", exception.message)
     }
 
     @Test
     fun `Decrypt AES-256-GCM valid test vectors`() {
         validTestVectors.forEach { testVector ->
-            val decryptionResult = decryptAES256GCM(testVector)
+            val decryptionResult = decryptAES256GCM(testVector).resultOrThrowException()
             assertEquals(testVector.plainText, decryptionResult)
         }
 
@@ -255,20 +259,28 @@ class SymmetricEncryptionTest {
             )
         )
 
-        private fun encryptAES256GCM(testVector: SymmetricTestVector): String {
-            return EncryptionAlgorithm.Symmetric.AES256GCM.encrypt(
+        private fun encryptAES256GCM(testVector: SymmetricTestVector): Result<String> {
+            val result = EncryptionAlgorithm.Symmetric.AES256GCM.encrypt(
                 initializationVector = testVector.initializationVector.hexToBytes(),
                 encryptionKey = testVector.key.hexToBytes(),
                 data = testVector.plainText.hexToBytes()
-            ).toHexString()
+            )
+            return when (result) {
+                is Success -> Success(result.result.toHexString())
+                is Failure -> Failure(result.throwable)
+            }
         }
 
-        private fun decryptAES256GCM(testVector: SymmetricTestVector): String {
-            return EncryptionAlgorithm.Symmetric.AES256GCM.decrypt(
+        private fun decryptAES256GCM(testVector: SymmetricTestVector): Result<String> {
+            val result = EncryptionAlgorithm.Symmetric.AES256GCM.decrypt(
                 initializationVector = testVector.initializationVector.hexToBytes(),
                 encryptionKey = testVector.key.hexToBytes(),
                 data = (testVector.cipherText + testVector.tag).hexToBytes()
-            ).toHexString()
+            )
+            return when (result) {
+                is Success -> Success(result.result.toHexString())
+                is Failure -> Failure(result.throwable)
+            }
         }
     }
 }
@@ -301,7 +313,7 @@ class AsymmetricEncryptionTest {
         )
 
         val secretKeyBytes = createSecretKeyBytes(testVectorWithData)
-        val plainText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, testVectorWithData.cipherText.hexToBytes())
+        val plainText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, testVectorWithData.cipherText.hexToBytes()).resultOrThrowException()
         assertByteArrayEquals(testVectorWithData.plainText.hexToBytes(), plainText)
     }
 
@@ -316,7 +328,7 @@ class AsymmetricEncryptionTest {
         )
 
         val secretKeyBytes = createSecretKeyBytes(testVectorWithData)
-        val plainText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, testVectorWithData.cipherText.hexToBytes())
+        val plainText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, testVectorWithData.cipherText.hexToBytes()).resultOrThrowException()
         assertByteArrayEquals(testVectorWithData.plainText.hexToBytes(), plainText)
     }
 
@@ -329,10 +341,10 @@ class AsymmetricEncryptionTest {
         val plainText = "".hexToBytes()
 
         val publicKeyBytes = createPublicKeyBytes(encryptDecryptTestVector)
-        val encryptedPlainText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.encrypt(publicKeyBytes, plainText)
+        val encryptedPlainText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.encrypt(publicKeyBytes, plainText).resultOrThrowException()
 
         val secretKeyBytes = createSecretKeyBytes(encryptDecryptTestVector)
-        val decryptedCipherText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, encryptedPlainText)
+        val decryptedCipherText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, encryptedPlainText).resultOrThrowException()
 
         assertByteArrayEquals(plainText, decryptedCipherText)
     }
@@ -342,10 +354,10 @@ class AsymmetricEncryptionTest {
         val plainText = "087820b569e8fa8d".hexToBytes()
 
         val publicKeyBytes = createPublicKeyBytes(encryptDecryptTestVector)
-        val encryptedPlainText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.encrypt(publicKeyBytes, plainText)
+        val encryptedPlainText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.encrypt(publicKeyBytes, plainText).resultOrThrowException()
 
         val secretKeyBytes = createSecretKeyBytes(encryptDecryptTestVector)
-        val decryptedCipherText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, encryptedPlainText)
+        val decryptedCipherText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, encryptedPlainText).resultOrThrowException()
 
         assertByteArrayEquals(plainText, decryptedCipherText)
     }
@@ -355,10 +367,10 @@ class AsymmetricEncryptionTest {
         val plainText = "4653acaf171960b01f52a7be63a3ab21dc368ec43b50d82ec3781e04".hexToBytes()
 
         val publicKeyBytes = createPublicKeyBytes(encryptDecryptTestVector)
-        val encryptedPlainText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.encrypt(publicKeyBytes, plainText)
+        val encryptedPlainText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.encrypt(publicKeyBytes, plainText).resultOrThrowException()
 
         val secretKeyBytes = createSecretKeyBytes(encryptDecryptTestVector)
-        val decryptedCipherText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, encryptedPlainText)
+        val decryptedCipherText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, encryptedPlainText).resultOrThrowException()
 
         assertByteArrayEquals(plainText, decryptedCipherText)
     }
@@ -368,10 +380,10 @@ class AsymmetricEncryptionTest {
         val plainText = "3c3bad893c544a6d520ab022319188c8d504b7a788b850903b85972eaa18552e1134a7ad6098826254ff7ab672b3d8eb3158fac6d4cbaef1".hexToBytes()
 
         val publicKeyBytes = createPublicKeyBytes(encryptDecryptTestVector)
-        val encryptedPlainText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.encrypt(publicKeyBytes, plainText)
+        val encryptedPlainText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.encrypt(publicKeyBytes, plainText).resultOrThrowException()
 
         val secretKeyBytes = createSecretKeyBytes(encryptDecryptTestVector)
-        val decryptedCipherText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, encryptedPlainText)
+        val decryptedCipherText = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, encryptedPlainText).resultOrThrowException()
 
         assertByteArrayEquals(plainText, decryptedCipherText)
     }

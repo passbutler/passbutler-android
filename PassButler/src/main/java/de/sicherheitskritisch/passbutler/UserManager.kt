@@ -102,11 +102,11 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
             masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation).resultOrThrowException()
             masterEncryptionKey = withContext(Dispatchers.IO) {
-                EncryptionAlgorithm.Symmetric.AES256GCM.generateEncryptionKey()
+                EncryptionAlgorithm.Symmetric.AES256GCM.generateEncryptionKey().resultOrThrowException()
             }
 
             val serializableMasterEncryptionKey = CryptographicKey(masterEncryptionKey)
-            val protectedMasterEncryptionKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterKey, serializableMasterEncryptionKey)
+            val protectedMasterEncryptionKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterKey, serializableMasterEncryptionKey).resultOrThrowException()
 
             val (itemEncryptionPublicKey, protectedItemEncryptionSecretKey) = generateItemEncryptionKeyPair(masterEncryptionKey)
             val protectedUserSettings = createUserSettings(masterEncryptionKey)
@@ -149,6 +149,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         }
     }
 
+    // TODO: Return `Result`?
     private suspend fun deriveServerMasterPasswordAuthenticationHash(username: String, masterPassword: String): String {
         val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
         val serverMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(masterPasswordAuthenticationHash).resultOrThrowException()
@@ -163,14 +164,15 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         return masterKeyDerivationInformation
     }
 
+    // TODO: Return `Result`?
     private suspend fun generateItemEncryptionKeyPair(masterEncryptionKey: ByteArray): Pair<CryptographicKey, ProtectedValue<CryptographicKey>> {
         return withContext(Dispatchers.Default) {
-            val itemEncryptionKeyPair = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.generateKeyPair()
+            val itemEncryptionKeyPair = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.generateKeyPair().resultOrThrowException()
 
             val serializableItemEncryptionPublicKey = CryptographicKey(itemEncryptionKeyPair.public.encoded)
 
             val serializableItemEncryptionSecretKey = CryptographicKey(itemEncryptionKeyPair.private.encoded)
-            val protectedItemEncryptionSecretKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, serializableItemEncryptionSecretKey)
+            val protectedItemEncryptionSecretKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, serializableItemEncryptionSecretKey).resultOrThrowException()
 
             Pair(serializableItemEncryptionPublicKey, protectedItemEncryptionSecretKey)
         }
@@ -179,7 +181,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     private suspend fun createUserSettings(masterEncryptionKey: ByteArray): ProtectedValue<UserSettings> {
         return withContext(Dispatchers.Default) {
             val userSettings = UserSettings()
-            val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, userSettings)
+            val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, userSettings).resultOrThrowException()
             protectedUserSettings
         }
     }
