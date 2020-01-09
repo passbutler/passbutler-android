@@ -35,10 +35,9 @@ object Biometrics {
 
     val isHardwareCapable: Boolean
         get() {
-            val biometricManager = applicationContext.getSystemService(BiometricManager::class.java)
-
+            val biometricManager = BiometricManager.from(applicationContext)
             val isHardwareSupportedConstants = listOf(BiometricManager.BIOMETRIC_SUCCESS, BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED)
-            val canAuthenticateResult = biometricManager?.canAuthenticate()
+            val canAuthenticateResult = biometricManager.canAuthenticate()
 
             return isHardwareSupportedConstants.contains(canAuthenticateResult)
         }
@@ -51,8 +50,8 @@ object Biometrics {
 
     val hasEnrolledBiometrics: Boolean
         get() {
-            val biometricManager = applicationContext.getSystemService(BiometricManager::class.java)
-            return biometricManager?.canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS
+            val biometricManager = BiometricManager.from(applicationContext)
+            return biometricManager.canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS
         }
 
     private val applicationContext
