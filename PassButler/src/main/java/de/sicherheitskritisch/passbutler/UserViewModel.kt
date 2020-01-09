@@ -248,7 +248,6 @@ class UserViewModel private constructor(
         val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to update the master password!")
         var newMasterKey: ByteArray? = null
 
-        // TODO: Proper rollback concept
         return try {
             val newLocalMasterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, newMasterPassword).resultOrThrowException()
             val newServerMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(newLocalMasterPasswordAuthenticationHash).resultOrThrowException()
@@ -257,11 +256,15 @@ class UserViewModel private constructor(
             newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation).resultOrThrowException()
             protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey)).resultOrThrowException()
 
-            // Disable biometric unlock because master password re-encryption would require biometric authentication and made flow more complex
-            disableBiometricUnlock().resultOrThrowException()
-
             val user = createModel()
             userManager.updateUser(user)
+
+            // After all mandatory changes, try to disable biometric unlock because master password re-encryption would require complex flow with biometric authentication UI
+            val disableBiometricUnlockResult = disableBiometricUnlock()
+
+            if (disableBiometricUnlockResult is Failure) {
+                L.w("UserViewModel", "updateMasterPassword(): The biometric unlock could not be disabled!", disableBiometricUnlockResult.throwable)
+            }
 
             // The auth webservice needs to re-initialized because of master password change
             userManager.initializeAuthWebservice(newMasterPassword)
