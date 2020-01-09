@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions
 import java.text.SimpleDateFormat
 import java.util.*
 
+@Throws(IllegalArgumentException::class)
 internal fun String.hexToBytes(): ByteArray {
     require(this.length % 2 == 0) { "The given string must have an even length!" }
 

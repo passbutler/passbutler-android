@@ -19,7 +19,7 @@ object Differentiation {
      *
      * Note: The lists must have the same size to be able to compare them!
      */
-    @Throws(IllegalStateException::class)
+    @Throws(IllegalArgumentException::class, IllegalStateException::class)
     fun <T : Synchronizable> collectModifiedItems(currentItems: List<T>, updatedItems: List<T>): List<T> {
         require(currentItems.size == updatedItems.size) { "The current list and updated list must have the same size!" }
 

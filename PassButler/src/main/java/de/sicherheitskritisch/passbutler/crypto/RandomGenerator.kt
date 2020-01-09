@@ -23,6 +23,7 @@ object RandomGenerator {
     /**
      * Generates a random string with desired length containing of given allowed characters.
      */
+    @Throws(IllegalArgumentException::class)
     suspend fun generateRandomString(length: Int, allowedCharacters: String): String {
         val allowedCharactersLength = allowedCharacters.length
         require(allowedCharactersLength != 0) { "The allowed characters string must not be empty!" }

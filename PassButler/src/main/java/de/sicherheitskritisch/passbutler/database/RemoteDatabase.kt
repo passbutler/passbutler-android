@@ -59,6 +59,7 @@ interface AuthWebservice {
     }
 
     companion object {
+        @Throws(IllegalArgumentException::class)
         fun create(serverUrl: Uri, username: String, password: String): AuthWebservice {
             require(!(BuildType.isReleaseBuild && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
 
@@ -175,6 +176,7 @@ interface UserWebservice {
     companion object {
         private val MEDIA_TYPE_JSON = MediaType.get("application/json")
 
+        @Throws(IllegalArgumentException::class)
         fun create(serverUrl: Uri, authToken: String): UserWebservice {
             require(!(BuildType.isReleaseBuild && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
 
