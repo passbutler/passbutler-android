@@ -47,9 +47,9 @@ class ProtectedValue<T : JSONSerializable> private constructor(
     }
 
     suspend fun decrypt(encryptionKey: ByteArray, deserializer: JSONSerializableDeserializer<T>): Result<T> {
-        return try {
-            require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
+        require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 
+        return try {
             val decryptedBytes = when (encryptionAlgorithm) {
                 is EncryptionAlgorithm.Symmetric -> {
                     encryptionAlgorithm.decrypt(initializationVector, encryptionKey, encryptedValue).resultOrThrowException()
@@ -73,9 +73,9 @@ class ProtectedValue<T : JSONSerializable> private constructor(
     }
 
     suspend fun update(encryptionKey: ByteArray, updatedValue: T): Result<Unit> {
-        return try {
-            require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
+        require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 
+        return try {
             when (encryptionAlgorithm) {
                 is EncryptionAlgorithm.Symmetric -> {
                     val newInitializationVector = encryptionAlgorithm.generateInitializationVector().resultOrThrowException()
@@ -152,9 +152,9 @@ class ProtectedValue<T : JSONSerializable> private constructor(
         const val SERIALIZATION_KEY_ENCRYPTION_ALGORITHM = "encryptionAlgorithm"
 
         suspend fun <T : JSONSerializable> create(encryptionAlgorithm: EncryptionAlgorithm, encryptionKey: ByteArray, initialValue: T): Result<ProtectedValue<T>> {
-            return try {
-                require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
+            require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 
+            return try {
                 val createdProtectedValue: ProtectedValue<T> = when (encryptionAlgorithm) {
                     is EncryptionAlgorithm.Symmetric -> {
                         val newInitializationVector = encryptionAlgorithm.generateInitializationVector().resultOrThrowException()

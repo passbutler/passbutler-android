@@ -31,11 +31,11 @@ object Derivation {
      * This method is used to avoid sending master password from client to server in clear text.
      */
     suspend fun deriveLocalAuthenticationHash(username: String, password: String): Result<String> {
+        require(!username.isBlank()) { "The username must not be empty!" }
+        require(!password.isBlank()) { "The password must not be empty!" }
+
         return withContext(Dispatchers.Default) {
             try {
-                require(!username.isBlank()) { "The username must not be empty!" }
-                require(!password.isBlank()) { "The password must not be empty!" }
-
                 val preparedPassword = normalizeString(trimString(password))
 
                 val preparedUsername = normalizeString(trimString(username))
@@ -54,10 +54,10 @@ object Derivation {
      * This method re-implements `werkzeug.security.generate_password_hash` from Python Werkzeug framework.
      */
     suspend fun deriveServerAuthenticationHash(password: String): Result<String> {
+        require(!password.isBlank()) { "The password must not be empty!" }
+
         return withContext(Dispatchers.Default) {
             try {
-                require(!password.isBlank()) { "The password must not be empty!" }
-
                 val saltString = RandomGenerator.generateRandomString(SERVER_AUTHENTICATION_HASH_SALT_LENGTH, SERVER_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS)
                 val saltBytes = saltString.toByteArray(Charsets.UTF_8)
 
@@ -77,13 +77,13 @@ object Derivation {
      * Derives the symmetric master key from a password using PBKDF2 with SHA-256.
      */
     suspend fun deriveMasterKey(password: String, keyDerivationInformation: KeyDerivationInformation): Result<ByteArray> {
+        require(!password.isBlank()) { "The password must not be empty!" }
+
+        // The salt should have the same size as the derived key
+        require(keyDerivationInformation.salt.bitSize == MASTER_KEY_BIT_LENGTH) { "The salt must be 256 bits long!" }
+
         return withContext(Dispatchers.Default) {
             try {
-                require(!password.isBlank()) { "The password must not be empty!" }
-
-                // The salt should have the same size as the derived key
-                require(keyDerivationInformation.salt.bitSize == MASTER_KEY_BIT_LENGTH) { "The salt must be 256 bits long!" }
-
                 val preparedPassword = normalizeString(trimString(password))
                 val hashBytes = performPBKDFWithSHA256(preparedPassword, keyDerivationInformation.salt, keyDerivationInformation.iterationCount, MASTER_KEY_BIT_LENGTH)
 

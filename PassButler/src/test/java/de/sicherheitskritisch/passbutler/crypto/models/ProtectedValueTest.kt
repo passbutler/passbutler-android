@@ -24,6 +24,7 @@ import org.json.JSONObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -34,7 +35,6 @@ class ProtectedValueTest {
     fun setUp() {
         mockkStatic(Log::class)
         every { Log.d(any(), any()) } returns 0
-        every { Log.w(any(), any<String>()) } returns 0
     }
 
     @AfterEach
@@ -137,9 +137,9 @@ class ProtectedValueTest {
 
         val testJSONSerializable = TestJSONSerializable("testValue")
 
-        val result = runBlocking { ProtectedValue.create(mockAES256GCMAlgorithm, encryptionKey, testJSONSerializable) }
-        val exception = (result as Failure).throwable
-
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { ProtectedValue.create(mockAES256GCMAlgorithm, encryptionKey, testJSONSerializable) }
+        }
         assertEquals("The given encryption key can't be used because it is cleared!", exception.message)
     }
 
@@ -219,9 +219,9 @@ class ProtectedValueTest {
 
         val unusedJSONSerializable = mockk<TestJSONSerializable>()
 
-        val result = runBlocking { protectedValue.update(encryptionKey, unusedJSONSerializable) }
-        val exception = (result as Failure).throwable
-
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { protectedValue.update(encryptionKey, unusedJSONSerializable) }
+        }
         assertEquals("The given encryption key can't be used because it is cleared!", exception.message)
     }
 
@@ -271,10 +271,10 @@ class ProtectedValueTest {
             it.clear()
         }
 
-        val result = runBlocking { protectedValue.decrypt(encryptionKey, TestJSONSerializable.Deserializer) }
-        val exception = (result as Failure).throwable
-
-        assertEquals("The given encryption key can't be used because it is cleared!", (exception.cause as IllegalArgumentException).message)
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { protectedValue.decrypt(encryptionKey, TestJSONSerializable.Deserializer) }
+        }
+        assertEquals("The given encryption key can't be used because it is cleared!", exception.message)
     }
 
     /**

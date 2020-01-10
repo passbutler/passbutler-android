@@ -66,11 +66,11 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
             }
 
             override suspend fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): Result<ByteArray> {
+                require(initializationVector.bitSize == GCM_INITIALIZATION_VECTOR_BIT_SIZE) { "The initialization vector must be $GCM_INITIALIZATION_VECTOR_BIT_SIZE bits long!" }
+                require(encryptionKey.bitSize == AES_KEY_BIT_SIZE) { "The encryption key must be $AES_KEY_BIT_SIZE bits long!" }
+
                 return withContext(Dispatchers.Default) {
                     try {
-                        require(initializationVector.bitSize == GCM_INITIALIZATION_VECTOR_BIT_SIZE) { "The initialization vector must be $GCM_INITIALIZATION_VECTOR_BIT_SIZE bits long!" }
-                        require(encryptionKey.bitSize == AES_KEY_BIT_SIZE) { "The encryption key must be $AES_KEY_BIT_SIZE bits long!" }
-
                         val secretKeySpec = SecretKeySpec(encryptionKey, KEY_ALGORITHM_AES)
                         val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_BIT_SIZE, initializationVector)
 
@@ -87,11 +87,11 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
             }
 
             override suspend fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): Result<ByteArray> {
+                require(initializationVector.bitSize == GCM_INITIALIZATION_VECTOR_BIT_SIZE) { "The initialization vector must be $GCM_INITIALIZATION_VECTOR_BIT_SIZE bits long!" }
+                require(encryptionKey.bitSize == AES_KEY_BIT_SIZE) { "The encryption key must be $AES_KEY_BIT_SIZE bits long!" }
+
                 return withContext(Dispatchers.Default) {
                     try {
-                        require(initializationVector.bitSize == GCM_INITIALIZATION_VECTOR_BIT_SIZE) { "The initialization vector must be $GCM_INITIALIZATION_VECTOR_BIT_SIZE bits long!" }
-                        require(encryptionKey.bitSize == AES_KEY_BIT_SIZE) { "The encryption key must be $AES_KEY_BIT_SIZE bits long!" }
-
                         val secretKeySpec = SecretKeySpec(encryptionKey, KEY_ALGORITHM_AES)
                         val gcmParameterSpec = GCMParameterSpec(GCM_AUTHENTICATION_TAG_BIT_SIZE, initializationVector)
 

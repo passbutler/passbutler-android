@@ -9,7 +9,7 @@ import de.sicherheitskritisch.passbutler.base.toHexString
 import de.sicherheitskritisch.passbutler.hexToBytes
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import java.math.BigInteger
 import java.security.KeyFactory
@@ -26,10 +26,9 @@ class SymmetricEncryptionTest {
     fun `Encrypt with an empty initialization vector throws an exception`() {
         val testVector = invalidTestVectors.getValue("tooLongInitializationVector")
 
-        val result = encryptAES256GCM(testVector)
-        val exception = (result as Failure).throwable
-
-        assertTrue(exception is IllegalArgumentException)
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { encryptAES256GCM(testVector) }
+        }
         assertEquals("The initialization vector must be 96 bits long!", exception.message)
     }
 
@@ -37,10 +36,9 @@ class SymmetricEncryptionTest {
     fun `Encrypt with a too long initialization vector throws an exception`() {
         val testVector = invalidTestVectors.getValue("emptyInitializationVector")
 
-        val result = encryptAES256GCM(testVector)
-        val exception = (result as Failure).throwable
-
-        assertTrue(exception is IllegalArgumentException)
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { encryptAES256GCM(testVector) }
+        }
         assertEquals("The initialization vector must be 96 bits long!", exception.message)
     }
 
@@ -48,10 +46,9 @@ class SymmetricEncryptionTest {
     fun `Encrypt with an empty key throws an exception`() {
         val testVector = invalidTestVectors.getValue("emptyKey")
 
-        val result = encryptAES256GCM(testVector)
-        val exception = (result as Failure).throwable
-
-        assertTrue(exception is IllegalArgumentException)
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { encryptAES256GCM(testVector) }
+        }
         assertEquals("The encryption key must be 256 bits long!", exception.message)
     }
 
@@ -59,10 +56,9 @@ class SymmetricEncryptionTest {
     fun `Encrypt with a too long key throws an exception`() {
         val testVector = invalidTestVectors.getValue("tooLongKey")
 
-        val result = encryptAES256GCM(testVector)
-        val exception = (result as Failure).throwable
-
-        assertTrue(exception is IllegalArgumentException)
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { encryptAES256GCM(testVector) }
+        }
         assertEquals("The encryption key must be 256 bits long!", exception.message)
     }
 
@@ -84,10 +80,9 @@ class SymmetricEncryptionTest {
     fun `Decrypt with an empty initialization vector throws an exception`() {
         val testVector = invalidTestVectors.getValue("tooLongInitializationVector")
 
-        val result = decryptAES256GCM(testVector)
-        val exception = (result as Failure).throwable
-
-        assertTrue(exception is IllegalArgumentException)
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { decryptAES256GCM(testVector) }
+        }
         assertEquals("The initialization vector must be 96 bits long!", exception.message)
     }
 
@@ -95,10 +90,9 @@ class SymmetricEncryptionTest {
     fun `Decrypt with a too long initialization vector throws an exception`() {
         val testVector = invalidTestVectors.getValue("emptyInitializationVector")
 
-        val result = decryptAES256GCM(testVector)
-        val exception = (result as Failure).throwable
-
-        assertTrue(exception is IllegalArgumentException)
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { decryptAES256GCM(testVector) }
+        }
         assertEquals("The initialization vector must be 96 bits long!", exception.message)
     }
 
@@ -106,10 +100,9 @@ class SymmetricEncryptionTest {
     fun `Decrypt with an empty key throws an exception`() {
         val testVector = invalidTestVectors.getValue("emptyKey")
 
-        val result = decryptAES256GCM(testVector)
-        val exception = (result as Failure).throwable
-
-        assertTrue(exception is IllegalArgumentException)
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { decryptAES256GCM(testVector) }
+        }
         assertEquals("The encryption key must be 256 bits long!", exception.message)
     }
 
@@ -117,10 +110,9 @@ class SymmetricEncryptionTest {
     fun `Decrypt with a too long key throws an exception`() {
         val testVector = invalidTestVectors.getValue("tooLongKey")
 
-        val result = decryptAES256GCM(testVector)
-        val exception = (result as Failure).throwable
-
-        assertTrue(exception is IllegalArgumentException)
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { decryptAES256GCM(testVector) }
+        }
         assertEquals("The encryption key must be 256 bits long!", exception.message)
     }
 
