@@ -15,9 +15,11 @@ import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.toUTF8String
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.crypto.Cipher
 
 class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
@@ -55,7 +57,10 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
             // Restore webservices asynchronously to avoid slow network is blocking unlock progress
             launch {
                 userManager.restoreWebservices(masterPassword)
-                loggedInUserViewModel.isSynchronizationPossible.notifyChange()
+
+                withContext(Dispatchers.Main) {
+                    loggedInUserViewModel.isSynchronizationPossible.notifyChange()
+                }
             }
         }
 
@@ -93,7 +98,10 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
                 // Restore webservices asynchronously to avoid slow network is blocking unlock progress
                 launch {
                     userManager.restoreWebservices(masterPassword)
-                    loggedInUserViewModel.isSynchronizationPossible.notifyChange()
+
+                    withContext(Dispatchers.Main) {
+                        loggedInUserViewModel.isSynchronizationPossible.notifyChange()
+                    }
                 }
             }
 

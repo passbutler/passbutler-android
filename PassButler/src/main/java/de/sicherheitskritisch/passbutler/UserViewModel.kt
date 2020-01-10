@@ -236,7 +236,9 @@ class UserViewModel private constructor(
         val synchronizeResult = userManager.synchronize()
 
         if (synchronizeResult is Success) {
-            lastSuccessfulSync.notifyChange()
+            withContext(Dispatchers.Main) {
+                lastSuccessfulSync.notifyChange()
+            }
         }
 
         return synchronizeResult
@@ -290,7 +292,9 @@ class UserViewModel private constructor(
             userManager.loggedInStateStorage.encryptedMasterPassword = EncryptedValue(encryptedMasterPasswordInitializationVector, encryptedMasterPassword)
             userManager.loggedInStateStorage.persist()
 
-            biometricUnlockEnabled.notifyChange()
+            withContext(Dispatchers.Main) {
+                biometricUnlockEnabled.notifyChange()
+            }
 
             Success(Unit)
         } catch (exception: Exception) {
@@ -310,7 +314,9 @@ class UserViewModel private constructor(
             userManager.loggedInStateStorage.encryptedMasterPassword = null
             userManager.loggedInStateStorage.persist()
 
-            biometricUnlockEnabled.notifyChange()
+            withContext(Dispatchers.Main) {
+                biometricUnlockEnabled.notifyChange()
+            }
 
             Success(Unit)
         } catch (exception: Exception) {

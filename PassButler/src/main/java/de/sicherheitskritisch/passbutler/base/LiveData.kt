@@ -38,10 +38,9 @@ class NonNullValueGetterLiveData<T : Any>(private val valueGetter: () -> T) : Li
         return super.getValue()!!
     }
 
+    @MainThread
     fun notifyChange() {
-        // TODO: Do not use `postValue`
-        val newValue = valueGetter()
-        postValue(newValue)
+        value = valueGetter()
     }
 }
 
@@ -50,10 +49,9 @@ class NonNullValueGetterLiveData<T : Any>(private val valueGetter: () -> T) : Li
  * On a known change of values used in the lambda, `notifyChange()` must be called on main-thread!
  */
 class ValueGetterLiveData<T : Any?>(private val valueGetter: () -> T) : LiveData<T>(valueGetter()) {
+    @MainThread
     fun notifyChange() {
-        // TODO: Do not use `postValue`
-        val newValue = valueGetter()
-        postValue(newValue)
+        value = valueGetter()
     }
 }
 

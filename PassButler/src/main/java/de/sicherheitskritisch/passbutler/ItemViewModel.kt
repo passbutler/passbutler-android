@@ -17,6 +17,8 @@ import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.database.models.Item
 import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.ItemData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.*
 
 class ItemViewModel(
@@ -42,13 +44,6 @@ class ItemViewModel(
         get() = item.created
 
     var itemData: ItemData? = null
-        private set(value) {
-            field = value
-
-            // Notify `itemData` dependent observables
-            title.notifyChange()
-        }
-
     private var itemKey: ByteArray? = null
 
     suspend fun decryptSensibleData(userItemEncryptionSecretKey: ByteArray): Result<Unit> {
@@ -58,6 +53,11 @@ class ItemViewModel(
 
             val decryptedItemData = item.data.decrypt(decryptedItemKey, ItemData.Deserializer).resultOrThrowException()
             itemData = decryptedItemData
+
+            withContext(Dispatchers.Main) {
+                // Notify `itemData` dependent observables
+                title.notifyChange()
+            }
 
             Success(Unit)
         } catch (exception: Exception) {
