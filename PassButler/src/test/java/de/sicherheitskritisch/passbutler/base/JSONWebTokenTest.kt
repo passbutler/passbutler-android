@@ -1,8 +1,8 @@
 package de.sicherheitskritisch.passbutler.base
 
 import org.json.JSONException
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import java.time.Instant
 
@@ -20,7 +20,7 @@ class JSONWebTokenTest {
     fun `Valid JWT without expiration date contained`() {
         val jwt = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU2NDA4MzE0Nn0.eyJ1c2VybmFtZSI6InRlc3R1c2VyIn0.s4Tyi3uaFrYchDH7U8HrMyPjuTYuOa4uuAGrowO8PnC01BTYCt5OdRN45-keNx8D1mOOqLAscK7vY9lRdPo7HQ"
 
-        val exception = Assertions.assertThrows(JSONException::class.java) {
+        val exception = assertThrows(JSONException::class.java) {
             JSONWebToken.getExpiration(jwt)
         }
 
@@ -31,7 +31,7 @@ class JSONWebTokenTest {
     fun `Invalid JWT`() {
         val jwt = "foobar"
 
-        val exception = Assertions.assertThrows(IllegalArgumentException::class.java) {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
             JSONWebToken.getExpiration(jwt)
         }
 

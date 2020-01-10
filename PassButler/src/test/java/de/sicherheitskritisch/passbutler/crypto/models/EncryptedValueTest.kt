@@ -8,7 +8,7 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import org.json.JSONObject
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -32,7 +32,7 @@ class EncryptedValueTest {
         val serializedEncryptedValue = exampleEncryptedValue.serialize()
         val deserializedEncryptedValue = EncryptedValue.Deserializer.deserializeOrNull(serializedEncryptedValue)
 
-        Assertions.assertEquals(exampleEncryptedValue, deserializedEncryptedValue)
+        assertEquals(exampleEncryptedValue, deserializedEncryptedValue)
     }
 
     @Test
@@ -48,7 +48,7 @@ class EncryptedValueTest {
         val serializedEncryptedValue = createSerializedExampleEncryptedValue()
         val expectedEncryptedValue = createExampleEncryptedValue()
 
-        Assertions.assertEquals(expectedEncryptedValue, EncryptedValue.Deserializer.deserializeOrNull(serializedEncryptedValue))
+        assertEquals(expectedEncryptedValue, EncryptedValue.Deserializer.deserializeOrNull(serializedEncryptedValue))
     }
 
     @Test
@@ -58,7 +58,7 @@ class EncryptedValueTest {
         )
         val expectedEncryptedValue = null
 
-        Assertions.assertEquals(expectedEncryptedValue, EncryptedValue.Deserializer.deserializeOrNull(serializedEncryptedValue))
+        assertEquals(expectedEncryptedValue, EncryptedValue.Deserializer.deserializeOrNull(serializedEncryptedValue))
     }
 
     companion object {
