@@ -46,6 +46,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
         )
     }
 
+    @Throws(IllegalArgumentException::class)
     suspend fun decrypt(encryptionKey: ByteArray, deserializer: JSONSerializableDeserializer<T>): Result<T> {
         require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 
@@ -72,6 +73,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
         }
     }
 
+    @Throws(IllegalArgumentException::class)
     suspend fun update(encryptionKey: ByteArray, updatedValue: T): Result<Unit> {
         require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 
@@ -151,6 +153,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
     companion object {
         const val SERIALIZATION_KEY_ENCRYPTION_ALGORITHM = "encryptionAlgorithm"
 
+        @Throws(IllegalArgumentException::class)
         suspend fun <T : JSONSerializable> create(encryptionAlgorithm: EncryptionAlgorithm, encryptionKey: ByteArray, initialValue: T): Result<ProtectedValue<T>> {
             require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 

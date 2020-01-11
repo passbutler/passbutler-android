@@ -65,6 +65,7 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
                 return Success(generatedInitializationVector)
             }
 
+            @Throws(IllegalArgumentException::class)
             override suspend fun encrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): Result<ByteArray> {
                 require(initializationVector.bitSize == GCM_INITIALIZATION_VECTOR_BIT_SIZE) { "The initialization vector must be $GCM_INITIALIZATION_VECTOR_BIT_SIZE bits long!" }
                 require(encryptionKey.bitSize == AES_KEY_BIT_SIZE) { "The encryption key must be $AES_KEY_BIT_SIZE bits long!" }
@@ -86,6 +87,7 @@ sealed class EncryptionAlgorithm(val stringRepresentation: String) {
                 }
             }
 
+            @Throws(IllegalArgumentException::class)
             override suspend fun decrypt(initializationVector: ByteArray, encryptionKey: ByteArray, data: ByteArray): Result<ByteArray> {
                 require(initializationVector.bitSize == GCM_INITIALIZATION_VECTOR_BIT_SIZE) { "The initialization vector must be $GCM_INITIALIZATION_VECTOR_BIT_SIZE bits long!" }
                 require(encryptionKey.bitSize == AES_KEY_BIT_SIZE) { "The encryption key must be $AES_KEY_BIT_SIZE bits long!" }
