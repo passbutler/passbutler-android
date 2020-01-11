@@ -50,7 +50,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     private var synchronizeDataRequestSendingJob: Job? = null
     private var logoutRequestSendingJob: Job? = null
 
-    private val itemViewModelsChangedObserver = Observer<List<ItemViewModel>> { newItemViewModels ->
+    private val itemViewModelsObserver = Observer<List<ItemViewModel>> { newItemViewModels ->
         L.d("OverviewFragment", "itemViewModelsChangedObserver(): newItemViewModels.size = ${newItemViewModels.size}")
 
         val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemAdapter
@@ -68,7 +68,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         }
     }
 
-    private val synchronizationPossibleChangedObserver = Observer<Boolean> { isPossible ->
+    private val synchronizationPossibleObserver = Observer<Boolean> { isPossible ->
         if (isPossible) {
             synchronizeData(userTriggered = false)
         }
@@ -184,9 +184,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     override fun onStart() {
         super.onStart()
 
-        viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsChangedObserver)
+        viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
         viewModel.lastSynchronizationDate.observe(viewLifecycleOwner, true, lastSynchronizationDateObserver)
-        viewModel.loggedInUserViewModel?.isSynchronizationPossible?.observe(viewLifecycleOwner, true, synchronizationPossibleChangedObserver)
+        viewModel.loggedInUserViewModel?.isSynchronizationPossible?.observe(viewLifecycleOwner, true, synchronizationPossibleObserver)
     }
 
     override fun onHandleBackPress(): Boolean {
