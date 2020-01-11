@@ -6,7 +6,7 @@ import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
-import de.sicherheitskritisch.passbutler.base.ValueGetterLiveData
+import de.sicherheitskritisch.passbutler.base.DefaultValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.viewmodels.EditableViewModel
@@ -30,7 +30,7 @@ class ItemViewModel(
     val id
         get() = item.id
 
-    val title = ValueGetterLiveData {
+    val title = DefaultValueGetterLiveData {
         itemData?.title
     }
 

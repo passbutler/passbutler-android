@@ -2,9 +2,9 @@ package de.sicherheitskritisch.passbutler
 
 import android.app.Application
 import androidx.lifecycle.Observer
+import de.sicherheitskritisch.passbutler.base.DefaultValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.Result
-import de.sicherheitskritisch.passbutler.base.ValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -22,7 +22,7 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
     val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
 
-    val lastSynchronizationDate = ValueGetterLiveData {
+    val lastSynchronizationDate = DefaultValueGetterLiveData {
         loggedInUserViewModel?.userType?.asRemote()?.lastSuccessfulSync
     }
 

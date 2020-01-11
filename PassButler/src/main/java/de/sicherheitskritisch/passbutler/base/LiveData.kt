@@ -6,6 +6,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 
+@MainThread
+fun <T> LiveData<T>.observe(owner: LifecycleOwner, notifyOnRegister: Boolean, observer: Observer<T>) {
+    observe(owner, observer)
+
+    if (notifyOnRegister) {
+        observer.onChanged(value)
+    }
+}
+
 /**
  * A `MutableLiveData<T>` that only excepts non-null values.
  */
@@ -29,15 +38,10 @@ class NonNullMutableLiveData<T : Any>(initialValue: T) : MutableLiveData<T>(init
 }
 
 /**
- * A non-null value enforcing `LiveData<T>` that retrieves its value via lambda.
+ * A `LiveData<T>` that retrieves its value via lambda.
  * On a known change of values used in the lambda, `notifyChange()` must be called on main-thread!
  */
-class NonNullValueGetterLiveData<T : Any>(private val valueGetter: () -> T) : LiveData<T>(valueGetter()) {
-    override fun getValue(): T {
-        // Because non-null type is enforced by Kotlin the double-bang is okay
-        return super.getValue()!!
-    }
-
+open class ValueGetterLiveData<T>(private val valueGetter: () -> T) : LiveData<T>(valueGetter()) {
     @MainThread
     fun notifyChange() {
         value = valueGetter()
@@ -45,21 +49,26 @@ class NonNullValueGetterLiveData<T : Any>(private val valueGetter: () -> T) : Li
 }
 
 /**
- * A default `LiveData<T>` that retrieves its value via lambda.
- * On a known change of values used in the lambda, `notifyChange()` must be called on main-thread!
+ * A non-null value enforcing `ValueGetterLiveData`.
  */
-class ValueGetterLiveData<T : Any?>(private val valueGetter: () -> T) : LiveData<T>(valueGetter()) {
-    @MainThread
-    fun notifyChange() {
-        value = valueGetter()
+class NonNullValueGetterLiveData<T : Any>(valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter) {
+    override fun getValue(): T {
+        // Because non-null type is enforced by Kotlin the double-bang is okay
+        return super.getValue()!!
     }
 }
 
+/**
+ * A default behaving `ValueGetterLiveData`.
+ */
+class DefaultValueGetterLiveData<T : Any?>(valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter)
+
 @MainThread
-fun <T> LiveData<T>.observe(owner: LifecycleOwner, notifyOnRegister: Boolean, observer: Observer<T>) {
+fun <T> ValueGetterLiveData<T>.observe(owner: LifecycleOwner, notifyOnRegister: Boolean, observer: Observer<T>) {
     observe(owner, observer)
 
     if (notifyOnRegister) {
+        notifyChange()
         observer.onChanged(value)
     }
 }
