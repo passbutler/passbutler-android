@@ -2,8 +2,11 @@ package de.sicherheitskritisch.passbutler.database
 
 import android.net.Uri
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
+import de.sicherheitskritisch.passbutler.LoggedInStateStorage
+import de.sicherheitskritisch.passbutler.UserType
 import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.Failure
+import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.asJSONObjectSequence
@@ -15,15 +18,20 @@ import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.User
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import okhttp3.Authenticator
 import okhttp3.Credentials
 import okhttp3.Interceptor
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
+import okhttp3.Route
 import org.json.JSONArray
 import org.json.JSONException
+import retrofit2.Call
 import retrofit2.Converter
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -42,9 +50,25 @@ private const val API_VERSION_PREFIX = "v1"
 
 interface AuthWebservice {
     @GET("/$API_VERSION_PREFIX/token")
-    fun getTokenAsync(): Deferred<Response<AuthToken>>
+    fun getToken(): Call<AuthToken>
 
-    private class ConverterFactory : Converter.Factory() {
+    /**
+     * Using `Interceptor` instead `Authenticator` because every request of webservice must be always authenticated.
+     */
+    private class PasswordAuthenticationInterceptor(username: String, password: String) : Interceptor {
+        private var authorizationHeaderValue = Credentials.basic(username, password)
+
+        @Throws(IOException::class)
+        override fun intercept(chain: Interceptor.Chain): OkHttpResponse {
+            val request = chain.request()
+            val authenticatedRequest = request.newBuilder()
+                .header("Authorization", authorizationHeaderValue)
+                .build()
+            return chain.proceed(authenticatedRequest)
+        }
+    }
+
+    private class DefaultConverterFactory : Converter.Factory() {
         override fun responseBodyConverter(type: Type, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
             return when (type) {
                 AuthToken::class.java -> createAuthTokenResponse()
@@ -60,34 +84,23 @@ interface AuthWebservice {
 
     companion object {
         @Throws(IllegalArgumentException::class)
-        fun create(serverUrl: Uri, username: String, password: String): AuthWebservice {
+        suspend fun create(serverUrl: Uri, username: String, password: String): AuthWebservice {
             require(!(BuildType.isReleaseBuild && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
 
-            val okHttpClient = OkHttpClient.Builder()
-                .addInterceptor(PasswordAuthenticationInterceptor(username, password))
-                .build()
+            return withContext(Dispatchers.IO) {
+                val okHttpClient = OkHttpClient.Builder()
+                    .addInterceptor(PasswordAuthenticationInterceptor(username, password))
+                    .build()
 
-            val retrofitBuilder = Retrofit.Builder()
-                .baseUrl(serverUrl.toString())
-                .client(okHttpClient)
-                .addConverterFactory(ConverterFactory())
-                .addCallAdapterFactory(CoroutineCallAdapterFactory())
-                .build()
+                val retrofitBuilder = Retrofit.Builder()
+                    .baseUrl(serverUrl.toString())
+                    .client(okHttpClient)
+                    .addConverterFactory(DefaultConverterFactory())
+                    .addCallAdapterFactory(CoroutineCallAdapterFactory())
+                    .build()
 
-            return retrofitBuilder.create(AuthWebservice::class.java)
-        }
-    }
-}
-
-suspend fun AuthWebservice?.requestAuthToken(): Result<AuthToken> {
-    val authWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val getTokenRequest = authWebservice?.getTokenAsync()
-            val getTokenResponse = getTokenRequest?.await()
-            getTokenResponse.completeRequestWithResult()
-        } catch (exception: Exception) {
-            Failure(exception)
+                retrofitBuilder.create(AuthWebservice::class.java)
+            }
         }
     }
 }
@@ -114,7 +127,85 @@ interface UserWebservice {
     @PUT("/$API_VERSION_PREFIX/user/items")
     fun setUserItemsAsync(@Body items: List<Item>): Deferred<Response<Unit>>
 
-    private class ConverterFactory : Converter.Factory() {
+    private interface AuthTokenProvider {
+        var authToken: AuthToken?
+    }
+
+    private class DefaultAuthTokenProvider(private val loggedInStateStorage: LoggedInStateStorage) : AuthTokenProvider {
+        private val remoteUserType = loggedInStateStorage.userType as? UserType.Remote ?: throw IllegalStateException("The logged-in user type must be remote!")
+
+        override var authToken: AuthToken?
+            get() = remoteUserType.authToken
+            set(value) {
+                remoteUserType.authToken = value
+
+                runBlocking {
+                    loggedInStateStorage.persist()
+                }
+            }
+    }
+
+    /**
+     * Adds authentication token to request if available.
+     */
+    private class AuthTokenInterceptor(
+        loggedInStateStorage: LoggedInStateStorage
+    ) : Interceptor, AuthTokenProvider by DefaultAuthTokenProvider(loggedInStateStorage) {
+        @Throws(IOException::class)
+        override fun intercept(chain: Interceptor.Chain): OkHttpResponse {
+            val actualRequest = chain.request()
+            L.d("AuthTokenInterceptor", "intercept(): Intercept request ${actualRequest.url()}")
+
+            val interceptedRequest = authToken?.let { currentAuthToken ->
+                actualRequest.applyTokenAuthorizationHeader(currentAuthToken.token)
+            } ?: actualRequest
+
+            return chain.proceed(interceptedRequest)
+        }
+    }
+
+    /**
+     * Automatically requests new auth token if not available or rejected by server.
+     * It always try to request a new token, despite "Authorization" header is present because server rejected token anyway.
+     */
+    private class AuthTokenAuthenticator(
+        private val authWebservice: AuthWebservice,
+        private val loggedInStateStorage: LoggedInStateStorage
+    ) : Authenticator, AuthTokenProvider by DefaultAuthTokenProvider(loggedInStateStorage) {
+        @Throws(IOException::class)
+        override fun authenticate(route: Route?, response: OkHttpResponse): Request? {
+            val actualRequest = response.request()
+            L.d("AuthTokenAuthenticator", "authenticate(): Re-authenticate request ${actualRequest.url()} ")
+
+            val newAuthTokenResult = authWebservice.getToken().execute().completeRequestWithResult()
+
+            return when (newAuthTokenResult) {
+                is Success -> {
+                    L.d("AuthTokenAuthenticator", "authenticate(): The new token was requested successfully")
+                    val newAuthToken = newAuthTokenResult.result
+                    authToken = newAuthToken
+
+                    actualRequest.applyTokenAuthorizationHeader(newAuthToken.token)
+                }
+                is Failure -> {
+                    L.w("AuthTokenAuthenticator", "authenticate(): The new token could not be requested!", newAuthTokenResult.throwable)
+                    actualRequest
+                }
+            }
+        }
+    }
+
+    private class UnitConverterFactory : Converter.Factory() {
+        private val unitConverter = Converter<ResponseBody, Unit> {
+            it.close()
+        }
+
+        override fun responseBodyConverter(type: Type, annotations: Array<out Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
+            return if (type == Unit::class) unitConverter else null
+        }
+    }
+
+    private class DefaultConverterFactory : Converter.Factory() {
         override fun requestBodyConverter(type: Type, parameterAnnotations: Array<Annotation>, methodAnnotations: Array<Annotation>, retrofit: Retrofit): Converter<*, RequestBody>? {
             return when {
                 type == User::class.java -> createUserRequestConverter()
@@ -177,22 +268,25 @@ interface UserWebservice {
         private val MEDIA_TYPE_JSON = MediaType.get("application/json")
 
         @Throws(IllegalArgumentException::class)
-        fun create(serverUrl: Uri, authToken: String): UserWebservice {
+        suspend fun create(serverUrl: Uri, authWebservice: AuthWebservice, loggedInStateStorage: LoggedInStateStorage): UserWebservice {
             require(!(BuildType.isReleaseBuild && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
 
-            val okHttpClient = OkHttpClient.Builder()
-                .addInterceptor(TokenAuthenticationInterceptor(authToken))
-                .build()
+            return withContext(Dispatchers.IO) {
+                val okHttpClient = OkHttpClient.Builder()
+                    .addInterceptor(AuthTokenInterceptor(loggedInStateStorage))
+                    .authenticator(AuthTokenAuthenticator(authWebservice, loggedInStateStorage))
+                    .build()
 
-            val retrofitBuilder = Retrofit.Builder()
-                .baseUrl(serverUrl.toString())
-                .client(okHttpClient)
-                .addConverterFactory(UnitConverterFactory())
-                .addConverterFactory(ConverterFactory())
-                .addCallAdapterFactory(CoroutineCallAdapterFactory())
-                .build()
+                val retrofitBuilder = Retrofit.Builder()
+                    .baseUrl(serverUrl.toString())
+                    .client(okHttpClient)
+                    .addConverterFactory(UnitConverterFactory())
+                    .addConverterFactory(DefaultConverterFactory())
+                    .addCallAdapterFactory(CoroutineCallAdapterFactory())
+                    .build()
 
-            return retrofitBuilder.create(UserWebservice::class.java)
+                retrofitBuilder.create(UserWebservice::class.java)
+            }
         }
     }
 }
@@ -288,43 +382,10 @@ suspend fun UserWebservice?.updateItemList(items: List<Item>): Result<Unit> {
     }
 }
 
-/**
- * Allows a Retrofit web service to authenticate with username/password based HTTP basic auth.
- */
-private class PasswordAuthenticationInterceptor(username: String, password: String) : AuthenticationInterceptor() {
-    override val authorizationHeaderValue: String = Credentials.basic(username, password)
-}
-
-/**
- * Allows a Retrofit web service to authenticate with token in HTTP "Authorization" header.
- */
-private class TokenAuthenticationInterceptor(authToken: String) : AuthenticationInterceptor() {
-    override val authorizationHeaderValue: String = "Bearer $authToken"
-}
-
-private abstract class AuthenticationInterceptor : Interceptor {
-    protected abstract val authorizationHeaderValue: String
-
-    @Throws(IOException::class)
-    override fun intercept(chain: Interceptor.Chain): OkHttpResponse {
-        val request = chain.request()
-        val authenticatedRequest = request.newBuilder()
-            .header("Authorization", authorizationHeaderValue).build()
-        return chain.proceed(authenticatedRequest)
-    }
-}
-
-/**
- * Allows to have "no content" responses like `Deferred<Response<Unit>>`.
- */
-class UnitConverterFactory : Converter.Factory() {
-    private val unitConverter = Converter<ResponseBody, Unit> {
-        it.close()
-    }
-
-    override fun responseBodyConverter(type: Type, annotations: Array<out Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
-        return if (type == Unit::class) unitConverter else null
-    }
+private fun Request.applyTokenAuthorizationHeader(token: String): Request {
+    return newBuilder()
+        .header("Authorization", "Bearer $token")
+        .build()
 }
 
 private fun <T> Response<T>?.completeRequestWithResult(): Result<T> {

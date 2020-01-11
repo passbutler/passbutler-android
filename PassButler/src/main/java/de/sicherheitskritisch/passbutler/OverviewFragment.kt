@@ -42,7 +42,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     private val navigationItemSelectedListener = NavigationItemSelectedListener()
 
     private val isSynchronizationVisible
-        get() = viewModel.loggedInUserViewModel?.isServerUserType ?: false
+        get() = viewModel.loggedInUserViewModel?.userType is UserType.Remote
 
     private val isSynchronizationPossible
         get() = viewModel.loggedInUserViewModel?.isSynchronizationPossible?.value ?: false
@@ -129,13 +129,19 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 
     private fun setupSwipeRefreshLayout(binding: FragmentOverviewBinding) {
-        val swipeRefreshLayout = binding.layoutOverviewContent.swipeRefreshLayout
-        swipeRefreshLayout.setOnRefreshListener {
-            if (isSynchronizationPossible) {
-                synchronizeData(userTriggered = true)
+        binding.layoutOverviewContent.swipeRefreshLayout?.let { swipeRefreshLayout ->
+            if (isSynchronizationVisible) {
+                swipeRefreshLayout.setOnRefreshListener {
+                    if (isSynchronizationPossible) {
+                        synchronizeData(userTriggered = true)
+                    } else {
+                        // Immediately stop refreshing if is not possible
+                        swipeRefreshLayout.isRefreshing = false
+                    }
+                }
             } else {
-                // Immediately stop refreshing if is not possible
-                swipeRefreshLayout.isRefreshing = false
+                // Disable pull-to-refresh if synchronization is not visible
+                swipeRefreshLayout.isEnabled = false
             }
         }
     }

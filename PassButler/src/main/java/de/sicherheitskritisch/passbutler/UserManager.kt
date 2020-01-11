@@ -23,7 +23,6 @@ import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.EncryptedValue
 import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
 import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
-import de.sicherheitskritisch.passbutler.crypto.models.isExpired
 import de.sicherheitskritisch.passbutler.database.AuthWebservice
 import de.sicherheitskritisch.passbutler.database.Differentiation
 import de.sicherheitskritisch.passbutler.database.LocalRepository
@@ -34,7 +33,6 @@ import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import de.sicherheitskritisch.passbutler.database.remoteChangedItems
-import de.sicherheitskritisch.passbutler.database.requestAuthToken
 import de.sicherheitskritisch.passbutler.database.requestItemAuthorizationList
 import de.sicherheitskritisch.passbutler.database.requestItemList
 import de.sicherheitskritisch.passbutler.database.requestPublicUserList
@@ -48,14 +46,12 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.util.*
 
-class UserManager(applicationContext: Context, private val localRepository: LocalRepository) {
+class UserManager(private val applicationContext: Context, private val localRepository: LocalRepository) {
 
     val loggedInUserResult = MutableLiveData<LoggedInUserResult?>()
 
-    val loggedInStateStorage by lazy {
-        val sharedPreferences = applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
-        LoggedInStateStorage(sharedPreferences)
-    }
+    var loggedInStateStorage: LoggedInStateStorage? = null
+        private set
 
     val webservicesInitialized
         get() = authWebservice != null && userWebservice != null
@@ -67,21 +63,24 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
 
     suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrl: Uri): Result<Unit> {
         return try {
-            val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
-            authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
+            val createdLoggedInStateStorage = createLoggedInStateStorage().apply {
+                reset()
 
-            val authToken = authWebservice.requestAuthToken().resultOrThrowException()
-            userWebservice = UserWebservice.create(serverUrl, authToken.token)
+                userType = UserType.Remote(username, serverUrl, null, null)
+                persist()
+            }
 
-            val remoteUser = userWebservice.requestUser().resultOrThrowException()
-            localRepository.insertUser(remoteUser)
+            this.loggedInStateStorage = createdLoggedInStateStorage
 
-            loggedInStateStorage.reset()
-            loggedInStateStorage.userType = UserType.Server(remoteUser.username, serverUrl, authToken, null)
-            loggedInStateStorage.persist()
+            val authWebservice = createAuthWebservice(serverUrl, username, masterPassword)
+            this.authWebservice = authWebservice
+            this.userWebservice = createUserWebservice(serverUrl, authWebservice, createdLoggedInStateStorage)
 
-            loggedInUser = remoteUser
-            loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(remoteUser, masterPassword))
+            val newUser = userWebservice.requestUser().resultOrThrowException()
+            localRepository.insertUser(newUser)
+
+            loggedInUser = newUser
+            loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(newUser, masterPassword))
 
             Success(Unit)
         } catch (exception: Exception) {
@@ -97,6 +96,15 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         var masterEncryptionKey: ByteArray? = null
 
         return try {
+            val createdLoggedInStateStorage = createLoggedInStateStorage().apply {
+                reset()
+
+                userType = UserType.Local(username)
+                persist()
+            }
+
+            this.loggedInStateStorage = createdLoggedInStateStorage
+
             val serverMasterPasswordAuthenticationHash = deriveServerMasterPasswordAuthenticationHash(username, masterPassword)
             val masterKeyDerivationInformation = createMasterKeyDerivationInformation()
 
@@ -110,7 +118,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             val protectedUserSettings = createUserSettings(masterEncryptionKey)
             val currentDate = Date()
 
-            val localUser = User(
+            val newUser = User(
                 username,
                 serverMasterPasswordAuthenticationHash,
                 masterKeyDerivationInformation,
@@ -123,16 +131,10 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
                 currentDate
             )
 
-            L.d("UserManager", "localuser = $localUser")
+            localRepository.insertUser(newUser)
 
-            localRepository.insertUser(localUser)
-
-            loggedInStateStorage.reset()
-            loggedInStateStorage.userType = UserType.Local(localUser.username)
-            loggedInStateStorage.persist()
-
-            loggedInUser = localUser
-            loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(localUser, masterPassword))
+            loggedInUser = newUser
+            loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(newUser, masterPassword))
 
             Success(Unit)
         } catch (exception: Exception) {
@@ -186,15 +188,16 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         if (loggedInUser == null) {
             L.d("UserManager", "restoreLoggedInUser(): Try to restore logged-in user")
 
-            // Explicitly dispatch lazy initialisation `loggedInStateStorage` to IO
-            val restoredLoggedInUser = withContext(Dispatchers.IO) {
-                loggedInStateStorage.restore()
-                loggedInStateStorage.userType?.username?.let { loggedInUsername ->
-                    localRepository.findUser(loggedInUsername)
-                }
+            val restoredLoggedInStateStorage = createLoggedInStateStorage().apply {
+                restore()
             }
 
-            loggedInUser = restoredLoggedInUser
+            val restoredLoggedInUser = restoredLoggedInStateStorage.userType?.username?.let { loggedInUsername ->
+                localRepository.findUser(loggedInUsername)
+            }
+
+            this.loggedInStateStorage = restoredLoggedInStateStorage
+            this.loggedInUser = restoredLoggedInUser
 
             if (restoredLoggedInUser != null) {
                 loggedInUserResult.postValue(LoggedInUserResult.RestoredLogin(restoredLoggedInUser))
@@ -206,47 +209,54 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         }
     }
 
-    // TODO: Implement better webservice init / token refresh logic
+    private suspend fun createLoggedInStateStorage(): LoggedInStateStorage {
+        return withContext(Dispatchers.IO) {
+            val sharedPreferences = applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
+            LoggedInStateStorage(sharedPreferences)
+        }
+    }
+
     suspend fun restoreWebservices(masterPassword: String) {
         L.d("UserManager", "restoreWebservices()")
 
-        val userType = loggedInStateStorage.userType as? UserType.Server ?: throw IllegalStateException("The user is a local kind despite it was tried to restore webservices!")
-
         try {
-            if (authWebservice == null) {
-                initializeAuthWebservice(masterPassword)
+            val remoteUserType = loggedInStateStorage?.userType as? UserType.Remote ?: throw IllegalStateException("The webservices can't be initialized because of local user type!")
+            val serverUrl = remoteUserType.serverUrl
+
+            val authWebservice = authWebservice ?: run {
+                val username = remoteUserType.username
+                createAuthWebservice(serverUrl, username, masterPassword)
             }
 
-            var authToken = userType.authToken
-            var authTokenHasChanged = false
-
-            if (authToken.isExpired) {
-                authToken = authWebservice.requestAuthToken().resultOrThrowException()
-                authTokenHasChanged = true
-
-                // Update and persist token
-                userType.authToken = authToken
-                loggedInStateStorage.persist()
+            val userWebservice = userWebservice ?: run {
+                val loggedInStateStorage = loggedInStateStorage ?: throw IllegalStateException("The LoggedInStateStorage is not initialized!")
+                createUserWebservice(serverUrl, authWebservice, loggedInStateStorage)
             }
 
-            if (userWebservice == null || authTokenHasChanged) {
-                userWebservice = UserWebservice.create(userType.serverUrl, authToken.token)
-            }
+            // If everything worked, apply to fields
+            this.authWebservice = authWebservice
+            this.userWebservice = userWebservice
         } catch (exception: Exception) {
             L.w("UserManager", "restoreWebservices(): The webservices could not be restored!", exception)
         }
     }
 
-    suspend fun initializeAuthWebservice(masterPassword: String) {
-        L.d("UserManager", "initializeAuthWebservice()")
-
-        val userType = loggedInStateStorage.userType as? UserType.Server ?: throw IllegalStateException("The user is a local kind despite it was tried to initialize auth webservice!")
-        val username = userType.username
-        val serverUrl = userType.serverUrl
-
-        // TODO: Exception handling?
+    @Throws(Exception::class)
+    private suspend fun createAuthWebservice(serverUrl: Uri, username: String, masterPassword: String): AuthWebservice {
         val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
-        authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
+        val authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
+        return authWebservice
+    }
+
+    private suspend fun createUserWebservice(serverUrl: Uri, authWebservice: AuthWebservice, loggedInStateStorage: LoggedInStateStorage): UserWebservice {
+        val userWebservice = UserWebservice.create(serverUrl, authWebservice, loggedInStateStorage)
+        return userWebservice
+    }
+
+    suspend fun reinitializeAuthWebservice(masterPassword: String) {
+        authWebservice = null
+        userWebservice = null
+        restoreWebservices(masterPassword)
     }
 
     suspend fun updateUser(user: User) {
@@ -287,8 +297,6 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
     suspend fun synchronize(): Result<Unit> {
         L.d("UserManager", "synchronize()")
 
-        val userType = loggedInStateStorage.userType as? UserType.Server ?: throw IllegalStateException("The logged-in user type is local!")
-
         return withContext(Dispatchers.IO) {
             // Execute tasks synchronously, do not stop if any task failed (otherwise other tasks are never synced if first task failed)
             val synchronizeResults = createSynchronizationTasks().map {
@@ -311,8 +319,8 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
             if (firstFailedTask != null) {
                 Failure(firstFailedTask.throwable)
             } else {
-                userType.lastSuccessfulSync = Date()
-                loggedInStateStorage.persist()
+                loggedInStateStorage?.userType?.asRemote()?.lastSuccessfulSync = Date()
+                loggedInStateStorage?.persist()
 
                 Success(Unit)
             }
@@ -347,7 +355,7 @@ class UserManager(applicationContext: Context, private val localRepository: Loca
         loggedInUser = null
 
         localRepository.reset()
-        loggedInStateStorage.reset()
+        loggedInStateStorage?.reset()
     }
 }
 
@@ -364,7 +372,7 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
             val lastSuccessfulSync = sharedPreferences.getLong(SHARED_PREFERENCES_KEY_LAST_SUCCESSFUL_SYNC, 0).takeIf { it > 0 }?.let { Date(it) }
 
             userType = when {
-                (username != null && serverUrl != null && authToken != null) -> UserType.Server(username, serverUrl, authToken, lastSuccessfulSync)
+                (username != null && serverUrl != null && authToken != null) -> UserType.Remote(username, serverUrl, authToken, lastSuccessfulSync)
                 (username != null) -> UserType.Local(username)
                 else -> null
             }
@@ -377,9 +385,9 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
         withContext(Dispatchers.IO) {
             sharedPreferences.edit().apply {
                 putString(SHARED_PREFERENCES_KEY_USERNAME, userType?.username)
-                putString(SHARED_PREFERENCES_KEY_SERVERURL, (userType as? UserType.Server)?.serverUrl?.toString())
-                putString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, (userType as? UserType.Server)?.authToken?.serialize()?.toString())
-                putLong(SHARED_PREFERENCES_KEY_LAST_SUCCESSFUL_SYNC, (userType as? UserType.Server)?.lastSuccessfulSync?.time ?: 0)
+                putString(SHARED_PREFERENCES_KEY_SERVERURL, userType?.asRemote()?.serverUrl?.toString())
+                putString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, userType?.asRemote()?.authToken?.serialize()?.toString())
+                putLong(SHARED_PREFERENCES_KEY_LAST_SUCCESSFUL_SYNC, userType?.asRemote()?.lastSuccessfulSync?.time ?: 0)
                 putString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, encryptedMasterPassword?.serialize()?.toString())
             }.commit()
         }
@@ -402,7 +410,11 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
 
 sealed class UserType(val username: String) {
     class Local(username: String) : UserType(username)
-    class Server(username: String, val serverUrl: Uri, var authToken: AuthToken, var lastSuccessfulSync: Date?) : UserType(username)
+    class Remote(username: String, val serverUrl: Uri, var authToken: AuthToken?, var lastSuccessfulSync: Date?) : UserType(username)
+}
+
+fun UserType.asRemote(): UserType.Remote? {
+    return this as? UserType.Remote
 }
 
 sealed class LoggedInUserResult(val newLoggedInUser: User) {

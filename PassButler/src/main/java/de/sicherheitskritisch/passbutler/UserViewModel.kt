@@ -47,11 +47,11 @@ class UserViewModel private constructor(
     masterPassword: String?
 ) : ManualCancelledCoroutineScopeViewModel() {
 
-    val isServerUserType
-        get() = userType is UserType.Server
+    val userType
+        get() = userManager.loggedInStateStorage?.userType
 
     val encryptedMasterPassword
-        get() = userManager.loggedInStateStorage.encryptedMasterPassword
+        get() = userManager.loggedInStateStorage?.encryptedMasterPassword
 
     val username
         get() = user.username
@@ -66,7 +66,7 @@ class UserViewModel private constructor(
     }
 
     val biometricUnlockEnabled = NonNullValueGetterLiveData {
-        biometricUnlockAvailable.value && userManager.loggedInStateStorage.encryptedMasterPassword != null
+        biometricUnlockAvailable.value && userManager.loggedInStateStorage?.encryptedMasterPassword != null
     }
 
     val isSynchronizationPossible = NonNullValueGetterLiveData {
@@ -74,11 +74,8 @@ class UserViewModel private constructor(
     }
 
     val lastSuccessfulSync = ValueGetterLiveData {
-        (userType as? UserType.Server)?.lastSuccessfulSync
+        userType?.asRemote()?.lastSuccessfulSync
     }
-
-    private val userType
-        get() = userManager.loggedInStateStorage.userType
 
     private var itemsObservable: LiveData<List<Item>>? = null
     private val itemsObserver = ItemsChangedObserver()
@@ -255,6 +252,9 @@ class UserViewModel private constructor(
             val newServerMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(newLocalMasterPasswordAuthenticationHash).resultOrThrowException()
             masterPasswordAuthenticationHash = newServerMasterPasswordAuthenticationHash
 
+            // TODO: Sync to remote first, only if it worked update locally because otherwise authentication will fail!
+            userManager.reinitializeAuthWebservice(newMasterPassword)
+
             newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation).resultOrThrowException()
             protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey)).resultOrThrowException()
 
@@ -267,9 +267,6 @@ class UserViewModel private constructor(
             if (disableBiometricUnlockResult is Failure) {
                 L.w("UserViewModel", "updateMasterPassword(): The biometric unlock could not be disabled!", disableBiometricUnlockResult.throwable)
             }
-
-            // The auth webservice needs to re-initialized because of master password change
-            userManager.initializeAuthWebservice(newMasterPassword)
 
             Success(Unit)
         } catch (exception: Exception) {
@@ -289,8 +286,8 @@ class UserViewModel private constructor(
             val encryptedMasterPasswordInitializationVector = initializedSetupBiometricUnlockCipher.iv
             val encryptedMasterPassword = Biometrics.encryptData(initializedSetupBiometricUnlockCipher, masterPassword.toByteArray()).resultOrThrowException()
 
-            userManager.loggedInStateStorage.encryptedMasterPassword = EncryptedValue(encryptedMasterPasswordInitializationVector, encryptedMasterPassword)
-            userManager.loggedInStateStorage.persist()
+            userManager.loggedInStateStorage?.encryptedMasterPassword = EncryptedValue(encryptedMasterPasswordInitializationVector, encryptedMasterPassword)
+            userManager.loggedInStateStorage?.persist()
 
             withContext(Dispatchers.Main) {
                 biometricUnlockEnabled.notifyChange()
@@ -311,8 +308,8 @@ class UserViewModel private constructor(
         return try {
             Biometrics.removeKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME).resultOrThrowException()
 
-            userManager.loggedInStateStorage.encryptedMasterPassword = null
-            userManager.loggedInStateStorage.persist()
+            userManager.loggedInStateStorage?.encryptedMasterPassword = null
+            userManager.loggedInStateStorage?.persist()
 
             withContext(Dispatchers.Main) {
                 biometricUnlockEnabled.notifyChange()
