@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
-import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
+import de.sicherheitskritisch.passbutler.ui.FragmentPresenter
 import de.sicherheitskritisch.passbutler.ui.TransitionType
 import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
 import kotlinx.coroutines.launch
@@ -36,7 +36,7 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
             val contentContainerResourceId = R.id.frameLayout_fragment_root_content_container
             val progressScreenViewResourceId = R.id.frameLayout_progress_container
-            fragmentPresentingDelegate = FragmentPresentingDelegate(
+            fragmentPresentingDelegate = FragmentPresenter(
                 WeakReference(it),
                 WeakReference(this),
                 contentContainerResourceId,

@@ -3,7 +3,7 @@ package de.sicherheitskritisch.passbutler
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import de.sicherheitskritisch.passbutler.base.L
-import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
+import de.sicherheitskritisch.passbutler.ui.FragmentPresenter
 
 class MainActivity : AppCompatActivity() {
 
@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
 
         L.d("MainActivity", "onCreate(): savedInstanceState = $savedInstanceState")
 
-        val rootFragmentTag = FragmentPresentingDelegate.getFragmentTag(RootFragment::class.java)
+        val rootFragmentTag = FragmentPresenter.getFragmentTag(RootFragment::class.java)
         rootFragment = supportFragmentManager.findFragmentByTag(rootFragmentTag) as? RootFragment
 
         // Add `RootFragment` only if still not there (e.g. on configuration changes the fragment will be restored automatically)

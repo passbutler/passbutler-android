@@ -17,8 +17,7 @@ import java.lang.ref.WeakReference
  * Provides implementation of fragment management used by the one-activity app concept.
  * This delegate is delegated in `BaseFragment` and provided in the root fragment.
  */
-// TODO: Rename to FragmentPresenter
-class FragmentPresentingDelegate(
+class FragmentPresenter(
     private val activityWeakReference: WeakReference<Activity>,
     private val rootFragmentWeakReference: WeakReference<RootFragment>,
     private val rootFragmentContainerResourceId: Int,

@@ -26,7 +26,7 @@ import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.crypto.BiometricAuthenticationCallbackExecutor
 import de.sicherheitskritisch.passbutler.databinding.FragmentSettingsBinding
-import de.sicherheitskritisch.passbutler.ui.FragmentPresentingDelegate
+import de.sicherheitskritisch.passbutler.ui.FragmentPresenter
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
 import de.sicherheitskritisch.passbutler.ui.showEditTextDialog
 import de.sicherheitskritisch.passbutler.ui.showError
@@ -72,7 +72,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             binding.lifecycleOwner = viewLifecycleOwner
         }
 
-        val settingsPreferenceFragmentTag = FragmentPresentingDelegate.getFragmentTag(SettingsPreferenceFragment::class.java)
+        val settingsPreferenceFragmentTag = FragmentPresenter.getFragmentTag(SettingsPreferenceFragment::class.java)
         settingsPreferenceFragment = ((childFragmentManager.findFragmentByTag(settingsPreferenceFragmentTag) as? SettingsPreferenceFragment) ?: run {
             SettingsPreferenceFragment.newInstance().also { newSettingsPreferenceFragment ->
                 childFragmentManager

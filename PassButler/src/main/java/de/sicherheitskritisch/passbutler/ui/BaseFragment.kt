@@ -19,7 +19,7 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
     private val coroutineJob = SupervisorJob()
 
     var transitionType = TransitionType.NONE
-    var fragmentPresentingDelegate: FragmentPresentingDelegate? = null
+    var fragmentPresentingDelegate: FragmentPresenter? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -43,7 +43,7 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
             }
 
             // Re-apply fragment transition after configuration change
-            FragmentPresentingDelegate.applyTransitionToFragment(this)
+            FragmentPresenter.applyTransitionToFragment(this)
         }
     }
 
