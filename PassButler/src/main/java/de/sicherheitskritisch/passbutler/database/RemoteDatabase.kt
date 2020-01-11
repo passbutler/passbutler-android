@@ -43,10 +43,14 @@ import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.net.HttpURLConnection.HTTP_FORBIDDEN
 import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
+import java.time.Duration
 
 typealias OkHttpResponse = okhttp3.Response
 
 private const val API_VERSION_PREFIX = "v1"
+private val API_TIMEOUT_CONNECT = Duration.ofSeconds(5)
+private val API_TIMEOUT_READ = Duration.ofSeconds(5)
+private val API_TIMEOUT_WRITE = Duration.ofSeconds(5)
 
 interface AuthWebservice {
     @GET("/$API_VERSION_PREFIX/token")
@@ -89,6 +93,9 @@ interface AuthWebservice {
 
             return withContext(Dispatchers.IO) {
                 val okHttpClient = OkHttpClient.Builder()
+                    .connectTimeout(API_TIMEOUT_CONNECT)
+                    .readTimeout(API_TIMEOUT_READ)
+                    .writeTimeout(API_TIMEOUT_WRITE)
                     .addInterceptor(PasswordAuthenticationInterceptor(username, password))
                     .build()
 
@@ -271,6 +278,9 @@ interface UserWebservice {
 
             return withContext(Dispatchers.IO) {
                 val okHttpClient = OkHttpClient.Builder()
+                    .connectTimeout(API_TIMEOUT_CONNECT)
+                    .readTimeout(API_TIMEOUT_READ)
+                    .writeTimeout(API_TIMEOUT_WRITE)
                     .addInterceptor(AuthTokenInterceptor(loggedInStateStorage))
                     .authenticator(AuthTokenAuthenticator(authWebservice, loggedInStateStorage))
                     .build()
