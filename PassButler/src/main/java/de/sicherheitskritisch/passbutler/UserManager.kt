@@ -44,6 +44,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import java.net.SocketTimeoutException
 import java.util.*
 
 class UserManager(private val applicationContext: Context, private val localRepository: LocalRepository) {
@@ -298,12 +299,14 @@ class UserManager(private val applicationContext: Context, private val localRepo
         L.d("UserManager", "synchronize()")
 
         return withContext(Dispatchers.IO) {
-            // Execute tasks synchronously, do not stop if any task failed (otherwise other tasks are never synced if first task failed)
-            val synchronizeResults = createSynchronizationTasks().map {
-                val synchronizeTaskName = it.javaClass.simpleName
+            val synchronizeResults = mutableListOf<Result<Differentiation.Result<*>>>()
+
+            // Execute each task synchronously
+            for (task in createSynchronizationTasks()) {
+                val synchronizeTaskName = task.javaClass.simpleName
 
                 L.d("UserManager", "synchronize(): Starting '$synchronizeTaskName'")
-                val result = it.synchronize()
+                val result = task.synchronize()
 
                 val printableResult = when (result) {
                     is Success -> "${result.javaClass.simpleName} (${result.result})"
@@ -311,7 +314,13 @@ class UserManager(private val applicationContext: Context, private val localRepo
                 }
                 L.d("UserManager", "synchronize(): Finished '$synchronizeTaskName' with result: $printableResult")
 
-                result
+                synchronizeResults.add(result)
+
+                // Do not stop if a task failed (otherwise later tasks may never synced if prior task failed) - except for timeout
+                if ((result as? Failure)?.throwable is SocketTimeoutException) {
+                    L.d("UserManager", "synchronize(): Skip all other tasks because '$synchronizeTaskName' failed with timeout!")
+                    break
+                }
             }
 
             val firstFailedTask = synchronizeResults.filterIsInstance(Failure::class.java).firstOrNull()
