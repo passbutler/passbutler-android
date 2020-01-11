@@ -154,8 +154,6 @@ interface UserWebservice {
         @Throws(IOException::class)
         override fun intercept(chain: Interceptor.Chain): OkHttpResponse {
             val actualRequest = chain.request()
-            L.d("AuthTokenInterceptor", "intercept(): Intercept request ${actualRequest.url()}")
-
             val interceptedRequest = authToken?.let { currentAuthToken ->
                 actualRequest.applyTokenAuthorizationHeader(currentAuthToken.token)
             } ?: actualRequest
