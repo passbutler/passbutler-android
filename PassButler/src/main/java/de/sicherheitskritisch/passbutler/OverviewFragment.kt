@@ -174,6 +174,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
             ) {
                 viewModel.synchronizeData()
             }
+        } else {
+            L.d("UserManager", "synchronizeData(): The synchronize data request is already running - skip call!")
         }
     }
 
