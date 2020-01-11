@@ -9,7 +9,6 @@ import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
-import de.sicherheitskritisch.passbutler.base.ValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.viewmodels.ManualCancelledCoroutineScopeViewModel
@@ -71,10 +70,6 @@ class UserViewModel private constructor(
 
     val isSynchronizationPossible = NonNullValueGetterLiveData {
         userManager.webservicesInitialized
-    }
-
-    val lastSuccessfulSync = ValueGetterLiveData {
-        userType?.asRemote()?.lastSuccessfulSync
     }
 
     private var itemsObservable: LiveData<List<Item>>? = null
@@ -230,15 +225,7 @@ class UserViewModel private constructor(
     }
 
     suspend fun synchronizeData(): Result<Unit> {
-        val synchronizeResult = userManager.synchronize()
-
-        if (synchronizeResult is Success) {
-            withContext(Dispatchers.Main) {
-                lastSuccessfulSync.notifyChange()
-            }
-        }
-
-        return synchronizeResult
+        return userManager.synchronize()
     }
 
     suspend fun updateMasterPassword(newMasterPassword: String): Result<Unit> {

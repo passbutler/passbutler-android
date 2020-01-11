@@ -4,8 +4,11 @@ import android.app.Application
 import androidx.lifecycle.Observer
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.Result
+import de.sicherheitskritisch.passbutler.base.ValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
@@ -19,6 +22,10 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
     val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
 
+    val lastSynchronizationDate = ValueGetterLiveData {
+        loggedInUserViewModel?.userType?.asRemote()?.lastSuccessfulSync
+    }
+
     private val itemViewModelsChangedObserver = Observer<List<ItemViewModel>> { newUnfilteredItemViewModels ->
         // Only show non-deleted item viewmodels in overview list
         itemViewModels.value = newUnfilteredItemViewModels.filter { !it.deleted }
@@ -31,7 +38,14 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
 
     suspend fun synchronizeData(): Result<Unit> {
         val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
-        return loggedInUserViewModel.synchronizeData()
+        val synchronizeDataResult = loggedInUserViewModel.synchronizeData()
+
+        // Trigger notification for every result to be sure, the view is updating its relative formatted date
+        withContext(Dispatchers.Main) {
+            lastSynchronizationDate.notifyChange()
+        }
+
+        return synchronizeDataResult
     }
 
     suspend fun logoutUser(): Result<Unit> {

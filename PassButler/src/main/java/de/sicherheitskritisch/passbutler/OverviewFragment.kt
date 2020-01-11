@@ -57,7 +57,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         adapter?.submitList(newItemViewModels)
     }
 
-    private val lastSuccessfulSyncChangedObserver = Observer<Date?> { newDate ->
+    private val lastSynchronizationDateObserver = Observer<Date?> { newDate ->
         binding?.toolbar?.let { toolbar ->
             binding?.toolbar?.subtitle = if (isSynchronizationVisible) {
                 val formattedLastSuccessfulSync = newDate?.relativeDateTime(toolbar.context) ?: getString(R.string.overview_last_sync_never)
@@ -185,7 +185,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         super.onStart()
 
         viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsChangedObserver)
-        viewModel.loggedInUserViewModel?.lastSuccessfulSync?.observe(viewLifecycleOwner, true, lastSuccessfulSyncChangedObserver)
+        viewModel.lastSynchronizationDate.observe(viewLifecycleOwner, true, lastSynchronizationDateObserver)
         viewModel.loggedInUserViewModel?.isSynchronizationPossible?.observe(viewLifecycleOwner, true, synchronizationPossibleChangedObserver)
     }
 
