@@ -1,12 +1,12 @@
 package de.sicherheitskritisch.passbutler
 
 import androidx.lifecycle.ViewModel
+import de.sicherheitskritisch.passbutler.base.DefaultValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
-import de.sicherheitskritisch.passbutler.base.DefaultValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.clear
 import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.viewmodels.EditableViewModel
@@ -112,6 +112,7 @@ class ItemEditingViewModel(
 ) : ViewModel(), EditingViewModel {
 
     val isNewEntry = itemModel is ItemModel.New
+    val isModificationAllowed = (itemModel as? ItemModel.Existing)?.itemAuthorization?.readOnly?.not() ?: true
 
     val title = NonNullMutableLiveData(itemModel.asExisting()?.itemData?.title ?: "")
     val password = NonNullMutableLiveData(itemModel.asExisting()?.itemData?.password ?: "")
@@ -233,24 +234,17 @@ class ItemEditingViewModel(
     }
 
     suspend fun delete(): Result<Unit> {
-        val itemModel = itemModel
+        val existingItemModel = (itemModel as? ItemModel.Existing) ?: throw IllegalStateException("Only existing items can be deleted!")
+        check(isModificationAllowed) { "The item is not allowed to delete because it has only a readonly authorization!" }
 
-        // TODO: Check if is readonly
+        // Only mark item as deleted (item authorization deletion is only managed via item shared screen)
+        val deletedItem = existingItemModel.item.copy(
+            deleted = true,
+            modified = Date()
+        )
+        userManager.updateItem(deletedItem)
 
-        return if (itemModel is ItemModel.Existing) {
-            val currentData = Date()
-
-            // Only mark item as deleted (item authorization deletion is only managed via item shared screen)
-            val deletedItem = itemModel.item.copy(
-                deleted = true,
-                modified = currentData
-            )
-            userManager.updateItem(deletedItem)
-
-            Success(Unit)
-        } else {
-            throw IllegalStateException("A new item can't be deleted!")
-        }
+        return Success(Unit)
     }
 }
 

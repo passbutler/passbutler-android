@@ -68,21 +68,23 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     }
 
     override fun setupToolbarMenu(toolbar: Toolbar) {
-        toolbar.inflateMenu(R.menu.item_detail_menu)
+        if (viewModel.isModificationAllowed) {
+            toolbar.inflateMenu(R.menu.item_detail_menu)
 
-        toolbar.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                R.id.item_detail_menu_item_save -> {
-                    saveClicked()
-                    true
+            toolbar.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.item_detail_menu_item_save -> {
+                        saveClicked()
+                        true
+                    }
+                    else -> false
                 }
-                else -> false
             }
-        }
 
-        toolbar.menu.findItem(R.id.item_detail_menu_item_save).apply {
-            val menuIconColor = resources.getColor(R.color.white, null)
-            icon.applyTint(menuIconColor)
+            toolbar.menu.findItem(R.id.item_detail_menu_item_save).apply {
+                val menuIconColor = resources.getColor(R.color.white, null)
+                icon.applyTint(menuIconColor)
+            }
         }
     }
 
