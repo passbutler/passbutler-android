@@ -147,29 +147,33 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 
     private fun synchronizeData(userTriggered: Boolean) {
-        synchronizeDataRequestSendingJob?.cancel()
-        synchronizeDataRequestSendingJob = launchRequestSending(
-            handleSuccess = {
-                // Only show user feedback if it was user triggered to avoid confusing the user
-                if (userTriggered) {
-                    showInformation(getString(R.string.overview_sync_successful_message))
-                }
-            },
-            handleFailure = {
-                // Only show user feedback if it was user triggered to avoid confusing the user
-                if (userTriggered) {
-                    showError(getString(R.string.overview_sync_failed_message))
-                }
-            },
-            handleLoadingChanged = { isLoading ->
-                binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
+        val synchronizeDataRequestRunning = synchronizeDataRequestSendingJob?.isActive ?: false
 
-                if (!isLoading) {
-                    binding?.layoutOverviewContent?.swipeRefreshLayout?.isRefreshing = false
+        if (!synchronizeDataRequestRunning) {
+            synchronizeDataRequestSendingJob?.cancel()
+            synchronizeDataRequestSendingJob = launchRequestSending(
+                handleSuccess = {
+                    // Only show user feedback if it was user triggered to avoid confusing the user
+                    if (userTriggered) {
+                        showInformation(getString(R.string.overview_sync_successful_message))
+                    }
+                },
+                handleFailure = {
+                    // Only show user feedback if it was user triggered to avoid confusing the user
+                    if (userTriggered) {
+                        showError(getString(R.string.overview_sync_failed_message))
+                    }
+                },
+                handleLoadingChanged = { isLoading ->
+                    binding?.layoutOverviewContent?.progressBarRefreshing?.showFadeInOutAnimation(isLoading, VisibilityHideMode.INVISIBLE)
+
+                    if (!isLoading) {
+                        binding?.layoutOverviewContent?.swipeRefreshLayout?.isRefreshing = false
+                    }
                 }
+            ) {
+                viewModel.synchronizeData()
             }
-        ) {
-            viewModel.synchronizeData()
         }
     }
 
