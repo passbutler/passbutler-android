@@ -129,7 +129,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 
     private fun setupSwipeRefreshLayout(binding: FragmentOverviewBinding) {
-        binding.layoutOverviewContent.swipeRefreshLayout?.let { swipeRefreshLayout ->
+        binding.layoutOverviewContent.swipeRefreshLayout.also { swipeRefreshLayout ->
             if (isSynchronizationVisible) {
                 swipeRefreshLayout.setOnRefreshListener {
                     if (isSynchronizationPossible) {
