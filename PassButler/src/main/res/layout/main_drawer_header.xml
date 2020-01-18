@@ -18,7 +18,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/drawer_header_vertical_spacing"
-        app:srcCompat="@mipmap/icon_launcher_round"
+        android:tint="@color/black"
+        app:srcCompat="@drawable/icon_drawer_icon"
         tools:ignore="ContentDescription" />
 
     <TextView
