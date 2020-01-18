@@ -52,7 +52,7 @@
     <!-- Drawer -->
 
     <string name="drawer_header_title">Pass Butler</string>
-    <string name="drawer_header_subtitle">android.studio@android.com</string>
+    <string name="drawer_header_subtitle">username@passbutler-server</string>
 
     <string name="drawer_open_description">Navigationsdrawer öffnen</string>
     <string name="drawer_close_description">Navigationsdrawer schließen</string>

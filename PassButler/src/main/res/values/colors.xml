@@ -3,9 +3,9 @@
 
     <!-- Default style colors: -->
 
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorPrimary">#782121</color>
+    <color name="colorPrimaryDark">#4D1414</color>
+    <color name="colorAccent">#502D16</color>
 
     <color name="colorHeadline">#313131</color>
     <color name="colorTextPassage">#313131</color>

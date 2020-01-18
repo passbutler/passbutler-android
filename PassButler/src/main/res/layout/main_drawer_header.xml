@@ -18,13 +18,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/drawer_header_vertical_spacing"
-        android:tint="@color/black"
+        android:tint="@color/white"
         app:srcCompat="@drawable/icon_drawer_icon"
         tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/textView_drawer_header_title"
-        style="@style/TextPassageBlack"
+        style="@style/HeadlineSmall"
+        android:textColor="@color/white"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/drawer_header_vertical_spacing"
@@ -33,6 +34,7 @@
     <TextView
         android:id="@+id/textView_drawer_header_subtitle"
         style="@style/TextPassage"
+        android:textColor="@color/white"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         tools:text="@string/drawer_header_subtitle" />
