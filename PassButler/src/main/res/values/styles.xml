@@ -1,20 +1,14 @@
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-    </style>
-
     <!-- A fragment based toolbar is used, so no activity toolbar and/or title desired: -->
-    <style name="AppTheme.NoActionBar">
+    <style name="Theme.PassButler.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.PassButler.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="Theme.PassButler.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
     <style name="Headline" parent="TextAppearance.AppCompat.Headline">
         <item name="android:textSize">24sp</item>

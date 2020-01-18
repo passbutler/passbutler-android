@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Default style colors: -->
+    <!-- Basic color palette: -->
 
     <color name="colorPrimary">#782121</color>
     <color name="colorPrimaryDark">#4D1414</color>
@@ -18,11 +18,9 @@
 
     <color name="colorBackgroundButtonDisabled">#C8C8C8</color>
 
-    <!-- Custom style colors: -->
+    <!-- Special colors: -->
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-
-    <color name="whiteDisabled">#BFFFFFFF</color>
 
 </resources>
