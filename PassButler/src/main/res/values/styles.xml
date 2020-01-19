@@ -1,15 +1,5 @@
 <resources>
 
-    <!-- A fragment based toolbar is used, so no activity toolbar and/or title desired: -->
-    <style name="Theme.PassButler.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
-
-    <style name="Theme.PassButler.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
-    <style name="Theme.PassButler.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
-
     <style name="Headline" parent="TextAppearance.AppCompat.Headline">
         <item name="android:textSize">24sp</item>
         <item name="android:lineSpacingExtra">6sp</item>
@@ -61,20 +51,6 @@
     <style name="TextInputLayout" parent="Widget.Design.TextInputLayout">
         <!-- Manually set hint color to avoid on-click color change caused by clickability of parent layout: -->
         <item name="android:textColorHint">@color/colorTextEditTextHint</item>
-    </style>
-
-    <style name="SeekBarDiscrete" parent="Widget.AppCompat.SeekBar.Discrete">
-        <item name="android:paddingStart">10dp</item>
-        <item name="android:paddingEnd">10dp</item>
-    </style>
-
-    <style name="ProgressBarHorizontal" parent="Widget.AppCompat.ProgressBar.Horizontal">
-        <item name="android:minHeight">8dp</item>
-        <item name="android:maxHeight">8dp</item>
-    </style>
-
-    <style name="Checkbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
-        <item name="android:textSize">15sp</item>
     </style>
 
     <!-- Special styles -->

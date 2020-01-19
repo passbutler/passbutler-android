@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Widget.PassButler.FloatingActionButton" parent="Widget.Design.FloatingActionButton">
+        <item name="backgroundTint">?attr/colorAccent</item>
+        <item name="tint">@color/white</item>
+    </style>
+
+    <style name="Widget.PassButler.ProgressBar.Horizontal" parent="Widget.AppCompat.ProgressBar.Horizontal">
+        <item name="android:minHeight">8dp</item>
+        <item name="android:maxHeight">8dp</item>
+        <item name="android:indeterminateTint">@color/redBrownLight</item>
+        <item name="android:backgroundTint">@color/redBrownDark</item>
+    </style>
+
+    <style name="Widget.PassButler.ProgressBar.Circle.Large" parent="Widget.AppCompat.ProgressBar">
+        <item name="android:minWidth">64dp</item>
+        <item name="android:minHeight">64dp</item>
+        <item name="android:maxWidth">64dp</item>
+        <item name="android:maxHeight">64dp</item>
+        <item name="android:indeterminateTint">@color/redBrownLight</item>
+        <item name="android:backgroundTint">@color/redBrownDark</item>
+    </style>
+
+    <style name="Widget.PassButler.Checkbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="android:textSize">@dimen/textSizeMedium</item>
+    </style>
+
+</resources>

@@ -2,9 +2,23 @@
 <resources>
 
     <style name="Theme.PassButler" parent="Theme.MaterialComponents.DayNight">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimary">@color/coffeeBrown</item>
+        <item name="colorPrimaryDark">@color/redBrownDark</item>
+        <item name="colorAccent">@color/redBrownLight</item>
+
+        <item name="floatingActionButtonStyle">@style/Widget.PassButler.FloatingActionButton</item>
+        <item name="android:progressBarStyle">@style/Widget.PassButler.ProgressBar.Horizontal</item>
+        <item name="android:checkboxStyle">@style/Widget.PassButler.Checkbox</item>
+
     </style>
+
+    <!-- A fragment based toolbar is used, so no activity toolbar and/or title desired: -->
+    <style name="Theme.PassButler.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.PassButler.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.PassButler.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 </resources>

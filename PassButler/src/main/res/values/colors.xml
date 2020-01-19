@@ -3,20 +3,15 @@
 
     <!-- Basic color palette: -->
 
+    <color name="redBrownLight">#cf4e4e</color>
     <color name="redBrown">#782121</color>
-    <color name="darkRedBrown">#502D16</color>
+    <color name="redBrownDark">#502D16</color>
     <color name="gloveWhite">#E6DFC7</color>
 
     <color name="coffeeBrown">#856457</color>
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-
-    <!-- Special colors: -->
-
-    <color name="colorPrimary">@color/coffeeBrown</color>
-    <color name="colorPrimaryDark">@color/darkRedBrown</color>
-    <color name="colorAccent">@color/redBrown</color>
 
     <!-- TODO: Remove: -->
 

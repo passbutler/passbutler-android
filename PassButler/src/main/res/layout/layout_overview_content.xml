@@ -12,7 +12,6 @@
         <!-- Initial visibility must be set to `invisible` because it is not programmatically set initially -->
         <ProgressBar
             android:id="@+id/progressBar_refreshing"
-            style="@style/ProgressBarHorizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:indeterminate="true"
