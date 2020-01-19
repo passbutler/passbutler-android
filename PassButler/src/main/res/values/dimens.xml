@@ -1,6 +1,12 @@
 <resources>
 
+    <!-- Semantic text sizes: -->
+
+    <dimen name="textSizeSmall">12sp</dimen>
     <dimen name="textSizeMedium">15sp</dimen>
+    <dimen name="textSizeLarge">24sp</dimen>
+
+    <!-- Semantic spacings: -->
 
     <dimen name="default_margin_horizontal">16dp</dimen>
     <dimen name="default_margin_vertical">16dp</dimen>
@@ -8,6 +14,8 @@
     <dimen name="default_vertical_spacing">8dp</dimen>
     <dimen name="small_vertical_spacing">4dp</dimen>
     <dimen name="large_vertical_spacing">16dp</dimen>
+
+    <!-- View spacings: -->
 
     <dimen name="button_icon_padding">15dp</dimen>
 
@@ -18,7 +26,7 @@
 
     <dimen name="dialog_margin_horizontal">20dp</dimen>
 
-    <!-- Login -->
+    <!-- Special spacings: -->
     <dimen name="login_margin_horizontal">32dp</dimen>
 
 </resources>

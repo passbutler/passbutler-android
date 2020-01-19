@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.PassButler" parent="Theme.MaterialComponents.DayNight">
+    <style name="Theme.PassButler" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+
         <item name="colorPrimary">@color/coffeeBrown</item>
         <item name="colorPrimaryDark">@color/redBrownDark</item>
         <item name="colorAccent">@color/redBrownLight</item>
@@ -10,12 +11,6 @@
         <item name="android:progressBarStyle">@style/Widget.PassButler.ProgressBar.Horizontal</item>
         <item name="android:checkboxStyle">@style/Widget.PassButler.Checkbox</item>
 
-    </style>
-
-    <!-- A fragment based toolbar is used, so no activity toolbar and/or title desired: -->
-    <style name="Theme.PassButler.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
     </style>
 
     <style name="Theme.PassButler.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
