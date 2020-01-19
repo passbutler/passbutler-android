@@ -6,6 +6,7 @@
     <color name="redBrownLight">#cf4e4e</color>
     <color name="redBrown">#782121</color>
     <color name="redBrownDark">#502D16</color>
+
     <color name="gloveWhite">#E6DFC7</color>
 
     <color name="coffeeBrown">#856457</color>
@@ -14,17 +15,10 @@
     <color name="black">#FF000000</color>
     <color name="transparent">#00000000</color>
 
-    <!-- TODO: Remove: -->
+    <color name="whiteMedium">#FAFAFA</color>
+    <color name="whiteMediumTransparent">#C8FAFAFA</color>
 
-    <color name="colorHeadline">#313131</color>
-    <color name="colorTextPassage">#313131</color>
-    <color name="colorTextPassageSmall">#595959</color>
-
-    <color name="colorTextEditTextHint">#a1a1a1</color>
-
-    <color name="colorBackground">#FAFAFA</color>
-    <color name="colorBackgroundTransparent">#c8ffffff</color>
-
-    <color name="colorBackgroundButtonDisabled">#C8C8C8</color>
+    <color name="greyLight">#595959</color>
+    <color name="greyMedium">#313131</color>
 
 </resources>

@@ -3,17 +3,48 @@
 
     <style name="Theme.PassButler" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 
-        <item name="colorPrimary">@color/coffeeBrown</item>
-        <item name="colorPrimaryDark">@color/redBrownDark</item>
-        <item name="colorAccent">@color/redBrownLight</item>
+        <!-- Android colors: -->
 
-        <item name="floatingActionButtonStyle">@style/Widget.PassButler.FloatingActionButton</item>
+        <!-- Used for backgrounds of e.g. screen: -->
+        <item name="android:colorBackground">@color/whiteMedium</item>
+
+        <!-- Used for e.g. setting sections, checkbox, switches: -->
+        <item name="android:colorAccent">@color/redBrownLight</item>
+
+        <item name="android:textColorPrimary">@color/greyMedium</item>
+        <item name="android:textColorSecondary">@color/greyLight</item>
+
+        <!-- AppCompat colors: -->
+
+        <!-- Used for background of e.g. status bar: -->
+        <item name="colorPrimaryDark">@color/redBrownDark</item>
+
+        <!-- Material colors: -->
+
+        <!-- Used for backgrounds of e.g. button, toolbar: -->
+        <item name="colorPrimary">@color/coffeeBrown</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <!-- Used for backgrounds of e.g. floating action button: -->
+        <item name="colorSecondary">@color/redBrownLight</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <!-- Custom colors: -->
+
+        <item name="colorBackgroundProgress">@color/whiteMediumTransparent</item>
+
+        <!-- AppCompat widget styles: -->
+
         <item name="android:progressBarStyle">@style/Widget.PassButler.ProgressBar.Horizontal</item>
         <item name="android:checkboxStyle">@style/Widget.PassButler.Checkbox</item>
+        <item name="android:textViewStyle">@style/Widget.PassButler.TextView</item>
+
+        <!-- Material widget styles: -->
+
+        <item name="floatingActionButtonStyle">@style/Widget.PassButler.FloatingActionButton</item>
+        <item name="materialButtonStyle">@style/Widget.PassButler.Button.Primary</item>
+        <item name="textInputStyle">@style/Widget.PassButler.TextInputLayout</item>
 
     </style>
-
-    <style name="Theme.PassButler.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-    <style name="Theme.PassButler.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 </resources>

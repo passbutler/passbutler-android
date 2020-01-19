@@ -2,7 +2,7 @@
 
 <!-- Use `android:transitionGroup="true"` to be sure all views are animated simultaneously in transitions -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -10,15 +10,14 @@
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/Theme.PassButler.AppBarOverlay">
+        android:layout_height="wrap_content">
 
-        <androidx.appcompat.widget.Toolbar
+        <!-- Directly apply style instead via theme to make theme overlay working which correctly colors burger menu -->
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
+            style="@style/Widget.PassButler.Toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/Theme.PassButler.PopupOverlay" />
+            android:layout_height="?attr/actionBarSize" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -27,7 +26,7 @@
         android:id="@+id/frameLayout_fragment_toolbar_content_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white"
+        android:background="?android:attr/colorBackground"
         android:clickable="true" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -35,8 +34,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
+        android:layout_marginEnd="@dimen/spacingHorizontalMedium"
+        android:layout_marginBottom="@dimen/spacingVerticalMedium"
         android:visibility="gone"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        tools:visibility="visible" />
 
 </LinearLayout>

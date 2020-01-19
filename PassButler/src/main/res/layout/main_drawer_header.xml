@@ -3,40 +3,39 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/drawer_header_height"
-    android:background="@drawable/shape_drawer_background"
+    android:layout_height="176dp"
+    android:background="@drawable/background_drawer"
     android:gravity="bottom"
     android:orientation="vertical"
-    android:paddingLeft="@dimen/default_margin_horizontal"
-    android:paddingTop="@dimen/default_margin_vertical"
-    android:paddingRight="@dimen/default_margin_horizontal"
-    android:paddingBottom="@dimen/default_margin_vertical"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark">
+    android:paddingLeft="@dimen/spacingHorizontalMedium"
+    android:paddingTop="@dimen/spacingVerticalMedium"
+    android:paddingRight="@dimen/spacingHorizontalMedium"
+    android:paddingBottom="@dimen/spacingVerticalMedium">
 
     <ImageView
         android:id="@+id/imageView_drawer_header_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="@dimen/drawer_header_vertical_spacing"
         android:tint="@color/white"
         app:srcCompat="@drawable/icon_drawer_icon"
         tools:ignore="ContentDescription" />
 
+    <!-- TODO: Inverted styles instead of hardcoded colors -->
+
     <TextView
         android:id="@+id/textView_drawer_header_title"
-        style="@style/HeadlineSmall"
-        android:textColor="@color/white"
+        style="@style/Widget.PassButler.TextView.Headline"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="@dimen/drawer_header_vertical_spacing"
-        android:text="@string/drawer_header_title" />
+        android:paddingTop="@dimen/spacingVerticalMedium"
+        android:text="@string/drawer_header_title"
+        android:textColor="@color/white" />
 
     <TextView
         android:id="@+id/textView_drawer_header_subtitle"
-        style="@style/TextPassage"
-        android:textColor="@color/white"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="@color/white"
         tools:text="@string/drawer_header_subtitle" />
 
 </LinearLayout>

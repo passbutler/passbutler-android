@@ -16,8 +16,8 @@ fun BaseFragment.showEditTextDialog(title: String?, positiveClickListener: (Edit
         val editText = EditText(fragmentContext).apply {
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
             layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                marginStart = resources.getDimensionPixelSize(R.dimen.dialog_margin_horizontal)
-                marginEnd = resources.getDimensionPixelSize(R.dimen.dialog_margin_horizontal)
+                marginStart = resources.getDimensionPixelSize(R.dimen.dialogSpacingHorizontal)
+                marginEnd = resources.getDimensionPixelSize(R.dimen.dialogSpacingHorizontal)
             }
         }
 

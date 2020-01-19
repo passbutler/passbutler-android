@@ -19,15 +19,14 @@
 
             <com.google.android.material.appbar.AppBarLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:theme="@style/Theme.PassButler.AppBarOverlay">
+                android:layout_height="wrap_content">
 
-                <androidx.appcompat.widget.Toolbar
+                <!-- Directly apply style instead via theme to make theme overlay working which correctly colors burger menu -->
+                <com.google.android.material.appbar.MaterialToolbar
                     android:id="@+id/toolbar"
+                    style="@style/Widget.PassButler.Toolbar"
                     android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    android:background="?attr/colorPrimary"
-                    app:popupTheme="@style/Theme.PassButler.PopupOverlay" />
+                    android:layout_height="?attr/actionBarSize" />
 
             </com.google.android.material.appbar.AppBarLayout>
 

@@ -1,29 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Widget.PassButler.FloatingActionButton" parent="Widget.Design.FloatingActionButton">
-        <item name="backgroundTint">?attr/colorAccent</item>
-        <item name="tint">@color/white</item>
-    </style>
+    <!-- AppCompat component based styles: -->
 
+    <!-- TODO: What is the default of `indeterminateTint`? -->
     <style name="Widget.PassButler.ProgressBar.Horizontal" parent="Widget.AppCompat.ProgressBar.Horizontal">
         <item name="android:minHeight">8dp</item>
         <item name="android:maxHeight">8dp</item>
-        <item name="android:indeterminateTint">@color/redBrownLight</item>
-        <item name="android:backgroundTint">@color/redBrownDark</item>
+        <item name="android:indeterminateTint">?attr/colorSecondary</item>
     </style>
 
+    <!-- TODO: What is the default of `indeterminateTint`? -->
     <style name="Widget.PassButler.ProgressBar.Circle.Large" parent="Widget.AppCompat.ProgressBar">
         <item name="android:minWidth">64dp</item>
         <item name="android:minHeight">64dp</item>
         <item name="android:maxWidth">64dp</item>
         <item name="android:maxHeight">64dp</item>
-        <item name="android:indeterminateTint">@color/redBrownLight</item>
-        <item name="android:backgroundTint">@color/redBrownDark</item>
+        <item name="android:indeterminateTint">?attr/colorSecondary</item>
     </style>
 
     <style name="Widget.PassButler.Checkbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
         <item name="android:textSize">@dimen/textSizeMedium</item>
     </style>
+
+    <style name="Widget.PassButler.TextView" parent="Widget.AppCompat.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.PassButler.Normal.Medium</item>
+    </style>
+
+    <style name="Widget.PassButler.TextView.Headline" parent="Widget.PassButler.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.PassButler.Bold.Large</item>
+    </style>
+
+    <style name="Widget.PassButler.TextView.Headline.Small" parent="Widget.PassButler.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.PassButler.Bold.Medium</item>
+    </style>
+
+    <style name="Widget.PassButler.TextView.Footer" parent="Widget.PassButler.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.PassButler.Normal.Small</item>
+    </style>
+
+    <!-- Material component based styles: -->
+
+    <style name="Widget.PassButler.FloatingActionButton" parent="Widget.MaterialComponents.FloatingActionButton" />
+
+    <!-- TODO: Why is `ellipsize` not working? -->
+    <style name="Widget.PassButler.Button.Primary" parent="Widget.MaterialComponents.Button">
+        <item name="android:padding">15dp</item>
+        <item name="android:textSize">@dimen/textSizeMedium</item>
+    </style>
+
+    <style name="Widget.PassButler.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense" />
+
+    <!-- TODO: Needed to apply via style or theme? -->
+    <style name="Widget.PassButler.AppBarLayout" parent="Widget.MaterialComponents.AppBarLayout.Primary" />
+
+    <style name="Widget.PassButler.Toolbar" parent="Widget.MaterialComponents.Toolbar.Primary" />
 
 </resources>

@@ -28,7 +28,7 @@
             android:id="@+id/constraintLayout_locked_screen_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/white"
+            android:background="?android:attr/colorBackground"
             android:clickable="true"
             android:focusableInTouchMode="true">
 
@@ -37,7 +37,7 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:src="@drawable/icon_lock_24dp"
-                android:tint="@color/black"
+                android:tint="?attr/colorPrimary"
                 app:layout_constraintBottom_toTopOf="@+id/textView_headline"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -48,11 +48,11 @@
 
             <TextView
                 android:id="@+id/textView_headline"
-                style="@style/Headline"
+                style="@style/Widget.PassButler.TextView.Headline"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="64dp"
-                android:layout_marginTop="@dimen/default_margin_vertical"
+                android:layout_marginTop="@dimen/spacingVerticalMedium"
                 android:layout_marginEnd="64dp"
                 android:text="@string/locked_screen_header"
                 android:textAlignment="center"
@@ -65,11 +65,10 @@
 
             <TextView
                 android:id="@+id/textView_description"
-                style="@style/TextPassage"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="64dp"
-                android:layout_marginTop="@dimen/default_margin_vertical"
+                android:layout_marginTop="@dimen/spacingVerticalMedium"
                 android:layout_marginEnd="64dp"
                 android:text="@string/locked_screen_description_password"
                 android:textAlignment="center"
@@ -82,7 +81,6 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textInputLayout_password"
-                style="@style/TextInputLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="64dp"
@@ -109,15 +107,11 @@
 
             <Button
                 android:id="@+id/button_unlock_password"
-                style="@style/PrimaryButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="64dp"
-                android:layout_marginTop="@dimen/small_vertical_spacing"
+                android:layout_marginTop="@dimen/spacingVerticalSmall"
                 android:layout_marginEnd="64dp"
-                android:drawableStart="@drawable/icon_more_horiz_24dp"
-                android:drawableTint="@color/white"
-                android:padding="@dimen/button_icon_padding"
                 android:text="@string/locked_screen_button_password_text"
                 app:layout_constraintBottom_toTopOf="@id/button_unlock_biometric"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -127,16 +121,12 @@
 
             <Button
                 android:id="@+id/button_unlock_biometric"
-                style="@style/PrimaryButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="64dp"
-                android:layout_marginTop="@dimen/small_vertical_spacing"
+                android:layout_marginTop="@dimen/spacingVerticalSmall"
                 android:layout_marginEnd="64dp"
-                android:drawableStart="@drawable/icon_fingerprint_24dp"
-                android:drawableTint="@color/white"
                 android:enabled="@{safeUnbox(userViewModel.biometricUnlockEnabled)}"
-                android:padding="@dimen/button_icon_padding"
                 android:text="@string/locked_screen_button_biometric_text"
                 android:visibility="@{safeUnbox(userViewModel.biometricUnlockAvailable) ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBottom_toTopOf="@+id/textView_button_unlock_biometric_disabled_hint"
@@ -147,11 +137,11 @@
 
             <TextView
                 android:id="@+id/textView_button_unlock_biometric_disabled_hint"
-                style="@style/TextPassageSmall"
+                style="@style/Widget.PassButler.TextView.Footer"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="64dp"
-                android:layout_marginTop="@dimen/small_vertical_spacing"
+                android:layout_marginTop="@dimen/spacingVerticalSmall"
                 android:layout_marginEnd="64dp"
                 android:text="@string/locked_screen_button_biometric_disabled_hint_text"
                 android:textAlignment="center"

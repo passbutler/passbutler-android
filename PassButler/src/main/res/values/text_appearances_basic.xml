@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="TextAppearance.PassButler.Default" parent="TextAppearance.AppCompat.Body1">
+        <item name="android:ellipsize">end</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <!-- Normal -->
+
+    <style name="TextAppearance.PassButler.Normal.Small" parent="TextAppearance.PassButler.Default">
+        <item name="android:textSize">@dimen/textSizeSmall</item>
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
+    </style>
+
+    <style name="TextAppearance.PassButler.Normal.Medium" parent="TextAppearance.PassButler.Default">
+        <item name="android:textSize">@dimen/textSizeMedium</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+    </style>
+
+    <!-- Bold -->
+
+    <style name="TextAppearance.PassButler.Bold.Medium" parent="TextAppearance.PassButler.Default">
+        <item name="android:textSize">@dimen/textSizeMedium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:lineSpacingExtra">6sp</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+    </style>
+
+    <style name="TextAppearance.PassButler.Bold.Large" parent="TextAppearance.PassButler.Default">
+        <item name="android:textSize">@dimen/textSizeLarge</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:lineSpacingExtra">6sp</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+    </style>
+
+</resources>
