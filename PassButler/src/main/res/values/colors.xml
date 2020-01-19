@@ -3,9 +3,22 @@
 
     <!-- Basic color palette: -->
 
-    <color name="colorPrimary">#782121</color>
-    <color name="colorPrimaryDark">#4D1414</color>
-    <color name="colorAccent">#502D16</color>
+    <color name="redBrown">#782121</color>
+    <color name="darkRedBrown">#502D16</color>
+    <color name="gloveWhite">#E6DFC7</color>
+
+    <color name="coffeeBrown">#856457</color>
+
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <!-- Special colors: -->
+
+    <color name="colorPrimary">@color/coffeeBrown</color>
+    <color name="colorPrimaryDark">@color/darkRedBrown</color>
+    <color name="colorAccent">@color/redBrown</color>
+
+    <!-- TODO: Remove: -->
 
     <color name="colorHeadline">#313131</color>
     <color name="colorTextPassage">#313131</color>
@@ -17,10 +30,5 @@
     <color name="colorBackgroundTransparent">#c8ffffff</color>
 
     <color name="colorBackgroundButtonDisabled">#C8C8C8</color>
-
-    <!-- Special colors: -->
-
-    <color name="white">#FFFFFF</color>
-    <color name="black">#000000</color>
 
 </resources>
