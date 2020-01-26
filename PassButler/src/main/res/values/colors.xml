@@ -20,5 +20,6 @@
 
     <color name="greyLight">#595959</color>
     <color name="greyMedium">#313131</color>
+    <color name="greyMediumTransparent">#C8313131</color>
 
 </resources>
