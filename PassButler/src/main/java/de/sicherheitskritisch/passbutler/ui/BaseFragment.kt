@@ -6,15 +6,15 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import de.sicherheitskritisch.passbutler.MainActivity
 import de.sicherheitskritisch.passbutler.RootFragment
-import de.sicherheitskritisch.passbutler.base.createMainDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlin.coroutines.CoroutineContext
 
 open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPressedListener, CoroutineScope {
 
     override val coroutineContext: CoroutineContext
-        get() = createMainDispatcher() + coroutineJob
+        get() = Dispatchers.Main + coroutineJob
 
     private val coroutineJob = SupervisorJob()
 
