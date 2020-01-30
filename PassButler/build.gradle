@@ -79,10 +79,10 @@ dependencies {
     kapt "androidx.room:room-compiler:2.2.3"
 
     // Android Biometrics framework
-    implementation 'androidx.biometric:biometric:1.0.1'
+    implementation "androidx.biometric:biometric:1.0.1"
 
     // Android Preference framework
-    implementation 'androidx.preference:preference:1.1.0'
+    implementation "androidx.preference:preference:1.1.0"
 
     // RetroFit 2 + Kotlin Coroutine Adapter
     implementation "com.squareup.retrofit2:retrofit:2.5.0"
