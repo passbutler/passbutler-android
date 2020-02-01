@@ -22,12 +22,14 @@
       <w>snackbar</w>
       <w>splitted</w>
       <w>synchronizable</w>
+      <w>tinylog</w>
       <w>underlaying</w>
       <w>urandom</w>
       <w>userfacing</w>
       <w>viewmodel</w>
       <w>viewmodels</w>
       <w>werkzeug</w>
+      <w>writingthread</w>
     </words>
   </dictionary>
 </component>
