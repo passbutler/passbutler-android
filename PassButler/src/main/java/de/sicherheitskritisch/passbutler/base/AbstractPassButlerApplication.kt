@@ -4,11 +4,6 @@ import android.app.Application
 import android.content.Context
 import de.sicherheitskritisch.passbutler.UserManager
 import de.sicherheitskritisch.passbutler.database.LocalRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import org.tinylog.configuration.Configuration
-import org.tinylog.kotlin.Logger
 
 abstract class AbstractPassButlerApplication : Application() {
 
@@ -24,29 +19,12 @@ abstract class AbstractPassButlerApplication : Application() {
         super.onCreate()
         AbstractPassButlerApplication.applicationContext = applicationContext
 
+        setupStrictMode()
         setupLogger()
-        setupUncaughtExceptionHandler()
-
-        Logger.debug("Started Pass Butler")
     }
 
-    private fun setupLogger() {
-        Configuration.replace(createLoggerConfiguration())
-
-        /*
-         * Initialize Tinylog on IO to avoid disk read violations: despite it has `writingthread = true`,
-         * the first write is done on calling thread when logger is still not initialized.
-         */
-        GlobalScope.launch(Dispatchers.IO) {
-            Logger.debug("Initialized logger")
-        }
-    }
-
-    abstract fun createLoggerConfiguration(): Map<String, String>
-
-    private fun setupUncaughtExceptionHandler() {
-        Thread.setDefaultUncaughtExceptionHandler(UncaughtExceptionHandler())
-    }
+    abstract fun setupStrictMode()
+    abstract fun setupLogger()
 
     companion object {
         lateinit var applicationContext: Context
@@ -54,11 +32,3 @@ abstract class AbstractPassButlerApplication : Application() {
     }
 }
 
-private class UncaughtExceptionHandler : Thread.UncaughtExceptionHandler {
-    private val defaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
-
-    override fun uncaughtException(t: Thread, e: Throwable) {
-        Logger.error(e, "⚠️⚠️⚠️ FATAL ⚠️⚠️⚠️")
-        defaultUncaughtExceptionHandler?.uncaughtException(t, e)
-    }
-}
