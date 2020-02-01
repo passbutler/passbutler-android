@@ -19,7 +19,7 @@ class PassButlerApplication : AbstractPassButlerApplication() {
             "writer2" to "file",
             "writer2.level" to "debug",
             "writer2.format" to "{date} {level} {class-name}.{method}() [{thread}]: {message}",
-            "writer2.file" to "${applicationContext.cacheDir.path}/log.txt",
+            "writer2.file" to "${applicationContext.cacheDir.path}/passbutler-debug.log",
             "writer2.charset" to "UTF-8",
             "writer2.append" to "true",
             "writer2.buffered" to "true",

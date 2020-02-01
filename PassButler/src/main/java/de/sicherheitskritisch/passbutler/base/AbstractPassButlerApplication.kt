@@ -26,6 +26,8 @@ abstract class AbstractPassButlerApplication : Application() {
 
         setupLogger()
         setupUncaughtExceptionHandler()
+
+        Logger.debug("Started Pass Butler")
     }
 
     private fun setupLogger() {
@@ -36,7 +38,7 @@ abstract class AbstractPassButlerApplication : Application() {
          * the first write is done on calling thread when logger is still not initialized.
          */
         GlobalScope.launch(Dispatchers.IO) {
-            Logger.debug("Started Pass Butler")
+            Logger.debug("Initialized logger")
         }
     }
 
