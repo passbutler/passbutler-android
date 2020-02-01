@@ -7,6 +7,7 @@ import de.sicherheitskritisch.passbutler.database.LocalRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.tinylog.configuration.Configuration
 import org.tinylog.kotlin.Logger
 
 abstract class AbstractPassButlerApplication : Application() {
@@ -28,6 +29,8 @@ abstract class AbstractPassButlerApplication : Application() {
     }
 
     private fun setupLogger() {
+        Configuration.replace(createLoggerConfiguration())
+
         /*
          * Initialize Tinylog on IO to avoid disk read violations: despite it has `writingthread = true`,
          * the first write is done on calling thread when logger is still not initialized.
@@ -36,6 +39,8 @@ abstract class AbstractPassButlerApplication : Application() {
             Logger.debug("Started Pass Butler")
         }
     }
+
+    abstract fun createLoggerConfiguration(): Map<String, String>
 
     private fun setupUncaughtExceptionHandler() {
         Thread.setDefaultUncaughtExceptionHandler(UncaughtExceptionHandler())
