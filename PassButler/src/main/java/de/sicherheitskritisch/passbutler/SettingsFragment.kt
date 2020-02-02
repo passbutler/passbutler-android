@@ -13,7 +13,7 @@ import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceCategory
@@ -60,7 +60,8 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
         activity?.let {
             // Retrieve viewmodel from activity to provide nested fragment the same instance
-            viewModel = ViewModelProviders.of(it).get(SettingsViewModel::class.java)
+            viewModel = ViewModelProvider(it).get(SettingsViewModel::class.java)
+
 
             val rootViewModel = getRootViewModel(it)
             viewModel.loggedInUserViewModel = rootViewModel.loggedInUserViewModel
@@ -134,14 +135,14 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     private fun dismissPreferenceDialog() {
         // Dirty approach to dismiss the visible preference dialog fragment (fragment tag copied from `PreferenceFragmentCompat.DIALOG_FRAGMENT_TAG`):
         val preferenceDialogFragmentTag = "androidx.preference.PreferenceFragment.DIALOG"
-        (settingsPreferenceFragment?.fragmentManager?.findFragmentByTag(preferenceDialogFragmentTag) as? DialogFragment)?.dismiss()
+        (settingsPreferenceFragment?.parentFragmentManager?.findFragmentByTag(preferenceDialogFragmentTag) as? DialogFragment)?.dismiss()
     }
 
     private fun dismissMasterPasswordInputDialog() {
         masterPasswordInputDialog?.let {
             it.dismiss()
 
-            Logger.debug("The master password dialog was dismissed, cancel setup.")
+            Logger.debug("The master password dialog was dismissed, cancel setup")
             cancelBiometricUnlockSetup()
         }
 
@@ -274,7 +275,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
             activity?.let {
                 // Retrieve viewmodel from activity to use same instance as the parent fragment
-                settingsViewModel = ViewModelProviders.of(it).get(SettingsViewModel::class.java)
+                settingsViewModel = ViewModelProvider(it).get(SettingsViewModel::class.java)
 
                 val rootViewModel = getRootViewModel(it)
                 settingsViewModel.loggedInUserViewModel = rootViewModel.loggedInUserViewModel

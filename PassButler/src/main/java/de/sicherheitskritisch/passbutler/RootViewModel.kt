@@ -5,7 +5,7 @@ import android.text.format.DateUtils
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.Result
@@ -191,5 +191,5 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
  */
 fun getRootViewModel(activity: FragmentActivity): RootViewModel {
     // The `RootViewModel` must be received via activity to be sure it is the same for multiple fragment lifecycles
-    return ViewModelProviders.of(activity).get(RootViewModel::class.java)
+    return ViewModelProvider(activity).get(RootViewModel::class.java)
 }

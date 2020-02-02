@@ -10,7 +10,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.databinding.FragmentItemdetailBinding
 import de.sicherheitskritisch.passbutler.ui.Keyboard
@@ -56,7 +55,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
             val factory = ItemEditingViewModelFactory(itemEditingViewModel)
 
             // Use actual fragment (not the activity) for provider because we want always want to get a new `ItemEditingViewModel`
-            viewModel = ViewModelProviders.of(this, factory).get(ItemEditingViewModel::class.java)
+            viewModel = ViewModelProvider(this, factory).get(ItemEditingViewModel::class.java)
         }
     }
 

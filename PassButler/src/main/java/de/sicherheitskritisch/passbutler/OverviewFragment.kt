@@ -13,7 +13,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -77,10 +77,11 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
-        viewModel = ViewModelProviders.of(this).get(OverviewViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(OverviewViewModel::class.java)
 
         activity?.let {
             val loggedInUserViewModel = getRootViewModel(it).loggedInUserViewModel
+
             Logger.debug("Apply loggedInUserViewModel = $loggedInUserViewModel to viewModel = $viewModel")
             viewModel.loggedInUserViewModel = loggedInUserViewModel
         }
