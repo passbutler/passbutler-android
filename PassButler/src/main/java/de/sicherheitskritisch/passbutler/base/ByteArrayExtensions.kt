@@ -2,18 +2,6 @@ package de.sicherheitskritisch.passbutler.base
 
 import java.util.*
 
-fun ByteArray?.optionalContentEquals(other: ByteArray?): Boolean {
-    return when {
-        this == null && other == null -> true
-        this != null && other != null -> this.contentEquals(other)
-        else -> false
-    }
-}
-
-fun ByteArray?.optionalContentNotEquals(other: ByteArray?): Boolean {
-    return !optionalContentEquals(other)
-}
-
 fun ByteArray?.toHexString(): String {
     return this?.joinToString("") { "%02x".format(it) } ?: ""
 }

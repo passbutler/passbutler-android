@@ -1,7 +1,8 @@
 package de.sicherheitskritisch.passbutler.base
 
+import de.sicherheitskritisch.passbutler.assertArrayNotEquals
 import de.sicherheitskritisch.passbutler.hexToBytes
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 
 class ByteArrayExtensionsTest {
@@ -11,7 +12,7 @@ class ByteArrayExtensionsTest {
         val firstByteArray: ByteArray? = null
         val secondByteArray: ByteArray? = null
 
-        assertEquals(true, firstByteArray.optionalContentEquals(secondByteArray))
+        assertArrayEquals(firstByteArray, secondByteArray)
     }
 
     @Test
@@ -19,7 +20,7 @@ class ByteArrayExtensionsTest {
         val firstByteArray: ByteArray? = null
         val secondByteArray: ByteArray? = ByteArray(1)
 
-        assertEquals(false, firstByteArray.optionalContentEquals(secondByteArray))
+        assertArrayNotEquals(firstByteArray, secondByteArray)
     }
 
     @Test
@@ -27,7 +28,7 @@ class ByteArrayExtensionsTest {
         val firstByteArray: ByteArray? = ByteArray(1)
         val secondByteArray: ByteArray? = null
 
-        assertEquals(false, firstByteArray.optionalContentEquals(secondByteArray))
+        assertArrayNotEquals(firstByteArray, secondByteArray)
     }
 
     @Test
@@ -35,7 +36,7 @@ class ByteArrayExtensionsTest {
         val firstByteArray: ByteArray? = "AABBCC".hexToBytes()
         val secondByteArray: ByteArray? = "AABBCC".hexToBytes()
 
-        assertEquals(true, firstByteArray.optionalContentEquals(secondByteArray))
+        assertArrayEquals(firstByteArray, secondByteArray)
     }
 
     @Test
@@ -43,7 +44,7 @@ class ByteArrayExtensionsTest {
         val firstByteArray: ByteArray? = "AABBCC".hexToBytes()
         val secondByteArray: ByteArray? = "AABBCCDD".hexToBytes()
 
-        assertEquals(false, firstByteArray.optionalContentEquals(secondByteArray))
+        assertArrayNotEquals(firstByteArray, secondByteArray)
     }
 
     @Test
@@ -51,6 +52,6 @@ class ByteArrayExtensionsTest {
         val firstByteArray: ByteArray? = "AABBCC".hexToBytes()
         val secondByteArray: ByteArray? = "AABBDD".hexToBytes()
 
-        assertEquals(false, firstByteArray.optionalContentEquals(secondByteArray))
+        assertArrayNotEquals(firstByteArray, secondByteArray)
     }
 }

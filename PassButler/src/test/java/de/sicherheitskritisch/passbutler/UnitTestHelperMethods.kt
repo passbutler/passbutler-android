@@ -23,10 +23,15 @@ internal fun assertJSONObjectEquals(expected: JSONObject, actual: JSONObject) {
     Assertions.assertEquals(expected.toString(), actual.toString())
 }
 
-internal fun assertEqualsIgnoringCase(expected: String, actual: String) {
-    Assertions.assertEquals(expected.toLowerCase(), actual.toLowerCase())
-}
+internal fun assertArrayNotEquals(expected: ByteArray?, actual: ByteArray?) {
+    val arrayIsEqual = try {
+        Assertions.assertArrayEquals(expected, actual)
+        true
+    } catch (e: AssertionError) {
+        false
+    }
 
-internal fun assertByteArrayEquals(expected: ByteArray, actual: ByteArray) {
-    Assertions.assertEquals(expected.toHexString(), actual.toHexString())
+    if (arrayIsEqual) {
+        Assertions.fail<ByteArray>("expected: not equal but was: <${actual.toHexString()}>")
+    }
 }

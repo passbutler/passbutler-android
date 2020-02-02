@@ -1,6 +1,5 @@
 package de.sicherheitskritisch.passbutler.crypto
 
-import de.sicherheitskritisch.passbutler.assertByteArrayEquals
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
@@ -8,6 +7,7 @@ import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.toHexString
 import de.sicherheitskritisch.passbutler.hexToBytes
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -311,7 +311,7 @@ class AsymmetricEncryptionTest {
 
         val secretKeyBytes = createSecretKeyBytes(testVectorWithData)
         val plainText = runBlocking { EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, testVectorWithData.cipherText.hexToBytes()).resultOrThrowException() }
-        assertByteArrayEquals(testVectorWithData.plainText.hexToBytes(), plainText)
+        assertArrayEquals(testVectorWithData.plainText.hexToBytes(), plainText)
     }
 
     @Test
@@ -326,7 +326,7 @@ class AsymmetricEncryptionTest {
 
         val secretKeyBytes = createSecretKeyBytes(testVectorWithData)
         val plainText = runBlocking { EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, testVectorWithData.cipherText.hexToBytes()).resultOrThrowException() }
-        assertByteArrayEquals(testVectorWithData.plainText.hexToBytes(), plainText)
+        assertArrayEquals(testVectorWithData.plainText.hexToBytes(), plainText)
     }
 
     /**
@@ -343,7 +343,7 @@ class AsymmetricEncryptionTest {
         val secretKeyBytes = createSecretKeyBytes(encryptDecryptTestVector)
         val decryptedCipherText = runBlocking { EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, encryptedPlainText).resultOrThrowException() }
 
-        assertByteArrayEquals(plainText, decryptedCipherText)
+        assertArrayEquals(plainText, decryptedCipherText)
     }
 
     @Test
@@ -356,7 +356,7 @@ class AsymmetricEncryptionTest {
         val secretKeyBytes = createSecretKeyBytes(encryptDecryptTestVector)
         val decryptedCipherText = runBlocking { EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, encryptedPlainText).resultOrThrowException() }
 
-        assertByteArrayEquals(plainText, decryptedCipherText)
+        assertArrayEquals(plainText, decryptedCipherText)
     }
 
     @Test
@@ -369,7 +369,7 @@ class AsymmetricEncryptionTest {
         val secretKeyBytes = createSecretKeyBytes(encryptDecryptTestVector)
         val decryptedCipherText = runBlocking { EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, encryptedPlainText).resultOrThrowException() }
 
-        assertByteArrayEquals(plainText, decryptedCipherText)
+        assertArrayEquals(plainText, decryptedCipherText)
     }
 
     @Test
@@ -382,7 +382,7 @@ class AsymmetricEncryptionTest {
         val secretKeyBytes = createSecretKeyBytes(encryptDecryptTestVector)
         val decryptedCipherText = runBlocking { EncryptionAlgorithm.Asymmetric.RSA2048OAEP.decrypt(secretKeyBytes, encryptedPlainText).resultOrThrowException() }
 
-        assertByteArrayEquals(plainText, decryptedCipherText)
+        assertArrayEquals(plainText, decryptedCipherText)
     }
 
     companion object {
