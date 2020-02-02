@@ -62,9 +62,7 @@
                     android:hint="@string/login_serverurl_hint"
                     android:imeOptions="actionNext"
                     android:importantForAutofill="no"
-                    android:inputType="textUri"
-                    android:maxLines="1"
-                    android:singleLine="true" />
+                    android:inputType="textUri" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -88,9 +86,7 @@
                     android:hint="@string/login_username_hint"
                     android:imeOptions="actionNext"
                     android:importantForAutofill="no"
-                    android:inputType="textEmailAddress"
-                    android:maxLines="1"
-                    android:singleLine="true" />
+                    android:inputType="textEmailAddress" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -113,9 +109,7 @@
                     android:hint="@string/login_password_hint"
                     android:imeOptions="actionUnspecified"
                     android:importantForAutofill="no"
-                    android:inputType="textPassword"
-                    android:maxLines="1"
-                    android:singleLine="true" />
+                    android:inputType="textPassword" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
