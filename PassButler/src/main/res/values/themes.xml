@@ -6,14 +6,15 @@
         <!-- AppCompat widget styles: -->
 
         <item name="android:progressBarStyle">@style/Widget.PassButler.ProgressBar.Horizontal</item>
-        <item name="android:checkboxStyle">@style/Widget.PassButler.Checkbox</item>
-        <item name="android:textViewStyle">@style/Widget.PassButler.TextView</item>
 
         <!-- Material widget styles: -->
 
         <item name="floatingActionButtonStyle">@style/Widget.PassButler.FloatingActionButton</item>
         <item name="materialButtonStyle">@style/Widget.PassButler.Button.Primary</item>
         <item name="textInputStyle">@style/Widget.PassButler.TextInputLayout</item>
+
+        <item name="textAppearanceHeadline1">@style/TextAppearance.PassButler.Headline1</item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.PassButler.Headline2</item>
 
     </style>
 

@@ -15,28 +15,6 @@
         <item name="android:minWidth">64dp</item>
     </style>
 
-    <style name="Widget.PassButler.Checkbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
-        <item name="android:textSize">@dimen/textSizeMedium</item>
-    </style>
-
-    <style name="Widget.PassButler.TextView" parent="Widget.AppCompat.TextView">
-        <item name="android:textAppearance">@style/TextAppearance.PassButler.Normal.Medium</item>
-    </style>
-
-    <!-- TODO: Use Material styles for text -->
-
-    <style name="Widget.PassButler.TextView.Headline" parent="Widget.PassButler.TextView">
-        <item name="android:textAppearance">@style/TextAppearance.PassButler.Bold.Large</item>
-    </style>
-
-    <style name="Widget.PassButler.TextView.Headline.Small" parent="Widget.PassButler.TextView">
-        <item name="android:textAppearance">@style/TextAppearance.PassButler.Bold.Medium</item>
-    </style>
-
-    <style name="Widget.PassButler.TextView.Footer" parent="Widget.PassButler.TextView">
-        <item name="android:textAppearance">@style/TextAppearance.PassButler.Normal.Small</item>
-    </style>
-
     <!-- Material component based styles: -->
 
     <style name="Widget.PassButler.FloatingActionButton" parent="Widget.MaterialComponents.FloatingActionButton" />

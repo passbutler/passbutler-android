@@ -24,10 +24,10 @@
 
     <TextView
         android:id="@+id/textView_drawer_header_title"
-        style="@style/Widget.PassButler.TextView.Headline"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="@dimen/spacingVerticalMedium"
+        android:textAppearance="?textAppearanceHeadline1"
+        android:layout_marginTop="@dimen/spacingVerticalMedium"
         android:text="@string/drawer_header_title"
         android:textColor="@color/white" />
 
