@@ -8,16 +8,16 @@
     android:orientation="vertical"
     android:transitionGroup="true">
 
+    <!-- Use a theme overlay to be sure the toolbar text color is inverted -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:theme="@style/Theme.PassButler.AppBarOverlay">
 
-        <!-- Directly apply style instead via theme to make theme overlay working which correctly colors burger menu -->
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
-            style="@style/Widget.PassButler.Toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize" />
+            android:layout_height="wrap_content" />
 
     </com.google.android.material.appbar.AppBarLayout>
 

@@ -28,9 +28,4 @@
 
     <style name="Widget.PassButler.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense" />
 
-    <!-- TODO: Needed to apply via style or theme? -->
-    <style name="Widget.PassButler.AppBarLayout" parent="Widget.MaterialComponents.AppBarLayout.Primary" />
-
-    <style name="Widget.PassButler.Toolbar" parent="Widget.MaterialComponents.Toolbar.Primary" />
-
 </resources>

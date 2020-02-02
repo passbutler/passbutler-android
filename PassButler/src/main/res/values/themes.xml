@@ -86,4 +86,8 @@
 
     </style>
 
+    <style name="Theme.PassButler.DrawerOverlay" parent="ThemeOverlay.AppCompat.Dark" />
+
+    <style name="Theme.PassButler.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
+
 </resources>
