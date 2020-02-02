@@ -11,8 +11,7 @@
 
         <TextView
             android:id="@+id/textView_header"
-            style="@style/Widget.PassButler.TextView.Headline"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacingHorizontalMedium"
             android:layout_marginTop="@dimen/spacingVerticalMedium"
@@ -25,8 +24,7 @@
 
         <TextView
             android:id="@+id/textView_subheader"
-            style="@style/Widget.PassButler.TextView.Headline.Small"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacingHorizontalMedium"
             android:layout_marginTop="@dimen/spacingVerticalSmall"
@@ -39,7 +37,7 @@
 
         <TextView
             android:id="@+id/textView_passage_1"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacingHorizontalMedium"
             android:layout_marginTop="@dimen/spacingVerticalMedium"
