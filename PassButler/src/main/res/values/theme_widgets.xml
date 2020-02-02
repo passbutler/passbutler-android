@@ -27,6 +27,8 @@
         <item name="android:textAppearance">@style/TextAppearance.PassButler.Normal.Medium</item>
     </style>
 
+    <!-- TODO: Use Material styles for text -->
+
     <style name="Widget.PassButler.TextView.Headline" parent="Widget.PassButler.TextView">
         <item name="android:textAppearance">@style/TextAppearance.PassButler.Bold.Large</item>
     </style>
