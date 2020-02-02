@@ -51,7 +51,7 @@ class PassButlerApplication : AbstractPassButlerApplication() {
         return mapOf(
             "writer1" to "logcat",
             "writer1.level" to "trace",
-            "writer1.format" to "{class-name}.{method}(): [{thread}] {message}",
+            "writer1.format" to "{class-name}.{method}() [{thread}]: {message}",
 
             "writer2" to "file",
             "writer2.level" to "debug",
@@ -69,19 +69,20 @@ class PassButlerApplication : AbstractPassButlerApplication() {
         val versionName = BuildConfig.VERSION_NAME
         val versionCode = BuildConfig.VERSION_CODE
         val formattedBuildTime = BuildConfig.BUILD_TIME.formattedDateTime
+        val gitShortHash = BuildConfig.BUILD_REVISION_HASH
 
         return StringBuilder().apply {
             appendln("--------------------------------------------------------------------------------")
-            appendln("App:         ${applicationContext.packageName} $versionName-$versionCode ($formattedBuildTime)")
-            appendln("Android:     " + Build.VERSION.RELEASE + " / API " + Build.VERSION.SDK_INT + " (" + Build.VERSION.INCREMENTAL + ", " + Build.VERSION.CODENAME + ")")
-            appendln("Brand:       " + Build.BRAND)
-            appendln("Model:       " + Build.MODEL)
-            appendln("Product:     " + Build.PRODUCT)
-            appendln("Device:      " + Build.DEVICE)
-            appendln("Fingerprint: " + Build.FINGERPRINT)
-            appendln("Tags:        " + Build.TAGS)
-            appendln("Hardware:    " + Build.HARDWARE)
-            appendln("Locale:      " + Locale.getDefault())
+            appendln("App:         ${applicationContext.packageName} $versionName-$versionCode (build on $formattedBuildTime from $gitShortHash)")
+            appendln("Android:     ${Build.VERSION.RELEASE} / API ${Build.VERSION.SDK_INT} (${Build.VERSION.INCREMENTAL}, ${Build.VERSION.CODENAME})")
+            appendln("Brand:       ${Build.BRAND}")
+            appendln("Model:       ${Build.MODEL}")
+            appendln("Product:     ${Build.PRODUCT}")
+            appendln("Device:      ${Build.DEVICE}")
+            appendln("Fingerprint: ${Build.FINGERPRINT}")
+            appendln("Tags:        ${Build.TAGS}")
+            appendln("Hardware:    ${Build.HARDWARE}")
+            appendln("Locale:      ${Locale.getDefault()}")
             appendln("--------------------------------------------------------------------------------")
         }.toString()
     }
