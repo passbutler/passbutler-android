@@ -3,20 +3,16 @@
 
     <!-- AppCompat component based styles: -->
 
-    <!-- TODO: What is the default of `indeterminateTint`? -->
     <style name="Widget.PassButler.ProgressBar.Horizontal" parent="Widget.AppCompat.ProgressBar.Horizontal">
         <item name="android:minHeight">8dp</item>
         <item name="android:maxHeight">8dp</item>
-        <item name="android:indeterminateTint">?attr/colorSecondary</item>
     </style>
 
-    <!-- TODO: What is the default of `indeterminateTint`? -->
     <style name="Widget.PassButler.ProgressBar.Circle.Large" parent="Widget.AppCompat.ProgressBar">
-        <item name="android:minWidth">64dp</item>
-        <item name="android:minHeight">64dp</item>
-        <item name="android:maxWidth">64dp</item>
         <item name="android:maxHeight">64dp</item>
-        <item name="android:indeterminateTint">?attr/colorSecondary</item>
+        <item name="android:maxWidth">64dp</item>
+        <item name="android:minHeight">64dp</item>
+        <item name="android:minWidth">64dp</item>
     </style>
 
     <style name="Widget.PassButler.Checkbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
@@ -45,8 +41,9 @@
 
     <style name="Widget.PassButler.FloatingActionButton" parent="Widget.MaterialComponents.FloatingActionButton" />
 
-    <!-- TODO: Why is `ellipsize` not working? -->
     <style name="Widget.PassButler.Button.Primary" parent="Widget.MaterialComponents.Button">
+        <item name="android:ellipsize">end</item>
+        <item name="android:lines">1</item>
         <item name="android:padding">15dp</item>
         <item name="android:textSize">@dimen/textSizeMedium</item>
     </style>
