@@ -4,6 +4,14 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'de.mannodermaus.android-junit5'
 
+ext.gitCommitCount = {
+    return "git rev-list HEAD --count".execute().text.trim().toInteger()
+}
+
+ext.gitCommitHashShort = {
+    return "git rev-parse --short HEAD".execute().text.trim()
+}
+
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
@@ -15,13 +23,14 @@ android {
         applicationId "de.sicherheitskritisch.passbutler"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode gitCommitCount()
         versionName "1.0.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
-        // Added custom build field to get compile time
+        // Added custom build fields
         buildConfigField "java.util.Date", "BUILD_TIME", "new java.util.Date(" + System.currentTimeMillis() + "L)"
+        buildConfigField "String", "BUILD_REVISION_HASH", "\"" + gitCommitHashShort() + "\""
 
         javaCompileOptions {
             annotationProcessorOptions {
