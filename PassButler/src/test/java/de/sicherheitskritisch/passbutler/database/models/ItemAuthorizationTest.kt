@@ -1,33 +1,16 @@
 package de.sicherheitskritisch.passbutler.database.models
 
-import android.util.Log
 import de.sicherheitskritisch.passbutler.assertJSONObjectEquals
 import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
 import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
 import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.hexToBytes
 import de.sicherheitskritisch.passbutler.toDate
-import io.mockk.every
-import io.mockk.mockkStatic
-import io.mockk.unmockkAll
 import org.json.JSONObject
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ItemAuthorizationTest {
-
-    @BeforeEach
-    fun setUp() {
-        mockkStatic(Log::class)
-        every { Log.d(any(), any()) } returns 0
-    }
-
-    @AfterEach
-    fun unsetUp() {
-        unmockkAll()
-    }
 
     @Test
     fun `Serialize and deserialize a ItemAuthorization should result an equal object`() {

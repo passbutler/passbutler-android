@@ -21,7 +21,6 @@ import androidx.preference.PreferenceDataStore
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import de.sicherheitskritisch.passbutler.base.Failure
-import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.crypto.BiometricAuthenticationCallbackExecutor
@@ -34,6 +33,7 @@ import de.sicherheitskritisch.passbutler.ui.showInformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.tinylog.kotlin.Logger
 import javax.crypto.Cipher
 
 class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
@@ -124,7 +124,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
                     }
                 }
                 is Failure -> {
-                    L.w("SettingsFragment", "showBiometricPrompt(): The biometric authentication failed!", initializedSetupBiometricUnlockCipherResult.throwable)
+                    Logger.warn(initializedSetupBiometricUnlockCipherResult.throwable, "The biometric authentication failed")
                     showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))
                 }
             }
@@ -141,7 +141,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         masterPasswordInputDialog?.let {
             it.dismiss()
 
-            L.d("SettingsFragment", "dismissMasterPasswordInputDialog(): The master password dialog was dismissed, cancel setup.")
+            Logger.debug("The master password dialog was dismissed, cancel setup.")
             cancelBiometricUnlockSetup()
         }
 
@@ -195,10 +195,10 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
     private inner class BiometricAuthenticationCallback : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-            L.d("SettingsFragment", "onAuthenticationError(): errorCode = $errorCode, errString = '$errString'")
+            Logger.debug("The authentication failed with errorCode = $errorCode, errString = '$errString'")
 
             // If the operation failed, try to roll-back to reset an uncompleted state
-            L.d("SettingsFragment", "onAuthenticationError(): The biometric setup failed, cancel setup.")
+            Logger.debug("The biometric setup failed, cancel setup")
             cancelBiometricUnlockSetup()
 
             // If the user canceled or dismissed the dialog or if the dialog was dismissed via on pause, do not show error
@@ -208,7 +208,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         }
 
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-            L.d("SettingsFragment", "onAuthenticationSucceeded(): result = $result")
+            Logger.debug("The authentication succeeded with result = $result")
 
             val initializedSetupBiometricUnlockCipher = result.cryptoObject?.cipher
 
@@ -256,7 +256,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
         override fun onAuthenticationFailed() {
             // Don't do anything more, the prompt shows error
-            L.d("SettingsFragment", "onAuthenticationFailed()")
+            Logger.debug("The authentication failed")
         }
     }
 
@@ -357,7 +357,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             override fun getBoolean(key: String?, defValue: Boolean): Boolean {
                 val settingKey = key?.let { SettingKey.valueOf(it) }
                 return (settingsMapping[settingKey] as? Setting.Boolean)?.getter?.invoke() ?: run {
-                    L.w("SettingsPreferenceDataStore", "getBoolean(): The setting with key = '$key' is not mapped - return default value!")
+                    Logger.warn("The setting with key = '$key' is not mapped - return default value")
                     false
                 }
             }
@@ -367,14 +367,14 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
                 // Only persist value if mapped setting exists for type and setter is given
                 (settingsMapping[settingKey] as? Setting.Boolean)?.setter?.invoke(value) ?: run {
-                    L.w("SettingsPreferenceDataStore", "putBoolean(): The setting with key = '$key' is not mapped for writing - thus the value is not persisted!")
+                    Logger.warn("The setting with key = '$key' is not mapped for writing - thus the value is not persisted")
                 }
             }
 
             override fun getString(key: String?, defValue: String?): String? {
                 val settingKey = key?.let { SettingKey.valueOf(it) }
                 return (settingsMapping[settingKey] as? Setting.String)?.getter?.invoke() ?: run {
-                    L.w("SettingsPreferenceDataStore", "getString(): The setting with key = '$key' is not mapped - return default value!")
+                    Logger.warn("The setting with key = '$key' is not mapped - return default value")
                     null
                 }
             }
@@ -385,7 +385,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
                 if (value != null) {
                     // Only persist value if mapped setting exists for type and setter is given
                     (settingsMapping[settingKey] as? Setting.String)?.setter?.invoke(value) ?: run {
-                        L.w("SettingsPreferenceDataStore", "putString(): The setting with key = '$key' is not mapped for writing - thus the value is not persisted!")
+                        Logger.warn("The setting with key = '$key' is not mapped for writing - thus the value is not persisted")
                     }
                 }
             }

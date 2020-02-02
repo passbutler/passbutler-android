@@ -3,10 +3,10 @@ package de.sicherheitskritisch.passbutler.base.viewmodels
 import android.app.Application
 import androidx.annotation.CallSuper
 import androidx.lifecycle.AndroidViewModel
-import de.sicherheitskritisch.passbutler.base.L
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import org.tinylog.kotlin.Logger
 import kotlin.coroutines.CoroutineContext
 
 open class CoroutineScopeAndroidViewModel(application: Application) : AndroidViewModel(application), CoroutineScope {
@@ -24,7 +24,7 @@ open class CoroutineScopeAndroidViewModel(application: Application) : AndroidVie
 
     @CallSuper
     override fun onCleared() {
-        L.d(javaClass.simpleName, "onCleared(): Cancel the coroutine job...")
+        Logger.debug("${javaClass.simpleName}: Cancel the coroutine job...")
         coroutineJob.cancel()
         super.onCleared()
     }

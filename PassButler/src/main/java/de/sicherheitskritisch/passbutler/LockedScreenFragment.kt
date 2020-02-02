@@ -14,7 +14,6 @@ import androidx.databinding.DataBindingUtil
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
-import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
@@ -27,6 +26,7 @@ import de.sicherheitskritisch.passbutler.ui.showError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.tinylog.kotlin.Logger
 
 class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
 
@@ -152,7 +152,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
                     }
                 }
                 is Failure -> {
-                    L.w("LockedScreenFragment", "showBiometricPrompt(): The biometric authentication failed!", initializedBiometricUnlockCipherResult.throwable)
+                    Logger.warn(initializedBiometricUnlockCipherResult.throwable, "The biometric authentication failed")
                     showError(getString(R.string.locked_screen_biometrics_unlock_failed_missing_key_title))
                 }
             }
@@ -191,7 +191,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
 
     private inner class BiometricAuthenticationCallback : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-            L.d("LockedScreenFragment", "onAuthenticationError(): errorCode = $errorCode, errString = '$errString'")
+            Logger.debug("The authentication failed with errorCode = $errorCode, errString = '$errString'")
 
             // If the user canceled or dismissed the dialog or if the dialog was dismissed via on pause, do not show error
             if (errorCode != ERROR_NEGATIVE_BUTTON && errorCode != ERROR_USER_CANCELED && errorCode != ERROR_CANCELED) {
@@ -200,7 +200,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
         }
 
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-            L.d("LockedScreenFragment", "onAuthenticationSucceeded(): result = $result")
+            Logger.debug("The authentication succeeded with result = $result")
 
             val initializedBiometricUnlockCipher = result.cryptoObject?.cipher
 
@@ -216,7 +216,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
 
         override fun onAuthenticationFailed() {
             // Don't do anything more, the prompt shows error
-            L.d("LockedScreenFragment", "onAuthenticationFailed()")
+            Logger.debug("The authentication failed")
         }
     }
 

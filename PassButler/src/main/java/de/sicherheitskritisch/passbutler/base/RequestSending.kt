@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.tinylog.kotlin.Logger
 
 fun BaseFragment.launchRequestSending(
     handleSuccess: (() -> Unit)? = null,
@@ -12,6 +13,8 @@ fun BaseFragment.launchRequestSending(
     handleLoadingChanged: ((isLoading: Boolean) -> Unit)? = blockingProgressScreen(),
     block: suspend () -> Result<*>
 ): Job {
+    val fragmentClassName = javaClass.simpleName
+
     return launch {
         handleLoadingChanged?.invoke(true)
 
@@ -25,7 +28,7 @@ fun BaseFragment.launchRequestSending(
             is Success -> handleSuccess?.invoke()
             is Failure -> {
                 val exception = result.throwable
-                L.w(javaClass.simpleName, "launchRequestSending(): The operation failed with exception!", exception)
+                Logger.warn(exception, "${fragmentClassName}: The operation failed with exception")
                 handleFailure?.invoke(exception)
             }
         }

@@ -10,7 +10,7 @@ import androidx.transition.Slide
 import androidx.transition.Transition
 import androidx.transition.TransitionSet
 import de.sicherheitskritisch.passbutler.RootFragment
-import de.sicherheitskritisch.passbutler.base.L
+import org.tinylog.kotlin.Logger
 import java.lang.ref.WeakReference
 
 /**
@@ -75,7 +75,7 @@ class FragmentPresenter(
                 if (rootFragment.isStateNotSaved) {
                     fragmentTransaction.commit()
                 } else {
-                    L.w("FragmentPresentingDelegate", "showFragment(): The fragment transaction was done after state of root fragment was saved!")
+                    Logger.warn("The fragment transaction was done after state of root fragment was saved")
                     fragmentTransaction.commitAllowingStateLoss()
                 }
             }

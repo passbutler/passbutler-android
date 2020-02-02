@@ -3,7 +3,6 @@ package de.sicherheitskritisch.passbutler
 import androidx.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.base.DefaultValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.Failure
-import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
@@ -19,6 +18,7 @@ import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.ItemData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.tinylog.kotlin.Logger
 import java.util.*
 
 class ItemViewModel(
@@ -118,7 +118,7 @@ class ItemEditingViewModel(
     val password = NonNullMutableLiveData(itemModel.asExisting()?.itemData?.password ?: "")
 
     init {
-        L.d("ItemEditingViewModel", "init(): item = ${itemModel.asExisting()?.item}, itemAuthorization = ${itemModel.asExisting()?.itemAuthorization}")
+        Logger.debug("Create new ItemEditingViewModel: item = ${itemModel.asExisting()?.item}, itemAuthorization = ${itemModel.asExisting()?.itemAuthorization}")
     }
 
     suspend fun save(): Result<Unit> {

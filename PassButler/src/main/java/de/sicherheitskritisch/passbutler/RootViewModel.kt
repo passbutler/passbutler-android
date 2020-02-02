@@ -8,7 +8,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
 import de.sicherheitskritisch.passbutler.base.Failure
-import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.resultOrThrowException
@@ -20,6 +19,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.tinylog.kotlin.Logger
 import javax.crypto.Cipher
 
 class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
@@ -78,7 +78,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
             Success(biometricUnlockCipher)
         } catch (exception: Exception) {
-            L.w("RootViewModel", "initializeBiometricUnlockCipher(): The biometric authentication failed because key could not be initialized - disable biometric unlock!")
+            Logger.warn("The biometric authentication failed because key could not be initialized - disable biometric unlock")
             loggedInUserViewModel?.disableBiometricUnlock()
 
             Failure(exception)
@@ -124,25 +124,24 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
         // The lock timer must be only started if the user is logged-in and unlocked (lock timeout available)
         if (lockTimeout != null) {
-            L.d("RootViewModel", "startLockScreenTimer(): Start timer")
+            Logger.debug("Start lock screen timer")
 
             lockScreenTimerJob?.cancel()
             lockScreenTimerJob = launch {
                 delay(lockTimeout * DateUtils.SECOND_IN_MILLIS)
-
-                L.d("RootViewModel", "startLockScreenTimer(): Lock screen")
+                Logger.debug("Lock screen")
 
                 // Be sure all UI is hidden behind the lock screen before clear crypto resources
                 lockScreenState.postValue(LockScreenState.Locked)
                 loggedInUserViewModel?.clearSensibleData()
             }
         } else {
-            L.d("RootViewModel", "startLockScreenTimer(): Do not start timer (user not logged in or screen not unlocked)")
+            Logger.debug("Do not start timer (user not logged in or screen not unlocked)")
         }
     }
 
     private fun cancelLockScreenTimer() {
-        L.d("RootViewModel", "cancelLockScreenTimer()")
+        Logger.debug("Cancel lock screen timer")
         lockScreenTimerJob?.cancel()
     }
 

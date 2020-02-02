@@ -7,7 +7,6 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.Failure
-import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.byteSize
@@ -44,6 +43,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import org.tinylog.kotlin.Logger
 import java.net.SocketTimeoutException
 import java.util.*
 
@@ -85,7 +85,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
 
             Success(Unit)
         } catch (exception: Exception) {
-            L.w("UserManager", "loginRemoteUser(): The user could not be logged in - reset logged-in user to avoid corrupt state!")
+            Logger.warn("The user could not be logged in - reset logged-in user to avoid corrupt state")
             resetLoggedInUser()
 
             Failure(exception)
@@ -139,7 +139,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
 
             Success(Unit)
         } catch (exception: Exception) {
-            L.w("UserManager", "loginLocalUser(): The user could not be logged in - reset logged-in user to avoid corrupt state!")
+            Logger.warn("The user could not be logged in - reset logged-in user to avoid corrupt state")
             resetLoggedInUser()
 
             Failure(exception)
@@ -187,7 +187,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
 
     suspend fun restoreLoggedInUser() {
         if (loggedInUser == null) {
-            L.d("UserManager", "restoreLoggedInUser(): Try to restore logged-in user")
+            Logger.debug("Try to restore logged-in user")
 
             val restoredLoggedInStateStorage = createLoggedInStateStorage().apply {
                 restore()
@@ -206,7 +206,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
                 loggedInUserResult.postValue(null)
             }
         } else {
-            L.d("UserManager", "restoreLoggedInUser(): Not needed because already restored")
+            Logger.debug("Restore is not needed because already restored")
         }
     }
 
@@ -218,7 +218,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
     }
 
     suspend fun restoreWebservices(masterPassword: String) {
-        L.d("UserManager", "restoreWebservices()")
+        Logger.debug("Restore webservices")
 
         try {
             val remoteUserType = loggedInStateStorage?.userType as? UserType.Remote ?: throw IllegalStateException("The webservices can't be initialized because of local user type!")
@@ -238,7 +238,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
             this.authWebservice = authWebservice
             this.userWebservice = userWebservice
         } catch (exception: Exception) {
-            L.w("UserManager", "restoreWebservices(): The webservices could not be restored!", exception)
+            Logger.warn(exception, "The webservices could not be restored")
         }
     }
 
@@ -261,7 +261,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
     }
 
     suspend fun updateUser(user: User) {
-        L.d("UserManager", "updateUser(): user = $user")
+        Logger.debug("user = $user")
 
         loggedInUser = user
         localRepository.updateUser(user)
@@ -296,7 +296,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
     }
 
     suspend fun synchronize(): Result<Unit> {
-        L.d("UserManager", "synchronize()")
+        Logger.debug("Synchronize")
 
         return withContext(Dispatchers.IO) {
             val synchronizeResults = mutableListOf<Result<Differentiation.Result<*>>>()
@@ -305,20 +305,20 @@ class UserManager(private val applicationContext: Context, private val localRepo
             for (task in createSynchronizationTasks()) {
                 val synchronizeTaskName = task.javaClass.simpleName
 
-                L.d("UserManager", "synchronize(): Starting '$synchronizeTaskName'")
+                Logger.debug("Starting task '$synchronizeTaskName'")
                 val result = task.synchronize()
 
                 val printableResult = when (result) {
                     is Success -> "${result.javaClass.simpleName} (${result.result})"
                     is Failure -> result.javaClass.simpleName
                 }
-                L.d("UserManager", "synchronize(): Finished '$synchronizeTaskName' with result: $printableResult")
+                Logger.debug("Finished task '$synchronizeTaskName' with result: $printableResult")
 
                 synchronizeResults.add(result)
 
                 // Do not stop if a task failed (otherwise later tasks may never synced if prior task failed) - except for timeout
                 if ((result as? Failure)?.throwable is SocketTimeoutException) {
-                    L.d("UserManager", "synchronize(): Skip all other tasks because '$synchronizeTaskName' failed with timeout!")
+                    Logger.debug("Skip all other tasks because '$synchronizeTaskName' failed with timeout")
                     break
                 }
             }
@@ -349,14 +349,14 @@ class UserManager(private val applicationContext: Context, private val localRepo
     }
 
     suspend fun logoutUser() {
-        L.d("UserManager", "logoutUser()")
+        Logger.debug("Logout user")
 
         resetLoggedInUser()
         loggedInUserResult.postValue(null)
     }
 
     private suspend fun resetLoggedInUser() {
-        L.d("UserManager", "resetLoggedInUser()")
+        Logger.debug("Reset all data of user")
 
         authWebservice = null
         userWebservice = null
@@ -484,15 +484,15 @@ private class UserDetailsSynchronizationTask(
 
                 when {
                     differentiationResult.modifiedItemsForLocal.isNotEmpty() -> {
-                        L.d("UserDetailsSynchronizationTask", "synchronize(): Update local user because remote user was lastly modified")
+                        Logger.debug("Update local user because remote user was lastly modified")
                         localRepository.updateUser(remoteUser)
                     }
                     differentiationResult.modifiedItemsForRemote.isNotEmpty() -> {
-                        L.d("UserDetailsSynchronizationTask", "synchronize(): Update remote user because local user was lastly modified")
+                        Logger.debug("Update remote user because local user was lastly modified")
                         userWebservice.updateUser(localUser)
                     }
                     else -> {
-                        L.d("UserDetailsSynchronizationTask", "synchronize(): No update needed because local and remote user are equal")
+                        Logger.debug("No update needed because local and remote user are equal")
                     }
                 }
 

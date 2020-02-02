@@ -3,7 +3,6 @@ package de.sicherheitskritisch.passbutler.crypto.models
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.JSONSerializableDeserializer
-import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.getByteArray
@@ -20,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONException
 import org.json.JSONObject
+import org.tinylog.kotlin.Logger
 
 /**
  * Wraps a `JSONSerializable` object to store it encrypted as a `JSONSerializable`.
@@ -206,7 +206,7 @@ fun <T : JSONSerializable> JSONObject.getProtectedValueOrNull(name: String): Pro
         val serialized = getJSONObject(name)
         ProtectedValue.Deserializer<T>().deserializeOrNull(serialized)
     } catch (exception: JSONException) {
-        L.d("JSON", "getProtectedValueOrNull(): The optional ProtectedValue with key '$name' could not be deserialized using the following JSON: $this (${exception.message})")
+        Logger.debug("The optional ProtectedValue with key '$name' could not be deserialized using the following JSON: $this (${exception.message})")
         null
     }
 }

@@ -2,8 +2,8 @@ package de.sicherheitskritisch.passbutler
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.ui.FragmentPresenter
+import org.tinylog.kotlin.Logger
 
 class MainActivity : AppCompatActivity() {
 
@@ -15,7 +15,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        L.d("MainActivity", "onCreate(): savedInstanceState = $savedInstanceState")
+        Logger.debug("savedInstanceState = $savedInstanceState")
 
         val rootFragmentTag = FragmentPresenter.getFragmentTag(RootFragment::class.java)
         rootFragment = supportFragmentManager.findFragmentByTag(rootFragmentTag) as? RootFragment

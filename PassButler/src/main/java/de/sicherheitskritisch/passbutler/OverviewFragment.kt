@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
-import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.base.observe
 import de.sicherheitskritisch.passbutler.base.relativeDateTime
@@ -33,6 +32,7 @@ import de.sicherheitskritisch.passbutler.ui.showInformation
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.tinylog.kotlin.Logger
 import java.util.*
 
 class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
@@ -51,7 +51,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     private var logoutRequestSendingJob: Job? = null
 
     private val itemViewModelsObserver = Observer<List<ItemViewModel>> { newItemViewModels ->
-        L.d("OverviewFragment", "itemViewModelsChangedObserver(): newItemViewModels.size = ${newItemViewModels.size}")
+        Logger.debug("newItemViewModels.size = ${newItemViewModels.size}")
 
         val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemAdapter
         adapter?.submitList(newItemViewModels)
@@ -81,7 +81,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
         activity?.let {
             val loggedInUserViewModel = getRootViewModel(it).loggedInUserViewModel
-            L.d("OverviewFragment", "onAttach(): Apply loggedInUserViewModel = $loggedInUserViewModel to viewModel = $viewModel")
+            Logger.debug("Apply loggedInUserViewModel = $loggedInUserViewModel to viewModel = $viewModel")
             viewModel.loggedInUserViewModel = loggedInUserViewModel
         }
     }
@@ -175,7 +175,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
                 viewModel.synchronizeData()
             }
         } else {
-            L.d("UserManager", "synchronizeData(): The synchronize data request is already running - skip call!")
+            Logger.debug("The synchronize data request is already running - skip call")
         }
     }
 

@@ -1,10 +1,10 @@
 package de.sicherheitskritisch.passbutler.base.viewmodels
 
 import androidx.lifecycle.ViewModel
-import de.sicherheitskritisch.passbutler.base.L
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import org.tinylog.kotlin.Logger
 import kotlin.coroutines.CoroutineContext
 
 open class ManualCancelledCoroutineScopeViewModel : ViewModel(), CoroutineScope {
@@ -15,7 +15,7 @@ open class ManualCancelledCoroutineScopeViewModel : ViewModel(), CoroutineScope 
     private val coroutineJob = SupervisorJob()
 
     fun cancelJobs() {
-        L.d(javaClass.simpleName, "cancelJobs(): Cancel the coroutine job...")
+        Logger.debug("${javaClass.simpleName}: Cancel the coroutine job...")
         coroutineJob.cancel()
     }
 }

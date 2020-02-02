@@ -6,7 +6,6 @@ import de.sicherheitskritisch.passbutler.LoggedInStateStorage
 import de.sicherheitskritisch.passbutler.UserType
 import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.Failure
-import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.asJSONObjectSequence
@@ -31,6 +30,7 @@ import okhttp3.ResponseBody
 import okhttp3.Route
 import org.json.JSONArray
 import org.json.JSONException
+import org.tinylog.kotlin.Logger
 import retrofit2.Call
 import retrofit2.Converter
 import retrofit2.Response
@@ -180,20 +180,20 @@ interface UserWebservice {
         @Throws(IOException::class)
         override fun authenticate(route: Route?, response: OkHttpResponse): Request? {
             val actualRequest = response.request()
-            L.d("AuthTokenAuthenticator", "authenticate(): Re-authenticate request ${actualRequest.url()} ")
+            Logger.debug("Re-authenticate request ${actualRequest.url()} ")
 
             val newAuthTokenResult = authWebservice.getToken().execute().completeRequestWithResult()
 
             return when (newAuthTokenResult) {
                 is Success -> {
-                    L.d("AuthTokenAuthenticator", "authenticate(): The new token was requested successfully")
+                    Logger.debug("The new token was requested successfully")
                     val newAuthToken = newAuthTokenResult.result
                     authToken = newAuthToken
 
                     actualRequest.applyTokenAuthorizationHeader(newAuthToken.token)
                 }
                 is Failure -> {
-                    L.w("AuthTokenAuthenticator", "authenticate(): The new token could not be requested!", newAuthTokenResult.throwable)
+                    Logger.warn(newAuthTokenResult.throwable, "The new token could not be requested")
                     actualRequest
                 }
             }

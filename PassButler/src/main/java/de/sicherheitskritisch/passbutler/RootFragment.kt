@@ -6,12 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
-import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.FragmentPresenter
 import de.sicherheitskritisch.passbutler.ui.TransitionType
 import de.sicherheitskritisch.passbutler.ui.showFragmentAsFirstScreen
 import kotlinx.coroutines.launch
+import org.tinylog.kotlin.Logger
 import java.lang.ref.WeakReference
 
 class RootFragment : BaseViewModelFragment<RootViewModel>() {
@@ -47,7 +47,7 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        L.d("RootFragment", "onCreate(): savedInstanceState = $savedInstanceState")
+        Logger.debug("savedInstanceState = $savedInstanceState")
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -68,7 +68,7 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
     private fun showRootScreen() {
         val rootScreenState = viewModel.rootScreenState.value
-        L.d("RootFragment", "showRootScreen(): rootScreenState = $rootScreenState")
+        Logger.debug("Show screen state '$rootScreenState'")
 
         when (rootScreenState) {
             is RootViewModel.RootScreenState.LoggedIn -> showLoggedInState()
@@ -80,7 +80,7 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
     private fun showLoggedInState() {
         if (!isFragmentShown(OverviewFragment::class.java)) {
-            L.d("RootFragment", "showLoggedInState()")
+            Logger.debug("Show logged-in state")
 
             showFragmentAsFirstScreen(
                 fragment = OverviewFragment.newInstance(),
@@ -95,7 +95,7 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
     private fun showLoggedOutState() {
         if (!isFragmentShown(LoginFragment::class.java)) {
-            L.d("RootFragment", "showLoggedOutState()")
+            Logger.debug("Show logged-out state")
 
             showFragmentAsFirstScreen(
                 fragment = LoginFragment.newInstance(),
@@ -110,7 +110,7 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
 
     private fun showLockedScreen() {
         if (!isFragmentShown(LockedScreenFragment::class.java)) {
-            L.d("RootFragment", "showLockedScreen()")
+            Logger.debug("Show locked screen state")
 
             // The debounce check must be disabled because on app initialisation the fragment stack is artificially created
             showFragment(

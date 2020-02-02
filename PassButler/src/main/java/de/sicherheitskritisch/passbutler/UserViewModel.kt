@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import de.sicherheitskritisch.passbutler.base.Failure
-import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.Result
@@ -27,6 +26,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.tinylog.kotlin.Logger
 import java.util.*
 import javax.crypto.Cipher
 
@@ -103,7 +103,7 @@ class UserViewModel private constructor(
     )
 
     init {
-        L.d("UserViewModel", "init(): Create new UserViewModel ($this)")
+        Logger.debug("Create new UserViewModel ($this)")
 
         // If the master password was supplied (only on login), directly unlock resources
         if (masterPassword != null) {
@@ -111,7 +111,7 @@ class UserViewModel private constructor(
                 val decryptSensibleDataResult = decryptSensibleData(masterPassword)
 
                 if (decryptSensibleDataResult is Failure) {
-                    L.w("UserViewModel", "init(): The initial unlock of the resources after login failed - logout user because of unusable state!", decryptSensibleDataResult.throwable)
+                    Logger.warn(decryptSensibleDataResult.throwable, "The initial unlock of the resources after login failed - logout user because of unusable state")
                     logout()
                 }
             }
@@ -124,7 +124,7 @@ class UserViewModel private constructor(
     }
 
     suspend fun decryptSensibleData(masterPassword: String): Result<Unit> {
-        L.d("UserViewModel", "decryptSensibleData()")
+        Logger.debug("Decrypt sensible data")
 
         return try {
             masterEncryptionKey = decryptMasterEncryptionKey(masterPassword).resultOrThrowException().also { masterEncryptionKey ->
@@ -138,7 +138,7 @@ class UserViewModel private constructor(
 
             Success(Unit)
         } catch (exception: Exception) {
-            L.w("UserViewModel", "decryptSensibleData(): The sensible data could not be decrypted - clear sensible data to avoid corrupt state!")
+            Logger.warn("The sensible data could not be decrypted - clear sensible data to avoid corrupt state")
             clearSensibleData()
 
             Failure(exception)
@@ -186,7 +186,7 @@ class UserViewModel private constructor(
     }
 
     suspend fun clearSensibleData() {
-        L.d("UserViewModel", "clearSensibleData()")
+        Logger.debug("Clear sensible data")
 
         masterEncryptionKey?.clear()
         masterEncryptionKey = null
@@ -229,7 +229,7 @@ class UserViewModel private constructor(
     }
 
     suspend fun updateMasterPassword(newMasterPassword: String): Result<Unit> {
-        L.d("UserViewModel", "updateMasterPassword()")
+        Logger.debug("Update master password")
 
         val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to update the master password!")
         var newMasterKey: ByteArray? = null
@@ -252,7 +252,7 @@ class UserViewModel private constructor(
             val disableBiometricUnlockResult = disableBiometricUnlock()
 
             if (disableBiometricUnlockResult is Failure) {
-                L.w("UserViewModel", "updateMasterPassword(): The biometric unlock could not be disabled!", disableBiometricUnlockResult.throwable)
+                Logger.warn(disableBiometricUnlockResult.throwable, "The biometric unlock could not be disabled")
             }
 
             Success(Unit)
@@ -264,7 +264,7 @@ class UserViewModel private constructor(
     }
 
     suspend fun enableBiometricUnlock(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String): Result<Unit> {
-        L.d("UserViewModel", "enableBiometricUnlock()")
+        Logger.debug("Enable biometric unlock")
 
         return try {
             // Test if master password is correct via thrown exception
@@ -282,7 +282,7 @@ class UserViewModel private constructor(
 
             Success(Unit)
         } catch (exception: Exception) {
-            L.w("UserViewModel", "enableBiometricUnlock(): The biometric unlock could not be enabled - disable biometric unlock to avoid corrupt state!")
+            Logger.warn("The biometric unlock could not be enabled - disable biometric unlock to avoid corrupt state")
             disableBiometricUnlock()
 
             Failure(exception)
@@ -290,7 +290,7 @@ class UserViewModel private constructor(
     }
 
     suspend fun disableBiometricUnlock(): Result<Unit> {
-        L.d("UserViewModel", "disableBiometricUnlock()")
+        Logger.debug("Disable biometric unlock")
 
         return try {
             Biometrics.removeKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME).resultOrThrowException()
@@ -342,7 +342,7 @@ class UserViewModel private constructor(
                     val user = createModel()
                     userManager.updateUser(user)
                 } catch (exception: Exception) {
-                    L.w("UserViewModel", "persistUserSettings(): The user settings could not be updated!", exception)
+                    Logger.warn(exception, "The user settings could not be updated")
                 }
             }
         }
@@ -366,7 +366,7 @@ class UserViewModel private constructor(
             val decryptedItemViewModels = decryptItemViewModels(updatedItemViewModels)
 
             withContext(Dispatchers.Main) {
-                L.d("UserViewModel", "updateItemViewModels(): itemViewModels.size = ${decryptedItemViewModels.size}")
+                Logger.debug("Update item viewmodels: itemViewModels.size = ${decryptedItemViewModels.size}")
                 itemViewModels.value = decryptedItemViewModels
             }
         }
@@ -374,7 +374,7 @@ class UserViewModel private constructor(
 
     private suspend fun createItemViewModels(newItems: List<Item>): List<ItemViewModel> {
         val existingItemViewModels = itemViewModels.value
-        L.d("UserViewModel", "createItemViewModels(): newItems.size = ${newItems.size}, existingItemViewModels.size = ${existingItemViewModels.size}")
+        Logger.debug("Create item viewmodels: newItems.size = ${newItems.size}, existingItemViewModels.size = ${existingItemViewModels.size}")
 
         val newItemViewModels = newItems
             .mapNotNull { item ->
@@ -394,13 +394,13 @@ class UserViewModel private constructor(
                             it.item == item && it.itemAuthorization == itemAuthorization
                         }
                         ?: run {
-                            L.d("UserViewModel", "createItemViewModels(): Create new viewmodel for item '${item.id}' because recycling was not possible")
+                            Logger.debug("Create new viewmodel for item '${item.id}' because recycling was not possible")
 
                             // No existing item viewmodel was found, thus a new must be created for item
                             ItemViewModel(item, itemAuthorization, userManager)
                         }
                 } else {
-                    L.d("UserViewModel", "createItemViewModels(): A non-deleted item authorization of user for item '${item.id}' was not found - skip item")
+                    Logger.debug("A non-deleted item authorization of user for item '${item.id}' was not found - skip item")
                     null
                 }
             }
@@ -421,13 +421,13 @@ class UserViewModel private constructor(
                         val itemDecryptionResult = itemViewModel.decryptSensibleData(itemEncryptionSecretKey)
 
                         when (itemDecryptionResult) {
-                            is Success -> L.d("UserViewModel", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' was decrypted successfully")
-                            is Failure -> L.w("UserViewModel", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' could not be decrypted!", itemDecryptionResult.throwable)
+                            is Success -> Logger.debug("The item viewmodel '${itemViewModel.id}' was decrypted successfully")
+                            is Failure -> Logger.warn(itemDecryptionResult.throwable, "The item viewmodel '${itemViewModel.id}' could not be decrypted")
                         }
 
                         itemDecryptionResult
                     } else {
-                        L.d("UserViewModel", "decryptItemViewModels(): The item viewmodel '${itemViewModel.id}' is already decrypted")
+                        Logger.debug("The item viewmodel '${itemViewModel.id}' is already decrypted")
                         Success(Unit)
                     }
                 }

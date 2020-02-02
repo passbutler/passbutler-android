@@ -3,10 +3,10 @@ package de.sicherheitskritisch.passbutler.crypto.models
 import de.sicherheitskritisch.passbutler.base.JSONSerializable
 import de.sicherheitskritisch.passbutler.base.JSONSerializableDeserializer
 import de.sicherheitskritisch.passbutler.base.JSONWebToken
-import de.sicherheitskritisch.passbutler.base.L
 import de.sicherheitskritisch.passbutler.base.putString
 import org.json.JSONException
 import org.json.JSONObject
+import org.tinylog.kotlin.Logger
 import java.time.Instant
 
 /**
@@ -41,7 +41,7 @@ val AuthToken.expirationDate: Instant?
         return try {
             JSONWebToken.getExpiration(token)
         } catch (exception: Exception) {
-            L.w("AuthToken", "The expirationDate date of the JWT could not be determined!")
+            Logger.warn("The expiration date of the JWT could not be determined")
             null
         }
     }
