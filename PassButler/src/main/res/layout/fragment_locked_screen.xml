@@ -36,7 +36,6 @@
                 android:id="@+id/imageView_lock_icon"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@drawable/icon_lock_24dp"
                 android:tint="?attr/colorPrimary"
                 app:layout_constraintBottom_toTopOf="@+id/textView_headline"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -44,6 +43,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.40"
                 app:layout_constraintVertical_chainStyle="packed"
+                app:srcCompat="@drawable/icon_lock_24dp"
                 tools:ignore="ContentDescription" />
 
             <TextView
