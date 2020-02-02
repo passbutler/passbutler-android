@@ -7,12 +7,6 @@ apply plugin: 'de.mannodermaus.android-junit5'
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    compileOptions {
-        // Compile with pinned Java 7 (avoid changing `misc.xml` when cold-start Android Studio)
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
-    }
-
     dataBinding {
         enabled = true
     }
@@ -23,6 +17,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0.0"
+
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         // Added custom build field to get compile time
