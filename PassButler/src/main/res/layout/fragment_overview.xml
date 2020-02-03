@@ -17,11 +17,11 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <!-- Use a theme overlay to be sure the toolbar text color is inverted -->
+            <!-- Use a theme overlay to be sure the contained view colors are inverted (toolbar title, burger menu) -->
             <com.google.android.material.appbar.AppBarLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:theme="@style/Theme.PassButler.AppBarOverlay">
+                android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
 
                 <com.google.android.material.appbar.MaterialToolbar
                     android:id="@+id/toolbar"

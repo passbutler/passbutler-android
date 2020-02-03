@@ -15,7 +15,7 @@
         android:id="@+id/frameLayout_progress_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="?attr/colorBackgroundProgress"
+        android:background="?attr/scrimBackground"
         android:clickable="true"
         android:visibility="gone"
         tools:visibility="visible">

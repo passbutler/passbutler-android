@@ -13,7 +13,7 @@
     android:paddingTop="@dimen/spacingVerticalMedium"
     android:paddingRight="@dimen/spacingHorizontalMedium"
     android:paddingBottom="@dimen/spacingVerticalMedium"
-    android:theme="@style/Theme.PassButler.DrawerOverlay">
+    android:theme="@style/ThemeOverlay.MaterialComponents.Dark">
 
     <ImageView
         android:id="@+id/imageView_drawer_header_icon"

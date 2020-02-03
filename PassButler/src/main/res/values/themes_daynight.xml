@@ -1,4 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.PassButler.DayNight" parent="Theme.PassButler.Light" />
+
+    <style name="Theme.PassButler.DayNight" parent="Theme.PassButler.Base">
+
+        <!-- Android colors: -->
+
+        <!-- Used for backgrounds of e.g. screen: -->
+        <item name="android:colorBackground">@color/whiteMedium</item>
+
+        <!-- AppCompat colors: -->
+
+        <!-- Used for background of e.g. status bar: -->
+        <item name="colorPrimaryDark">@color/redBrownDark</item>
+
+        <!-- Material colors: -->
+
+        <!-- Used for backgrounds of e.g. button: -->
+        <item name="colorPrimary">@color/coffeeBrown</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <!-- Used for backgrounds of e.g. floating action button: -->
+        <item name="colorSecondary">@color/redBrownLight</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <!-- Used for e.g. setting sections, checkbox, switches: -->
+        <item name="colorAccent">@color/redBrownLight</item>
+
+        <!-- Used for backgrounds of e.g. NavigationView: -->
+        <!--<item name="colorSurface">@color/whiteMedium</item>-->
+        <!--<item name="colorOnSurface">@color/greyMedium</item>-->
+
+        <item name="scrimBackground">@color/whiteMediumTransparent</item>
+
+    </style>
+
 </resources>

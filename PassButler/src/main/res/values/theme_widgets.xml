@@ -17,8 +17,6 @@
 
     <!-- Material component based styles: -->
 
-    <style name="Widget.PassButler.FloatingActionButton" parent="Widget.MaterialComponents.FloatingActionButton" />
-
     <style name="Widget.PassButler.Button.Primary" parent="Widget.MaterialComponents.Button">
         <item name="android:ellipsize">end</item>
         <item name="android:lines">1</item>
@@ -27,5 +25,8 @@
     </style>
 
     <style name="Widget.PassButler.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense" />
+
+    <!-- Use "Primary" style to have "primary color using" style both in light and dark mode (otherwise `Widget.MaterialComponents.Toolbar.Surface` would be taken in dark mode) -->
+    <style name="Widget.PassButler.Toolbar" parent="Widget.MaterialComponents.Toolbar.Primary" />
 
 </resources>
