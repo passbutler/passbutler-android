@@ -1,40 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!-- Use a theme overlay to be sure the text colors are inverted -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="176dp"
     android:background="@drawable/background_drawer"
-    android:gravity="bottom"
-    android:orientation="vertical"
-    android:paddingLeft="@dimen/spacingHorizontalMedium"
-    android:paddingTop="@dimen/spacingVerticalMedium"
-    android:paddingRight="@dimen/spacingHorizontalMedium"
-    android:paddingBottom="@dimen/spacingVerticalMedium"
     android:theme="@style/ThemeOverlay.MaterialComponents.Dark">
 
     <ImageView
         android:id="@+id/imageView_drawer_header_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacingHorizontalMedium"
+        android:layout_marginTop="@dimen/spacingVerticalMedium"
+        android:layout_marginEnd="@dimen/spacingHorizontalMedium"
+        android:layout_marginBottom="15dp"
         android:tint="?attr/colorOnPrimary"
+        app:layout_constraintBottom_toTopOf="@+id/textView_drawer_header_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
         app:srcCompat="@drawable/icon_drawer_icon"
         tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/textView_drawer_header_title"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacingVerticalMedium"
+        android:layout_marginStart="@dimen/spacingHorizontalMedium"
+        android:layout_marginEnd="@dimen/spacingHorizontalMedium"
+        android:layout_marginBottom="@dimen/spacingVerticalSmall"
         android:text="@string/drawer_header_title"
-        android:textAppearance="?attr/textAppearanceHeadline1" />
+        android:textAppearance="?attr/textAppearanceHeadline1"
+        app:layout_constraintBottom_toTopOf="@+id/textView_drawer_header_subtitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/textView_drawer_header_subtitle"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacingHorizontalMedium"
+        android:layout_marginEnd="@dimen/spacingHorizontalMedium"
+        android:layout_marginBottom="@dimen/spacingVerticalMedium"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         tools:text="@string/drawer_header_subtitle" />
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
