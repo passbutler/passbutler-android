@@ -98,7 +98,7 @@
     <string name="about_title">Über / Lizenz</string>
 
     <string name="about_header">Pass Butler</string>
-    <string name="about_subheader">Version %s (gebaut am %s von dem Quellcodestand %s)</string>
+    <string name="about_subheader">Version %1$s (gebaut am %2$s von dem Quellcodestand %3$s)</string>
     <string name="about_passage_1">Programmiert von Bastian Raschke</string>
 
     <!-- Settings -->
