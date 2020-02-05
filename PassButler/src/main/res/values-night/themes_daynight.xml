@@ -9,16 +9,16 @@
         <item name="android:colorBackground">@color/greyMedium</item>
 
         <!-- Used for backgrounds of e.g. button: -->
-        <item name="colorPrimary">@color/coffeeBrown</item>
+        <item name="colorPrimary">@color/wineRed</item>
 
         <!-- Used for background of e.g. status bar: -->
-        <item name="colorPrimaryDark">@color/redBrownDark</item>
+        <item name="colorPrimaryDark">@color/wineRedDark</item>
 
         <!-- Used for backgrounds of e.g. floating action button: -->
-        <item name="colorSecondary">@color/redBrownLight</item>
+        <item name="colorSecondary">@color/pointRed</item>
 
         <!-- Used for e.g. setting sections, checkbox, switches, progress: -->
-        <item name="colorAccent">@color/redBrownLight</item>
+        <item name="colorAccent">@color/pointRed</item>
 
         <!-- Material colors: -->
 
@@ -28,16 +28,6 @@
         <!-- Used to be drawn on views to tint text/icons: -->
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorOnSecondary">@color/white</item>
-
-        <!--TODO: colorOnBackground-->
-        <!--TODO: colorPrimaryVariant-->
-        <!--TODO: colorSecondaryVariant-->
-        <!--TODO: colorError-->
-        <!--TODO: colorOnError-->
-        <!--TODO: colorSurface-->
-        <!--TODO: colorPrimarySurface-->
-        <!--TODO: colorOnSurface-->
-        <!--TODO: colorOnPrimarySurface-->
 
     </style>
 

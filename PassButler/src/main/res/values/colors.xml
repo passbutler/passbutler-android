@@ -3,13 +3,10 @@
 
     <!-- Basic color palette: -->
 
-    <color name="redBrownLight">#cf4e4e</color>
-    <color name="redBrown">#782121</color>
-    <color name="redBrownDark">#502D16</color>
+    <color name="wineRed">#782121</color>
+    <color name="wineRedDark">#470000</color>
 
-    <color name="gloveWhite">#E6DFC7</color>
-
-    <color name="coffeeBrown">#856457</color>
+    <color name="pointRed">#CF4E4E</color>
 
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
@@ -18,7 +15,6 @@
     <color name="whiteMedium">#FAFAFA</color>
     <color name="whiteMediumTransparent">#C8FAFAFA</color>
 
-    <color name="greyLight">#595959</color>
     <color name="greyMedium">#313131</color>
     <color name="greyMediumTransparent">#C8313131</color>
 
