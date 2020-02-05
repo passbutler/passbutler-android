@@ -29,6 +29,7 @@ import de.sicherheitskritisch.passbutler.ui.showError
 import de.sicherheitskritisch.passbutler.ui.showFadeInOutAnimation
 import de.sicherheitskritisch.passbutler.ui.showFragmentModally
 import de.sicherheitskritisch.passbutler.ui.showInformation
+import de.sicherheitskritisch.passbutler.ui.visible
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -55,6 +56,11 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
         val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemAdapter
         adapter?.submitList(newItemViewModels)
+
+        val showEmptyScreen = newItemViewModels.isEmpty()
+        binding?.layoutOverviewContent?.imageViewEmptyScreenIcon?.visible = showEmptyScreen
+        binding?.layoutOverviewContent?.textViewEmptyScreenTitle?.visible = showEmptyScreen
+        binding?.layoutOverviewContent?.textViewEmptyScreenDescription?.visible = showEmptyScreen
     }
 
     private val lastSynchronizationDateObserver = Observer<Date?> { newDate ->

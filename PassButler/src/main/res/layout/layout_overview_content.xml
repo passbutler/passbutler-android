@@ -32,12 +32,56 @@
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView_item_list"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:itemCount="4"
                 tools:listitem="@layout/list_item_entry" />
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <ImageView
+            android:id="@+id/imageView_empty_screen_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:tint="?colorOnBackground"
+            app:layout_constraintBottom_toTopOf="@id/textView_empty_screen_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.40"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:srcCompat="@drawable/icon_list_24dp"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/textView_empty_screen_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacingHorizontalLarge"
+            android:layout_marginEnd="@dimen/spacingHorizontalLarge"
+            android:gravity="center_horizontal"
+            android:text="@string/overview_empty_screen_title"
+            android:textAppearance="?textAppearanceHeadline1"
+            app:layout_constraintBottom_toTopOf="@id/textView_empty_screen_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/imageView_empty_screen_icon" />
+
+        <TextView
+            android:id="@+id/textView_empty_screen_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacingHorizontalLarge"
+            android:layout_marginTop="@dimen/spacingVerticalSmall"
+            android:layout_marginEnd="@dimen/spacingHorizontalLarge"
+            android:gravity="center_horizontal"
+            android:text="@string/overview_empty_screen_description"
+            android:textAppearance="?textAppearanceBody1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textView_empty_screen_title" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/floatingActionButton_add_entry"

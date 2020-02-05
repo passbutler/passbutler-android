@@ -74,6 +74,9 @@
     <string name="overview_sync_successful_message">Synchronisation war erfolgreich</string>
     <string name="overview_sync_failed_message">Synchronisation hat nicht geklappt</string>
 
+    <string name="overview_empty_screen_title">Noch keine Einträge</string>
+    <string name="overview_empty_screen_description">Fügen Sie nun Einträge hinzu, indem Sie unten auf den Button klicken</string>
+
     <string name="overview_logout_failed_title">Abmeldung hat nicht geklappt</string>
 
     <!-- Item detail-->
