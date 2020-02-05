@@ -11,20 +11,20 @@
         <!-- AppCompat colors: -->
 
         <!-- Used for background of e.g. status bar: -->
-        <item name="colorPrimaryDark">@color/redBrownDark</item>
+        <item name="colorPrimaryDark">#470000</item>
 
         <!-- Material colors: -->
 
         <!-- Used for backgrounds of e.g. button: -->
-        <item name="colorPrimary">@color/coffeeBrown</item>
+        <item name="colorPrimary">#782121</item>
         <item name="colorOnPrimary">@color/white</item>
 
         <!-- Used for backgrounds of e.g. floating action button: -->
-        <item name="colorSecondary">@color/redBrownLight</item>
+        <item name="colorSecondary">#CF4E4E</item>
         <item name="colorOnSecondary">@color/white</item>
 
         <!-- Used for e.g. setting sections, checkbox, switches: -->
-        <item name="colorAccent">@color/redBrownLight</item>
+        <!--<item name="colorAccent">@color/redBrownLight</item>-->
 
         <!-- Used for backgrounds of e.g. NavigationView: -->
         <!--<item name="colorSurface">@color/whiteMedium</item>-->

@@ -25,46 +25,19 @@
         <!-- Used for semi-transparent backgrounds of e.g. progress screen: -->
         <item name="scrimBackground">@color/greyMediumTransparent</item>
 
+        <!-- Used to be drawn on views to tint text/icons: -->
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorOnSecondary">@color/white</item>
 
-
-        <!-- Used for backgrounds of e.g. NavigationView: -->
-        <!--<item name="colorSurface">@color/greyMedium</item>-->
-        <!--<item name="colorOnSurface">@color/whiteMedium</item>-->
-
         <!--TODO: colorOnBackground-->
-
         <!--TODO: colorPrimaryVariant-->
         <!--TODO: colorSecondaryVariant-->
-
-        <!--TODO: colorOnBackground-->
         <!--TODO: colorError-->
         <!--TODO: colorOnError-->
-
-        <!--<item name="colorPrimaryVariant">@color/design_dark_default_color_primary_variant</item>-->
-        <!--<item name="colorSecondary">@color/design_dark_default_color_secondary</item>-->
-        <!--<item name="colorSecondaryVariant">@color/design_dark_default_color_secondary_variant</item>-->
-        <!--<item name="colorSurface">@color/design_dark_default_color_surface</item>-->
-        <!--<item name="colorPrimarySurface">?attr/colorSurface</item>-->
-        <!--<item name="colorOnPrimary">@color/design_dark_default_color_on_primary</item>-->
-        <!--<item name="colorOnSecondary">@color/design_dark_default_color_on_secondary</item>-->
-        <!--<item name="colorOnBackground">@color/design_dark_default_color_on_background</item>-->
-        <!--<item name="colorOnError">@color/design_dark_default_color_on_error</item>-->
-        <!--<item name="colorOnSurface">@color/design_dark_default_color_on_surface</item>-->
-        <!--<item name="colorOnPrimarySurface">?attr/colorOnSurface</item>-->
-
-        <!--<attr format="color" name="colorOnError"/>-->
-        <!--<attr format="color" name="colorOnPrimary"/>-->
-        <!--<attr format="color" name="colorOnPrimarySurface"/>-->
-        <!--<attr format="color" name="colorOnSecondary"/>-->
-        <!--<attr format="color" name="colorOnSurface"/>-->
-        <!--<attr format="color" name="colorPrimarySurface"/>-->
-        <!--<attr format="color" name="colorPrimaryVariant"/>-->
-        <!--<attr format="color" name="colorSecondary"/>-->
-        <!--<attr format="color" name="colorSecondaryVariant"/>-->
-        <!--<attr format="color" name="colorSurface"/>-->
-
+        <!--TODO: colorSurface-->
+        <!--TODO: colorPrimarySurface-->
+        <!--TODO: colorOnSurface-->
+        <!--TODO: colorOnPrimarySurface-->
 
     </style>
 
