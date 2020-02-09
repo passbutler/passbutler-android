@@ -29,6 +29,10 @@
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorOnSecondary">@color/white</item>
 
+        <!-- Custom attributes: -->
+
+        <item name="colorBackgroundImageTint">#4D000000</item>
+
     </style>
 
 </resources>

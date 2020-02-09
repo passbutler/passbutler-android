@@ -29,4 +29,8 @@
     <!-- Use "Primary" style to have "primary color using" style both in light and dark mode (otherwise `Widget.MaterialComponents.Toolbar.Surface` would be taken in dark mode) -->
     <style name="Widget.PassButler.Toolbar" parent="Widget.MaterialComponents.Toolbar.Primary" />
 
+    <style name="Widget.PassButler.CardView" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">8dp</item>
+    </style>
+
 </resources>

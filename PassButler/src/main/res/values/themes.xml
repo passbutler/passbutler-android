@@ -12,6 +12,7 @@
         <item name="materialButtonStyle">@style/Widget.PassButler.Button.Primary</item>
         <item name="textInputStyle">@style/Widget.PassButler.TextInputLayout</item>
         <item name="toolbarStyle">@style/Widget.PassButler.Toolbar</item>
+        <item name="materialCardViewStyle">@style/Widget.PassButler.CardView</item>
 
         <item name="textAppearanceHeadline1">@style/TextAppearance.PassButler.Headline1</item>
         <item name="textAppearanceHeadline2">@style/TextAppearance.PassButler.Headline2</item>
