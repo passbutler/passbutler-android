@@ -41,6 +41,7 @@ abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragmen
 
             navigationIcon = toolBarIconDrawableId?.let {
                 resources.getDrawable(it, null)?.apply {
+                    // TODO: Correct theming
                     setTint(resources.getColor(R.color.white, null))
                 }
             }

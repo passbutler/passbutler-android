@@ -80,6 +80,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
                 }
             }
 
+            // TODO: Correct theming
             toolbar.menu.findItem(R.id.item_detail_menu_item_save).apply {
                 val menuIconColor = resources.getColor(R.color.white, null)
                 icon.applyTint(menuIconColor)
