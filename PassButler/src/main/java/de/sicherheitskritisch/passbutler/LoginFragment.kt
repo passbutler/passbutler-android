@@ -112,19 +112,19 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
         val formValidationResult = validateForm(
             listOfNotNull(
                 FormFieldValidator(
-                    binding.textInputEditTextServerurl, listOfNotNull(
+                    binding.textInputLayoutServerurl, binding.textInputEditTextServerurl, listOfNotNull(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_serverurl_validation_error_empty)),
                         FormFieldValidator.Rule({ !URLUtil.isValidUrl(it) }, getString(R.string.login_serverurl_validation_error_invalid)),
                         FormFieldValidator.Rule({ !URLUtil.isHttpsUrl(it) }, getString(R.string.login_serverurl_validation_error_invalid_scheme)).takeIf { BuildType.isReleaseBuild }
                     )
                 ).takeIf { !viewModel.isLocalLogin.value },
                 FormFieldValidator(
-                    binding.textInputEditTextUsername, listOf(
+                    binding.textInputLayoutUsername,binding.textInputEditTextUsername, listOf(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_username_validation_error_empty))
                     )
                 ),
                 FormFieldValidator(
-                    binding.textInputEditTextPassword, listOf(
+                    binding.textInputLayoutPassword,binding.textInputEditTextPassword, listOf(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_password_validation_error_empty))
                     )
                 )

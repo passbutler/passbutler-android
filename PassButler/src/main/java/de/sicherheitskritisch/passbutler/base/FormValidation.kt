@@ -1,26 +1,28 @@
 package de.sicherheitskritisch.passbutler.base
 
-import androidx.appcompat.widget.AppCompatEditText
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 
-data class FormFieldValidator(val formField: AppCompatEditText, val validationRules: List<Rule>) {
+data class FormFieldValidator(val formFieldLayout: TextInputLayout, val formField: TextInputEditText, val validationRules: List<Rule>) {
     data class Rule(val isInvalidValidator: (formFieldText: String?) -> Boolean, val errorString: String)
 }
 
 sealed class FormValidationResult {
     object Valid : FormValidationResult()
-    class Invalid(val firstInvalidFormField: AppCompatEditText) : FormValidationResult()
+    class Invalid(val firstInvalidFormField: TextInputEditText) : FormValidationResult()
 }
 
 fun validateForm(formFieldValidators: List<FormFieldValidator>): FormValidationResult {
     var previousValidationErrorOccurred = false
-    var firstInvalidFormField: AppCompatEditText? = null
+    var firstInvalidFormField: TextInputEditText? = null
 
     // Resets errors first
     formFieldValidators.forEach { formFieldValidator ->
-        formFieldValidator.formField.error = null
+        formFieldValidator.formFieldLayout.error = null
     }
 
     for (formFieldValidator in formFieldValidators) {
+        val formFieldLayout = formFieldValidator.formFieldLayout
         val formField = formFieldValidator.formField
         val formFieldText = formField.text?.toString()
 
@@ -28,7 +30,7 @@ fun validateForm(formFieldValidators: List<FormFieldValidator>): FormValidationR
             val validationFailed = formFieldValidationRule.isInvalidValidator.invoke(formFieldText)
 
             if (validationFailed) {
-                formField.error = formFieldValidationRule.errorString
+                formFieldLayout.error = formFieldValidationRule.errorString
 
                 // Only the first error-related view must be set
                 if (!previousValidationErrorOccurred) {

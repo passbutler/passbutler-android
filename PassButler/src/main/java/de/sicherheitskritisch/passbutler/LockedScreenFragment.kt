@@ -89,7 +89,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
         val formValidationResult = validateForm(
             listOf(
                 FormFieldValidator(
-                    binding.textInputEditTextPassword, listOf(
+                    binding.textInputLayoutPassword, binding.textInputEditTextPassword, listOf(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.locked_screen_password_validation_error_empty))
                     )
                 )
