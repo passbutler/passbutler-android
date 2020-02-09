@@ -9,10 +9,10 @@
         <item name="android:colorBackground">@color/greyMedium</item>
 
         <!-- Used for backgrounds of e.g. button: -->
-        <item name="colorPrimary">@color/wineRed</item>
+        <item name="colorPrimary">@color/wineRedLight</item>
 
         <!-- Used for background of e.g. status bar: -->
-        <item name="colorPrimaryDark">@color/wineRedDark</item>
+        <item name="colorPrimaryDark">@color/wineRed</item>
 
         <!-- Used for backgrounds of e.g. floating action button: -->
         <item name="colorSecondary">@color/pointRed</item>

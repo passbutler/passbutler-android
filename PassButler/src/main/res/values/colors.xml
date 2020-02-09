@@ -4,9 +4,12 @@
     <!-- Basic color palette: -->
 
     <color name="wineRed">#782121</color>
+    <color name="wineRedLight">#AC4F49</color>
     <color name="wineRedDark">#470000</color>
 
     <color name="pointRed">#CF4E4E</color>
+    <color name="pointRedLight">#FF7F7A</color>
+    <color name="pointRedDark">#981926</color>
 
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>

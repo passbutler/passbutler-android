@@ -3,7 +3,7 @@
 
     <style name="Theme.PassButler.Base" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 
-        <!-- AppCompat widget styles: -->
+        <!-- Android widget styles: -->
 
         <item name="android:progressBarStyle">@style/Widget.PassButler.ProgressBar.Horizontal</item>
 
