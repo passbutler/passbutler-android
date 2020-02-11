@@ -15,6 +15,12 @@ ext.gitCommitHashShort = {
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
+    compileOptions {
+        // Required minimum Java 8 for OkHttp3 used in Retrofit
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     dataBinding {
         enabled = true
     }
