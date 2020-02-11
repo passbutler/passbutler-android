@@ -7,6 +7,7 @@
         android:icon="@drawable/icon_done_24dp"
         android:orderInCategory="1"
         android:title="@string/itemdetail_save_button_title"
+        app:iconTint="?attr/colorControlNormal"
         app:showAsAction="always" />
 
 </menu>

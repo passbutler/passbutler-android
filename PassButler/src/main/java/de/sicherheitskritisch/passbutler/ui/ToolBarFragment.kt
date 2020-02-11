@@ -29,7 +29,7 @@ abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragmen
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_toolbar, container, false)
 
-        toolBar = rootView.findViewById<Toolbar>(R.id.toolbar)?.apply {
+        toolBar = rootView.findViewById<Toolbar>(R.id.toolbar)?.also { toolBar ->
             val toolBarIconDrawableId = when (transitionType) {
                 TransitionType.MODAL -> R.drawable.icon_clear_24dp
                 TransitionType.SLIDE,
@@ -37,18 +37,15 @@ abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragmen
                 TransitionType.NONE -> null
             }
 
-            navigationIcon = toolBarIconDrawableId?.let {
-                resources.getDrawable(it, null)?.apply {
-                    // TODO: Correct theming
-                    setTint(resources.getColor(R.color.white, null))
-                }
+            toolBar.navigationIcon = toolBarIconDrawableId?.let {
+                resources.getDrawable(it, toolBar.context.theme)
             }
 
-            setNavigationOnClickListener {
+            toolBar.setNavigationOnClickListener {
                 popBackstack()
             }
 
-            setupToolbarMenu(this)
+            setupToolbarMenu(toolBar)
         }
 
         updateToolbarTitle()

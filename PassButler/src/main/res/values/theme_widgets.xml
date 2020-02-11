@@ -15,6 +15,10 @@
         <item name="android:minWidth">64dp</item>
     </style>
 
+    <style name="Widget.PassButler.Toolbar.NavigationButton" parent="Widget.AppCompat.Toolbar.Button.Navigation">
+        <item name="android:tint">?attr/colorControlNormal</item>
+    </style>
+
     <!-- Material component based styles: -->
 
     <style name="Widget.PassButler.Button.Primary" parent="Widget.MaterialComponents.Button">

@@ -14,7 +14,6 @@ import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.databinding.FragmentItemdetailBinding
 import de.sicherheitskritisch.passbutler.ui.Keyboard
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
-import de.sicherheitskritisch.passbutler.ui.applyTint
 import de.sicherheitskritisch.passbutler.ui.showError
 import de.sicherheitskritisch.passbutler.ui.showInformation
 import kotlinx.coroutines.Job
@@ -78,12 +77,6 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
                     }
                     else -> false
                 }
-            }
-
-            // TODO: Correct theming
-            toolbar.menu.findItem(R.id.item_detail_menu_item_save).apply {
-                val menuIconColor = resources.getColor(R.color.white, null)
-                icon.applyTint(menuIconColor)
             }
         }
     }
