@@ -7,13 +7,11 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModel
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import de.sicherheitskritisch.passbutler.R
 
 abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragment<ViewModelType>() {
 
     private var toolBar: Toolbar? = null
-    private var floatingActionButton: FloatingActionButton? = null
 
     abstract fun getToolBarTitle(): String
 
@@ -54,8 +52,6 @@ abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragmen
         }
 
         updateToolbarTitle()
-
-        floatingActionButton = rootView.findViewById(R.id.main_fab)
 
         createContentView(inflater, container, savedInstanceState)?.let { contentView ->
             val contentContainer = rootView.findViewById<FrameLayout>(R.id.frameLayout_fragment_toolbar_content_container)

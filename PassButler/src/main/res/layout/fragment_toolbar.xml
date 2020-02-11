@@ -31,14 +31,4 @@
         android:background="?android:attr/colorBackground"
         android:clickable="true" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/main_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="@dimen/spacingHorizontalMedium"
-        android:layout_marginBottom="@dimen/spacingVerticalMedium"
-        android:visibility="gone"
-        tools:visibility="visible" />
-
 </LinearLayout>
