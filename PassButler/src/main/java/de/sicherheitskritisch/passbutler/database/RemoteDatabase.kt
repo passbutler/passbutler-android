@@ -1,7 +1,6 @@
 package de.sicherheitskritisch.passbutler.database
 
 import android.net.Uri
-import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import de.sicherheitskritisch.passbutler.LoggedInStateStorage
 import de.sicherheitskritisch.passbutler.UserType
 import de.sicherheitskritisch.passbutler.base.BuildType
@@ -15,7 +14,6 @@ import de.sicherheitskritisch.passbutler.crypto.models.AuthToken
 import de.sicherheitskritisch.passbutler.database.models.Item
 import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.User
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -103,7 +101,6 @@ interface AuthWebservice {
                     .baseUrl(serverUrl.toString())
                     .client(okHttpClient)
                     .addConverterFactory(DefaultConverterFactory())
-                    .addCallAdapterFactory(CoroutineCallAdapterFactory())
                     .build()
 
                 retrofitBuilder.create(AuthWebservice::class.java)
@@ -114,25 +111,25 @@ interface AuthWebservice {
 
 interface UserWebservice {
     @GET("/$API_VERSION_PREFIX/users")
-    fun getUsersAsync(): Deferred<Response<List<User>>>
+    suspend fun getUsers(): Response<List<User>>
 
     @GET("/$API_VERSION_PREFIX/user")
-    fun getUserDetailsAsync(): Deferred<Response<User>>
+    suspend fun getUserDetails(): Response<User>
 
     @PUT("/$API_VERSION_PREFIX/user")
-    fun setUserDetailsAsync(@Body user: User): Deferred<Response<Unit>>
+    suspend fun setUserDetails(@Body user: User): Response<Unit>
 
     @GET("/$API_VERSION_PREFIX/user/itemauthorizations")
-    fun getUserItemAuthorizationsAsync(): Deferred<Response<List<ItemAuthorization>>>
+    suspend fun getUserItemAuthorizations(): Response<List<ItemAuthorization>>
 
     @PUT("/$API_VERSION_PREFIX/user/itemauthorizations")
-    fun setUserItemAuthorizationsAsync(@Body itemAuthorizations: List<ItemAuthorization>): Deferred<Response<Unit>>
+    suspend fun setUserItemAuthorizations(@Body itemAuthorizations: List<ItemAuthorization>): Response<Unit>
 
     @GET("/$API_VERSION_PREFIX/user/items")
-    fun getUserItemsAsync(): Deferred<Response<List<Item>>>
+    suspend fun getUserItems(): Response<List<Item>>
 
     @PUT("/$API_VERSION_PREFIX/user/items")
-    fun setUserItemsAsync(@Body items: List<Item>): Deferred<Response<Unit>>
+    suspend fun setUserItems(@Body items: List<Item>): Response<Unit>
 
     private interface AuthTokenProvider {
         var authToken: AuthToken?
@@ -290,7 +287,6 @@ interface UserWebservice {
                     .client(okHttpClient)
                     .addConverterFactory(UnitConverterFactory())
                     .addConverterFactory(DefaultConverterFactory())
-                    .addCallAdapterFactory(CoroutineCallAdapterFactory())
                     .build()
 
                 retrofitBuilder.create(UserWebservice::class.java)
@@ -303,8 +299,7 @@ suspend fun UserWebservice?.requestPublicUserList(): Result<List<User>> {
     val userWebservice = this
     return withContext(Dispatchers.IO) {
         try {
-            val request = userWebservice?.getUsersAsync()
-            val response = request?.await()
+            val response = userWebservice?.getUsers()
             response.completeRequestWithResult()
         } catch (exception: Exception) {
             Failure(exception)
@@ -316,8 +311,7 @@ suspend fun UserWebservice?.requestUser(): Result<User> {
     val userWebservice = this
     return withContext(Dispatchers.IO) {
         try {
-            val request = userWebservice?.getUserDetailsAsync()
-            val response = request?.await()
+            val response = userWebservice?.getUserDetails()
             response.completeRequestWithResult()
         } catch (exception: Exception) {
             Failure(exception)
@@ -329,8 +323,7 @@ suspend fun UserWebservice?.updateUser(user: User): Result<Unit> {
     val userWebservice = this
     return withContext(Dispatchers.IO) {
         try {
-            val request = userWebservice?.setUserDetailsAsync(user)
-            val response = request?.await()
+            val response = userWebservice?.setUserDetails(user)
             response.completeRequestWithoutResult()
         } catch (exception: Exception) {
             Failure(exception)
@@ -342,8 +335,7 @@ suspend fun UserWebservice?.requestItemAuthorizationList(): Result<List<ItemAuth
     val userWebservice = this
     return withContext(Dispatchers.IO) {
         try {
-            val request = userWebservice?.getUserItemAuthorizationsAsync()
-            val response = request?.await()
+            val response = userWebservice?.getUserItemAuthorizations()
             response.completeRequestWithResult()
         } catch (exception: Exception) {
             Failure(exception)
@@ -355,8 +347,7 @@ suspend fun UserWebservice?.updateItemAuthorizationList(itemAuthorizations: List
     val userWebservice = this
     return withContext(Dispatchers.IO) {
         try {
-            val request = userWebservice?.setUserItemAuthorizationsAsync(itemAuthorizations)
-            val response = request?.await()
+            val response = userWebservice?.setUserItemAuthorizations(itemAuthorizations)
             response.completeRequestWithoutResult()
         } catch (exception: Exception) {
             Failure(exception)
@@ -368,8 +359,7 @@ suspend fun UserWebservice?.requestItemList(): Result<List<Item>> {
     val userWebservice = this
     return withContext(Dispatchers.IO) {
         try {
-            val request = userWebservice?.getUserItemsAsync()
-            val response = request?.await()
+            val response = userWebservice?.getUserItems()
             response.completeRequestWithResult()
         } catch (exception: Exception) {
             Failure(exception)
@@ -381,8 +371,7 @@ suspend fun UserWebservice?.updateItemList(items: List<Item>): Result<Unit> {
     val userWebservice = this
     return withContext(Dispatchers.IO) {
         try {
-            val request = userWebservice?.setUserItemsAsync(items)
-            val response = request?.await()
+            val response = userWebservice?.setUserItems(items)
             response.completeRequestWithoutResult()
         } catch (exception: Exception) {
             Failure(exception)
