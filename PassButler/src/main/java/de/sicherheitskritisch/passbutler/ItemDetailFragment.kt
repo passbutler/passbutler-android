@@ -29,11 +29,15 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         updateToolbarTitle()
     }
 
+    private val isNewEntryObserver = Observer<Boolean> {
+        updateToolbarTitle()
+    }
+
     private var saveRequestSendingJob: Job? = null
     private var deleteRequestSendingJob: Job? = null
 
     override fun getToolBarTitle(): String {
-        return if (viewModel.isNewEntry) {
+        return if (viewModel.isNewEntry.value) {
             getString(R.string.itemdetail_title_new)
         } else {
             getString(R.string.itemdetail_title_edit, viewModel.title.value)
@@ -66,7 +70,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     }
 
     override fun setupToolbarMenu(toolbar: Toolbar) {
-        if (viewModel.isModificationAllowed) {
+        if (viewModel.isModificationAllowed.value) {
             toolbar.inflateMenu(R.menu.item_detail_menu)
 
             toolbar.setOnMenuItemClickListener { item ->
@@ -86,10 +90,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
         saveRequestSendingJob?.cancel()
         saveRequestSendingJob = launchRequestSending(
-            handleSuccess = {
-                // No success message because it was not a destructive action
-                popBackstack()
-            },
+            handleSuccess = { showInformation(getString(R.string.itemdetail_save_successful_message)) },
             handleFailure = { showError(getString(R.string.itemdetail_save_failed_general_title)) }
         ) {
             viewModel.save()
@@ -116,6 +117,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         super.onStart()
 
         viewModel.title.observe(viewLifecycleOwner, titleObserver)
+        viewModel.isNewEntry.observe(viewLifecycleOwner, isNewEntryObserver)
 
         binding?.let {
             setupDeleteButton(it)

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import de.sicherheitskritisch.passbutler.base.DefaultValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
+import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.clear
@@ -107,12 +108,17 @@ class ItemViewModel(
 }
 
 class ItemEditingViewModel(
-    private val itemModel: ItemModel,
+    private var itemModel: ItemModel,
     private val userManager: UserManager
 ) : ViewModel(), EditingViewModel {
 
-    val isNewEntry = itemModel is ItemModel.New
-    val isModificationAllowed = (itemModel as? ItemModel.Existing)?.itemAuthorization?.readOnly?.not() ?: true
+    val isNewEntry = NonNullValueGetterLiveData {
+        itemModel is ItemModel.New
+    }
+
+    val isModificationAllowed = NonNullValueGetterLiveData {
+        (itemModel as? ItemModel.Existing)?.itemAuthorization?.readOnly?.not() ?: true
+    }
 
     val title = NonNullMutableLiveData(itemModel.asExistingOrNull()?.itemData?.title ?: "")
     val password = NonNullMutableLiveData(itemModel.asExistingOrNull()?.itemData?.password ?: "")
@@ -122,16 +128,31 @@ class ItemEditingViewModel(
     }
 
     suspend fun save(): Result<Unit> {
-        val itemModel = itemModel
+        val currentItemModel = itemModel
 
-        // TODO: How to be sure, `save` is only called once, because `itemModel` won't change
-        return when (itemModel) {
-            is ItemModel.New -> saveNewItem(itemModel)
-            is ItemModel.Existing -> saveExistingItem(itemModel)
+        val saveResult = when (currentItemModel) {
+            is ItemModel.New -> saveNewItem(currentItemModel)
+            is ItemModel.Existing -> saveExistingItem(currentItemModel)
+        }
+
+        return when (saveResult) {
+            is Success -> {
+                itemModel = saveResult.result
+
+                withContext(Dispatchers.Main) {
+                    isNewEntry.notifyChange()
+                    isModificationAllowed.notifyChange()
+                }
+
+                Success(Unit)
+            }
+            is Failure -> {
+                Failure(saveResult.throwable)
+            }
         }
     }
 
-    private suspend fun saveNewItem(itemModel: ItemModel.New): Result<Unit> {
+    private suspend fun saveNewItem(itemModel: ItemModel.New): Result<ItemModel.Existing> {
         val loggedInUserId = itemModel.loggedInUserViewModel.username
         val loggedInUserItemEncryptionPublicKey = itemModel.loggedInUserViewModel.itemEncryptionPublicKey.key
 
@@ -144,7 +165,8 @@ class ItemEditingViewModel(
             val itemAuthorization = createNewItemAuthorization(loggedInUserId, loggedInUserItemEncryptionPublicKey, item, itemKey).resultOrThrowException()
             userManager.createItemAuthorization(itemAuthorization)
 
-            Success(Unit)
+            val updatedItemModel = ItemModel.Existing(item, itemAuthorization, itemData, itemKey)
+            Success(updatedItemModel)
         } catch (exception: Exception) {
             Failure(exception)
         }
@@ -196,7 +218,7 @@ class ItemEditingViewModel(
         }
     }
 
-    private suspend fun saveExistingItem(itemModel: ItemModel.Existing): Result<Unit> {
+    private suspend fun saveExistingItem(itemModel: ItemModel.Existing): Result<ItemModel.Existing> {
         val item = itemModel.item
         val itemKey = itemModel.itemKey
 
@@ -204,7 +226,8 @@ class ItemEditingViewModel(
             val updatedItem = createUpdatedItem(item, itemKey).resultOrThrowException()
             userManager.updateItem(updatedItem)
 
-            Success(Unit)
+            val updatedItemModel = ItemModel.Existing(updatedItem, itemModel.itemAuthorization, itemModel.itemData, itemModel.itemKey)
+            Success(updatedItemModel)
         } catch (exception: Exception) {
             Failure(exception)
         }
@@ -236,7 +259,7 @@ class ItemEditingViewModel(
     @Throws(IllegalStateException::class)
     suspend fun delete(): Result<Unit> {
         val existingItemModel = (itemModel as? ItemModel.Existing) ?: throw IllegalStateException("Only existing items can be deleted!")
-        check(isModificationAllowed) { "The item is not allowed to delete because it has only a readonly authorization!" }
+        check(isModificationAllowed.value) { "The item is not allowed to delete because it has only a readonly authorization!" }
 
         // Only mark item as deleted (item authorization deletion is only managed via item shared screen)
         val deletedItem = existingItemModel.item.copy(
