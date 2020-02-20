@@ -10,11 +10,9 @@ import org.tinylog.kotlin.Logger
 import java.time.Instant
 
 /**
- * Wraps a auth token string (actually a JSON Web Token) in a `JSONSerializable`.
+ * Wraps a authentication token string (actually a JSON Web Token) in a `JSONSerializable`.
  */
-data class AuthToken(
-    val token: String
-) : JSONSerializable {
+data class AuthToken(val token: String) : JSONSerializable {
 
     override fun serialize(): JSONObject {
         return JSONObject().apply {

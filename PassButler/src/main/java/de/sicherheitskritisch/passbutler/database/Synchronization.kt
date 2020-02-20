@@ -85,8 +85,8 @@ val <T : Synchronizable> Differentiation.Result<T>.remoteChangedItems
  */
 interface Synchronizable {
     val primaryField: String
-    var deleted: Boolean
-    var modified: Date
+    val deleted: Boolean
+    val modified: Date
     val created: Date
 }
 

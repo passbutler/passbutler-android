@@ -46,9 +46,9 @@ data class ItemAuthorization(
     @ColumnInfo(index = true)
     val itemId: String,
     val itemKey: ProtectedValue<CryptographicKey>,
-    var readOnly: Boolean,
-    override var deleted: Boolean,
-    override var modified: Date,
+    val readOnly: Boolean,
+    override val deleted: Boolean,
+    override val modified: Date,
     override val created: Date
 ) : Synchronizable, JSONSerializable {
 

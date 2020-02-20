@@ -35,9 +35,9 @@ data class Item(
     val id: String,
     @ColumnInfo(index = true)
     val userId: String,
-    var data: ProtectedValue<ItemData>,
-    override var deleted: Boolean,
-    override var modified: Date,
+    val data: ProtectedValue<ItemData>,
+    override val deleted: Boolean,
+    override val modified: Date,
     override val created: Date
 ) : Synchronizable, JSONSerializable {
 

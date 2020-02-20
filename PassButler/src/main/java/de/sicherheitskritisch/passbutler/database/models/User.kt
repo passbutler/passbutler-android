@@ -35,8 +35,8 @@ data class User(
     val itemEncryptionPublicKey: CryptographicKey,
     val itemEncryptionSecretKey: ProtectedValue<CryptographicKey>?,
     val settings: ProtectedValue<UserSettings>?,
-    override var deleted: Boolean,
-    override var modified: Date,
+    override val deleted: Boolean,
+    override val modified: Date,
     override val created: Date
 ) : Synchronizable, JSONSerializable {
 

@@ -249,8 +249,8 @@ private fun createItem(identification: String, modified: String? = null): TestIt
 
 data class TestItem(
     val identification: String,
-    override var deleted: Boolean,
-    override var modified: Date,
+    override val deleted: Boolean,
+    override val modified: Date,
     override val created: Date
 ) : Synchronizable {
     override val primaryField = identification
