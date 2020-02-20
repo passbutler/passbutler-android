@@ -91,8 +91,12 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
     }
 }
 
-fun BaseFragment.showError(errorMessage: String?) {
-    showInformation(errorMessage)
+fun BaseFragment.showShortFeedback(message: String?) {
+    val view = view
+
+    if (view != null && message != null) {
+        Snackbar.make(view, message, 750).show()
+    }
 }
 
 fun BaseFragment.showInformation(message: String?) {
@@ -101,4 +105,8 @@ fun BaseFragment.showInformation(message: String?) {
     if (view != null && message != null) {
         Snackbar.make(view, message, Snackbar.LENGTH_SHORT).show()
     }
+}
+
+fun BaseFragment.showError(errorMessage: String?) {
+    showInformation(errorMessage)
 }

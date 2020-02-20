@@ -3,6 +3,7 @@ package de.sicherheitskritisch.passbutler
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
@@ -16,12 +17,16 @@ import de.sicherheitskritisch.passbutler.ui.Keyboard
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
 import de.sicherheitskritisch.passbutler.ui.showError
 import de.sicherheitskritisch.passbutler.ui.showInformation
+import de.sicherheitskritisch.passbutler.ui.showShortFeedback
 import kotlinx.coroutines.Job
 
 class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
     private var formTitle: String? = null
     private var formPassword: String? = null
+
+    private var toolbarMenuSaveItem: MenuItem? = null
+    private var toolbarMenuDeleteItem: MenuItem? = null
 
     private var binding: FragmentItemdetailBinding? = null
 
@@ -31,6 +36,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
     private val isNewEntryObserver = Observer<Boolean> {
         updateToolbarTitle()
+        updateToolbarMenuItems()
     }
 
     private var saveRequestSendingJob: Job? = null
@@ -70,19 +76,31 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     }
 
     override fun setupToolbarMenu(toolbar: Toolbar) {
-        if (viewModel.isModificationAllowed.value) {
-            toolbar.inflateMenu(R.menu.item_detail_menu)
+        toolbar.inflateMenu(R.menu.item_detail_menu)
 
-            toolbar.setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.item_detail_menu_item_save -> {
-                        saveClicked()
-                        true
-                    }
-                    else -> false
+        toolbarMenuSaveItem = toolbar.menu.findItem(R.id.item_detail_menu_item_save)
+        toolbarMenuDeleteItem = toolbar.menu.findItem(R.id.item_detail_menu_item_delete)
+
+        updateToolbarMenuItems()
+
+        toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.item_detail_menu_item_save -> {
+                    saveClicked()
+                    true
                 }
+                R.id.item_detail_menu_item_delete -> {
+                    deleteClicked()
+                    true
+                }
+                else -> false
             }
         }
+    }
+
+    private fun updateToolbarMenuItems() {
+        toolbarMenuSaveItem?.isVisible = viewModel.isModificationAllowed.value
+        toolbarMenuDeleteItem?.isVisible = viewModel.isModificationAllowed.value && !viewModel.isNewEntry.value
     }
 
     private fun saveClicked() {
@@ -90,10 +108,25 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
         saveRequestSendingJob?.cancel()
         saveRequestSendingJob = launchRequestSending(
-            handleSuccess = { showInformation(getString(R.string.itemdetail_save_successful_message)) },
+            handleSuccess = { showShortFeedback(getString(R.string.itemdetail_save_successful_message)) },
             handleFailure = { showError(getString(R.string.itemdetail_save_failed_general_title)) }
         ) {
             viewModel.save()
+        }
+    }
+
+    private fun deleteClicked() {
+        Keyboard.hideKeyboard(context, this)
+
+        deleteRequestSendingJob?.cancel()
+        deleteRequestSendingJob = launchRequestSending(
+            handleSuccess = {
+                popBackstack()
+                showInformation(getString(R.string.itemdetail_delete_successful_message))
+            },
+            handleFailure = { showError(getString(R.string.itemdetail_delete_failed_general_title)) }
+        ) {
+            viewModel.delete()
         }
     }
 
@@ -118,31 +151,6 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
         viewModel.title.observe(viewLifecycleOwner, titleObserver)
         viewModel.isNewEntry.observe(viewLifecycleOwner, isNewEntryObserver)
-
-        binding?.let {
-            setupDeleteButton(it)
-        }
-    }
-
-    private fun setupDeleteButton(binding: FragmentItemdetailBinding) {
-        binding.buttonDelete.setOnClickListener {
-            deleteClicked()
-        }
-    }
-
-    private fun deleteClicked() {
-        Keyboard.hideKeyboard(context, this)
-
-        deleteRequestSendingJob?.cancel()
-        deleteRequestSendingJob = launchRequestSending(
-            handleSuccess = {
-                popBackstack()
-                showInformation(getString(R.string.itemdetail_delete_successful_message))
-            },
-            handleFailure = { showError(getString(R.string.itemdetail_delete_failed_general_title)) }
-        ) {
-            viewModel.delete()
-        }
     }
 
     override fun onStop() {

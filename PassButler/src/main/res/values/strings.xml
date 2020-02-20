@@ -84,19 +84,19 @@
     <!-- Item detail-->
 
     <string name="itemdetail_title_new">Neuen Eintrag anlegen</string>
-    <string name="itemdetail_title_edit">Eintrag „%s“ bearbeiten</string>
+    <string name="itemdetail_title_edit">%s</string>
 
     <string name="itemdetail_title_hint">Titel</string>
     <string name="itemdetail_password_hint">Passwort</string>
 
     <string name="itemdetail_save_button_title">Speichern</string>
-
-    <string name="itemdetail_save_failed_general_title">Speichern hat nicht geklappt</string>
-
     <string name="itemdetail_delete_button_title">Eintrag löschen</string>
 
-    <string name="itemdetail_delete_failed_general_title">Löschen hat nicht geklappt</string>
+    <string name="itemdetail_save_successful_message">Speichern erfolgreich</string>
+    <string name="itemdetail_save_failed_general_title">Speichern hat nicht geklappt</string>
+
     <string name="itemdetail_delete_successful_message">Löschen erfolgreich</string>
+    <string name="itemdetail_delete_failed_general_title">Löschen hat nicht geklappt</string>
 
     <!-- About -->
 
