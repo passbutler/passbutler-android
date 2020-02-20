@@ -114,11 +114,11 @@ class ItemEditingViewModel(
     val isNewEntry = itemModel is ItemModel.New
     val isModificationAllowed = (itemModel as? ItemModel.Existing)?.itemAuthorization?.readOnly?.not() ?: true
 
-    val title = NonNullMutableLiveData(itemModel.asExisting()?.itemData?.title ?: "")
-    val password = NonNullMutableLiveData(itemModel.asExisting()?.itemData?.password ?: "")
+    val title = NonNullMutableLiveData(itemModel.asExistingOrNull()?.itemData?.title ?: "")
+    val password = NonNullMutableLiveData(itemModel.asExistingOrNull()?.itemData?.password ?: "")
 
     init {
-        Logger.debug("Create new ItemEditingViewModel: item = ${itemModel.asExisting()?.item}, itemAuthorization = ${itemModel.asExisting()?.itemAuthorization}")
+        Logger.debug("Create new ItemEditingViewModel: item = ${itemModel.asExistingOrNull()?.item}, itemAuthorization = ${itemModel.asExistingOrNull()?.itemAuthorization}")
     }
 
     suspend fun save(): Result<Unit> {
@@ -233,6 +233,7 @@ class ItemEditingViewModel(
         return ItemData(title.value, password.value)
     }
 
+    @Throws(IllegalStateException::class)
     suspend fun delete(): Result<Unit> {
         val existingItemModel = (itemModel as? ItemModel.Existing) ?: throw IllegalStateException("Only existing items can be deleted!")
         check(isModificationAllowed) { "The item is not allowed to delete because it has only a readonly authorization!" }
@@ -253,6 +254,6 @@ sealed class ItemModel {
     class Existing(val item: Item, val itemAuthorization: ItemAuthorization, val itemData: ItemData, val itemKey: ByteArray) : ItemModel()
 }
 
-private fun ItemModel.asExisting(): ItemModel.Existing? {
+private fun ItemModel.asExistingOrNull(): ItemModel.Existing? {
     return (this as? ItemModel.Existing)
 }
