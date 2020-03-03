@@ -6,18 +6,22 @@
     <string name="general_okay">OK</string>
     <string name="general_cancel">Abbrechen</string>
 
+    <!-- Form validation -->
+
+    <string name="form_serverurl_validation_error_empty">Server URL nicht ausgefüllt</string>
+    <string name="form_serverurl_validation_error_invalid">Server URL nicht gültig</string>
+    <string name="form_serverurl_validation_error_invalid_scheme">Server URL muss mit \"https://\" beginnen</string>
+
+    <string name="login_username_validation_error_empty">Benutzername nicht ausgefüllt</string>
+    <string name="login_password_validation_error_empty">Passwort nicht ausgefüllt</string>
+
+    <string name="locked_screen_password_validation_error_empty">Master-Passwort nicht ausgefüllt</string>
+
     <!-- Login -->
 
     <string name="login_serverurl_hint">Server URL</string>
-    <string name="login_serverurl_validation_error_empty">Server URL nicht ausgefüllt</string>
-    <string name="login_serverurl_validation_error_invalid">Server URL nicht gültig</string>
-    <string name="login_serverurl_validation_error_invalid_scheme">Server URL muss mit \"https://\" beginnen</string>
-
     <string name="login_username_hint">Benutzername</string>
-    <string name="login_username_validation_error_empty">Benutzername nicht ausgefüllt</string>
-
     <string name="login_password_hint">Passwort</string>
-    <string name="login_password_validation_error_empty">Passwort nicht ausgefüllt</string>
 
     <string name="login_local_login_label">Lokales Konto</string>
 
@@ -26,13 +30,24 @@
     <string name="login_failed_general_title">Anmeldung hat nicht geklappt</string>
     <string name="login_failed_unauthorized_title">Anmeldedaten vermutlich nicht korrekt</string>
 
+    <!-- Migrate local user -->
+
+    <string name="migrate_local_user_title">Lokalen Benutzer anmelden</string>
+
+    <string name="migrate_local_user_header">Lokalen Benutzer anmelden</string>
+    <string name="migrate_local_user_description">Damit das lokale Benutzerkonto zwischen mehreren Geräten synchronisiert werden kann, muss das Konto auf einem Pass Butler-Server registriert werden.</string>
+
+    <string name="migrate_local_user_button_text">Benutzerkonto registrieren</string>
+
+    <string name="migrate_local_user_failed_general_title">Registrierung hat nicht geklappt</string>
+    <string name="migrate_local_user_failed_unauthorized_title">Benutzerkonto vermutlich bereits vorhanden</string>
+
     <!-- Locked screen -->
 
     <string name="locked_screen_header">Pass Butler ist gesperrt</string>
     <string name="locked_screen_description_password">Bitte entsperren Sie Pass Butler mit den folgenden Möglichkeiten:</string>
 
     <string name="locked_screen_password_hint">Master-Passwort</string>
-    <string name="locked_screen_password_validation_error_empty">Master-Passwort nicht ausgefüllt</string>
 
     <string name="locked_screen_button_password_text">Entsperren mit Passwort</string>
 
@@ -54,7 +69,7 @@
     <!-- Drawer -->
 
     <string name="drawer_header_title">Pass Butler</string>
-    <string name="drawer_header_subtitle">username@passbutler-server</string>
+    <string name="drawer_header_usertype">Lokalen Benutzer auf Server anmelden</string>
 
     <string name="drawer_open_description">Navigationsdrawer öffnen</string>
     <string name="drawer_close_description">Navigationsdrawer schließen</string>

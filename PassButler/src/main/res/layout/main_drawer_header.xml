@@ -5,7 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="176dp"
+    android:layout_height="wrap_content"
     android:theme="@style/ThemeOverlay.MaterialComponents.Dark">
 
     <ImageView
@@ -28,9 +28,7 @@
         android:layout_marginStart="@dimen/spacingHorizontalMedium"
         android:layout_marginTop="@dimen/spacingVerticalMedium"
         android:layout_marginEnd="@dimen/spacingHorizontalMedium"
-        android:layout_marginBottom="15dp"
         android:tint="?attr/colorOnPrimary"
-        app:layout_constraintBottom_toTopOf="@+id/textView_drawer_header_title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -44,24 +42,39 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacingHorizontalMedium"
+        android:layout_marginTop="@dimen/spacingVerticalMedium"
         android:layout_marginEnd="@dimen/spacingHorizontalMedium"
-        android:layout_marginBottom="@dimen/spacingVerticalSmall"
         android:text="@string/drawer_header_title"
         android:textAppearance="?attr/textAppearanceHeadline1"
-        app:layout_constraintBottom_toTopOf="@+id/textView_drawer_header_subtitle"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView_drawer_header_icon" />
 
     <TextView
         android:id="@+id/textView_drawer_header_subtitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacingHorizontalMedium"
+        android:layout_marginTop="@dimen/spacingVerticalSmall"
         android:layout_marginEnd="@dimen/spacingHorizontalMedium"
-        android:layout_marginBottom="@dimen/spacingVerticalMedium"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textView_drawer_header_title"
+        tools:text="username@passbutler-server" />
+
+    <TextView
+        android:id="@+id/textView_drawer_header_usertype"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacingHorizontalMedium"
+        android:layout_marginTop="@dimen/spacingVerticalMedium"
+        android:layout_marginEnd="@dimen/spacingHorizontalMedium"
+        android:layout_marginBottom="@dimen/spacingHorizontalMedium"
+        android:text="@string/drawer_header_usertype"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:text="@string/drawer_header_subtitle" />
+        app:layout_constraintTop_toBottomOf="@id/textView_drawer_header_subtitle" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

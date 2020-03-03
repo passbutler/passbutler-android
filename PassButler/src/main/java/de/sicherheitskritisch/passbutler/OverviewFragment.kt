@@ -40,6 +40,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
     private var binding: FragmentOverviewBinding? = null
     private var navigationHeaderView: View? = null
+    private var navigationHeaderUserTypeView: TextView? = null
     private val navigationItemSelectedListener = NavigationItemSelectedListener()
 
     private val isSynchronizationVisible
@@ -131,6 +132,14 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_subtitle)?.also { subtitleView ->
             subtitleView.text = viewModel.loggedInUserViewModel?.username
         }
+
+        // TODO: Change visibility if user is local
+        navigationHeaderUserTypeView = navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_usertype)?.also { userTypeView ->
+            userTypeView.setOnClickListener {
+                closeDrawerDelayed()
+                showFragmentModally(MigrateLocalUserFragment.newInstance())
+            }
+        }
     }
 
     private fun setupSwipeRefreshLayout(binding: FragmentOverviewBinding) {
@@ -209,6 +218,16 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         }
     }
 
+    /**
+     * Closes drawer a little delayed to make show new fragment transaction more pretty
+     */
+    private fun closeDrawerDelayed() {
+        launch {
+            delay(100)
+            binding?.drawerLayout?.closeDrawer(GravityCompat.START)
+        }
+    }
+
     private inner class NavigationItemSelectedListener : NavigationView.OnNavigationItemSelectedListener {
 
         override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -253,16 +272,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
                 handleFailure = { showError(getString(R.string.overview_logout_failed_title)) }
             ) {
                 viewModel.logoutUser()
-            }
-        }
-
-        /**
-         * Closes drawer a little delayed to make show new fragment transaction more pretty
-         */
-        private fun closeDrawerDelayed() {
-            launch {
-                delay(100)
-                binding?.drawerLayout?.closeDrawer(GravityCompat.START)
             }
         }
 
