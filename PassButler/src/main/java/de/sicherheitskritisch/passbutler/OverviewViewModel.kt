@@ -23,7 +23,7 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
     val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
 
     val lastSynchronizationDate = DefaultValueGetterLiveData {
-        loggedInUserViewModel?.userType?.asRemote()?.lastSuccessfulSync
+        loggedInUserViewModel?.userType?.asRemoteOrNull()?.lastSuccessfulSync
     }
 
     private val itemViewModelsChangedObserver = Observer<List<ItemViewModel>> { newUnfilteredItemViewModels ->

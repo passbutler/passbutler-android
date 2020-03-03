@@ -328,7 +328,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
             if (firstFailedTask != null) {
                 Failure(firstFailedTask.throwable)
             } else {
-                loggedInStateStorage?.userType?.asRemote()?.lastSuccessfulSync = Date()
+                loggedInStateStorage?.userType?.asRemoteOrNull()?.lastSuccessfulSync = Date()
                 loggedInStateStorage?.persist()
 
                 Success(Unit)
@@ -394,9 +394,9 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
         withContext(Dispatchers.IO) {
             sharedPreferences.edit().apply {
                 putString(SHARED_PREFERENCES_KEY_USERNAME, userType?.username)
-                putString(SHARED_PREFERENCES_KEY_SERVERURL, userType?.asRemote()?.serverUrl?.toString())
-                putString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, userType?.asRemote()?.authToken?.serialize()?.toString())
-                putLong(SHARED_PREFERENCES_KEY_LAST_SUCCESSFUL_SYNC, userType?.asRemote()?.lastSuccessfulSync?.time ?: 0)
+                putString(SHARED_PREFERENCES_KEY_SERVERURL, userType?.asRemoteOrNull()?.serverUrl?.toString())
+                putString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, userType?.asRemoteOrNull()?.authToken?.serialize()?.toString())
+                putLong(SHARED_PREFERENCES_KEY_LAST_SUCCESSFUL_SYNC, userType?.asRemoteOrNull()?.lastSuccessfulSync?.time ?: 0)
                 putString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, encryptedMasterPassword?.serialize()?.toString())
             }.commit()
         }
@@ -422,7 +422,7 @@ sealed class UserType(val username: String) {
     class Remote(username: String, val serverUrl: Uri, var authToken: AuthToken?, var lastSuccessfulSync: Date?) : UserType(username)
 }
 
-fun UserType.asRemote(): UserType.Remote? {
+fun UserType.asRemoteOrNull(): UserType.Remote? {
     return this as? UserType.Remote
 }
 
