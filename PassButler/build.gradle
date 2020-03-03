@@ -94,8 +94,9 @@ dependencies {
     // Android Preference framework
     implementation "androidx.preference:preference:1.1.0"
 
-    // Retrofit 2
+    // Retrofit with OkHttp
     implementation "com.squareup.retrofit2:retrofit:2.7.1"
+    implementation "com.squareup.okhttp3:okhttp:4.4.0"
 
     implementation "org.tinylog:tinylog-api-kotlin:2.0.1"
     implementation "org.tinylog:tinylog-impl:2.0.1"

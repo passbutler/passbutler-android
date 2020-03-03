@@ -21,6 +21,7 @@ import okhttp3.Authenticator
 import okhttp3.Credentials
 import okhttp3.Interceptor
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -176,8 +177,8 @@ interface UserWebservice {
     ) : Authenticator, AuthTokenProvider by DefaultAuthTokenProvider(loggedInStateStorage) {
         @Throws(IOException::class)
         override fun authenticate(route: Route?, response: OkHttpResponse): Request? {
-            val actualRequest = response.request()
-            Logger.debug("Re-authenticate request ${actualRequest.url()} ")
+            val actualRequest = response.request
+            Logger.debug("Re-authenticate request ${actualRequest.url} ")
 
             val newAuthTokenResult = authWebservice.getToken().execute().completeRequestWithResult()
 
@@ -267,7 +268,7 @@ interface UserWebservice {
     }
 
     companion object {
-        private val MEDIA_TYPE_JSON = MediaType.get("application/json")
+        private val MEDIA_TYPE_JSON = "application/json".toMediaType()
 
         @Throws(IllegalArgumentException::class)
         suspend fun create(serverUrl: Uri, authWebservice: AuthWebservice, loggedInStateStorage: LoggedInStateStorage): UserWebservice {
