@@ -58,9 +58,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         adapter?.submitList(newItemViewModels)
 
         val showEmptyScreen = newItemViewModels.isEmpty()
-        binding?.layoutOverviewContent?.imageViewEmptyScreenIcon?.visible = showEmptyScreen
-        binding?.layoutOverviewContent?.textViewEmptyScreenTitle?.visible = showEmptyScreen
-        binding?.layoutOverviewContent?.textViewEmptyScreenDescription?.visible = showEmptyScreen
+        binding?.layoutOverviewContent?.groupEmptyScreenViews?.visible = showEmptyScreen
     }
 
     private val lastSynchronizationDateObserver = Observer<Date?> { newDate ->

@@ -83,6 +83,12 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textView_empty_screen_title" />
 
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/group_empty_screen_views"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:constraint_referenced_ids="imageView_empty_screen_icon,textView_empty_screen_title,textView_empty_screen_description" />
+
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/floatingActionButton_add_entry"
             android:layout_width="wrap_content"
