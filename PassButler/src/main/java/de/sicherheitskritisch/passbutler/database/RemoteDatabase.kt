@@ -20,11 +20,11 @@ import kotlinx.coroutines.withContext
 import okhttp3.Authenticator
 import okhttp3.Credentials
 import okhttp3.Interceptor
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
 import okhttp3.Route
 import org.json.JSONArray
@@ -219,15 +219,15 @@ interface UserWebservice {
         }
 
         private fun createUserRequestConverter() = Converter<User, RequestBody> {
-            RequestBody.create(MEDIA_TYPE_JSON, it.serialize().toString())
+            it.serialize().toString().toRequestBody(MEDIA_TYPE_JSON)
         }
 
         private fun createItemAuthorizationListRequestConverter() = Converter<List<ItemAuthorization>, RequestBody> {
-            RequestBody.create(MEDIA_TYPE_JSON, it.serialize().toString())
+            it.serialize().toString().toRequestBody(MEDIA_TYPE_JSON)
         }
 
         private fun createItemListRequestConverter() = Converter<List<Item>, RequestBody> {
-            RequestBody.create(MEDIA_TYPE_JSON, it.serialize().toString())
+            it.serialize().toString().toRequestBody(MEDIA_TYPE_JSON)
         }
 
         override fun responseBodyConverter(type: Type, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
