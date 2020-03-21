@@ -14,11 +14,12 @@ import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.base.validateForm
-import de.sicherheitskritisch.passbutler.database.RequestUnauthorizedException
+import de.sicherheitskritisch.passbutler.database.RequestForbiddenException
 import de.sicherheitskritisch.passbutler.databinding.FragmentRegisterLocalUserBinding
 import de.sicherheitskritisch.passbutler.ui.Keyboard
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
 import de.sicherheitskritisch.passbutler.ui.showError
+import de.sicherheitskritisch.passbutler.ui.showShortFeedback
 import kotlinx.coroutines.Job
 
 class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() {
@@ -96,7 +97,6 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
 
                 val serverUrl = binding.textInputEditTextServerurl.text?.toString()
 
-                // TODO: null should not get validated
                 if (serverUrl != null) {
                     registerUser(serverUrl)
                 }
@@ -111,12 +111,12 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
         registerRequestSendingJob?.cancel()
         registerRequestSendingJob = launchRequestSending(
             handleSuccess = {
-                // TODO: Snackbar
+                showShortFeedback(getString(R.string.register_local_user_successful_message))
                 popBackstack()
             },
             handleFailure = {
                 val errorStringResourceId = when (it.cause) {
-                    is RequestUnauthorizedException -> R.string.register_local_user_failed_unauthorized_title
+                    is RequestForbiddenException -> R.string.register_local_user_failed_forbidden_title
                     else -> R.string.register_local_user_failed_general_title
                 }
 
