@@ -71,11 +71,11 @@ class UserManager(private val applicationContext: Context, private val localRepo
                 persist()
             }
 
-            this.loggedInStateStorage = createdLoggedInStateStorage
+            loggedInStateStorage = createdLoggedInStateStorage
 
-            val authWebservice = createAuthWebservice(serverUrl, username, masterPassword)
-            this.authWebservice = authWebservice
-            this.userWebservice = createUserWebservice(serverUrl, authWebservice, createdLoggedInStateStorage)
+            val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword)
+            authWebservice = createdAuthWebservice
+            userWebservice = createUserWebservice(serverUrl, createdAuthWebservice, createdLoggedInStateStorage)
 
             val newUser = userWebservice.requestUser().resultOrThrowException()
             localRepository.insertUser(newUser)
@@ -97,14 +97,12 @@ class UserManager(private val applicationContext: Context, private val localRepo
         var masterEncryptionKey: ByteArray? = null
 
         return try {
-            val createdLoggedInStateStorage = createLoggedInStateStorage().apply {
+            loggedInStateStorage = createLoggedInStateStorage().apply {
                 reset()
 
                 userType = UserType.Local(username)
                 persist()
             }
-
-            this.loggedInStateStorage = createdLoggedInStateStorage
 
             val serverMasterPasswordAuthenticationHash = deriveServerMasterPasswordAuthenticationHash(username, masterPassword)
             val masterKeyDerivationInformation = createMasterKeyDerivationInformation()
@@ -197,10 +195,10 @@ class UserManager(private val applicationContext: Context, private val localRepo
                 localRepository.findUser(loggedInUsername)
             }
 
-            this.loggedInStateStorage = restoredLoggedInStateStorage
-            this.loggedInUser = restoredLoggedInUser
-
             if (restoredLoggedInUser != null) {
+                loggedInStateStorage = restoredLoggedInStateStorage
+                loggedInUser = restoredLoggedInUser
+
                 loggedInUserResult.postValue(LoggedInUserResult.RestoredLogin(restoredLoggedInUser))
             } else {
                 loggedInUserResult.postValue(null)
@@ -221,22 +219,17 @@ class UserManager(private val applicationContext: Context, private val localRepo
         Logger.debug("Restore webservices")
 
         try {
-            val remoteUserType = loggedInStateStorage?.userType as? UserType.Remote ?: throw IllegalStateException("The webservices can't be initialized because of local user type!")
+            val loggedInStateStorage = loggedInStateStorage ?: throw IllegalStateException("The LoggedInStateStorage is not initialized!")
+            val remoteUserType = loggedInStateStorage.userType as? UserType.Remote ?: throw IllegalStateException("The logged-in user type is not remote!")
             val serverUrl = remoteUserType.serverUrl
+            val username = remoteUserType.username
 
-            val authWebservice = authWebservice ?: run {
-                val username = remoteUserType.username
-                createAuthWebservice(serverUrl, username, masterPassword)
-            }
-
-            val userWebservice = userWebservice ?: run {
-                val loggedInStateStorage = loggedInStateStorage ?: throw IllegalStateException("The LoggedInStateStorage is not initialized!")
-                createUserWebservice(serverUrl, authWebservice, loggedInStateStorage)
-            }
+            val createdAuthWebservice = authWebservice ?: createAuthWebservice(serverUrl, username, masterPassword)
+            val createdUserWebservice = userWebservice ?: createUserWebservice(serverUrl, createdAuthWebservice, loggedInStateStorage)
 
             // If everything worked, apply to fields
-            this.authWebservice = authWebservice
-            this.userWebservice = userWebservice
+            this.authWebservice = createdAuthWebservice
+            this.userWebservice = createdUserWebservice
         } catch (exception: Exception) {
             Logger.warn(exception, "The webservices could not be restored")
         }
