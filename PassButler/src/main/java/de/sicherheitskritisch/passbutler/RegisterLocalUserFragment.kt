@@ -15,24 +15,24 @@ import de.sicherheitskritisch.passbutler.base.FormValidationResult
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
 import de.sicherheitskritisch.passbutler.base.validateForm
 import de.sicherheitskritisch.passbutler.database.RequestUnauthorizedException
-import de.sicherheitskritisch.passbutler.databinding.FragmentMigrateLocalUserBinding
+import de.sicherheitskritisch.passbutler.databinding.FragmentRegisterLocalUserBinding
 import de.sicherheitskritisch.passbutler.ui.Keyboard
 import de.sicherheitskritisch.passbutler.ui.ToolBarFragment
 import de.sicherheitskritisch.passbutler.ui.showError
 import kotlinx.coroutines.Job
 
-class MigrateLocalUserFragment : ToolBarFragment<MigrateLocalUserViewModel>() {
+class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() {
 
     private var formServerUrl: String? = null
 
-    private var binding: FragmentMigrateLocalUserBinding? = null
+    private var binding: FragmentRegisterLocalUserBinding? = null
 
-    private var migrateRequestSendingJob: Job? = null
+    private var registerRequestSendingJob: Job? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
-        viewModel = ViewModelProvider(this).get(MigrateLocalUserViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(RegisterLocalUserViewModel::class.java)
 
         activity?.let {
             viewModel.rootViewModel = getRootViewModel(it)
@@ -45,10 +45,10 @@ class MigrateLocalUserFragment : ToolBarFragment<MigrateLocalUserViewModel>() {
         formServerUrl = savedInstanceState?.getString(FORM_FIELD_SERVERURL)
     }
 
-    override fun getToolBarTitle() = getString(R.string.migrate_local_user_title)
+    override fun getToolBarTitle() = getString(R.string.register_local_user_title)
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate<FragmentMigrateLocalUserBinding>(inflater, R.layout.fragment_migrate_local_user, container, false).also { binding ->
+        binding = DataBindingUtil.inflate<FragmentRegisterLocalUserBinding>(inflater, R.layout.fragment_register_local_user, container, false).also { binding ->
             binding.lifecycleOwner = viewLifecycleOwner
 
             applyRestoredViewStates(binding)
@@ -57,7 +57,7 @@ class MigrateLocalUserFragment : ToolBarFragment<MigrateLocalUserViewModel>() {
         return binding?.root
     }
 
-    private fun applyRestoredViewStates(binding: FragmentMigrateLocalUserBinding) {
+    private fun applyRestoredViewStates(binding: FragmentRegisterLocalUserBinding) {
         formServerUrl?.let { binding.textInputEditTextServerurl.setText(it) }
     }
 
@@ -65,17 +65,17 @@ class MigrateLocalUserFragment : ToolBarFragment<MigrateLocalUserViewModel>() {
         super.onStart()
 
         binding?.let {
-            setupMigrateButton(it)
+            setupRegisterButton(it)
         }
     }
 
-    private fun setupMigrateButton(binding: FragmentMigrateLocalUserBinding) {
-        binding.buttonMigrate.setOnClickListener {
-            migrateClicked(binding)
+    private fun setupRegisterButton(binding: FragmentRegisterLocalUserBinding) {
+        binding.buttonRegister.setOnClickListener {
+            registerClicked(binding)
         }
     }
 
-    private fun migrateClicked(binding: FragmentMigrateLocalUserBinding) {
+    private fun registerClicked(binding: FragmentRegisterLocalUserBinding) {
         val formValidationResult = validateForm(
             listOfNotNull(
                 FormFieldValidator(
@@ -98,7 +98,7 @@ class MigrateLocalUserFragment : ToolBarFragment<MigrateLocalUserViewModel>() {
 
                 // TODO: null should not get validated
                 if (serverUrl != null) {
-                    migrateUser(serverUrl)
+                    registerUser(serverUrl)
                 }
             }
             is FormValidationResult.Invalid -> {
@@ -107,28 +107,28 @@ class MigrateLocalUserFragment : ToolBarFragment<MigrateLocalUserViewModel>() {
         }
     }
 
-    private fun migrateUser(serverUrl: String) {
-        migrateRequestSendingJob?.cancel()
-        migrateRequestSendingJob = launchRequestSending(
+    private fun registerUser(serverUrl: String) {
+        registerRequestSendingJob?.cancel()
+        registerRequestSendingJob = launchRequestSending(
             handleSuccess = {
                 // TODO: Snackbar
                 popBackstack()
             },
             handleFailure = {
                 val errorStringResourceId = when (it.cause) {
-                    is RequestUnauthorizedException -> R.string.migrate_local_user_failed_unauthorized_title
-                    else -> R.string.migrate_local_user_failed_general_title
+                    is RequestUnauthorizedException -> R.string.register_local_user_failed_unauthorized_title
+                    else -> R.string.register_local_user_failed_general_title
                 }
 
                 showError(getString(errorStringResourceId))
             }
         ) {
-            viewModel.migrateLocalUser(serverUrl)
+            viewModel.registerLocalUser(serverUrl)
         }
     }
 
     private fun removeFormFieldsFocus() {
-        binding?.constraintLayoutMigrateLocalUserScreenContainer?.requestFocus()
+        binding?.constraintLayoutRootContainer?.requestFocus()
     }
 
     override fun onStop() {
@@ -147,6 +147,6 @@ class MigrateLocalUserFragment : ToolBarFragment<MigrateLocalUserViewModel>() {
     companion object {
         private const val FORM_FIELD_SERVERURL = "FORM_FIELD_SERVERURL"
 
-        fun newInstance() = MigrateLocalUserFragment()
+        fun newInstance() = RegisterLocalUserFragment()
     }
 }

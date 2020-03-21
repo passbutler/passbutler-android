@@ -133,11 +133,11 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
             subtitleView.text = viewModel.loggedInUserViewModel?.username
         }
 
-        // TODO: Change visibility if user is local
+        // TODO: Change visibility if user is remote
         navigationHeaderUserTypeView = navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_usertype)?.also { userTypeView ->
             userTypeView.setOnClickListener {
                 closeDrawerDelayed()
-                showFragmentModally(MigrateLocalUserFragment.newInstance())
+                showFragmentModally(RegisterLocalUserFragment.newInstance())
             }
         }
     }

@@ -12,7 +12,7 @@
 
         <!-- The `focusableInTouchMode` with `clickable` removes focus of `TextInputEditText` if user clicked outer area -->
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/constraintLayout_migrate_local_user_screen_container"
+            android:id="@+id/constraintLayout_root_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clickable="true"
@@ -25,7 +25,7 @@
                 android:layout_marginStart="@dimen/spacingHorizontalMedium"
                 android:layout_marginTop="@dimen/spacingVerticalMedium"
                 android:layout_marginEnd="@dimen/spacingHorizontalMedium"
-                android:text="@string/migrate_local_user_header"
+                android:text="@string/register_local_user_header"
                 android:textAppearance="?attr/textAppearanceHeadline1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -39,7 +39,7 @@
                 android:layout_marginStart="@dimen/spacingHorizontalMedium"
                 android:layout_marginTop="@dimen/spacingVerticalMedium"
                 android:layout_marginEnd="@dimen/spacingHorizontalMedium"
-                android:text="@string/migrate_local_user_description"
+                android:text="@string/register_local_user_description"
                 android:textAppearance="?attr/textAppearanceBody1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -71,14 +71,14 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
-                android:id="@+id/button_migrate"
+                android:id="@+id/button_register"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacingHorizontalMedium"
                 android:layout_marginTop="@dimen/spacingVerticalSmall"
                 android:layout_marginEnd="@dimen/spacingHorizontalMedium"
                 android:layout_marginBottom="@dimen/spacingVerticalMedium"
-                android:text="@string/migrate_local_user_button_text"
+                android:text="@string/register_local_user_button_text"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

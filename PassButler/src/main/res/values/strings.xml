@@ -23,24 +23,24 @@
     <string name="login_username_hint">Benutzername</string>
     <string name="login_password_hint">Passwort</string>
 
-    <string name="login_local_login_label">Lokales Konto</string>
+    <string name="login_local_login_label">Lokales Benutzerkonto</string>
 
     <string name="login_button_text">Anmelden</string>
 
     <string name="login_failed_general_title">Anmeldung hat nicht geklappt</string>
     <string name="login_failed_unauthorized_title">Anmeldedaten vermutlich nicht korrekt</string>
 
-    <!-- Migrate local user -->
+    <!-- Register local user -->
 
-    <string name="migrate_local_user_title">Lokalen Benutzer anmelden</string>
+    <string name="register_local_user_title">Lokales Benutzerkonto registrieren</string>
 
-    <string name="migrate_local_user_header">Lokalen Benutzer anmelden</string>
-    <string name="migrate_local_user_description">Damit das lokale Benutzerkonto zwischen mehreren Geräten synchronisiert werden kann, muss das Konto auf einem Pass Butler-Server registriert werden.</string>
+    <string name="register_local_user_header">Lokales Benutzerkonto registrieren</string>
+    <string name="register_local_user_description">Damit das lokale Benutzerkonto zwischen mehreren Geräten synchronisiert werden kann, muss das Konto auf einem Pass Butler-Server registriert werden.</string>
 
-    <string name="migrate_local_user_button_text">Benutzerkonto registrieren</string>
+    <string name="register_local_user_button_text">Registrieren</string>
 
-    <string name="migrate_local_user_failed_general_title">Registrierung hat nicht geklappt</string>
-    <string name="migrate_local_user_failed_unauthorized_title">Benutzerkonto vermutlich bereits vorhanden</string>
+    <string name="register_local_user_failed_general_title">Registrierung hat nicht geklappt</string>
+    <string name="register_local_user_failed_unauthorized_title">Benutzerkonto vermutlich bereits vorhanden</string>
 
     <!-- Locked screen -->
 
@@ -69,7 +69,7 @@
     <!-- Drawer -->
 
     <string name="drawer_header_title">Pass Butler</string>
-    <string name="drawer_header_usertype">Lokalen Benutzer auf Server anmelden</string>
+    <string name="drawer_header_usertype">Lokales Benutzerkonto registrieren</string>
 
     <string name="drawer_open_description">Navigationsdrawer öffnen</string>
     <string name="drawer_close_description">Navigationsdrawer schließen</string>

@@ -111,6 +111,9 @@ interface AuthWebservice {
 }
 
 interface UserWebservice {
+    @GET("/$API_VERSION_PREFIX/register")
+    suspend fun registerUser(@Body user: User): Response<Unit>
+
     @GET("/$API_VERSION_PREFIX/users")
     suspend fun getUsers(): Response<List<User>>
 
@@ -292,6 +295,18 @@ interface UserWebservice {
 
                 retrofitBuilder.create(UserWebservice::class.java)
             }
+        }
+    }
+}
+
+suspend fun UserWebservice?.registerUser(user: User): Result<Unit> {
+    val userWebservice = this
+    return withContext(Dispatchers.IO) {
+        try {
+            val response = userWebservice?.registerUser(user)
+            response.completeRequestWithoutResult()
+        } catch (exception: Exception) {
+            Failure(exception)
         }
     }
 }
