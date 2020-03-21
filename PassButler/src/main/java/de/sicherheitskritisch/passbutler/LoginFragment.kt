@@ -168,7 +168,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
     }
 
     private fun removeFormFieldsFocus() {
-        binding?.constraintLayoutLoginScreenContainer?.requestFocus()
+        binding?.constraintLayoutRootContainer?.requestFocus()
     }
 
     override fun onStop() {

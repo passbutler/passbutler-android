@@ -18,7 +18,7 @@
 
         <!-- The `focusableInTouchMode` with `clickable` removes focus of `TextInputEditText` if user clicked outer area -->
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/constraintLayout_login_screen_container"
+            android:id="@+id/constraintLayout_root_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?android:attr/colorBackground"

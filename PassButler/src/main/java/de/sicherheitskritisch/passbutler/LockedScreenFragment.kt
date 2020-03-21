@@ -173,7 +173,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
     }
 
     private fun removeFormFieldsFocus() {
-        binding?.constraintLayoutLockedScreenContainer?.requestFocus()
+        binding?.constraintLayoutRootContainer?.requestFocus()
     }
 
     override fun onResume() {
