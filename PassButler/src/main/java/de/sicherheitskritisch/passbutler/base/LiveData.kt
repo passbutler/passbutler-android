@@ -59,9 +59,9 @@ class NonNullValueGetterLiveData<T : Any>(valueGetter: () -> T) : ValueGetterLiv
 }
 
 /**
- * A default behaving `ValueGetterLiveData`.
+ * A optional value behaving `ValueGetterLiveData`.
  */
-class DefaultValueGetterLiveData<T : Any?>(valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter)
+class OptionalValueGetterLiveData<T : Any?>(valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter)
 
 @MainThread
 fun <T> ValueGetterLiveData<T>.observe(owner: LifecycleOwner, notifyOnRegister: Boolean, observer: Observer<T>) {

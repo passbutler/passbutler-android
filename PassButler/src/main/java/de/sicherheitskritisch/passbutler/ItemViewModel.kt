@@ -1,7 +1,7 @@
 package de.sicherheitskritisch.passbutler
 
 import androidx.lifecycle.ViewModel
-import de.sicherheitskritisch.passbutler.base.DefaultValueGetterLiveData
+import de.sicherheitskritisch.passbutler.base.OptionalValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
@@ -31,7 +31,7 @@ class ItemViewModel(
     val id
         get() = item.id
 
-    val title = DefaultValueGetterLiveData {
+    val title = OptionalValueGetterLiveData {
         itemData?.title
     }
 
