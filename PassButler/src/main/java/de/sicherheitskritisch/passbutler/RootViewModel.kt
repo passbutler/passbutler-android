@@ -53,7 +53,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
         val decryptSensibleDataResult = loggedInUserViewModel.decryptSensibleData(masterPassword)
 
-        if (decryptSensibleDataResult is Success && loggedInUserViewModel.userType is UserType.Remote) {
+        if (decryptSensibleDataResult is Success && loggedInUserViewModel.userType.value is UserType.Remote) {
             // Restore webservices asynchronously to avoid slow network is blocking unlock progress
             launch {
                 userManager.restoreWebservices(masterPassword)
@@ -68,7 +68,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     suspend fun initializeBiometricUnlockCipher(): Result<Cipher> {
-        val encryptedMasterPasswordInitializationVector = loggedInUserViewModel?.encryptedMasterPassword?.initializationVector
+        val encryptedMasterPasswordInitializationVector = loggedInUserViewModel?.encryptedMasterPassword?.value?.initializationVector
             ?: throw IllegalStateException("The encrypted master key initialization vector was not found, despite biometric unlock was tried!")
 
         return try {
@@ -87,14 +87,14 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
     suspend fun unlockScreenWithBiometrics(initializedBiometricUnlockCipher: Cipher): Result<Unit> {
         val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
-        val encryptedMasterPassword = loggedInUserViewModel.encryptedMasterPassword?.encryptedValue
+        val encryptedMasterPassword = loggedInUserViewModel.encryptedMasterPassword.value?.encryptedValue
             ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
 
         return try {
             val masterPassword = Biometrics.decryptData(initializedBiometricUnlockCipher, encryptedMasterPassword).resultOrThrowException().toUTF8String()
             loggedInUserViewModel.decryptSensibleData(masterPassword).resultOrThrowException()
 
-            if (loggedInUserViewModel.userType is UserType.Remote) {
+            if (loggedInUserViewModel.userType.value is UserType.Remote) {
                 // Restore webservices asynchronously to avoid slow network is blocking unlock progress
                 launch {
                     userManager.restoreWebservices(masterPassword)

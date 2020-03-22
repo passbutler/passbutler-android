@@ -7,6 +7,7 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.Failure
+import de.sicherheitskritisch.passbutler.base.OptionalValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.byteSize
@@ -42,6 +43,7 @@ import de.sicherheitskritisch.passbutler.database.updateUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 import java.net.SocketTimeoutException
@@ -49,14 +51,20 @@ import java.util.*
 
 class UserManager(private val applicationContext: Context, private val localRepository: LocalRepository) {
 
-    val loggedInUserResult = MutableLiveData<LoggedInUserResult?>()
+    val userType = OptionalValueGetterLiveData {
+        loggedInStateStorage?.userType
+    }
 
-    var loggedInStateStorage: LoggedInStateStorage? = null
-        private set
+    val encryptedMasterPassword = OptionalValueGetterLiveData {
+        loggedInStateStorage?.encryptedMasterPassword
+    }
+
+    val loggedInUserResult = MutableLiveData<LoggedInUserResult?>()
 
     val webservicesInitialized
         get() = authWebservice != null && userWebservice != null
 
+    private var loggedInStateStorage: LoggedInStateStorage? = null
     private var loggedInUser: User? = null
 
     private var authWebservice: AuthWebservice? = null
@@ -75,7 +83,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
 
             val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword)
             authWebservice = createdAuthWebservice
-            userWebservice = createUserWebservice(serverUrl, createdAuthWebservice, createdLoggedInStateStorage)
+            userWebservice = createUserWebservice(serverUrl, createdAuthWebservice, this)
 
             val newUser = userWebservice.requestUser().resultOrThrowException()
             localRepository.insertUser(newUser)
@@ -211,7 +219,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
     private suspend fun createLoggedInStateStorage(): LoggedInStateStorage {
         return withContext(Dispatchers.IO) {
             val sharedPreferences = applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
-            LoggedInStateStorage(sharedPreferences)
+            LoggedInStateStorage(sharedPreferences, this@UserManager)
         }
     }
 
@@ -225,7 +233,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
             val username = remoteUserType.username
 
             val createdAuthWebservice = authWebservice ?: createAuthWebservice(serverUrl, username, masterPassword)
-            val createdUserWebservice = userWebservice ?: createUserWebservice(serverUrl, createdAuthWebservice, loggedInStateStorage)
+            val createdUserWebservice = userWebservice ?: createUserWebservice(serverUrl, createdAuthWebservice, this)
 
             // If everything worked, apply to fields
             this.authWebservice = createdAuthWebservice
@@ -242,8 +250,8 @@ class UserManager(private val applicationContext: Context, private val localRepo
         return authWebservice
     }
 
-    private suspend fun createUserWebservice(serverUrl: Uri, authWebservice: AuthWebservice, loggedInStateStorage: LoggedInStateStorage): UserWebservice {
-        val userWebservice = UserWebservice.create(serverUrl, authWebservice, loggedInStateStorage)
+    private suspend fun createUserWebservice(serverUrl: Uri, authWebservice: AuthWebservice, userManager: UserManager): UserWebservice {
+        val userWebservice = UserWebservice.create(serverUrl, authWebservice, userManager)
         return userWebservice
     }
 
@@ -251,6 +259,21 @@ class UserManager(private val applicationContext: Context, private val localRepo
         authWebservice = null
         userWebservice = null
         restoreWebservices(masterPassword)
+    }
+
+    suspend fun updateAuthToken(authToken: AuthToken?) {
+        val loggedInStateStorage = loggedInStateStorage ?: throw IllegalStateException("The LoggedInStateStorage is not initialized!")
+        require(loggedInStateStorage.userType is UserType.Remote) { "The logged-in user type is not remote!" }
+
+        loggedInStateStorage.userType?.asRemoteOrNull()?.authToken = authToken
+        loggedInStateStorage.persist()
+    }
+
+    suspend fun updateEncryptedMasterPassword(encryptedMasterPassword: EncryptedValue?) {
+        val loggedInStateStorage = loggedInStateStorage ?: throw IllegalStateException("The LoggedInStateStorage is not initialized!")
+
+        loggedInStateStorage.encryptedMasterPassword = encryptedMasterPassword
+        loggedInStateStorage.persist()
     }
 
     suspend fun updateUser(user: User) {
@@ -361,10 +384,25 @@ class UserManager(private val applicationContext: Context, private val localRepo
     }
 }
 
-class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
+class LoggedInStateStorage(private val sharedPreferences: SharedPreferences, private val userManager: UserManager) {
 
     var userType: UserType? = null
+        set(value) {
+            field = value
+
+            runBlocking(Dispatchers.Main) {
+                userManager.userType.notifyChange()
+            }
+        }
+
     var encryptedMasterPassword: EncryptedValue? = null
+        set(value) {
+            field = value
+
+            runBlocking(Dispatchers.Main) {
+                userManager.encryptedMasterPassword.notifyChange()
+            }
+        }
 
     suspend fun restore() {
         withContext(Dispatchers.IO) {

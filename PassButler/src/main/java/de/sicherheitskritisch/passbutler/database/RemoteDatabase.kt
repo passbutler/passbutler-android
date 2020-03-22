@@ -2,7 +2,9 @@ package de.sicherheitskritisch.passbutler.database
 
 import android.net.Uri
 import de.sicherheitskritisch.passbutler.LoggedInStateStorage
+import de.sicherheitskritisch.passbutler.UserManager
 import de.sicherheitskritisch.passbutler.UserType
+import de.sicherheitskritisch.passbutler.asRemoteOrNull
 import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.Result
@@ -139,16 +141,12 @@ interface UserWebservice {
         var authToken: AuthToken?
     }
 
-    private class DefaultAuthTokenProvider(private val loggedInStateStorage: LoggedInStateStorage) : AuthTokenProvider {
-        private val remoteUserType = loggedInStateStorage.userType as? UserType.Remote ?: throw IllegalStateException("The logged-in user type must be remote!")
-
+    private class DefaultAuthTokenProvider(private val userManager: UserManager) : AuthTokenProvider {
         override var authToken: AuthToken?
-            get() = remoteUserType.authToken
+            get() = userManager.userType.value?.asRemoteOrNull()?.authToken
             set(value) {
-                remoteUserType.authToken = value
-
                 runBlocking {
-                    loggedInStateStorage.persist()
+                    userManager.updateAuthToken(value)
                 }
             }
     }
@@ -157,8 +155,8 @@ interface UserWebservice {
      * Adds authentication token to request if available.
      */
     private class AuthTokenInterceptor(
-        loggedInStateStorage: LoggedInStateStorage
-    ) : Interceptor, AuthTokenProvider by DefaultAuthTokenProvider(loggedInStateStorage) {
+        userManager: UserManager
+    ) : Interceptor, AuthTokenProvider by DefaultAuthTokenProvider(userManager) {
         @Throws(IOException::class)
         override fun intercept(chain: Interceptor.Chain): OkHttpResponse {
             val actualRequest = chain.request()
@@ -176,8 +174,8 @@ interface UserWebservice {
      */
     private class AuthTokenAuthenticator(
         private val authWebservice: AuthWebservice,
-        private val loggedInStateStorage: LoggedInStateStorage
-    ) : Authenticator, AuthTokenProvider by DefaultAuthTokenProvider(loggedInStateStorage) {
+        userManager: UserManager
+    ) : Authenticator, AuthTokenProvider by DefaultAuthTokenProvider(userManager) {
         @Throws(IOException::class)
         override fun authenticate(route: Route?, response: OkHttpResponse): Request? {
             val actualRequest = response.request
@@ -274,7 +272,7 @@ interface UserWebservice {
         private val MEDIA_TYPE_JSON = "application/json".toMediaType()
 
         @Throws(IllegalArgumentException::class)
-        suspend fun create(serverUrl: Uri, authWebservice: AuthWebservice, loggedInStateStorage: LoggedInStateStorage): UserWebservice {
+        suspend fun create(serverUrl: Uri, authWebservice: AuthWebservice, userManager: UserManager): UserWebservice {
             require(!(BuildType.isReleaseBuild && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
 
             return withContext(Dispatchers.IO) {
@@ -282,8 +280,8 @@ interface UserWebservice {
                     .connectTimeout(API_TIMEOUT_CONNECT)
                     .readTimeout(API_TIMEOUT_READ)
                     .writeTimeout(API_TIMEOUT_WRITE)
-                    .addInterceptor(AuthTokenInterceptor(loggedInStateStorage))
-                    .authenticator(AuthTokenAuthenticator(authWebservice, loggedInStateStorage))
+                    .addInterceptor(AuthTokenInterceptor(userManager))
+                    .authenticator(AuthTokenAuthenticator(authWebservice, userManager))
                     .build()
 
                 val retrofitBuilder = Retrofit.Builder()
