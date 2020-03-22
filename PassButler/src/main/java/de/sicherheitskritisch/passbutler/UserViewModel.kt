@@ -72,6 +72,10 @@ class UserViewModel private constructor(
         userManager.webservicesInitialized
     }
 
+    val lastSynchronizationDate = OptionalValueGetterLiveData {
+        userType.value?.asRemoteOrNull()?.lastSuccessfulSync
+    }
+
     private var itemsObservable: LiveData<List<Item>>? = null
     private val itemsObserver = ItemsChangedObserver()
 
@@ -225,7 +229,14 @@ class UserViewModel private constructor(
     }
 
     suspend fun synchronizeData(): Result<Unit> {
-        return userManager.synchronize()
+        val synchronizeDataResult = userManager.synchronize()
+
+        // Trigger notification for every result to be sure, the view is updating its relative formatted date
+        withContext(Dispatchers.Main) {
+            lastSynchronizationDate.notifyChange()
+        }
+
+        return synchronizeDataResult
     }
 
     suspend fun updateMasterPassword(newMasterPassword: String): Result<Unit> {
