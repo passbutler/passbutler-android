@@ -39,15 +39,9 @@ import java.util.*
 class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
     private var binding: FragmentOverviewBinding? = null
-    private var navigationHeaderView: View? = null
+    private var navigationHeaderSubtitleView: TextView? = null
     private var navigationHeaderUserTypeView: TextView? = null
     private val navigationItemSelectedListener = NavigationItemSelectedListener()
-
-    private val isSynchronizationVisible
-        get() = viewModel.loggedInUserViewModel?.userType is UserType.Remote
-
-    private val isSynchronizationPossible
-        get() = viewModel.loggedInUserViewModel?.isSynchronizationPossible?.value ?: false
 
     private var synchronizeDataRequestSendingJob: Job? = null
     private var logoutRequestSendingJob: Job? = null
@@ -62,19 +56,18 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         binding?.layoutOverviewContent?.groupEmptyScreenViews?.visible = showEmptyScreen
     }
 
-    private val lastSynchronizationDateObserver = Observer<Date?> { newDate ->
-        binding?.toolbar?.let { toolbar ->
-            binding?.toolbar?.subtitle = if (isSynchronizationVisible) {
-                val formattedLastSuccessfulSync = newDate?.relativeDateTime(toolbar.context) ?: getString(R.string.overview_last_sync_never)
-                getString(R.string.overview_last_sync_subtitle, formattedLastSuccessfulSync)
-            } else {
-                null
-            }
-        }
+    private val userTypeObserver = Observer<UserType?> {
+        updateToolbarSubtitle()
+        updateNavigationHeaderUserTypeView()
+        updateSwipeRefreshLayout()
     }
 
-    private val synchronizationPossibleObserver = Observer<Boolean> { isPossible ->
-        if (isPossible) {
+    private val lastSynchronizationDateObserver = Observer<Date?> {
+        updateToolbarSubtitle()
+    }
+
+    private val webservicesInitializedObserver = Observer<Boolean> { webservicesInitialized ->
+        if (webservicesInitialized) {
             synchronizeData(userTriggered = false)
         }
     }
@@ -98,7 +91,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
             setupToolBar(binding)
             setupDrawerLayout(binding)
-            setupSwipeRefreshLayout(binding)
             setupEntryList(binding)
         }
 
@@ -128,34 +120,73 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
             setNavigationItemSelectedListener(navigationItemSelectedListener)
         }
 
-        navigationHeaderView = binding.navigationView.inflateHeaderView(R.layout.main_drawer_header)
-        navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_subtitle)?.also { subtitleView ->
-            subtitleView.text = viewModel.loggedInUserViewModel?.username
-        }
+        val navigationHeaderView = binding.navigationView.inflateHeaderView(R.layout.main_drawer_header)
+        navigationHeaderSubtitleView = navigationHeaderView?.findViewById(R.id.textView_drawer_header_subtitle)
+        navigationHeaderSubtitleView?.text = viewModel.loggedInUserViewModel?.username
 
-        // TODO: Change visibility if user is remote
-        navigationHeaderUserTypeView = navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_usertype)?.also { userTypeView ->
-            userTypeView.setOnClickListener {
-                closeDrawerDelayed()
-                showFragmentModally(RegisterLocalUserFragment.newInstance())
+        navigationHeaderUserTypeView = navigationHeaderView?.findViewById(R.id.textView_drawer_header_usertype)
+    }
+
+    private fun setupEntryList(binding: FragmentOverviewBinding) {
+        binding.layoutOverviewContent.recyclerViewItemList.adapter = ItemAdapter(this)
+
+        binding.layoutOverviewContent.floatingActionButtonAddEntry.setOnClickListener {
+            showFragment(ItemDetailFragment.newInstance(null))
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
+
+        viewModel.loggedInUserViewModel?.userType?.observe(viewLifecycleOwner, true, userTypeObserver)
+        viewModel.loggedInUserViewModel?.lastSynchronizationDate?.observe(viewLifecycleOwner, true, lastSynchronizationDateObserver)
+
+        viewModel.loggedInUserViewModel?.webservicesInitialized?.observe(viewLifecycleOwner, true, webservicesInitializedObserver)
+    }
+
+    private fun updateToolbarSubtitle() {
+        binding?.toolbar?.apply {
+            subtitle = if (viewModel.loggedInUserViewModel?.userType?.value is UserType.Remote) {
+                val newDate = viewModel.loggedInUserViewModel?.lastSynchronizationDate?.value
+                val formattedLastSuccessfulSync = newDate?.relativeDateTime(context) ?: getString(R.string.overview_last_sync_never)
+                getString(R.string.overview_last_sync_subtitle, formattedLastSuccessfulSync)
+            } else {
+                null
             }
         }
     }
 
-    private fun setupSwipeRefreshLayout(binding: FragmentOverviewBinding) {
-        binding.layoutOverviewContent.swipeRefreshLayout.also { swipeRefreshLayout ->
-            if (isSynchronizationVisible) {
-                swipeRefreshLayout.setOnRefreshListener {
-                    if (isSynchronizationPossible) {
+    private fun updateNavigationHeaderUserTypeView() {
+        navigationHeaderUserTypeView?.apply {
+            if (viewModel.loggedInUserViewModel?.userType?.value is UserType.Remote) {
+                visible = true
+                setOnClickListener {
+                    closeDrawerDelayed()
+                    showFragmentModally(RegisterLocalUserFragment.newInstance())
+                }
+            } else {
+                visible = false
+                setOnClickListener(null)
+            }
+        }
+    }
+
+    private fun updateSwipeRefreshLayout() {
+        binding?.layoutOverviewContent?.swipeRefreshLayout?.apply {
+            if (viewModel.loggedInUserViewModel?.userType?.value is UserType.Remote) {
+                setOnRefreshListener {
+                    if (viewModel.loggedInUserViewModel?.webservicesInitialized?.value == true) {
                         synchronizeData(userTriggered = true)
                     } else {
                         // Immediately stop refreshing if is not possible
-                        swipeRefreshLayout.isRefreshing = false
+                        isRefreshing = false
                     }
                 }
             } else {
                 // Disable pull-to-refresh if synchronization is not visible
-                swipeRefreshLayout.isEnabled = false
+                isEnabled = false
             }
         }
     }
@@ -191,22 +222,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         } else {
             Logger.debug("The synchronize data request is already running - skip call")
         }
-    }
-
-    private fun setupEntryList(binding: FragmentOverviewBinding) {
-        binding.layoutOverviewContent.recyclerViewItemList.adapter = ItemAdapter(this)
-
-        binding.layoutOverviewContent.floatingActionButtonAddEntry.setOnClickListener {
-            showFragment(ItemDetailFragment.newInstance(null))
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
-        viewModel.lastSynchronizationDate.observe(viewLifecycleOwner, true, lastSynchronizationDateObserver)
-        viewModel.loggedInUserViewModel?.isSynchronizationPossible?.observe(viewLifecycleOwner, true, synchronizationPossibleObserver)
     }
 
     override fun onHandleBackPress(): Boolean {

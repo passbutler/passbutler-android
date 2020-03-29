@@ -70,6 +70,7 @@
         android:layout_marginTop="@dimen/spacingVerticalMedium"
         android:layout_marginEnd="@dimen/spacingHorizontalMedium"
         android:layout_marginBottom="@dimen/spacingHorizontalMedium"
+        android:background="?selectableItemBackground"
         android:text="@string/drawer_header_usertype"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"

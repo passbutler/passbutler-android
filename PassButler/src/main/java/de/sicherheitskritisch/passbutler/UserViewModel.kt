@@ -47,14 +47,17 @@ class UserViewModel private constructor(
     masterPassword: String?
 ) : ManualCancelledCoroutineScopeViewModel() {
 
+    val username: String
+        get() = user.username
+
     val userType: OptionalValueGetterLiveData<UserType?>
         get() = userManager.userType
 
     val encryptedMasterPassword: OptionalValueGetterLiveData<EncryptedValue?>
         get() = userManager.encryptedMasterPassword
 
-    val username: String
-        get() = user.username
+    val webservicesInitialized: NonNullValueGetterLiveData<Boolean>
+        get() = userManager.webservicesInitialized
 
     val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
 
@@ -67,10 +70,6 @@ class UserViewModel private constructor(
 
     val biometricUnlockEnabled = NonNullValueGetterLiveData {
         biometricUnlockAvailable.value && encryptedMasterPassword.value != null
-    }
-
-    val isSynchronizationPossible = NonNullValueGetterLiveData {
-        userManager.webservicesInitialized
     }
 
     val lastSynchronizationDate = OptionalValueGetterLiveData {

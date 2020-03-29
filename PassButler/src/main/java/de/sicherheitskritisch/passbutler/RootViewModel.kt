@@ -57,10 +57,6 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
             // Restore webservices asynchronously to avoid slow network is blocking unlock progress
             launch {
                 userManager.restoreWebservices(masterPassword)
-
-                withContext(Dispatchers.Main) {
-                    loggedInUserViewModel.isSynchronizationPossible.notifyChange()
-                }
             }
         }
 
@@ -98,10 +94,6 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
                 // Restore webservices asynchronously to avoid slow network is blocking unlock progress
                 launch {
                     userManager.restoreWebservices(masterPassword)
-
-                    withContext(Dispatchers.Main) {
-                        loggedInUserViewModel.isSynchronizationPossible.notifyChange()
-                    }
                 }
             }
 

@@ -7,6 +7,7 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.Failure
+import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.OptionalValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
@@ -32,6 +33,7 @@ import de.sicherheitskritisch.passbutler.database.models.Item
 import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
+import de.sicherheitskritisch.passbutler.database.registerUser
 import de.sicherheitskritisch.passbutler.database.remoteChangedItems
 import de.sicherheitskritisch.passbutler.database.requestItemAuthorizationList
 import de.sicherheitskritisch.passbutler.database.requestItemList
@@ -61,25 +63,41 @@ class UserManager(private val applicationContext: Context, private val localRepo
 
     val loggedInUserResult = MutableLiveData<LoggedInUserResult?>()
 
-    val webservicesInitialized
-        get() = authWebservice != null && userWebservice != null
+    val webservicesInitialized = NonNullValueGetterLiveData {
+        authWebservice != null && userWebservice != null
+    }
 
     private var loggedInStateStorage: LoggedInStateStorage? = null
     private var loggedInUser: User? = null
 
     private var authWebservice: AuthWebservice? = null
+        set(value) {
+            field = value
+
+            // TODO: Not a good idea in a setter because this is not cheap
+            runBlocking(Dispatchers.Main) {
+                webservicesInitialized.notifyChange()
+            }
+        }
+
     private var userWebservice: UserWebservice? = null
+        set(value) {
+            field = value
+
+            // TODO: Not a good idea in a setter because this is not cheap
+            runBlocking(Dispatchers.Main) {
+                webservicesInitialized.notifyChange()
+            }
+        }
 
     suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrl: Uri): Result<Unit> {
         return try {
-            val createdLoggedInStateStorage = createLoggedInStateStorage().apply {
+            loggedInStateStorage = createLoggedInStateStorage().apply {
                 reset()
 
                 userType = UserType.Remote(username, serverUrl, null, null)
                 persist()
             }
-
-            loggedInStateStorage = createdLoggedInStateStorage
 
             val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword)
             authWebservice = createdAuthWebservice
@@ -191,6 +209,31 @@ class UserManager(private val applicationContext: Context, private val localRepo
         return protectedUserSettings
     }
 
+    suspend fun registerLocalUser(serverUrl: Uri, masterPassword: String): Result<Unit> {
+        return try {
+            val loggedInStateStorage = loggedInStateStorage ?: throw IllegalStateException("The LoggedInStateStorage is not initialized!")
+            val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is not initialized!")
+            val username = loggedInUser.username
+
+            val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword)
+            val createdUserWebservice = createUserWebservice(serverUrl, createdAuthWebservice, this)
+
+            createdUserWebservice.registerUser(loggedInUser).resultOrThrowException()
+
+            // TODO If everything worked, apply to fields
+
+            authWebservice = createdAuthWebservice
+            userWebservice = createdUserWebservice
+
+            loggedInStateStorage.userType = UserType.Remote(username, serverUrl, null, null)
+            loggedInStateStorage.persist()
+
+            Success(Unit)
+        } catch (exception: Exception) {
+            Failure(exception)
+        }
+    }
+
     suspend fun restoreLoggedInUser() {
         if (loggedInUser == null) {
             Logger.debug("Try to restore logged-in user")
@@ -265,7 +308,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
         val loggedInStateStorage = loggedInStateStorage ?: throw IllegalStateException("The LoggedInStateStorage is not initialized!")
         require(loggedInStateStorage.userType is UserType.Remote) { "The logged-in user type is not remote!" }
 
-        loggedInStateStorage.userType?.asRemoteOrNull()?.authToken = authToken
+        loggedInStateStorage.userType?.asRemoteOrNull()?.authToken = authToken // TODO: does not trigger userType change
         loggedInStateStorage.persist()
     }
 
@@ -390,6 +433,7 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences, pri
         set(value) {
             field = value
 
+            // TODO: Not a good idea in a setter because this is not cheap
             runBlocking(Dispatchers.Main) {
                 userManager.userType.notifyChange()
             }
@@ -399,6 +443,7 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences, pri
         set(value) {
             field = value
 
+            // TODO: Not a good idea in a setter because this is not cheap
             runBlocking(Dispatchers.Main) {
                 userManager.encryptedMasterPassword.notifyChange()
             }
