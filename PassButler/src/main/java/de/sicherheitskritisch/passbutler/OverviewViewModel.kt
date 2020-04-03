@@ -2,13 +2,10 @@ package de.sicherheitskritisch.passbutler
 
 import android.app.Application
 import androidx.lifecycle.Observer
-import de.sicherheitskritisch.passbutler.base.OptionalValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 
 class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 

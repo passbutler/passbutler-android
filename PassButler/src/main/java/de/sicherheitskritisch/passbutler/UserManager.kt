@@ -33,7 +33,6 @@ import de.sicherheitskritisch.passbutler.database.models.Item
 import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
-import de.sicherheitskritisch.passbutler.database.registerUser
 import de.sicherheitskritisch.passbutler.database.remoteChangedItems
 import de.sicherheitskritisch.passbutler.database.requestItemAuthorizationList
 import de.sicherheitskritisch.passbutler.database.requestItemList

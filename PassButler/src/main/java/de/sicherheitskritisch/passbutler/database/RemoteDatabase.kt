@@ -1,9 +1,7 @@
 package de.sicherheitskritisch.passbutler.database
 
 import android.net.Uri
-import de.sicherheitskritisch.passbutler.LoggedInStateStorage
 import de.sicherheitskritisch.passbutler.UserManager
-import de.sicherheitskritisch.passbutler.UserType
 import de.sicherheitskritisch.passbutler.asRemoteOrNull
 import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.Failure
