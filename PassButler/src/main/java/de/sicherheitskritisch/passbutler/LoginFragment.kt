@@ -155,7 +155,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
         loginRequestSendingJob?.cancel()
         loginRequestSendingJob = launchRequestSending(
             handleFailure = {
-                val errorStringResourceId = when (it.cause) {
+                val errorStringResourceId = when (it) {
                     is RequestUnauthorizedException -> R.string.login_failed_unauthorized_title
                     else -> R.string.login_failed_general_title
                 }

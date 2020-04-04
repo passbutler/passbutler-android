@@ -115,7 +115,7 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
                 popBackstack()
             },
             handleFailure = {
-                val errorStringResourceId = when (it.cause) {
+                val errorStringResourceId = when (it) {
                     is RequestForbiddenException -> R.string.register_local_user_failed_forbidden_title
                     else -> R.string.register_local_user_failed_general_title
                 }
