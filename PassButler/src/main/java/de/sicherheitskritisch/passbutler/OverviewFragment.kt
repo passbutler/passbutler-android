@@ -302,7 +302,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         private fun logoutUser() {
             logoutRequestSendingJob?.cancel()
             logoutRequestSendingJob = launchRequestSending(
-                handleFailure = { showError(getString(R.string.overview_logout_failed_title)) }
+                handleFailure = { showError(getString(R.string.overview_logout_failed_title)) },
+                isCancellable = false
             ) {
                 viewModel.logoutUser()
             }

@@ -161,7 +161,8 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
                 }
 
                 showError(getString(errorStringResourceId))
-            }
+            },
+            isCancellable = false
         ) {
             viewModel.loginUser(serverUrl, username, password)
         }
