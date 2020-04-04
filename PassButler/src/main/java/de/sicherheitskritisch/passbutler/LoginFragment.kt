@@ -1,6 +1,5 @@
 package de.sicherheitskritisch.passbutler
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.text.TextUtils
@@ -12,6 +11,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import de.sicherheitskritisch.passbutler.base.BuildType
+import de.sicherheitskritisch.passbutler.base.DebugConstants
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
@@ -79,19 +79,18 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
         super.onStart()
 
         binding?.let {
-            setupDebugLoginPresetsButton(it)
+            setupDebugPresetsButton(it)
             setupLocalLoginCheckbox()
             setupLoginButton(it)
         }
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun setupDebugLoginPresetsButton(binding: FragmentLoginBinding) {
+    private fun setupDebugPresetsButton(binding: FragmentLoginBinding) {
         if (BuildType.isDebugBuild) {
             binding.imageViewLogo.setOnLongClickListener {
-                binding.textInputEditTextServerurl.setText("http://10.0.0.20:5000")
-                binding.textInputEditTextUsername.setText("testuser")
-                binding.textInputEditTextPassword.setText("1234")
+                binding.textInputEditTextServerurl.setText(DebugConstants.TEST_SERVERURL)
+                binding.textInputEditTextUsername.setText(DebugConstants.TEST_USERNAME)
+                binding.textInputEditTextPassword.setText(DebugConstants.TEST_PASSWORD)
                 binding.checkBoxLocalLogin.isChecked = false
                 true
             }
