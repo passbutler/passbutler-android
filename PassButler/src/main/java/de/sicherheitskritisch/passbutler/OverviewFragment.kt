@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -32,6 +33,7 @@ import de.sicherheitskritisch.passbutler.ui.showInformation
 import de.sicherheitskritisch.passbutler.ui.visible
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 import java.util.*
@@ -43,6 +45,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     private var navigationHeaderUserTypeView: TextView? = null
     private val navigationItemSelectedListener = NavigationItemSelectedListener()
 
+    private var updateToolbarJob: Job? = null
     private var synchronizeDataRequestSendingJob: Job? = null
     private var logoutRequestSendingJob: Job? = null
 
@@ -62,7 +65,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         updateSwipeRefreshLayout()
     }
 
-    // TODO: Must be triggered also on failed sync to update relative date
     private val lastSynchronizationDateObserver = Observer<Date?> {
         updateToolbarSubtitle()
     }
@@ -144,9 +146,25 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         viewModel.loggedInUserViewModel?.userType?.observe(viewLifecycleOwner, true, userTypeObserver)
         viewModel.loggedInUserViewModel?.lastSuccessfulSyncDate?.observe(viewLifecycleOwner, true, lastSynchronizationDateObserver)
         viewModel.loggedInUserViewModel?.webservicesInitialized?.observe(viewLifecycleOwner, true, webservicesInitializedObserver)
+
+        updateToolbarJob?.cancel()
+        updateToolbarJob = launch {
+            while (isActive) {
+                // Update relative time in toolbar every minute
+                updateToolbarSubtitle()
+                delay(DateUtils.MINUTE_IN_MILLIS)
+            }
+        }
+    }
+
+    override fun onStop() {
+        updateToolbarJob?.cancel()
+        super.onStop()
     }
 
     private fun updateToolbarSubtitle() {
+        Logger.debug("Update relative time in toolbar subtitle")
+
         binding?.toolbar?.apply {
             subtitle = if (viewModel.loggedInUserViewModel?.userType?.value == UserType.REMOTE) {
                 val newDate = viewModel.loggedInUserViewModel?.lastSuccessfulSyncDate?.value
