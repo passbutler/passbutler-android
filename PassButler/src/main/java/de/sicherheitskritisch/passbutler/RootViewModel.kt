@@ -51,7 +51,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
         val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
         val decryptSensibleDataResult = loggedInUserViewModel.decryptSensibleData(masterPassword)
 
-        if (decryptSensibleDataResult is Success && loggedInUserViewModel.userType.value is UserType.Remote) {
+        if (decryptSensibleDataResult is Success && loggedInUserViewModel.userType.value == UserType.REMOTE) {
             // Restore webservices asynchronously to avoid slow network is blocking unlock progress
             launch {
                 userManager.restoreWebservices(masterPassword)
@@ -88,7 +88,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
             val masterPassword = Biometrics.decryptData(initializedBiometricUnlockCipher, encryptedMasterPassword).resultOrThrowException().toUTF8String()
             loggedInUserViewModel.decryptSensibleData(masterPassword).resultOrThrowException()
 
-            if (loggedInUserViewModel.userType.value is UserType.Remote) {
+            if (loggedInUserViewModel.userType.value == UserType.REMOTE) {
                 // Restore webservices asynchronously to avoid slow network is blocking unlock progress
                 launch {
                     userManager.restoreWebservices(masterPassword)

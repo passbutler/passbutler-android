@@ -6,7 +6,6 @@ import androidx.lifecycle.Observer
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
-import de.sicherheitskritisch.passbutler.base.OptionalValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.clear
@@ -50,13 +49,16 @@ class UserViewModel private constructor(
     val username: String
         get() = user.username
 
-    val userType: OptionalValueGetterLiveData<UserType?>
+    val userType
         get() = userManager.userType
 
-    val encryptedMasterPassword: OptionalValueGetterLiveData<EncryptedValue?>
+    val encryptedMasterPassword
         get() = userManager.encryptedMasterPassword
 
-    val webservicesInitialized: NonNullValueGetterLiveData<Boolean>
+    val lastSuccessfulSyncDate
+        get() = userManager.lastSuccessfulSyncDate
+
+    val webservicesInitialized
         get() = userManager.webservicesInitialized
 
     val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
@@ -70,10 +72,6 @@ class UserViewModel private constructor(
 
     val biometricUnlockEnabled = NonNullValueGetterLiveData {
         biometricUnlockAvailable.value && encryptedMasterPassword.value != null
-    }
-
-    val lastSynchronizationDate = OptionalValueGetterLiveData {
-        userType.value?.asRemoteOrNull()?.lastSuccessfulSync
     }
 
     private var itemsObservable: LiveData<List<Item>>? = null
@@ -229,14 +227,7 @@ class UserViewModel private constructor(
     }
 
     suspend fun synchronizeData(): Result<Unit> {
-        val synchronizeDataResult = userManager.synchronize()
-
-        // Trigger notification for every result to be sure, the view is updating its relative formatted date
-        withContext(Dispatchers.Main) {
-            lastSynchronizationDate.notifyChange()
-        }
-
-        return synchronizeDataResult
+        return userManager.synchronize()
     }
 
     suspend fun updateMasterPassword(newMasterPassword: String): Result<Unit> {

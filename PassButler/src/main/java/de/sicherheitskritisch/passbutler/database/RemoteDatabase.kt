@@ -2,7 +2,6 @@ package de.sicherheitskritisch.passbutler.database
 
 import android.net.Uri
 import de.sicherheitskritisch.passbutler.UserManager
-import de.sicherheitskritisch.passbutler.asRemoteOrNull
 import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.Result
@@ -141,7 +140,7 @@ interface UserWebservice {
 
     private class DefaultAuthTokenProvider(private val userManager: UserManager) : AuthTokenProvider {
         override var authToken: AuthToken?
-            get() = userManager.userType.value?.asRemoteOrNull()?.authToken
+            get() = userManager.authToken.value
             set(value) {
                 runBlocking {
                     userManager.updateAuthToken(value)

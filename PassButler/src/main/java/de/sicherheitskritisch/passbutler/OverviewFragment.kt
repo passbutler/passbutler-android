@@ -62,6 +62,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         updateSwipeRefreshLayout()
     }
 
+    // TODO: Must be triggered also on failed sync to update relative date
     private val lastSynchronizationDateObserver = Observer<Date?> {
         updateToolbarSubtitle()
     }
@@ -141,15 +142,14 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
 
         viewModel.loggedInUserViewModel?.userType?.observe(viewLifecycleOwner, true, userTypeObserver)
-        viewModel.loggedInUserViewModel?.lastSynchronizationDate?.observe(viewLifecycleOwner, true, lastSynchronizationDateObserver)
-
+        viewModel.loggedInUserViewModel?.lastSuccessfulSyncDate?.observe(viewLifecycleOwner, true, lastSynchronizationDateObserver)
         viewModel.loggedInUserViewModel?.webservicesInitialized?.observe(viewLifecycleOwner, true, webservicesInitializedObserver)
     }
 
     private fun updateToolbarSubtitle() {
         binding?.toolbar?.apply {
-            subtitle = if (viewModel.loggedInUserViewModel?.userType?.value is UserType.Remote) {
-                val newDate = viewModel.loggedInUserViewModel?.lastSynchronizationDate?.value
+            subtitle = if (viewModel.loggedInUserViewModel?.userType?.value == UserType.REMOTE) {
+                val newDate = viewModel.loggedInUserViewModel?.lastSuccessfulSyncDate?.value
                 val formattedLastSuccessfulSync = newDate?.relativeDateTime(context) ?: getString(R.string.overview_last_sync_never)
                 getString(R.string.overview_last_sync_subtitle, formattedLastSuccessfulSync)
             } else {
@@ -160,7 +160,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
     private fun updateNavigationHeaderUserTypeView() {
         navigationHeaderUserTypeView?.apply {
-            if (viewModel.loggedInUserViewModel?.userType?.value is UserType.Remote) {
+            if (viewModel.loggedInUserViewModel?.userType?.value == UserType.REMOTE) {
                 visible = true
                 setOnClickListener {
                     closeDrawerDelayed()
@@ -175,7 +175,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
     private fun updateSwipeRefreshLayout() {
         binding?.layoutOverviewContent?.swipeRefreshLayout?.apply {
-            if (viewModel.loggedInUserViewModel?.userType?.value is UserType.Remote) {
+            if (viewModel.loggedInUserViewModel?.userType?.value == UserType.REMOTE) {
                 setOnRefreshListener {
                     if (viewModel.loggedInUserViewModel?.webservicesInitialized?.value == true) {
                         synchronizeData(userTriggered = true)
