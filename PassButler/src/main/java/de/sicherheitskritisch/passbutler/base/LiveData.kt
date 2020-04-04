@@ -59,9 +59,34 @@ class NonNullValueGetterLiveData<T : Any>(valueGetter: () -> T) : ValueGetterLiv
 }
 
 /**
- * A optional value behaving `ValueGetterLiveData`.
+ * An optional value behaving `ValueGetterLiveData`.
  */
 class OptionalValueGetterLiveData<T : Any?>(valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter)
+
+/**
+ * An optional value behaving `ValueGetterLiveData` that uses dependent `LiveData` to trigger change.
+ */
+class DependentOptionalValueGetterLiveData<T : Any?>(private vararg val dependencies: LiveData<out Any?>, valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter) {
+    private val dependenciesChangedObserver = Observer<Any?> {
+        notifyChange()
+    }
+
+    override fun onActive() {
+        super.onActive()
+
+        dependencies.forEach {
+            it.observeForever(dependenciesChangedObserver)
+        }
+    }
+
+    override fun onInactive() {
+        super.onInactive()
+
+        dependencies.forEach {
+            it.removeObserver(dependenciesChangedObserver)
+        }
+    }
+}
 
 @MainThread
 fun <T> ValueGetterLiveData<T>.observe(owner: LifecycleOwner, notifyOnRegister: Boolean, observer: Observer<T>) {

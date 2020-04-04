@@ -6,8 +6,8 @@ import android.content.SharedPreferences
 import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import de.sicherheitskritisch.passbutler.base.DependentOptionalValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.Failure
-import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.Result
 import de.sicherheitskritisch.passbutler.base.Success
 import de.sicherheitskritisch.passbutler.base.byteSize
@@ -43,7 +43,6 @@ import de.sicherheitskritisch.passbutler.database.updateUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 import java.net.SocketTimeoutException
@@ -65,32 +64,15 @@ class UserManager(private val applicationContext: Context, private val localRepo
 
     val loggedInUserResult = MutableLiveData<LoggedInUserResult?>()
 
-    val webservicesInitialized = NonNullValueGetterLiveData {
-        authWebservice != null && userWebservice != null
+    private val authWebservice = MutableLiveData<AuthWebservice?>(null)
+    private val userWebservice = MutableLiveData<UserWebservice?>(null)
+
+    val webservicesInitialized = DependentOptionalValueGetterLiveData(authWebservice, userWebservice) {
+        authWebservice.value != null && userWebservice.value != null
     }
 
     private var loggedInStateStorage: LoggedInStateStorage? = null
     private var loggedInUser: User? = null
-
-    private var authWebservice: AuthWebservice? = null
-        set(value) {
-            field = value
-
-            // TODO: Not a good idea in a setter because this is not cheap
-            runBlocking(Dispatchers.Main) {
-                webservicesInitialized.notifyChange()
-            }
-        }
-
-    private var userWebservice: UserWebservice? = null
-        set(value) {
-            field = value
-
-            // TODO: Not a good idea in a setter because this is not cheap
-            runBlocking(Dispatchers.Main) {
-                webservicesInitialized.notifyChange()
-            }
-        }
 
     suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrl: Uri): Result<Unit> {
         return try {
@@ -107,10 +89,14 @@ class UserManager(private val applicationContext: Context, private val localRepo
             }
 
             val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword)
-            authWebservice = createdAuthWebservice
-            userWebservice = createUserWebservice(serverUrl, createdAuthWebservice, this)
+            val createdUserWebservice = createUserWebservice(serverUrl, createdAuthWebservice, this)
 
-            val newUser = userWebservice.requestUser().resultOrThrowException()
+            withContext(Dispatchers.Main) {
+                authWebservice.value = createdAuthWebservice
+                userWebservice.value = createdUserWebservice
+            }
+
+            val newUser = createdUserWebservice.requestUser().resultOrThrowException()
             localRepository.insertUser(newUser)
 
             loggedInUser = newUser
@@ -296,12 +282,13 @@ class UserManager(private val applicationContext: Context, private val localRepo
             val serverUrl = loggedInStateStorage?.serverUrl?.value ?: throw IllegalStateException("The server url is null!")
             val username = loggedInStateStorage?.username?.value ?: throw IllegalStateException("The username is null!")
 
-            val createdAuthWebservice = authWebservice ?: createAuthWebservice(serverUrl, username, masterPassword)
-            val createdUserWebservice = userWebservice ?: createUserWebservice(serverUrl, createdAuthWebservice, this)
+            val createdAuthWebservice = authWebservice.value ?: createAuthWebservice(serverUrl, username, masterPassword)
+            val createdUserWebservice = userWebservice.value ?: createUserWebservice(serverUrl, createdAuthWebservice, this)
 
-            // If everything worked, apply to fields
-            this.authWebservice = createdAuthWebservice
-            this.userWebservice = createdUserWebservice
+            withContext(Dispatchers.Main) {
+                authWebservice.value = createdAuthWebservice
+                userWebservice.value = createdUserWebservice
+            }
         } catch (exception: Exception) {
             Logger.warn(exception, "The webservices could not be restored")
         }
@@ -320,8 +307,11 @@ class UserManager(private val applicationContext: Context, private val localRepo
     }
 
     suspend fun reinitializeAuthWebservice(masterPassword: String) {
-        authWebservice = null
-        userWebservice = null
+        withContext(Dispatchers.Main) {
+            authWebservice.value = null
+            userWebservice.value = null
+        }
+
         restoreWebservices(masterPassword)
     }
 
@@ -425,7 +415,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
     }
 
     private fun createSynchronizationTasks(): List<SynchronizationTask> {
-        val userWebservice = userWebservice ?: throw IllegalStateException("The user webservice is not initialized!")
+        val userWebservice = userWebservice.value ?: throw IllegalStateException("The user webservice is not initialized!")
         val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is not initialized!")
 
         return listOf(
@@ -449,8 +439,10 @@ class UserManager(private val applicationContext: Context, private val localRepo
     private suspend fun resetLoggedInUser() {
         Logger.debug("Reset all data of user")
 
-        authWebservice = null
-        userWebservice = null
+        withContext(Dispatchers.Main) {
+            authWebservice.value = null
+            userWebservice.value = null
+        }
 
         loggedInUser = null
 
