@@ -14,9 +14,11 @@ import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.toUTF8String
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 import javax.crypto.Cipher
 
@@ -121,8 +123,11 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
                 delay(lockTimeout * DateUtils.SECOND_IN_MILLIS)
                 Logger.debug("Lock screen")
 
-                // Be sure all UI is hidden behind the lock screen before clear crypto resources
-                lockScreenState.postValue(LockScreenState.Locked)
+                withContext(Dispatchers.Main) {
+                    // Be sure all UI is hidden behind the lock screen before clear crypto resources
+                    lockScreenState.value = LockScreenState.Locked
+                }
+
                 loggedInUserViewModel?.clearSensibleData()
             }
         } else {

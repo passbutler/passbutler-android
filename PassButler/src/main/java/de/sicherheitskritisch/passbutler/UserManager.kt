@@ -114,7 +114,10 @@ class UserManager(private val applicationContext: Context, private val localRepo
             localRepository.insertUser(newUser)
 
             loggedInUser = newUser
-            loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(newUser, masterPassword))
+
+            withContext(Dispatchers.Main) {
+                loggedInUserResult.value = LoggedInUserResult.PerformedLogin(newUser, masterPassword)
+            }
 
             Success(Unit)
         } catch (exception: Exception) {
@@ -170,7 +173,10 @@ class UserManager(private val applicationContext: Context, private val localRepo
             localRepository.insertUser(newUser)
 
             loggedInUser = newUser
-            loggedInUserResult.postValue(LoggedInUserResult.PerformedLogin(newUser, masterPassword))
+
+            withContext(Dispatchers.Main) {
+                loggedInUserResult.value = LoggedInUserResult.PerformedLogin(newUser, masterPassword)
+            }
 
             Success(Unit)
         } catch (exception: Exception) {
@@ -263,9 +269,13 @@ class UserManager(private val applicationContext: Context, private val localRepo
                 loggedInStateStorage = restoredLoggedInStateStorage
                 loggedInUser = restoredLoggedInUser
 
-                loggedInUserResult.postValue(LoggedInUserResult.RestoredLogin(restoredLoggedInUser))
+                withContext(Dispatchers.Main) {
+                    loggedInUserResult.value = LoggedInUserResult.RestoredLogin(restoredLoggedInUser)
+                }
             } else {
-                loggedInUserResult.postValue(null)
+                withContext(Dispatchers.Main) {
+                    loggedInUserResult.value = null
+                }
             }
         } else {
             Logger.debug("Restore is not needed because already restored")
@@ -430,7 +440,10 @@ class UserManager(private val applicationContext: Context, private val localRepo
         Logger.debug("Logout user")
 
         resetLoggedInUser()
-        loggedInUserResult.postValue(null)
+
+        withContext(Dispatchers.Main) {
+            loggedInUserResult.value = null
+        }
     }
 
     private suspend fun resetLoggedInUser() {
