@@ -33,13 +33,8 @@ import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
 import de.sicherheitskritisch.passbutler.database.remoteChangedItems
-import de.sicherheitskritisch.passbutler.database.requestItemAuthorizationList
-import de.sicherheitskritisch.passbutler.database.requestItemList
-import de.sicherheitskritisch.passbutler.database.requestPublicUserList
-import de.sicherheitskritisch.passbutler.database.requestUser
-import de.sicherheitskritisch.passbutler.database.updateItemAuthorizationList
-import de.sicherheitskritisch.passbutler.database.updateItemList
-import de.sicherheitskritisch.passbutler.database.updateUser
+import de.sicherheitskritisch.passbutler.database.requestWithResult
+import de.sicherheitskritisch.passbutler.database.requestWithoutResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -96,7 +91,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
                 userWebservice.value = createdUserWebservice
             }
 
-            val newUser = createdUserWebservice.requestUser().resultOrThrowException()
+            val newUser = createdUserWebservice.requestWithResult { getUserDetails() }.resultOrThrowException()
             localRepository.insertUser(newUser)
 
             loggedInUser = newUser
@@ -546,7 +541,7 @@ private class UsersSynchronizationTask(
                 }
 
                 val remoteUsersDeferred = async {
-                    userWebservice.requestPublicUserList().resultOrThrowException()
+                    userWebservice.requestWithResult { getUsers() }.resultOrThrowException()
                 }
 
                 // Only update the other users, not the logged-in user
@@ -580,7 +575,7 @@ private class UserDetailsSynchronizationTask(
         return try {
             coroutineScope {
                 val localUser = loggedInUser
-                val remoteUser = userWebservice.requestUser().resultOrThrowException()
+                val remoteUser = userWebservice.requestWithResult { getUserDetails() }.resultOrThrowException()
                 val differentiationResult = Differentiation.collectChanges(listOf(localUser), listOf(remoteUser))
 
                 when {
@@ -590,7 +585,7 @@ private class UserDetailsSynchronizationTask(
                     }
                     differentiationResult.modifiedItemsForRemote.isNotEmpty() -> {
                         Logger.debug("Update remote user because local user was lastly modified")
-                        userWebservice.updateUser(localUser)
+                        userWebservice.requestWithoutResult { setUserDetails(localUser) }
                     }
                     else -> {
                         Logger.debug("No update needed because local and remote user are equal")
@@ -614,7 +609,7 @@ private class ItemsSynchronizationTask(
         return try {
             coroutineScope {
                 val localItemsDeferred = async { localRepository.findAllItems() }
-                val remoteItemsDeferred = async { userWebservice.requestItemList().resultOrThrowException() }
+                val remoteItemsDeferred = async { userWebservice.requestWithResult { getUserItems() }.resultOrThrowException() }
 
                 val localItems = localItemsDeferred.await()
                 val remoteItems = remoteItemsDeferred.await()
@@ -631,7 +626,7 @@ private class ItemsSynchronizationTask(
 
                 // Update remote webservice if necessary
                 if (remoteChangedItems.isNotEmpty()) {
-                    userWebservice.updateItemList(remoteChangedItems).resultOrThrowException()
+                    userWebservice.requestWithoutResult { setUserItems(remoteChangedItems) }.resultOrThrowException()
                 }
 
                 Success(differentiationResult)
@@ -651,7 +646,7 @@ private class ItemAuthorizationsSynchronizationTask(
         return try {
             coroutineScope {
                 val localItemAuthorizationsDeferred = async { localRepository.findAllItemAuthorizations() }
-                val remoteItemAuthorizationsDeferred = async { userWebservice.requestItemAuthorizationList().resultOrThrowException() }
+                val remoteItemAuthorizationsDeferred = async { userWebservice.requestWithResult { getUserItemAuthorizations() }.resultOrThrowException() }
 
                 val localItemAuthorizations = localItemAuthorizationsDeferred.await()
                 val remoteItemAuthorizations = remoteItemAuthorizationsDeferred.await()
@@ -668,7 +663,7 @@ private class ItemAuthorizationsSynchronizationTask(
 
                 // Update remote webservice if necessary
                 if (remoteChangedItemAuthorizations.isNotEmpty()) {
-                    userWebservice.updateItemAuthorizationList(remoteChangedItemAuthorizations).resultOrThrowException()
+                    userWebservice.requestWithoutResult { setUserItemAuthorizations(remoteChangedItemAuthorizations) }.resultOrThrowException()
                 }
 
                 Success(differentiationResult)

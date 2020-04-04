@@ -110,7 +110,7 @@ interface AuthWebservice {
 }
 
 interface UserWebservice {
-    @GET("/$API_VERSION_PREFIX/register")
+    @PUT("/$API_VERSION_PREFIX/register")
     suspend fun registerUser(@Body user: User): Response<Unit>
 
     @GET("/$API_VERSION_PREFIX/users")
@@ -294,100 +294,12 @@ interface UserWebservice {
     }
 }
 
-suspend fun UserWebservice?.registerUser(user: User): Result<Unit> {
-    val userWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val response = userWebservice?.registerUser(user)
-            response.completeRequestWithoutResult()
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
-    }
+suspend fun <T : Any> UserWebservice.requestWithResult(block: suspend UserWebservice.() -> Response<T>): Result<T> {
+    return block(this).completeRequestWithResult()
 }
 
-suspend fun UserWebservice?.requestPublicUserList(): Result<List<User>> {
-    val userWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val response = userWebservice?.getUsers()
-            response.completeRequestWithResult()
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
-    }
-}
-
-suspend fun UserWebservice?.requestUser(): Result<User> {
-    val userWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val response = userWebservice?.getUserDetails()
-            response.completeRequestWithResult()
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
-    }
-}
-
-suspend fun UserWebservice?.updateUser(user: User): Result<Unit> {
-    val userWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val response = userWebservice?.setUserDetails(user)
-            response.completeRequestWithoutResult()
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
-    }
-}
-
-suspend fun UserWebservice?.requestItemAuthorizationList(): Result<List<ItemAuthorization>> {
-    val userWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val response = userWebservice?.getUserItemAuthorizations()
-            response.completeRequestWithResult()
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
-    }
-}
-
-suspend fun UserWebservice?.updateItemAuthorizationList(itemAuthorizations: List<ItemAuthorization>): Result<Unit> {
-    val userWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val response = userWebservice?.setUserItemAuthorizations(itemAuthorizations)
-            response.completeRequestWithoutResult()
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
-    }
-}
-
-suspend fun UserWebservice?.requestItemList(): Result<List<Item>> {
-    val userWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val response = userWebservice?.getUserItems()
-            response.completeRequestWithResult()
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
-    }
-}
-
-suspend fun UserWebservice?.updateItemList(items: List<Item>): Result<Unit> {
-    val userWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val response = userWebservice?.setUserItems(items)
-            response.completeRequestWithoutResult()
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
-    }
+suspend fun UserWebservice.requestWithoutResult(block: suspend UserWebservice.() -> Response<Unit>): Result<Unit> {
+    return block(this).completeRequestWithoutResult()
 }
 
 private fun Request.applyTokenAuthorizationHeader(token: String): Request {
@@ -396,22 +308,25 @@ private fun Request.applyTokenAuthorizationHeader(token: String): Request {
         .build()
 }
 
-private fun <T> Response<T>?.completeRequestWithResult(): Result<T> {
-    val responseResult = this?.body()
+private fun <T> Response<T>.completeRequestWithResult(): Result<T> {
+    val responseResult = body()
+    val requestCode = code()
 
     return when {
-        this?.isSuccessful == true && responseResult != null -> Success(responseResult)
-        this?.code() == HTTP_UNAUTHORIZED -> Failure(RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}"))
-        this?.code() == HTTP_FORBIDDEN -> Failure(RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}"))
+        isSuccessful == true && responseResult != null -> Success(responseResult)
+        requestCode == HTTP_UNAUTHORIZED -> Failure(RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}"))
+        requestCode == HTTP_FORBIDDEN -> Failure(RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}"))
         else -> Failure(RequestFailedException("The request result could not be get ${this.technicalErrorDescription}"))
     }
 }
 
-private fun <T> Response<T>?.completeRequestWithoutResult(): Result<Unit> {
+private fun Response<Unit>.completeRequestWithoutResult(): Result<Unit> {
+    val requestCode = code()
+
     return when {
-        this?.isSuccessful == true -> Success(Unit)
-        this?.code() == HTTP_UNAUTHORIZED -> Failure(RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}"))
-        this?.code() == HTTP_FORBIDDEN -> Failure(RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}"))
+        isSuccessful == true -> Success(Unit)
+        requestCode == HTTP_UNAUTHORIZED -> Failure(RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}"))
+        requestCode == HTTP_FORBIDDEN -> Failure(RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}"))
         else -> Failure(RequestFailedException("The request result could not be get ${this.technicalErrorDescription}"))
     }
 }
