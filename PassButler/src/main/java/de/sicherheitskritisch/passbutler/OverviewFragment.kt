@@ -150,6 +150,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         updateToolbarJob?.cancel()
         updateToolbarJob = launch {
             while (isActive) {
+                Logger.debug("Update relative time in toolbar subtitle")
+
                 // Update relative time in toolbar every minute
                 updateToolbarSubtitle()
                 delay(DateUtils.MINUTE_IN_MILLIS)
@@ -163,8 +165,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 
     private fun updateToolbarSubtitle() {
-        Logger.debug("Update relative time in toolbar subtitle")
-
         binding?.toolbar?.apply {
             subtitle = if (viewModel.loggedInUserViewModel?.userType?.value == UserType.REMOTE) {
                 val newDate = viewModel.loggedInUserViewModel?.lastSuccessfulSyncDate?.value
