@@ -194,6 +194,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     private fun updateSwipeRefreshLayout() {
         binding?.layoutOverviewContent?.swipeRefreshLayout?.apply {
             if (viewModel.loggedInUserViewModel?.userType?.value == UserType.REMOTE) {
+                isEnabled = true
                 setOnRefreshListener {
                     if (viewModel.loggedInUserViewModel?.webservicesInitialized?.value == true) {
                         synchronizeData(userTriggered = true)
@@ -203,8 +204,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
                     }
                 }
             } else {
-                // Disable pull-to-refresh if synchronization is not visible
                 isEnabled = false
+                setOnRefreshListener(null)
             }
         }
     }
