@@ -30,11 +30,12 @@
         android:layout_marginTop="@dimen/spacingVerticalMedium"
         android:layout_marginEnd="@dimen/spacingHorizontalMedium"
         android:tint="?attr/colorOnPrimary"
+        app:layout_constraintBottom_toTopOf="@id/textView_drawer_header_title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0"
+        app:layout_constraintVertical_chainStyle="packed"
         app:srcCompat="@drawable/icon_drawer_icon"
         tools:ignore="ContentDescription" />
 
@@ -47,6 +48,7 @@
         android:layout_marginEnd="@dimen/spacingHorizontalMedium"
         android:text="@string/drawer_header_title"
         android:textAppearance="?attr/textAppearanceHeadline1"
+        app:layout_constraintBottom_toTopOf="@id/textView_drawer_header_subtitle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView_drawer_header_icon" />
@@ -58,6 +60,8 @@
         android:layout_marginStart="@dimen/spacingHorizontalMedium"
         android:layout_marginTop="@dimen/spacingVerticalSmall"
         android:layout_marginEnd="@dimen/spacingHorizontalMedium"
+        android:layout_marginBottom="@dimen/spacingHorizontalMedium"
+        app:layout_constraintBottom_toTopOf="@id/textView_drawer_header_usertype"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textView_drawer_header_title"
@@ -68,7 +72,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacingHorizontalMedium"
-        android:layout_marginTop="@dimen/spacingVerticalMedium"
         android:layout_marginEnd="@dimen/spacingHorizontalMedium"
         android:layout_marginBottom="@dimen/spacingHorizontalMedium"
         android:background="?selectableItemBackground"
