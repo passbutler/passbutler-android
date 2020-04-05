@@ -4,8 +4,6 @@ import android.app.Application
 import android.net.Uri
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.Result
-import de.sicherheitskritisch.passbutler.base.Success
-import de.sicherheitskritisch.passbutler.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 
 class RegisterLocalUserViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
