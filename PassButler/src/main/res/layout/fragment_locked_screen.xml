@@ -38,7 +38,7 @@
                 android:layout_height="0dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/background_mesh_polygons"
-                android:tint="?attr/colorBackgroundImageTint"
+                android:tint="?colorBackgroundImageTint"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -73,7 +73,7 @@
                         android:layout_marginTop="?marginM"
                         android:text="@string/locked_screen_header"
                         android:textAlignment="center"
-                        android:textAppearance="?attr/textAppearanceHeadline1" />
+                        android:textAppearance="?textAppearanceHeadline1" />
 
                     <TextView
                         android:id="@+id/textView_description"
@@ -82,7 +82,7 @@
                         android:layout_marginTop="?marginM"
                         android:text="@string/locked_screen_description_password"
                         android:textAlignment="center"
-                        android:textAppearance="?attr/textAppearanceBody1" />
+                        android:textAppearance="?textAppearanceBody1" />
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/textInputLayout_master_password"
@@ -132,7 +132,7 @@
                         android:layout_marginTop="?marginS"
                         android:text="@string/locked_screen_button_biometric_disabled_hint_text"
                         android:textAlignment="center"
-                        android:textAppearance="?attr/textAppearanceCaption"
+                        android:textAppearance="?textAppearanceCaption"
                         android:visibility="@{safeUnbox(userViewModel.biometricUnlockAvailable) &amp;&amp; safeUnbox(userViewModel.biometricUnlockEnabled) == false ? View.VISIBLE : View.GONE}" />
 
                 </LinearLayout>

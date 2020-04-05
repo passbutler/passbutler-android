@@ -7,7 +7,7 @@
         android:icon="@drawable/icon_delete_24dp"
         android:orderInCategory="1"
         android:title="@string/itemdetail_delete_button_title"
-        app:iconTint="?attr/colorControlNormal"
+        app:iconTint="?colorControlNormal"
         app:showAsAction="ifRoom" />
 
     <item
@@ -15,7 +15,7 @@
         android:icon="@drawable/icon_done_24dp"
         android:orderInCategory="2"
         android:title="@string/itemdetail_save_button_title"
-        app:iconTint="?attr/colorControlNormal"
+        app:iconTint="?colorControlNormal"
         app:showAsAction="always" />
 
 </menu>
