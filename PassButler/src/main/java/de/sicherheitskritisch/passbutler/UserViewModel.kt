@@ -147,7 +147,7 @@ class UserViewModel private constructor(
         }
     }
 
-    private suspend fun decryptMasterEncryptionKey(masterPassword: String): Result<ByteArray> {
+    suspend fun decryptMasterEncryptionKey(masterPassword: String): Result<ByteArray> {
         var masterKey: ByteArray? = null
 
         return try {

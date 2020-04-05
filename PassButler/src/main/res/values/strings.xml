@@ -44,6 +44,7 @@
 
     <string name="register_local_user_successful_message">Registrierung erfolgreich</string>
 
+    <string name="register_local_user_failed_wrong_master_password_title">Master-Passwort ist nicht korrekt</string>
     <string name="register_local_user_failed_general_title">Registrierung hat nicht geklappt</string>
     <string name="register_local_user_failed_forbidden_title">Registrierung auf Server nicht erlaubt oder Benutzerkonto ist bereits vorhanden</string>
 
