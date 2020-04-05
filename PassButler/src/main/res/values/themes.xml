@@ -21,6 +21,14 @@
         <item name="textAppearanceHeadline1">@style/TextAppearance.PassButler.Headline1</item>
         <item name="textAppearanceHeadline2">@style/TextAppearance.PassButler.Headline2</item>
 
+        <!-- Margins -->
+
+        <item name="marginXS">@dimen/marginXS</item>
+        <item name="marginS">@dimen/marginS</item>
+        <item name="marginM">@dimen/marginM</item>
+        <item name="marginL">@dimen/marginL</item>
+        <item name="marginXL">@dimen/marginXL</item>
+
     </style>
 
 </resources>
