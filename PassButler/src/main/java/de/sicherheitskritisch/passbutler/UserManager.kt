@@ -207,7 +207,6 @@ class UserManager(private val applicationContext: Context, private val localRepo
         return protectedUserSettings
     }
 
-    /*
     suspend fun registerLocalUser(serverUrl: Uri, masterPassword: String): Result<Unit> {
         return try {
             val loggedInStateStorage = loggedInStateStorage ?: throw IllegalStateException("The LoggedInStateStorage is not initialized!")
@@ -217,14 +216,16 @@ class UserManager(private val applicationContext: Context, private val localRepo
             val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword)
             val createdUserWebservice = createUserWebservice(serverUrl, createdAuthWebservice, this)
 
-            createdUserWebservice.registerUser(loggedInUser).resultOrThrowException()
+            createdUserWebservice.requestWithoutResult { registerUser(loggedInUser) }.resultOrThrowException()
 
-            // TODO If everything worked, apply to fields
+            withContext(Dispatchers.Main) {
+                authWebservice.value = createdAuthWebservice
+                userWebservice.value = createdUserWebservice
 
-            authWebservice = createdAuthWebservice
-            userWebservice = createdUserWebservice
+                loggedInStateStorage.userType.value = UserType.REMOTE
+                loggedInStateStorage.serverUrl.value = serverUrl
+            }
 
-            loggedInStateStorage.userType = UserType.Remote(username, serverUrl, null, null)
             loggedInStateStorage.persist()
 
             Success(Unit)
@@ -232,7 +233,6 @@ class UserManager(private val applicationContext: Context, private val localRepo
             Failure(exception)
         }
     }
-    */
 
     suspend fun restoreLoggedInUser() {
         if (loggedInUser == null) {

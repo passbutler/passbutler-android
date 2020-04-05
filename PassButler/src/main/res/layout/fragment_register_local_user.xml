@@ -63,10 +63,31 @@
                     android:id="@+id/textInputEditText_serverurl"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/login_serverurl_hint"
+                    android:hint="@string/register_local_user_serverurl_hint"
                     android:imeOptions="actionNext"
                     android:importantForAutofill="no"
                     android:inputType="textUri" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayout_master_password"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacingHorizontalMedium"
+                android:layout_marginEnd="@dimen/spacingHorizontalMedium"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayout_serverurl">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textInputEditText_master_password"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/register_local_user_password_hint"
+                    android:imeOptions="actionUnspecified"
+                    android:importantForAutofill="no"
+                    android:inputType="textPassword" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -75,16 +96,15 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacingHorizontalMedium"
-                android:layout_marginTop="@dimen/spacingVerticalSmall"
+                android:layout_marginTop="@dimen/spacingVerticalMedium"
                 android:layout_marginEnd="@dimen/spacingHorizontalMedium"
                 android:layout_marginBottom="@dimen/spacingVerticalMedium"
                 android:text="@string/register_local_user_button_text"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textInputLayout_serverurl"
-                app:layout_constraintVertical_bias="0.0"
-                app:layout_constraintVertical_chainStyle="packed" />
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayout_master_password"
+                app:layout_constraintVertical_bias="0.0" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

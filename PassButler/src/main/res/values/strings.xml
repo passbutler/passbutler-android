@@ -21,7 +21,7 @@
 
     <string name="login_serverurl_hint">Server URL</string>
     <string name="login_username_hint">Benutzername</string>
-    <string name="login_password_hint">Passwort</string>
+    <string name="login_password_hint">Master-Passwort</string>
 
     <string name="login_local_login_label">Lokales Benutzerkonto</string>
 
@@ -36,6 +36,9 @@
 
     <string name="register_local_user_header">Lokales Benutzerkonto registrieren</string>
     <string name="register_local_user_description">Damit das lokale Benutzerkonto zwischen mehreren Geräten synchronisiert werden kann, muss das Konto auf einem Pass Butler-Server registriert werden.</string>
+
+    <string name="register_local_user_serverurl_hint">Server URL</string>
+    <string name="register_local_user_password_hint">Master-Passwort</string>
 
     <string name="register_local_user_button_text">Registrieren</string>
 
@@ -79,7 +82,7 @@
     <string name="drawer_menu_item_overview">Übersicht</string>
     <string name="drawer_menu_item_settings">Einstellungen</string>
     <string name="drawer_menu_item_about">Über / Lizenz</string>
-    <string name="drawer_menu_item_logout">Ausloggen</string>
+    <string name="drawer_menu_item_logout">Abmelden</string>
 
     <string name="drawer_menu_category_external_links">Externe Links</string>
     <string name="drawer_menu_item_homepage">Sicherheitskritisch.de</string>

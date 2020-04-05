@@ -10,6 +10,7 @@ import android.webkit.URLUtil
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import de.sicherheitskritisch.passbutler.base.BuildType
+import de.sicherheitskritisch.passbutler.base.DebugConstants
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
@@ -25,6 +26,7 @@ import kotlinx.coroutines.Job
 class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() {
 
     private var formServerUrl: String? = null
+    private var formMasterPassword: String? = null
 
     private var binding: FragmentRegisterLocalUserBinding? = null
 
@@ -44,6 +46,7 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
         super.onCreate(savedInstanceState)
 
         formServerUrl = savedInstanceState?.getString(FORM_FIELD_SERVERURL)
+        formMasterPassword = savedInstanceState?.getString(FORM_FIELD_MASTER_PASSWORD)
     }
 
     override fun getToolBarTitle() = getString(R.string.register_local_user_title)
@@ -60,6 +63,7 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
 
     private fun applyRestoredViewStates(binding: FragmentRegisterLocalUserBinding) {
         formServerUrl?.let { binding.textInputEditTextServerurl.setText(it) }
+        formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
     }
 
     override fun onStart() {
@@ -67,6 +71,7 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
 
         binding?.let {
             setupRegisterButton(it)
+            setupDebugPresetsButton(it)
         }
     }
 
@@ -85,6 +90,11 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
                         FormFieldValidator.Rule({ !URLUtil.isValidUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid)),
                         FormFieldValidator.Rule({ !URLUtil.isHttpsUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid_scheme)).takeIf { BuildType.isReleaseBuild }
                     )
+                ),
+                FormFieldValidator(
+                    binding.textInputLayoutMasterPassword,binding.textInputEditTextMasterPassword, listOf(
+                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_password_validation_error_empty))
+                    )
                 )
             )
         )
@@ -96,9 +106,10 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
                 Keyboard.hideKeyboard(context, this)
 
                 val serverUrl = binding.textInputEditTextServerurl.text?.toString()
+                val masterPassword = binding.textInputEditTextMasterPassword.text?.toString()
 
-                if (serverUrl != null) {
-                    registerUser(serverUrl)
+                if (serverUrl != null && masterPassword != null) {
+                    registerUser(serverUrl, masterPassword)
                 }
             }
             is FormValidationResult.Invalid -> {
@@ -107,7 +118,7 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
         }
     }
 
-    private fun registerUser(serverUrl: String) {
+    private fun registerUser(serverUrl: String, masterPassword: String) {
         registerRequestSendingJob?.cancel()
         registerRequestSendingJob = launchRequestSending(
             handleSuccess = {
@@ -123,12 +134,22 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
                 showError(getString(errorStringResourceId))
             }
         ) {
-            viewModel.registerLocalUser(serverUrl)
+            viewModel.registerLocalUser(serverUrl, masterPassword)
         }
     }
 
     private fun removeFormFieldsFocus() {
         binding?.constraintLayoutRootContainer?.requestFocus()
+    }
+
+    private fun setupDebugPresetsButton(binding: FragmentRegisterLocalUserBinding) {
+        if (BuildType.isDebugBuild) {
+            binding.textViewHeader.setOnLongClickListener {
+                binding.textInputEditTextServerurl.setText(DebugConstants.TEST_SERVERURL)
+                binding.textInputEditTextMasterPassword.setText(DebugConstants.TEST_PASSWORD)
+                true
+            }
+        }
     }
 
     override fun onStop() {
@@ -140,12 +161,14 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString(FORM_FIELD_SERVERURL, binding?.textInputEditTextServerurl?.text?.toString())
+        outState.putString(FORM_FIELD_MASTER_PASSWORD, binding?.textInputEditTextMasterPassword?.text?.toString())
 
         super.onSaveInstanceState(outState)
     }
 
     companion object {
         private const val FORM_FIELD_SERVERURL = "FORM_FIELD_SERVERURL"
+        private const val FORM_FIELD_MASTER_PASSWORD = "FORM_FIELD_MASTER_PASSWORD"
 
         fun newInstance() = RegisterLocalUserFragment()
     }
