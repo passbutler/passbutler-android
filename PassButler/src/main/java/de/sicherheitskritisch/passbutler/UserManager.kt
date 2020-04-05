@@ -46,16 +46,16 @@ import java.util.*
 class UserManager(private val applicationContext: Context, private val localRepository: LocalRepository) {
 
     val userType: LiveData<UserType?>
-        get() = loggedInStateStorage?.userType ?: throw IllegalStateException("Access of uninitialized LoggedInStateStorage!")
+        get() = loggedInStateStorage?.userType ?: throw LoggedInStateStorageUninitializedException
 
     val encryptedMasterPassword: LiveData<EncryptedValue?>
-        get() = loggedInStateStorage?.encryptedMasterPassword ?: throw IllegalStateException("Access of uninitialized LoggedInStateStorage!")
+        get() = loggedInStateStorage?.encryptedMasterPassword ?: throw LoggedInStateStorageUninitializedException
 
     val authToken: LiveData<AuthToken?>
-        get() = loggedInStateStorage?.authToken ?: throw IllegalStateException("Access of uninitialized LoggedInStateStorage!")
+        get() = loggedInStateStorage?.authToken ?: throw LoggedInStateStorageUninitializedException
 
     val lastSuccessfulSyncDate: LiveData<Date?>
-        get() = loggedInStateStorage?.lastSuccessfulSyncDate ?: throw IllegalStateException("Access of uninitialized LoggedInStateStorage!")
+        get() = loggedInStateStorage?.lastSuccessfulSyncDate ?: throw LoggedInStateStorageUninitializedException
 
     val loggedInUserResult = MutableLiveData<LoggedInUserResult?>()
 
@@ -209,7 +209,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
 
     suspend fun registerLocalUser(serverUrl: Uri, masterPassword: String): Result<Unit> {
         return try {
-            val loggedInStateStorage = loggedInStateStorage ?: throw IllegalStateException("The LoggedInStateStorage is not initialized!")
+            val loggedInStateStorage = loggedInStateStorage ?: throw LoggedInStateStorageUninitializedException
             val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is not initialized!")
             val username = loggedInUser.username
 
@@ -311,7 +311,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
     }
 
     suspend fun updateAuthToken(authToken: AuthToken?) {
-        val loggedInStateStorage = loggedInStateStorage ?: throw IllegalStateException("The LoggedInStateStorage is not initialized!")
+        val loggedInStateStorage = loggedInStateStorage ?: throw LoggedInStateStorageUninitializedException
 
         withContext(Dispatchers.Main) {
             loggedInStateStorage.authToken.value = authToken
@@ -321,7 +321,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
     }
 
     suspend fun updateEncryptedMasterPassword(encryptedMasterPassword: EncryptedValue?) {
-        val loggedInStateStorage = loggedInStateStorage ?: throw IllegalStateException("The LoggedInStateStorage is not initialized!")
+        val loggedInStateStorage = loggedInStateStorage ?: throw LoggedInStateStorageUninitializedException
 
         withContext(Dispatchers.Main) {
             loggedInStateStorage.encryptedMasterPassword.value = encryptedMasterPassword
@@ -673,3 +673,5 @@ private class ItemAuthorizationsSynchronizationTask(
         }
     }
 }
+
+object LoggedInStateStorageUninitializedException : IllegalStateException("Access of uninitialized LoggedInStateStorage!")
