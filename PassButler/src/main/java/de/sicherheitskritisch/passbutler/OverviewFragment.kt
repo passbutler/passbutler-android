@@ -178,7 +178,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
     private fun updateNavigationHeaderUserTypeView() {
         navigationHeaderUserTypeView?.apply {
-            if (viewModel.loggedInUserViewModel?.userType?.value == UserType.REMOTE) {
+            if (viewModel.loggedInUserViewModel?.userType?.value == UserType.LOCAL) {
                 visible = true
                 setOnClickListener {
                     closeDrawerDelayed()

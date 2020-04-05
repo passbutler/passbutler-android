@@ -3,6 +3,9 @@ package de.sicherheitskritisch.passbutler.ui
 import android.content.Context
 import android.util.TypedValue
 import android.view.View
+import androidx.annotation.AnyRes
+import androidx.annotation.AttrRes
+import androidx.annotation.ColorInt
 
 var View.visible: Boolean
     get() = visibility == View.VISIBLE
@@ -10,9 +13,22 @@ var View.visible: Boolean
         visibility = if (value) View.VISIBLE else View.GONE
     }
 
-fun Context.resolveThemeAttribute(attribute: Int): Int {
+/**
+ * Returns resolved theme attribute value (e.g. `ColorInt`)
+ */
+fun Context.resolveThemeAttributeData(@AttrRes attribute: Int): Int {
     val typedValue = TypedValue()
     theme.resolveAttribute(attribute, typedValue, true)
 
     return typedValue.data
+}
+
+/**
+ * Returns resolved theme attribute id (e.g. `ColorRes`)
+ */
+fun Context.resolveThemeAttributeId(@AttrRes attribute: Int): Int {
+    val typedValue = TypedValue()
+    theme.resolveAttribute(attribute, typedValue, true)
+
+    return typedValue.resourceId
 }

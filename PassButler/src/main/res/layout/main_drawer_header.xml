@@ -6,6 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:minHeight="180dp"
     android:theme="@style/ThemeOverlay.MaterialComponents.Dark">
 
     <ImageView
@@ -71,7 +72,7 @@
         android:layout_marginEnd="@dimen/spacingHorizontalMedium"
         android:layout_marginBottom="@dimen/spacingHorizontalMedium"
         android:background="?selectableItemBackground"
-        android:text="@string/drawer_header_usertype"
+        android:text="@string/drawer_header_usertype_local"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
