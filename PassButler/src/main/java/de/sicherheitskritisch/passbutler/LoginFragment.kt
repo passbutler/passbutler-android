@@ -118,12 +118,12 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
                     )
                 ).takeIf { !viewModel.isLocalLogin.value },
                 FormFieldValidator(
-                    binding.textInputLayoutUsername,binding.textInputEditTextUsername, listOf(
+                    binding.textInputLayoutUsername, binding.textInputEditTextUsername, listOf(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_username_validation_error_empty))
                     )
                 ),
                 FormFieldValidator(
-                    binding.textInputLayoutPassword,binding.textInputEditTextPassword, listOf(
+                    binding.textInputLayoutPassword, binding.textInputEditTextPassword, listOf(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_password_validation_error_empty))
                     )
                 )
