@@ -11,9 +11,9 @@
     <string name="form_serverurl_validation_error_empty">Server URL nicht ausgefüllt</string>
     <string name="form_serverurl_validation_error_invalid">Server URL nicht gültig</string>
     <string name="form_serverurl_validation_error_invalid_scheme">Server URL muss mit \"https://\" beginnen</string>
+    <string name="form_password_validation_error_empty">Passwort nicht ausgefüllt</string>
 
     <string name="login_username_validation_error_empty">Benutzername nicht ausgefüllt</string>
-    <string name="login_password_validation_error_empty">Passwort nicht ausgefüllt</string>
 
     <string name="locked_screen_password_validation_error_empty">Master-Passwort nicht ausgefüllt</string>
 

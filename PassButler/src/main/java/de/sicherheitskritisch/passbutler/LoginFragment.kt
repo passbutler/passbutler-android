@@ -124,7 +124,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
                 ),
                 FormFieldValidator(
                     binding.textInputLayoutPassword, binding.textInputEditTextPassword, listOf(
-                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_password_validation_error_empty))
+                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_password_validation_error_empty))
                     )
                 )
             )
