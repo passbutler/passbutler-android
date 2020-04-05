@@ -29,7 +29,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
 
     private var formServerUrl: String? = null
     private var formUsername: String? = null
-    private var formPassword: String? = null
+    private var formMasterPassword: String? = null
 
     private var binding: FragmentLoginBinding? = null
 
@@ -55,7 +55,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
 
         formServerUrl = savedInstanceState?.getString(FORM_FIELD_SERVERURL)
         formUsername = savedInstanceState?.getString(FORM_FIELD_USERNAME)
-        formPassword = savedInstanceState?.getString(FORM_FIELD_PASSWORD)
+        formMasterPassword = savedInstanceState?.getString(FORM_FIELD_MASTER_PASSWORD)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -72,7 +72,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
     private fun applyRestoredViewStates(binding: FragmentLoginBinding) {
         formServerUrl?.let { binding.textInputEditTextServerurl.setText(it) }
         formUsername?.let { binding.textInputEditTextUsername.setText(it) }
-        formPassword?.let { binding.textInputEditTextPassword.setText(it) }
+        formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
     }
 
     override fun onStart() {
@@ -90,7 +90,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
             binding.imageViewLogo.setOnLongClickListener {
                 binding.textInputEditTextServerurl.setText(DebugConstants.TEST_SERVERURL)
                 binding.textInputEditTextUsername.setText(DebugConstants.TEST_USERNAME)
-                binding.textInputEditTextPassword.setText(DebugConstants.TEST_PASSWORD)
+                binding.textInputEditTextMasterPassword.setText(DebugConstants.TEST_PASSWORD)
                 binding.checkBoxLocalLogin.isChecked = false
                 true
             }
@@ -123,8 +123,8 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
                     )
                 ),
                 FormFieldValidator(
-                    binding.textInputLayoutPassword, binding.textInputEditTextPassword, listOf(
-                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_password_validation_error_empty))
+                    binding.textInputLayoutMasterPassword, binding.textInputEditTextMasterPassword, listOf(
+                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_master_password_validation_error_empty))
                     )
                 )
             )
@@ -138,10 +138,10 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
 
                 val serverUrl = binding.textInputEditTextServerurl.text?.toString()?.takeIf { !viewModel.isLocalLogin.value }
                 val username = binding.textInputEditTextUsername.text?.toString()
-                val password = binding.textInputEditTextPassword.text?.toString()
+                val masterPassword = binding.textInputEditTextMasterPassword.text?.toString()
 
-                if (username != null && password != null) {
-                    loginUser(serverUrl, username, password)
+                if (username != null && masterPassword != null) {
+                    loginUser(serverUrl, username, masterPassword)
                 }
             }
             is FormValidationResult.Invalid -> {
@@ -150,7 +150,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
         }
     }
 
-    private fun loginUser(serverUrl: String?, username: String, password: String) {
+    private fun loginUser(serverUrl: String?, username: String, masterPassword: String) {
         loginRequestSendingJob?.cancel()
         loginRequestSendingJob = launchRequestSending(
             handleFailure = {
@@ -163,7 +163,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
             },
             isCancellable = false
         ) {
-            viewModel.loginUser(serverUrl, username, password)
+            viewModel.loginUser(serverUrl, username, masterPassword)
         }
     }
 
@@ -181,7 +181,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString(FORM_FIELD_SERVERURL, binding?.textInputEditTextServerurl?.text?.toString())
         outState.putString(FORM_FIELD_USERNAME, binding?.textInputEditTextUsername?.text?.toString())
-        outState.putString(FORM_FIELD_PASSWORD, binding?.textInputEditTextPassword?.text?.toString())
+        outState.putString(FORM_FIELD_MASTER_PASSWORD, binding?.textInputEditTextMasterPassword?.text?.toString())
 
         super.onSaveInstanceState(outState)
     }
@@ -189,7 +189,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
     companion object {
         private const val FORM_FIELD_SERVERURL = "FORM_FIELD_SERVERURL"
         private const val FORM_FIELD_USERNAME = "FORM_FIELD_USERNAME"
-        private const val FORM_FIELD_PASSWORD = "FORM_FIELD_PASSWORD"
+        private const val FORM_FIELD_MASTER_PASSWORD = "FORM_FIELD_MASTER_PASSWORD"
 
         fun newInstance() = LoginFragment()
     }

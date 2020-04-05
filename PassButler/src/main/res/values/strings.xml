@@ -11,7 +11,7 @@
     <string name="form_serverurl_validation_error_empty">Server URL nicht ausgefüllt</string>
     <string name="form_serverurl_validation_error_invalid">Server URL nicht gültig</string>
     <string name="form_serverurl_validation_error_invalid_scheme">Server URL muss mit \"https://\" beginnen</string>
-    <string name="form_password_validation_error_empty">Passwort nicht ausgefüllt</string>
+    <string name="form_master_password_validation_error_empty">Master-Passwort nicht ausgefüllt</string>
 
     <string name="login_username_validation_error_empty">Benutzername nicht ausgefüllt</string>
 
@@ -21,7 +21,7 @@
 
     <string name="login_serverurl_hint">Server URL</string>
     <string name="login_username_hint">Benutzername</string>
-    <string name="login_password_hint">Master-Passwort</string>
+    <string name="login_master_password_hint">Master-Passwort</string>
 
     <string name="login_local_login_label">Lokales Benutzerkonto</string>
 
@@ -38,7 +38,7 @@
     <string name="register_local_user_description">Damit das lokale Benutzerkonto zwischen mehreren Geräten synchronisiert werden kann, muss das Konto auf einem Pass Butler-Server registriert werden.</string>
 
     <string name="register_local_user_serverurl_hint">Server URL</string>
-    <string name="register_local_user_password_hint">Master-Passwort</string>
+    <string name="register_local_user_master_password_hint">Master-Passwort</string>
 
     <string name="register_local_user_button_text">Registrieren</string>
 
@@ -52,7 +52,7 @@
     <string name="locked_screen_header">Pass Butler ist gesperrt</string>
     <string name="locked_screen_description_password">Bitte entsperren Sie Pass Butler mit den folgenden Möglichkeiten:</string>
 
-    <string name="locked_screen_password_hint">Master-Passwort</string>
+    <string name="locked_screen_master_password_hint">Master-Passwort</string>
 
     <string name="locked_screen_button_password_text">Entsperren mit Passwort</string>
 

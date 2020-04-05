@@ -85,16 +85,16 @@
                         android:textAppearance="?attr/textAppearanceBody1" />
 
                     <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/textInputLayout_password"
+                        android:id="@+id/textInputLayout_master_password"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/spacingVerticalMedium">
 
                         <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/textInputEditText_password"
+                            android:id="@+id/textInputEditText_master_password"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="@string/locked_screen_password_hint"
+                            android:hint="@string/locked_screen_master_password_hint"
                             android:imeOptions="actionUnspecified"
                             android:importantForAutofill="no"
                             android:inputType="textPassword" />
