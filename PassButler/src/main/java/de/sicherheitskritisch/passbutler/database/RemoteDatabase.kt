@@ -189,8 +189,10 @@ interface UserWebservice {
                     actualRequest.applyTokenAuthorizationHeader(newAuthToken.token)
                 }
                 is Failure -> {
-                    Logger.warn(newAuthTokenResult.throwable, "The new token could not be requested")
-                    actualRequest
+                    Logger.warn(newAuthTokenResult.throwable, "The new token could not be requested - authentication failed")
+
+                    // Give up here to avoid infinite re-authentication loop
+                    null
                 }
             }
         }
@@ -294,7 +296,7 @@ interface UserWebservice {
     }
 }
 
-suspend fun <T : Any> UserWebservice.requestWithResult(block: suspend UserWebservice.() -> Response<T>): Result<T> {
+suspend fun <T> UserWebservice.requestWithResult(block: suspend UserWebservice.() -> Response<T>): Result<T> {
     return block(this).completeRequestWithResult()
 }
 
