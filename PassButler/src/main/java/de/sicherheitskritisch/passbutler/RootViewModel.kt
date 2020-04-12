@@ -50,7 +50,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     suspend fun unlockScreenWithPassword(masterPassword: String): Result<Unit> {
-        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
         val decryptSensibleDataResult = loggedInUserViewModel.decryptSensibleData(masterPassword)
 
         if (decryptSensibleDataResult is Success && loggedInUserViewModel.userType.value == UserType.REMOTE) {
@@ -82,7 +82,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     suspend fun unlockScreenWithBiometrics(initializedBiometricUnlockCipher: Cipher): Result<Unit> {
-        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
         val encryptedMasterPassword = loggedInUserViewModel.encryptedMasterPassword.value?.encryptedValue
             ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
 
@@ -188,3 +188,5 @@ fun getRootViewModel(activity: FragmentActivity): RootViewModel {
     // The `RootViewModel` must be received via activity to be sure it is the same for multiple fragment lifecycles
     return ViewModelProvider(activity).get(RootViewModel::class.java)
 }
+
+object LoggedInUserViewModelUninitializedException : IllegalStateException("The logged-in user viewmodel is null!")

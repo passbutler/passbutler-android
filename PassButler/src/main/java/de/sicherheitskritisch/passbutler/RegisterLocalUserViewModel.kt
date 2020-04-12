@@ -12,7 +12,7 @@ class RegisterLocalUserViewModel(application: Application) : CoroutineScopeAndro
 
     suspend fun registerLocalUser(serverUrlString: String, masterPassword: String): Result<Unit> {
         val userManager = rootViewModel.userManager
-        val loggedInUserViewModel = rootViewModel.loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
+        val loggedInUserViewModel = rootViewModel.loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
 
         // Check the given master password locally to avoid the auth webservice is initialized with non-working authentication
         val masterPasswordTestResult = loggedInUserViewModel.decryptMasterEncryptionKey(masterPassword)

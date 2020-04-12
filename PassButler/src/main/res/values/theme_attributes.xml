@@ -3,4 +3,10 @@
 
     <attr name="colorBackgroundImageTint" format="reference|color" />
 
+    <attr name="marginXS" format="reference|dimension" />
+    <attr name="marginS" format="reference|dimension" />
+    <attr name="marginM" format="reference|dimension" />
+    <attr name="marginL" format="reference|dimension" />
+    <attr name="marginXL" format="reference|dimension" />
+
 </resources>

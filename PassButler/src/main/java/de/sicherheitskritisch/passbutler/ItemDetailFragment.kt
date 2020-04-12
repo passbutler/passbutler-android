@@ -55,7 +55,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
         activity?.let {
             val rootViewModel = getRootViewModel(it)
-            val loggedInUserViewModel = rootViewModel.loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
+            val loggedInUserViewModel = rootViewModel.loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
 
             val itemId = arguments?.getString(ARGUMENT_ITEM_ID)
             val itemEditingViewModel = loggedInUserViewModel.itemViewModels.value.find { itemViewModel -> itemViewModel.id == itemId }?.createEditingViewModel()

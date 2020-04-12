@@ -30,7 +30,7 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
     }
 
     suspend fun synchronizeData(): Result<Unit> {
-        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
         return loggedInUserViewModel.synchronizeData()
     }
 
@@ -38,7 +38,7 @@ class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewMod
         // Some artificial delay to look flow more natural
         delay(500)
 
-        val loggedInUserViewModel = loggedInUserViewModel ?: throw IllegalStateException("The logged-in user viewmodel is null!")
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
         return loggedInUserViewModel.logout()
     }
 
