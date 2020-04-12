@@ -12,6 +12,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/PassButler" />
+            <option value="$PROJECT_DIR$/PassButlerCommon" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

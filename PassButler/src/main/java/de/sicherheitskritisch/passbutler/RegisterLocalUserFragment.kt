@@ -11,10 +11,10 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.DebugConstants
-import de.sicherheitskritisch.passbutler.base.FormFieldValidator
-import de.sicherheitskritisch.passbutler.base.FormValidationResult
+import de.sicherheitskritisch.passbutler.ui.FormFieldValidator
+import de.sicherheitskritisch.passbutler.ui.FormValidationResult
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
-import de.sicherheitskritisch.passbutler.base.validateForm
+import de.sicherheitskritisch.passbutler.ui.validateForm
 import de.sicherheitskritisch.passbutler.database.RequestForbiddenException
 import de.sicherheitskritisch.passbutler.databinding.FragmentRegisterLocalUserBinding
 import de.sicherheitskritisch.passbutler.ui.Keyboard
@@ -88,11 +88,12 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
                     binding.textInputLayoutServerurl, binding.textInputEditTextServerurl, listOfNotNull(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_serverurl_validation_error_empty)),
                         FormFieldValidator.Rule({ !URLUtil.isValidUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid)),
-                        FormFieldValidator.Rule({ !URLUtil.isHttpsUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid_scheme)).takeIf { BuildType.isReleaseBuild }
+                        FormFieldValidator.Rule({ !URLUtil.isHttpsUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid_scheme))
+                            .takeIf { BuildType.isReleaseBuild }
                     )
                 ),
                 FormFieldValidator(
-                    binding.textInputLayoutMasterPassword,binding.textInputEditTextMasterPassword, listOf(
+                    binding.textInputLayoutMasterPassword, binding.textInputEditTextMasterPassword, listOf(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_master_password_validation_error_empty))
                     )
                 )

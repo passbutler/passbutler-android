@@ -3,8 +3,9 @@ package de.sicherheitskritisch.passbutler
 import android.app.Application
 import android.net.Uri
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
-import de.sicherheitskritisch.passbutler.base.Result
+import de.passbutler.common.base.Result
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
+import java.net.URI
 
 class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
@@ -18,7 +19,7 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
         return when (serverUrlString) {
             null -> userManager.loginLocalUser(username, masterPassword)
             else -> {
-                val serverUrl = Uri.parse(serverUrlString)
+                val serverUrl = URI.create(serverUrlString)
                 userManager.loginRemoteUser(username, masterPassword, serverUrl)
             }
         }

@@ -1,5 +1,8 @@
 package de.sicherheitskritisch.passbutler.base
 
+import de.passbutler.common.base.Failure
+import de.passbutler.common.base.Result
+import de.passbutler.common.base.Success
 import de.sicherheitskritisch.passbutler.ui.BaseFragment
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers

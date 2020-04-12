@@ -1,19 +1,19 @@
 package de.sicherheitskritisch.passbutler
 
 import androidx.lifecycle.ViewModel
-import de.sicherheitskritisch.passbutler.base.Failure
+import de.passbutler.common.base.Failure
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
 import de.sicherheitskritisch.passbutler.base.NonNullValueGetterLiveData
 import de.sicherheitskritisch.passbutler.base.OptionalValueGetterLiveData
-import de.sicherheitskritisch.passbutler.base.Result
-import de.sicherheitskritisch.passbutler.base.Success
-import de.sicherheitskritisch.passbutler.base.clear
-import de.sicherheitskritisch.passbutler.base.resultOrThrowException
+import de.passbutler.common.base.Result
+import de.passbutler.common.base.Success
+import de.passbutler.common.base.clear
+import de.passbutler.common.base.resultOrThrowException
 import de.sicherheitskritisch.passbutler.base.viewmodels.EditableViewModel
 import de.sicherheitskritisch.passbutler.base.viewmodels.EditingViewModel
-import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
-import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
-import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
+import de.passbutler.common.crypto.EncryptionAlgorithm
+import de.passbutler.common.crypto.models.CryptographicKey
+import de.passbutler.common.crypto.models.ProtectedValue
 import de.sicherheitskritisch.passbutler.database.models.Item
 import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.ItemData
@@ -199,7 +199,9 @@ class ItemEditingViewModel(
         val asymmetricEncryptionAlgorithm = EncryptionAlgorithm.Asymmetric.RSA2048OAEP
 
         return try {
-            val protectedItemKey = ProtectedValue.create(asymmetricEncryptionAlgorithm, loggedInUserItemEncryptionPublicKey, CryptographicKey(itemKey)).resultOrThrowException()
+            val protectedItemKey = ProtectedValue.create(asymmetricEncryptionAlgorithm, loggedInUserItemEncryptionPublicKey,
+                CryptographicKey(itemKey)
+            ).resultOrThrowException()
             val currentDate = Date()
             val itemAuthorization = ItemAuthorization(
                 id = UUID.randomUUID().toString(),

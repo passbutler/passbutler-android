@@ -1,15 +1,14 @@
 package de.sicherheitskritisch.passbutler.database
 
-import android.net.Uri
 import de.sicherheitskritisch.passbutler.UserManager
 import de.sicherheitskritisch.passbutler.base.BuildType
-import de.sicherheitskritisch.passbutler.base.Failure
-import de.sicherheitskritisch.passbutler.base.Result
-import de.sicherheitskritisch.passbutler.base.Success
-import de.sicherheitskritisch.passbutler.base.asJSONObjectSequence
-import de.sicherheitskritisch.passbutler.base.isHttpsScheme
-import de.sicherheitskritisch.passbutler.base.serialize
-import de.sicherheitskritisch.passbutler.crypto.models.AuthToken
+import de.passbutler.common.base.Failure
+import de.passbutler.common.base.Result
+import de.passbutler.common.base.Success
+import de.passbutler.common.base.asJSONObjectSequence
+import de.passbutler.common.base.isHttpsScheme
+import de.passbutler.common.base.serialize
+import de.passbutler.common.crypto.models.AuthToken
 import de.sicherheitskritisch.passbutler.database.models.Item
 import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.User
@@ -41,6 +40,7 @@ import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.net.HttpURLConnection.HTTP_FORBIDDEN
 import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
+import java.net.URI
 import java.time.Duration
 
 typealias OkHttpResponse = okhttp3.Response
@@ -86,7 +86,7 @@ interface AuthWebservice {
 
     companion object {
         @Throws(IllegalArgumentException::class)
-        suspend fun create(serverUrl: Uri, username: String, password: String): AuthWebservice {
+        suspend fun create(serverUrl: URI, username: String, password: String): AuthWebservice {
             require(!(BuildType.isReleaseBuild && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
 
             return withContext(Dispatchers.IO) {
@@ -271,7 +271,7 @@ interface UserWebservice {
         private val MEDIA_TYPE_JSON = "application/json".toMediaType()
 
         @Throws(IllegalArgumentException::class)
-        suspend fun create(serverUrl: Uri, authWebservice: AuthWebservice, userManager: UserManager): UserWebservice {
+        suspend fun create(serverUrl: URI, authWebservice: AuthWebservice, userManager: UserManager): UserWebservice {
             require(!(BuildType.isReleaseBuild && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
 
             return withContext(Dispatchers.IO) {

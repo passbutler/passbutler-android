@@ -1,6 +1,6 @@
 package de.sicherheitskritisch.passbutler.database.models
 
-import de.sicherheitskritisch.passbutler.assertJSONObjectEquals
+import de.passbutler.common.assertJSONObjectEquals
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

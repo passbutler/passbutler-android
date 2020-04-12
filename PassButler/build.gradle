@@ -64,6 +64,8 @@ android {
 }
 
 dependencies {
+    implementation project(':PassButlerCommon')
+
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
 
@@ -99,23 +101,20 @@ dependencies {
     implementation "androidx.preference:preference:1.1.0"
 
     // Retrofit with OkHttp
-    implementation "com.squareup.retrofit2:retrofit:2.7.1"
-    implementation "com.squareup.okhttp3:okhttp:4.4.0"
+    implementation "com.squareup.retrofit2:retrofit:2.8.1"
+    implementation "com.squareup.okhttp3:okhttp:4.5.0"
 
     // TinyLog logger
-    def tinylogVersion = "2.0.1"
+    def tinylogVersion = "2.1.1"
     implementation "org.tinylog:tinylog-api-kotlin:$tinylogVersion"
     implementation "org.tinylog:tinylog-impl:$tinylogVersion"
 
     // JUnit 5
-    def junitVersion = "5.6.0"
+    def junitVersion = "5.6.1"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testImplementation "org.junit.jupiter:junit-jupiter-params:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
     // Mockk.io
     testImplementation "io.mockk:mockk:1.9.3"
-
-    // JSON implementations for unit testing
-    testImplementation "org.json:json:20190722"
 }
