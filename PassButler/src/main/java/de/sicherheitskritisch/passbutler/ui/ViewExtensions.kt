@@ -3,9 +3,7 @@ package de.sicherheitskritisch.passbutler.ui
 import android.content.Context
 import android.util.TypedValue
 import android.view.View
-import androidx.annotation.AnyRes
 import androidx.annotation.AttrRes
-import androidx.annotation.ColorInt
 
 var View.visible: Boolean
     get() = visibility == View.VISIBLE

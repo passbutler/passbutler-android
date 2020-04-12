@@ -87,9 +87,10 @@ dependencies {
     kapt "androidx.lifecycle:lifecycle-compiler:2.2.0"
 
     // Android Room components (including Kotlin Coroutine support)
-    implementation "androidx.room:room-runtime:2.2.5"
-    implementation "androidx.room:room-ktx:2.2.5"
-    kapt "androidx.room:room-compiler:2.2.5"
+    def roomVersion = "2.2.5"
+    implementation "androidx.room:room-runtime:$roomVersion"
+    implementation "androidx.room:room-ktx:$roomVersion"
+    kapt "androidx.room:room-compiler:$roomVersion"
 
     // Android Biometrics framework
     implementation "androidx.biometric:biometric:1.0.1"
@@ -101,13 +102,16 @@ dependencies {
     implementation "com.squareup.retrofit2:retrofit:2.7.1"
     implementation "com.squareup.okhttp3:okhttp:4.4.0"
 
-    implementation "org.tinylog:tinylog-api-kotlin:2.0.1"
-    implementation "org.tinylog:tinylog-impl:2.0.1"
+    // TinyLog logger
+    def tinylogVersion = "2.0.1"
+    implementation "org.tinylog:tinylog-api-kotlin:$tinylogVersion"
+    implementation "org.tinylog:tinylog-impl:$tinylogVersion"
 
     // JUnit 5
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.0"
-    testImplementation "org.junit.jupiter:junit-jupiter-params:5.6.0"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.0"
+    def junitVersion = "5.6.0"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
     // Mockk.io
     testImplementation "io.mockk:mockk:1.9.3"
