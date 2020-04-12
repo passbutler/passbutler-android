@@ -1,6 +1,5 @@
 package de.sicherheitskritisch.passbutler
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.text.TextUtils
@@ -13,6 +12,7 @@ import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
 import de.sicherheitskritisch.passbutler.base.BuildType
+import de.sicherheitskritisch.passbutler.base.DebugConstants
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.FormFieldValidator
 import de.sicherheitskritisch.passbutler.base.FormValidationResult
@@ -32,7 +32,7 @@ import org.tinylog.kotlin.Logger
 
 class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
 
-    private var formPassword: String? = null
+    private var formMasterPassword: String? = null
 
     private var binding: FragmentLockedScreenBinding? = null
 
@@ -53,7 +53,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        formPassword = savedInstanceState?.getString(FORM_FIELD_PASSWORD)
+        formMasterPassword = savedInstanceState?.getString(FORM_FIELD_MASTER_PASSWORD)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -69,24 +69,23 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
     }
 
     private fun applyRestoredViewStates(binding: FragmentLockedScreenBinding) {
-        formPassword?.let { binding.textInputEditTextPassword.setText(it) }
+        formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
     }
 
     override fun onStart() {
         super.onStart()
 
         binding?.let {
-            setupDebugUnlockPresetsButton(it)
+            setupDebugPresetsButton(it)
             setupUnlockWithPasswordButton(it)
             setupUnlockWithBiometricsButton(it)
         }
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun setupDebugUnlockPresetsButton(binding: FragmentLockedScreenBinding) {
+    private fun setupDebugPresetsButton(binding: FragmentLockedScreenBinding) {
         if (BuildType.isDebugBuild) {
             binding.imageViewLogo.setOnLongClickListener {
-                binding.textInputEditTextPassword.setText("1234")
+                binding.textInputEditTextMasterPassword.setText(DebugConstants.TEST_PASSWORD)
                 true
             }
         }
@@ -102,7 +101,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
         val formValidationResult = validateForm(
             listOf(
                 FormFieldValidator(
-                    binding.textInputLayoutPassword, binding.textInputEditTextPassword, listOf(
+                    binding.textInputLayoutMasterPassword, binding.textInputEditTextMasterPassword, listOf(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.locked_screen_password_validation_error_empty))
                     )
                 )
@@ -115,12 +114,12 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
                 removeFormFieldsFocus()
                 Keyboard.hideKeyboard(context, this)
 
-                val password = binding.textInputEditTextPassword.text?.toString()
+                val masterPassword = binding.textInputEditTextMasterPassword.text?.toString()
 
-                if (password != null) {
+                if (masterPassword != null) {
                     unlockRequestSendingJob?.cancel()
                     unlockRequestSendingJob = launchUnlockRequestSending {
-                        viewModel.unlockScreenWithPassword(password)
+                        viewModel.unlockScreenWithPassword(masterPassword)
                     }
                 }
             }
@@ -173,7 +172,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
     }
 
     private fun removeFormFieldsFocus() {
-        binding?.constraintLayoutLockedScreenContainer?.requestFocus()
+        binding?.constraintLayoutRootContainer?.requestFocus()
     }
 
     override fun onResume() {
@@ -192,7 +191,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString(FORM_FIELD_PASSWORD, binding?.textInputEditTextPassword?.text?.toString())
+        outState.putString(FORM_FIELD_MASTER_PASSWORD, binding?.textInputEditTextMasterPassword?.text?.toString())
 
         super.onSaveInstanceState(outState)
     }
@@ -234,7 +233,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
     }
 
     companion object {
-        private const val FORM_FIELD_PASSWORD = "FORM_FIELD_PASSWORD"
+        private const val FORM_FIELD_MASTER_PASSWORD = "FORM_FIELD_MASTER_PASSWORD"
 
         fun newInstance() = LockedScreenFragment()
     }

@@ -1,8 +1,7 @@
 package de.sicherheitskritisch.passbutler.database
 
 import android.net.Uri
-import de.sicherheitskritisch.passbutler.LoggedInStateStorage
-import de.sicherheitskritisch.passbutler.UserType
+import de.sicherheitskritisch.passbutler.UserManager
 import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.Failure
 import de.sicherheitskritisch.passbutler.base.Result
@@ -20,10 +19,11 @@ import kotlinx.coroutines.withContext
 import okhttp3.Authenticator
 import okhttp3.Credentials
 import okhttp3.Interceptor
-import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
 import okhttp3.Route
 import org.json.JSONArray
@@ -110,6 +110,9 @@ interface AuthWebservice {
 }
 
 interface UserWebservice {
+    @PUT("/$API_VERSION_PREFIX/register")
+    suspend fun registerUser(@Body user: User): Response<Unit>
+
     @GET("/$API_VERSION_PREFIX/users")
     suspend fun getUsers(): Response<List<User>>
 
@@ -135,16 +138,12 @@ interface UserWebservice {
         var authToken: AuthToken?
     }
 
-    private class DefaultAuthTokenProvider(private val loggedInStateStorage: LoggedInStateStorage) : AuthTokenProvider {
-        private val remoteUserType = loggedInStateStorage.userType as? UserType.Remote ?: throw IllegalStateException("The logged-in user type must be remote!")
-
+    private class DefaultAuthTokenProvider(private val userManager: UserManager) : AuthTokenProvider {
         override var authToken: AuthToken?
-            get() = remoteUserType.authToken
+            get() = userManager.authToken.value
             set(value) {
-                remoteUserType.authToken = value
-
                 runBlocking {
-                    loggedInStateStorage.persist()
+                    userManager.updateAuthToken(value)
                 }
             }
     }
@@ -153,8 +152,8 @@ interface UserWebservice {
      * Adds authentication token to request if available.
      */
     private class AuthTokenInterceptor(
-        loggedInStateStorage: LoggedInStateStorage
-    ) : Interceptor, AuthTokenProvider by DefaultAuthTokenProvider(loggedInStateStorage) {
+        userManager: UserManager
+    ) : Interceptor, AuthTokenProvider by DefaultAuthTokenProvider(userManager) {
         @Throws(IOException::class)
         override fun intercept(chain: Interceptor.Chain): OkHttpResponse {
             val actualRequest = chain.request()
@@ -172,12 +171,12 @@ interface UserWebservice {
      */
     private class AuthTokenAuthenticator(
         private val authWebservice: AuthWebservice,
-        private val loggedInStateStorage: LoggedInStateStorage
-    ) : Authenticator, AuthTokenProvider by DefaultAuthTokenProvider(loggedInStateStorage) {
+        userManager: UserManager
+    ) : Authenticator, AuthTokenProvider by DefaultAuthTokenProvider(userManager) {
         @Throws(IOException::class)
         override fun authenticate(route: Route?, response: OkHttpResponse): Request? {
-            val actualRequest = response.request()
-            Logger.debug("Re-authenticate request ${actualRequest.url()} ")
+            val actualRequest = response.request
+            Logger.debug("Re-authenticate request ${actualRequest.url} ")
 
             val newAuthTokenResult = authWebservice.getToken().execute().completeRequestWithResult()
 
@@ -218,15 +217,15 @@ interface UserWebservice {
         }
 
         private fun createUserRequestConverter() = Converter<User, RequestBody> {
-            RequestBody.create(MEDIA_TYPE_JSON, it.serialize().toString())
+            it.serialize().toString().toRequestBody(MEDIA_TYPE_JSON)
         }
 
         private fun createItemAuthorizationListRequestConverter() = Converter<List<ItemAuthorization>, RequestBody> {
-            RequestBody.create(MEDIA_TYPE_JSON, it.serialize().toString())
+            it.serialize().toString().toRequestBody(MEDIA_TYPE_JSON)
         }
 
         private fun createItemListRequestConverter() = Converter<List<Item>, RequestBody> {
-            RequestBody.create(MEDIA_TYPE_JSON, it.serialize().toString())
+            it.serialize().toString().toRequestBody(MEDIA_TYPE_JSON)
         }
 
         override fun responseBodyConverter(type: Type, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
@@ -267,10 +266,10 @@ interface UserWebservice {
     }
 
     companion object {
-        private val MEDIA_TYPE_JSON = MediaType.get("application/json")
+        private val MEDIA_TYPE_JSON = "application/json".toMediaType()
 
         @Throws(IllegalArgumentException::class)
-        suspend fun create(serverUrl: Uri, authWebservice: AuthWebservice, loggedInStateStorage: LoggedInStateStorage): UserWebservice {
+        suspend fun create(serverUrl: Uri, authWebservice: AuthWebservice, userManager: UserManager): UserWebservice {
             require(!(BuildType.isReleaseBuild && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
 
             return withContext(Dispatchers.IO) {
@@ -278,8 +277,8 @@ interface UserWebservice {
                     .connectTimeout(API_TIMEOUT_CONNECT)
                     .readTimeout(API_TIMEOUT_READ)
                     .writeTimeout(API_TIMEOUT_WRITE)
-                    .addInterceptor(AuthTokenInterceptor(loggedInStateStorage))
-                    .authenticator(AuthTokenAuthenticator(authWebservice, loggedInStateStorage))
+                    .addInterceptor(AuthTokenInterceptor(userManager))
+                    .authenticator(AuthTokenAuthenticator(authWebservice, userManager))
                     .build()
 
                 val retrofitBuilder = Retrofit.Builder()
@@ -295,88 +294,12 @@ interface UserWebservice {
     }
 }
 
-suspend fun UserWebservice?.requestPublicUserList(): Result<List<User>> {
-    val userWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val response = userWebservice?.getUsers()
-            response.completeRequestWithResult()
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
-    }
+suspend fun <T : Any> UserWebservice.requestWithResult(block: suspend UserWebservice.() -> Response<T>): Result<T> {
+    return block(this).completeRequestWithResult()
 }
 
-suspend fun UserWebservice?.requestUser(): Result<User> {
-    val userWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val response = userWebservice?.getUserDetails()
-            response.completeRequestWithResult()
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
-    }
-}
-
-suspend fun UserWebservice?.updateUser(user: User): Result<Unit> {
-    val userWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val response = userWebservice?.setUserDetails(user)
-            response.completeRequestWithoutResult()
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
-    }
-}
-
-suspend fun UserWebservice?.requestItemAuthorizationList(): Result<List<ItemAuthorization>> {
-    val userWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val response = userWebservice?.getUserItemAuthorizations()
-            response.completeRequestWithResult()
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
-    }
-}
-
-suspend fun UserWebservice?.updateItemAuthorizationList(itemAuthorizations: List<ItemAuthorization>): Result<Unit> {
-    val userWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val response = userWebservice?.setUserItemAuthorizations(itemAuthorizations)
-            response.completeRequestWithoutResult()
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
-    }
-}
-
-suspend fun UserWebservice?.requestItemList(): Result<List<Item>> {
-    val userWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val response = userWebservice?.getUserItems()
-            response.completeRequestWithResult()
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
-    }
-}
-
-suspend fun UserWebservice?.updateItemList(items: List<Item>): Result<Unit> {
-    val userWebservice = this
-    return withContext(Dispatchers.IO) {
-        try {
-            val response = userWebservice?.setUserItems(items)
-            response.completeRequestWithoutResult()
-        } catch (exception: Exception) {
-            Failure(exception)
-        }
-    }
+suspend fun UserWebservice.requestWithoutResult(block: suspend UserWebservice.() -> Response<Unit>): Result<Unit> {
+    return block(this).completeRequestWithoutResult()
 }
 
 private fun Request.applyTokenAuthorizationHeader(token: String): Request {
@@ -385,22 +308,25 @@ private fun Request.applyTokenAuthorizationHeader(token: String): Request {
         .build()
 }
 
-private fun <T> Response<T>?.completeRequestWithResult(): Result<T> {
-    val responseResult = this?.body()
+private fun <T> Response<T>.completeRequestWithResult(): Result<T> {
+    val responseResult = body()
+    val requestCode = code()
 
     return when {
-        this?.isSuccessful == true && responseResult != null -> Success(responseResult)
-        this?.code() == HTTP_UNAUTHORIZED -> Failure(RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}"))
-        this?.code() == HTTP_FORBIDDEN -> Failure(RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}"))
+        isSuccessful == true && responseResult != null -> Success(responseResult)
+        requestCode == HTTP_UNAUTHORIZED -> Failure(RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}"))
+        requestCode == HTTP_FORBIDDEN -> Failure(RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}"))
         else -> Failure(RequestFailedException("The request result could not be get ${this.technicalErrorDescription}"))
     }
 }
 
-private fun <T> Response<T>?.completeRequestWithoutResult(): Result<Unit> {
+private fun Response<Unit>.completeRequestWithoutResult(): Result<Unit> {
+    val requestCode = code()
+
     return when {
-        this?.isSuccessful == true -> Success(Unit)
-        this?.code() == HTTP_UNAUTHORIZED -> Failure(RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}"))
-        this?.code() == HTTP_FORBIDDEN -> Failure(RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}"))
+        isSuccessful == true -> Success(Unit)
+        requestCode == HTTP_UNAUTHORIZED -> Failure(RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}"))
+        requestCode == HTTP_FORBIDDEN -> Failure(RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}"))
         else -> Failure(RequestFailedException("The request result could not be get ${this.technicalErrorDescription}"))
     }
 }

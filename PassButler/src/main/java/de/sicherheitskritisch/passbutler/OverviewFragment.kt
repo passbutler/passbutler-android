@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -32,6 +33,7 @@ import de.sicherheitskritisch.passbutler.ui.showInformation
 import de.sicherheitskritisch.passbutler.ui.visible
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 import java.util.*
@@ -39,15 +41,11 @@ import java.util.*
 class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
     private var binding: FragmentOverviewBinding? = null
-    private var navigationHeaderView: View? = null
+    private var navigationHeaderSubtitleView: TextView? = null
+    private var navigationHeaderUserTypeView: TextView? = null
     private val navigationItemSelectedListener = NavigationItemSelectedListener()
 
-    private val isSynchronizationVisible
-        get() = viewModel.loggedInUserViewModel?.userType is UserType.Remote
-
-    private val isSynchronizationPossible
-        get() = viewModel.loggedInUserViewModel?.isSynchronizationPossible?.value ?: false
-
+    private var updateToolbarJob: Job? = null
     private var synchronizeDataRequestSendingJob: Job? = null
     private var logoutRequestSendingJob: Job? = null
 
@@ -58,24 +56,21 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         adapter?.submitList(newItemViewModels)
 
         val showEmptyScreen = newItemViewModels.isEmpty()
-        binding?.layoutOverviewContent?.imageViewEmptyScreenIcon?.visible = showEmptyScreen
-        binding?.layoutOverviewContent?.textViewEmptyScreenTitle?.visible = showEmptyScreen
-        binding?.layoutOverviewContent?.textViewEmptyScreenDescription?.visible = showEmptyScreen
+        binding?.layoutOverviewContent?.groupEmptyScreenViews?.visible = showEmptyScreen
     }
 
-    private val lastSynchronizationDateObserver = Observer<Date?> { newDate ->
-        binding?.toolbar?.let { toolbar ->
-            binding?.toolbar?.subtitle = if (isSynchronizationVisible) {
-                val formattedLastSuccessfulSync = newDate?.relativeDateTime(toolbar.context) ?: getString(R.string.overview_last_sync_never)
-                getString(R.string.overview_last_sync_subtitle, formattedLastSuccessfulSync)
-            } else {
-                null
-            }
-        }
+    private val userTypeObserver = Observer<UserType?> {
+        updateToolbarSubtitle()
+        updateNavigationHeaderUserTypeView()
+        updateSwipeRefreshLayout()
     }
 
-    private val synchronizationPossibleObserver = Observer<Boolean> { isPossible ->
-        if (isPossible) {
+    private val lastSynchronizationDateObserver = Observer<Date?> {
+        updateToolbarSubtitle()
+    }
+
+    private val webservicesInitializedObserver = Observer<Boolean> { webservicesInitialized ->
+        if (webservicesInitialized) {
             synchronizeData(userTriggered = false)
         }
     }
@@ -99,7 +94,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
             setupToolBar(binding)
             setupDrawerLayout(binding)
-            setupSwipeRefreshLayout(binding)
             setupEntryList(binding)
         }
 
@@ -129,26 +123,89 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
             setNavigationItemSelectedListener(navigationItemSelectedListener)
         }
 
-        navigationHeaderView = binding.navigationView.inflateHeaderView(R.layout.main_drawer_header)
-        navigationHeaderView?.findViewById<TextView>(R.id.textView_drawer_header_subtitle)?.also { subtitleView ->
-            subtitleView.text = viewModel.loggedInUserViewModel?.username
+        val navigationHeaderView = binding.navigationView.inflateHeaderView(R.layout.main_drawer_header)
+        navigationHeaderSubtitleView = navigationHeaderView?.findViewById(R.id.textView_drawer_header_subtitle)
+        navigationHeaderSubtitleView?.text = viewModel.loggedInUserViewModel?.username
+
+        navigationHeaderUserTypeView = navigationHeaderView?.findViewById(R.id.textView_drawer_header_usertype)
+    }
+
+    private fun setupEntryList(binding: FragmentOverviewBinding) {
+        binding.layoutOverviewContent.recyclerViewItemList.adapter = ItemAdapter(this)
+
+        binding.layoutOverviewContent.floatingActionButtonAddEntry.setOnClickListener {
+            showFragment(ItemDetailFragment.newInstance(null))
         }
     }
 
-    private fun setupSwipeRefreshLayout(binding: FragmentOverviewBinding) {
-        binding.layoutOverviewContent.swipeRefreshLayout.also { swipeRefreshLayout ->
-            if (isSynchronizationVisible) {
-                swipeRefreshLayout.setOnRefreshListener {
-                    if (isSynchronizationPossible) {
+    override fun onStart() {
+        super.onStart()
+
+        viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
+
+        viewModel.loggedInUserViewModel?.userType?.observe(viewLifecycleOwner, true, userTypeObserver)
+        viewModel.loggedInUserViewModel?.lastSuccessfulSyncDate?.observe(viewLifecycleOwner, true, lastSynchronizationDateObserver)
+        viewModel.loggedInUserViewModel?.webservicesInitialized?.observe(viewLifecycleOwner, true, webservicesInitializedObserver)
+
+        updateToolbarJob?.cancel()
+        updateToolbarJob = launch {
+            while (isActive) {
+                Logger.debug("Update relative time in toolbar subtitle")
+
+                // Update relative time in toolbar every minute
+                updateToolbarSubtitle()
+                delay(DateUtils.MINUTE_IN_MILLIS)
+            }
+        }
+    }
+
+    override fun onStop() {
+        updateToolbarJob?.cancel()
+        super.onStop()
+    }
+
+    private fun updateToolbarSubtitle() {
+        binding?.toolbar?.apply {
+            subtitle = if (viewModel.loggedInUserViewModel?.userType?.value == UserType.REMOTE) {
+                val newDate = viewModel.loggedInUserViewModel?.lastSuccessfulSyncDate?.value
+                val formattedLastSuccessfulSync = newDate?.relativeDateTime(context) ?: getString(R.string.overview_last_sync_never)
+                getString(R.string.overview_last_sync_subtitle, formattedLastSuccessfulSync)
+            } else {
+                null
+            }
+        }
+    }
+
+    private fun updateNavigationHeaderUserTypeView() {
+        navigationHeaderUserTypeView?.apply {
+            if (viewModel.loggedInUserViewModel?.userType?.value == UserType.LOCAL) {
+                visible = true
+                setOnClickListener {
+                    closeDrawerDelayed()
+                    showFragmentModally(RegisterLocalUserFragment.newInstance())
+                }
+            } else {
+                visible = false
+                setOnClickListener(null)
+            }
+        }
+    }
+
+    private fun updateSwipeRefreshLayout() {
+        binding?.layoutOverviewContent?.swipeRefreshLayout?.apply {
+            if (viewModel.loggedInUserViewModel?.userType?.value == UserType.REMOTE) {
+                isEnabled = true
+                setOnRefreshListener {
+                    if (viewModel.loggedInUserViewModel?.webservicesInitialized?.value == true) {
                         synchronizeData(userTriggered = true)
                     } else {
                         // Immediately stop refreshing if is not possible
-                        swipeRefreshLayout.isRefreshing = false
+                        isRefreshing = false
                     }
                 }
             } else {
-                // Disable pull-to-refresh if synchronization is not visible
-                swipeRefreshLayout.isEnabled = false
+                isEnabled = false
+                setOnRefreshListener(null)
             }
         }
     }
@@ -186,28 +243,22 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         }
     }
 
-    private fun setupEntryList(binding: FragmentOverviewBinding) {
-        binding.layoutOverviewContent.recyclerViewItemList.adapter = ItemAdapter(this)
-
-        binding.layoutOverviewContent.floatingActionButtonAddEntry.setOnClickListener {
-            showFragment(ItemDetailFragment.newInstance(null))
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
-        viewModel.lastSynchronizationDate.observe(viewLifecycleOwner, true, lastSynchronizationDateObserver)
-        viewModel.loggedInUserViewModel?.isSynchronizationPossible?.observe(viewLifecycleOwner, true, synchronizationPossibleObserver)
-    }
-
     override fun onHandleBackPress(): Boolean {
         return if (binding?.drawerLayout?.isDrawerOpen(GravityCompat.START) == true) {
             binding?.drawerLayout?.closeDrawer(GravityCompat.START)
             true
         } else {
             super.onHandleBackPress()
+        }
+    }
+
+    /**
+     * Closes drawer a little delayed to make show new fragment transaction more pretty
+     */
+    private fun closeDrawerDelayed() {
+        launch {
+            delay(100)
+            binding?.drawerLayout?.closeDrawer(GravityCompat.START)
         }
     }
 
@@ -252,19 +303,10 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         private fun logoutUser() {
             logoutRequestSendingJob?.cancel()
             logoutRequestSendingJob = launchRequestSending(
-                handleFailure = { showError(getString(R.string.overview_logout_failed_title)) }
+                handleFailure = { showError(getString(R.string.overview_logout_failed_title)) },
+                isCancellable = false
             ) {
                 viewModel.logoutUser()
-            }
-        }
-
-        /**
-         * Closes drawer a little delayed to make show new fragment transaction more pretty
-         */
-        private fun closeDrawerDelayed() {
-            launch {
-                delay(100)
-                binding?.drawerLayout?.closeDrawer(GravityCompat.START)
             }
         }
 

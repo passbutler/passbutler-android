@@ -46,14 +46,20 @@ class UserViewModel private constructor(
     masterPassword: String?
 ) : ManualCancelledCoroutineScopeViewModel() {
 
+    val username: String
+        get() = user.username
+
     val userType
-        get() = userManager.loggedInStateStorage?.userType
+        get() = userManager.userType
 
     val encryptedMasterPassword
-        get() = userManager.loggedInStateStorage?.encryptedMasterPassword
+        get() = userManager.encryptedMasterPassword
 
-    val username
-        get() = user.username
+    val lastSuccessfulSyncDate
+        get() = userManager.lastSuccessfulSyncDate
+
+    val webservicesInitialized
+        get() = userManager.webservicesInitialized
 
     val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
 
@@ -65,11 +71,7 @@ class UserViewModel private constructor(
     }
 
     val biometricUnlockEnabled = NonNullValueGetterLiveData {
-        biometricUnlockAvailable.value && userManager.loggedInStateStorage?.encryptedMasterPassword != null
-    }
-
-    val isSynchronizationPossible = NonNullValueGetterLiveData {
-        userManager.webservicesInitialized
+        biometricUnlockAvailable.value && encryptedMasterPassword.value != null
     }
 
     private var itemsObservable: LiveData<List<Item>>? = null
@@ -145,7 +147,7 @@ class UserViewModel private constructor(
         }
     }
 
-    private suspend fun decryptMasterEncryptionKey(masterPassword: String): Result<ByteArray> {
+    suspend fun decryptMasterEncryptionKey(masterPassword: String): Result<ByteArray> {
         var masterKey: ByteArray? = null
 
         return try {
@@ -271,10 +273,10 @@ class UserViewModel private constructor(
             decryptMasterEncryptionKey(masterPassword).resultOrThrowException()
 
             val encryptedMasterPasswordInitializationVector = initializedSetupBiometricUnlockCipher.iv
-            val encryptedMasterPassword = Biometrics.encryptData(initializedSetupBiometricUnlockCipher, masterPassword.toByteArray()).resultOrThrowException()
+            val encryptedMasterPasswordValue = Biometrics.encryptData(initializedSetupBiometricUnlockCipher, masterPassword.toByteArray()).resultOrThrowException()
 
-            userManager.loggedInStateStorage?.encryptedMasterPassword = EncryptedValue(encryptedMasterPasswordInitializationVector, encryptedMasterPassword)
-            userManager.loggedInStateStorage?.persist()
+            val encryptedMasterPassword = EncryptedValue(encryptedMasterPasswordInitializationVector, encryptedMasterPasswordValue)
+            userManager.updateEncryptedMasterPassword(encryptedMasterPassword)
 
             withContext(Dispatchers.Main) {
                 biometricUnlockEnabled.notifyChange()
@@ -295,8 +297,7 @@ class UserViewModel private constructor(
         return try {
             Biometrics.removeKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME).resultOrThrowException()
 
-            userManager.loggedInStateStorage?.encryptedMasterPassword = null
-            userManager.loggedInStateStorage?.persist()
+            userManager.updateEncryptedMasterPassword(null)
 
             withContext(Dispatchers.Main) {
                 biometricUnlockEnabled.notifyChange()

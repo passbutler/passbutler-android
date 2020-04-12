@@ -1,38 +1,59 @@
 <resources>
     <string name="app_name">Pass Butler</string>
 
-
     <!-- General -->
+
     <string name="general_okay">OK</string>
     <string name="general_cancel">Abbrechen</string>
+
+    <!-- Form validation -->
+
+    <string name="form_serverurl_validation_error_empty">Server URL nicht ausgefüllt</string>
+    <string name="form_serverurl_validation_error_invalid">Server URL nicht gültig</string>
+    <string name="form_serverurl_validation_error_invalid_scheme">Server URL muss mit „https://“ beginnen</string>
+    <string name="form_master_password_validation_error_empty">Master-Passwort nicht ausgefüllt</string>
+
+    <string name="login_username_validation_error_empty">Benutzername nicht ausgefüllt</string>
+
+    <string name="locked_screen_password_validation_error_empty">Master-Passwort nicht ausgefüllt</string>
 
     <!-- Login -->
 
     <string name="login_serverurl_hint">Server URL</string>
-    <string name="login_serverurl_validation_error_empty">Server URL nicht ausgefüllt</string>
-    <string name="login_serverurl_validation_error_invalid">Server URL nicht gültig</string>
-    <string name="login_serverurl_validation_error_invalid_scheme">Server URL muss mit \"https://\" beginnen</string>
-
     <string name="login_username_hint">Benutzername</string>
-    <string name="login_username_validation_error_empty">Benutzername nicht ausgefüllt</string>
+    <string name="login_master_password_hint">Master-Passwort</string>
 
-    <string name="login_password_hint">Passwort</string>
-    <string name="login_password_validation_error_empty">Passwort nicht ausgefüllt</string>
-
-    <string name="login_local_login_label">Lokales Konto</string>
+    <string name="login_local_login_label">Lokales Benutzerkonto</string>
 
     <string name="login_button_text">Anmelden</string>
 
     <string name="login_failed_general_title">Anmeldung hat nicht geklappt</string>
     <string name="login_failed_unauthorized_title">Anmeldedaten vermutlich nicht korrekt</string>
 
+    <!-- Register local user -->
+
+    <string name="register_local_user_title">Benutzerkonto registrieren</string>
+
+    <string name="register_local_user_header">Benutzerkonto registrieren</string>
+    <string name="register_local_user_description">Wenn Sie Ihre Passwörter zwischen mehreren Geräten synchronisieren möchten, können Sie es auf einem Pass Butler-Server registrieren.\n\nDazu benötigen Sie die URL des Servers, z.B. „https://server-adresse.abc“ sowie Ihr Master-Passwort.\n\nWichtig: Die Registrierung muss auf dem Server (temporär) aktiviert werden und der Benutzername darf noch nicht vergeben sein!</string>
+
+    <string name="register_local_user_serverurl_hint">Server URL</string>
+    <string name="register_local_user_master_password_hint">Master-Passwort</string>
+
+    <string name="register_local_user_button_text">Registrieren</string>
+
+    <string name="register_local_user_successful_message">Registrierung erfolgreich</string>
+
+    <string name="register_local_user_failed_wrong_master_password_title">Master-Passwort ist nicht korrekt</string>
+    <string name="register_local_user_failed_general_title">Registrierung hat nicht geklappt</string>
+    <string name="register_local_user_failed_forbidden_title">Registrierung auf Server nicht erlaubt oder Benutzerkonto ist bereits vorhanden</string>
+
     <!-- Locked screen -->
 
     <string name="locked_screen_header">Pass Butler ist gesperrt</string>
     <string name="locked_screen_description_password">Bitte entsperren Sie Pass Butler mit den folgenden Möglichkeiten:</string>
 
-    <string name="locked_screen_password_hint">Master-Passwort</string>
-    <string name="locked_screen_password_validation_error_empty">Master-Passwort nicht ausgefüllt</string>
+    <string name="locked_screen_master_password_hint">Master-Passwort</string>
 
     <string name="locked_screen_button_password_text">Entsperren mit Passwort</string>
 
@@ -54,7 +75,7 @@
     <!-- Drawer -->
 
     <string name="drawer_header_title">Pass Butler</string>
-    <string name="drawer_header_subtitle">username@passbutler-server</string>
+    <string name="drawer_header_usertype_local">Benutzerkonto registrieren</string>
 
     <string name="drawer_open_description">Navigationsdrawer öffnen</string>
     <string name="drawer_close_description">Navigationsdrawer schließen</string>
@@ -62,7 +83,7 @@
     <string name="drawer_menu_item_overview">Übersicht</string>
     <string name="drawer_menu_item_settings">Einstellungen</string>
     <string name="drawer_menu_item_about">Über / Lizenz</string>
-    <string name="drawer_menu_item_logout">Ausloggen</string>
+    <string name="drawer_menu_item_logout">Abmelden</string>
 
     <string name="drawer_menu_category_external_links">Externe Links</string>
     <string name="drawer_menu_item_homepage">Sicherheitskritisch.de</string>

@@ -18,7 +18,7 @@
 
         <!-- The `focusableInTouchMode` with `clickable` removes focus of `TextInputEditText` if user clicked outer area -->
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/constraintLayout_login_screen_container"
+            android:id="@+id/constraintLayout_root_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?android:attr/colorBackground"
@@ -73,7 +73,7 @@
                 android:layout_marginStart="@dimen/spacingHorizontalLarge"
                 android:layout_marginTop="0dp"
                 android:layout_marginEnd="@dimen/spacingHorizontalLarge"
-                app:layout_constraintBottom_toTopOf="@+id/textInputLayout_password"
+                app:layout_constraintBottom_toTopOf="@+id/textInputLayout_master_password"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textInputLayout_serverurl"
@@ -91,7 +91,7 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/textInputLayout_password"
+                android:id="@+id/textInputLayout_master_password"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacingHorizontalLarge"
@@ -103,10 +103,10 @@
                 app:layout_constraintVertical_chainStyle="packed">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/textInputEditText_password"
+                    android:id="@+id/textInputEditText_master_password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/login_password_hint"
+                    android:hint="@string/login_master_password_hint"
                     android:imeOptions="actionUnspecified"
                     android:importantForAutofill="no"
                     android:inputType="textPassword" />
@@ -126,7 +126,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textInputLayout_password"
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayout_master_password"
                 app:layout_constraintVertical_chainStyle="packed" />
 
             <Button
