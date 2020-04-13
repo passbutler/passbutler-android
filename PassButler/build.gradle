@@ -1,8 +1,8 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'de.mannodermaus.android-junit5'
+apply plugin: "com.android.application"
+apply plugin: "kotlin-android"
+apply plugin: "kotlin-android-extensions"
+apply plugin: "kotlin-kapt"
+apply plugin: "de.mannodermaus.android-junit5"
 
 ext.gitCommitCount = {
     return "git rev-list HEAD --count".execute().text.trim().toInteger()
@@ -56,7 +56,7 @@ android {
 
         release {
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
 
             manifestPlaceholders = [usesCleartextTraffic: false]
         }
@@ -64,7 +64,7 @@ android {
 }
 
 dependencies {
-    implementation project(':PassButlerCommon')
+    implementation project(":PassButlerCommon")
 
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
