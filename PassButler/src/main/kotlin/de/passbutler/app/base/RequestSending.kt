@@ -1,9 +1,9 @@
 package de.passbutler.app.base
 
+import de.passbutler.app.ui.BaseFragment
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
-import de.passbutler.app.ui.BaseFragment
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

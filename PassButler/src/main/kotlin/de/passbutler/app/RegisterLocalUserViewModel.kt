@@ -1,9 +1,9 @@
 package de.passbutler.app
 
 import android.app.Application
+import de.passbutler.app.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
-import de.passbutler.app.base.viewmodels.CoroutineScopeAndroidViewModel
 
 class RegisterLocalUserViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 

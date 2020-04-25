@@ -7,13 +7,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import de.passbutler.app.base.AbstractPassButlerApplication
+import de.passbutler.app.base.viewmodels.CoroutineScopeAndroidViewModel
+import de.passbutler.app.crypto.Biometrics
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
 import de.passbutler.common.base.resultOrThrowException
 import de.passbutler.common.base.toUTF8String
-import de.passbutler.app.base.viewmodels.CoroutineScopeAndroidViewModel
-import de.passbutler.app.crypto.Biometrics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

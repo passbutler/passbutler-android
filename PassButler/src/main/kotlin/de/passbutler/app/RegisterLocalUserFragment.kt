@@ -11,16 +11,16 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import de.passbutler.app.base.BuildType
 import de.passbutler.app.base.DebugConstants
-import de.passbutler.app.ui.FormFieldValidator
-import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.base.launchRequestSending
-import de.passbutler.app.ui.validateForm
 import de.passbutler.app.database.RequestForbiddenException
 import de.passbutler.app.databinding.FragmentRegisterLocalUserBinding
+import de.passbutler.app.ui.FormFieldValidator
+import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showShortFeedback
+import de.passbutler.app.ui.validateForm
 import kotlinx.coroutines.Job
 
 class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() {

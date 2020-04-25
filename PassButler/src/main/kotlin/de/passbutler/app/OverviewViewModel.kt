@@ -3,8 +3,8 @@ package de.passbutler.app
 import android.app.Application
 import androidx.lifecycle.Observer
 import de.passbutler.app.base.NonNullMutableLiveData
-import de.passbutler.common.base.Result
 import de.passbutler.app.base.viewmodels.CoroutineScopeAndroidViewModel
+import de.passbutler.common.base.Result
 import kotlinx.coroutines.delay
 
 class OverviewViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {

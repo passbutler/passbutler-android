@@ -2,8 +2,8 @@ package de.passbutler.app
 
 import android.app.Application
 import de.passbutler.app.base.NonNullMutableLiveData
-import de.passbutler.common.base.Result
 import de.passbutler.app.base.viewmodels.CoroutineScopeAndroidViewModel
+import de.passbutler.common.base.Result
 
 class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 

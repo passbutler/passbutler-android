@@ -27,6 +27,7 @@ import de.passbutler.app.databinding.ListItemEntryBinding
 import de.passbutler.app.ui.BaseViewModelFragment
 import de.passbutler.app.ui.VisibilityHideMode
 import de.passbutler.app.ui.showError
+import de.passbutler.app.ui.showFadeInOutAnimation
 import de.passbutler.app.ui.showFragmentModally
 import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.visible

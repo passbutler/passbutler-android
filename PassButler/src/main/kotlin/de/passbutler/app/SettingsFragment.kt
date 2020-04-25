@@ -20,8 +20,6 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceDataStore
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
-import de.passbutler.common.base.Failure
-import de.passbutler.common.base.Success
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.crypto.BiometricAuthenticationCallbackExecutor
 import de.passbutler.app.databinding.FragmentSettingsBinding
@@ -30,6 +28,8 @@ import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showEditTextDialog
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showInformation
+import de.passbutler.common.base.Failure
+import de.passbutler.common.base.Success
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
