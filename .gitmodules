@@ -1,0 +1,4 @@
+[submodule "PassButlerCommon"]
+	path = PassButlerCommon
+	url = ssh://git@git.sicherheitskritisch.de/passbutler/passbutler-common.git
+	branch = master

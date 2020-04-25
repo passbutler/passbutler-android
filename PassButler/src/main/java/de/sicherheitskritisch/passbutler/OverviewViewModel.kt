@@ -3,7 +3,7 @@ package de.sicherheitskritisch.passbutler
 import android.app.Application
 import androidx.lifecycle.Observer
 import de.sicherheitskritisch.passbutler.base.NonNullMutableLiveData
-import de.sicherheitskritisch.passbutler.base.Result
+import de.passbutler.common.base.Result
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import kotlinx.coroutines.delay
 

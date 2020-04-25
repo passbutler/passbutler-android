@@ -2,9 +2,10 @@ package de.sicherheitskritisch.passbutler
 
 import android.app.Application
 import android.net.Uri
-import de.sicherheitskritisch.passbutler.base.Failure
-import de.sicherheitskritisch.passbutler.base.Result
+import de.passbutler.common.base.Failure
+import de.passbutler.common.base.Result
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
+import java.net.URI
 
 class RegisterLocalUserViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
 
@@ -20,8 +21,7 @@ class RegisterLocalUserViewModel(application: Application) : CoroutineScopeAndro
         return if (masterPasswordTestResult is Failure) {
             masterPasswordTestResult
         } else {
-            val serverUrl = Uri.parse(serverUrlString)
-            userManager.registerLocalUser(serverUrl, masterPassword)
+            userManager.registerLocalUser(serverUrlString, masterPassword)
         }
     }
 }

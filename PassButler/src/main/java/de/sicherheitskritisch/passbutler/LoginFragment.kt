@@ -12,11 +12,11 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import de.sicherheitskritisch.passbutler.base.BuildType
 import de.sicherheitskritisch.passbutler.base.DebugConstants
-import de.sicherheitskritisch.passbutler.base.FormFieldValidator
-import de.sicherheitskritisch.passbutler.base.FormValidationResult
+import de.sicherheitskritisch.passbutler.ui.FormFieldValidator
+import de.sicherheitskritisch.passbutler.ui.FormValidationResult
 import de.sicherheitskritisch.passbutler.base.launchRequestSending
-import de.sicherheitskritisch.passbutler.base.validateForm
 import de.sicherheitskritisch.passbutler.database.RequestUnauthorizedException
+import de.sicherheitskritisch.passbutler.ui.validateForm
 import de.sicherheitskritisch.passbutler.databinding.FragmentLoginBinding
 import de.sicherheitskritisch.passbutler.ui.BaseViewModelFragment
 import de.sicherheitskritisch.passbutler.ui.Keyboard

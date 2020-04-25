@@ -9,9 +9,9 @@ import android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE
 import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
 import androidx.biometric.BiometricManager
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
-import de.sicherheitskritisch.passbutler.base.Failure
-import de.sicherheitskritisch.passbutler.base.Result
-import de.sicherheitskritisch.passbutler.base.Success
+import de.passbutler.common.base.Failure
+import de.passbutler.common.base.Result
+import de.passbutler.common.base.Success
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

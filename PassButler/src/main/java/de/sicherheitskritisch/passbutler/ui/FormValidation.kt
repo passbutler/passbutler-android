@@ -1,4 +1,4 @@
-package de.sicherheitskritisch.passbutler.base
+package de.sicherheitskritisch.passbutler.ui
 
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout

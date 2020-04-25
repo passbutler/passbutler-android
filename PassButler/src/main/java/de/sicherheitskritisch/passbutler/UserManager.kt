@@ -3,36 +3,36 @@ package de.sicherheitskritisch.passbutler
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
-import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import de.sicherheitskritisch.passbutler.base.DependentOptionalValueGetterLiveData
-import de.sicherheitskritisch.passbutler.base.Failure
-import de.sicherheitskritisch.passbutler.base.Result
-import de.sicherheitskritisch.passbutler.base.Success
-import de.sicherheitskritisch.passbutler.base.byteSize
-import de.sicherheitskritisch.passbutler.base.clear
-import de.sicherheitskritisch.passbutler.base.resultOrThrowException
-import de.sicherheitskritisch.passbutler.crypto.Derivation
-import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
-import de.sicherheitskritisch.passbutler.crypto.MASTER_KEY_BIT_LENGTH
-import de.sicherheitskritisch.passbutler.crypto.MASTER_KEY_ITERATION_COUNT
-import de.sicherheitskritisch.passbutler.crypto.RandomGenerator
-import de.sicherheitskritisch.passbutler.crypto.models.AuthToken
-import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
-import de.sicherheitskritisch.passbutler.crypto.models.EncryptedValue
-import de.sicherheitskritisch.passbutler.crypto.models.KeyDerivationInformation
-import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
-import de.sicherheitskritisch.passbutler.database.AuthWebservice
-import de.sicherheitskritisch.passbutler.database.Differentiation
+import de.passbutler.common.base.Failure
+import de.passbutler.common.base.Result
+import de.passbutler.common.base.Success
+import de.passbutler.common.base.byteSize
+import de.passbutler.common.base.clear
+import de.passbutler.common.base.resultOrThrowException
+import de.passbutler.common.base.toURIOrNull
+import de.passbutler.common.crypto.Derivation
+import de.passbutler.common.crypto.EncryptionAlgorithm
+import de.passbutler.common.crypto.MASTER_KEY_BIT_LENGTH
+import de.passbutler.common.crypto.MASTER_KEY_ITERATION_COUNT
+import de.passbutler.common.crypto.RandomGenerator
+import de.passbutler.common.crypto.models.AuthToken
+import de.passbutler.common.crypto.models.CryptographicKey
+import de.passbutler.common.crypto.models.EncryptedValue
+import de.passbutler.common.crypto.models.KeyDerivationInformation
+import de.passbutler.common.crypto.models.ProtectedValue
+import de.passbutler.common.database.Differentiation
 import de.sicherheitskritisch.passbutler.database.LocalRepository
-import de.sicherheitskritisch.passbutler.database.SynchronizationTask
-import de.sicherheitskritisch.passbutler.database.UserWebservice
+import de.passbutler.common.database.SynchronizationTask
 import de.sicherheitskritisch.passbutler.database.models.Item
 import de.sicherheitskritisch.passbutler.database.models.ItemAuthorization
 import de.sicherheitskritisch.passbutler.database.models.User
 import de.sicherheitskritisch.passbutler.database.models.UserSettings
-import de.sicherheitskritisch.passbutler.database.remoteChangedItems
+import de.passbutler.common.database.remoteChangedItems
+import de.sicherheitskritisch.passbutler.database.AuthWebservice
+import de.sicherheitskritisch.passbutler.database.UserWebservice
 import de.sicherheitskritisch.passbutler.database.requestWithResult
 import de.sicherheitskritisch.passbutler.database.requestWithoutResult
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +41,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 import java.net.SocketTimeoutException
+import java.net.URI
 import java.util.*
 
 class UserManager(private val applicationContext: Context, private val localRepository: LocalRepository) {
@@ -69,8 +70,10 @@ class UserManager(private val applicationContext: Context, private val localRepo
     private var loggedInStateStorage: LoggedInStateStorage? = null
     private var loggedInUser: User? = null
 
-    suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrl: Uri): Result<Unit> {
+    suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrlString: String): Result<Unit> {
         return try {
+            val serverUrl = URI.create(serverUrlString)
+
             loggedInStateStorage = createLoggedInStateStorage().also { createdLoggedInStateStorage ->
                 createdLoggedInStateStorage.reset()
 
@@ -207,8 +210,10 @@ class UserManager(private val applicationContext: Context, private val localRepo
         return protectedUserSettings
     }
 
-    suspend fun registerLocalUser(serverUrl: Uri, masterPassword: String): Result<Unit> {
+    suspend fun registerLocalUser(serverUrlString: String, masterPassword: String): Result<Unit> {
         return try {
+            val serverUrl = URI.create(serverUrlString)
+
             val loggedInStateStorage = loggedInStateStorage ?: throw LoggedInStateStorageUninitializedException
             val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is not initialized!")
             val username = loggedInUser.username
@@ -290,13 +295,13 @@ class UserManager(private val applicationContext: Context, private val localRepo
     }
 
     @Throws(Exception::class)
-    private suspend fun createAuthWebservice(serverUrl: Uri, username: String, masterPassword: String): AuthWebservice {
+    private suspend fun createAuthWebservice(serverUrl: URI, username: String, masterPassword: String): AuthWebservice {
         val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
         val authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
         return authWebservice
     }
 
-    private suspend fun createUserWebservice(serverUrl: Uri, authWebservice: AuthWebservice, userManager: UserManager): UserWebservice {
+    private suspend fun createUserWebservice(serverUrl: URI, authWebservice: AuthWebservice, userManager: UserManager): UserWebservice {
         val userWebservice = UserWebservice.create(serverUrl, authWebservice, userManager)
         return userWebservice
     }
@@ -452,7 +457,7 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
     val username = MutableLiveData<String?>()
     val encryptedMasterPassword = MutableLiveData<EncryptedValue?>()
     val authToken = MutableLiveData<AuthToken?>()
-    val serverUrl = MutableLiveData<Uri?>()
+    val serverUrl = MutableLiveData<URI?>()
     val lastSuccessfulSyncDate = MutableLiveData<Date?>()
 
     suspend fun restore() {
@@ -462,7 +467,7 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
             val restoredEncryptedMasterPassword = sharedPreferences.getString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, null)?.let { EncryptedValue.Deserializer.deserializeOrNull(it) }
 
             val restoredAuthToken = sharedPreferences.getString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, null)?.let { AuthToken.Deserializer.deserializeOrNull(it) }
-            val restoredServerUrl = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SERVERURL, null)?.let { Uri.parse(it) }
+            val restoredServerUrl = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SERVERURL, null)?.toURIOrNull()
             val restoredLastSuccessfulSyncDate = sharedPreferences.getLong(SHARED_PREFERENCES_KEY_LAST_SUCCESSFUL_SYNC_DATE, 0).takeIf { it > 0 }?.let { Date(it) }
 
             withContext(Dispatchers.Main) {

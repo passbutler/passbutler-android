@@ -1,11 +1,11 @@
 package de.sicherheitskritisch.passbutler.database.models
 
-import de.sicherheitskritisch.passbutler.assertJSONObjectEquals
-import de.sicherheitskritisch.passbutler.crypto.EncryptionAlgorithm
-import de.sicherheitskritisch.passbutler.crypto.models.CryptographicKey
-import de.sicherheitskritisch.passbutler.crypto.models.ProtectedValue
-import de.sicherheitskritisch.passbutler.hexToBytes
-import de.sicherheitskritisch.passbutler.toDate
+import de.passbutler.common.assertJSONObjectEquals
+import de.passbutler.common.crypto.EncryptionAlgorithm
+import de.passbutler.common.crypto.models.CryptographicKey
+import de.passbutler.common.crypto.models.ProtectedValue
+import de.passbutler.common.hexToBytes
+import de.passbutler.common.toDate
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

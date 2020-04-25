@@ -7,11 +7,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import de.sicherheitskritisch.passbutler.base.AbstractPassButlerApplication
-import de.sicherheitskritisch.passbutler.base.Failure
-import de.sicherheitskritisch.passbutler.base.Result
-import de.sicherheitskritisch.passbutler.base.Success
-import de.sicherheitskritisch.passbutler.base.resultOrThrowException
-import de.sicherheitskritisch.passbutler.base.toUTF8String
+import de.passbutler.common.base.Failure
+import de.passbutler.common.base.Result
+import de.passbutler.common.base.Success
+import de.passbutler.common.base.resultOrThrowException
+import de.passbutler.common.base.toUTF8String
 import de.sicherheitskritisch.passbutler.base.viewmodels.CoroutineScopeAndroidViewModel
 import de.sicherheitskritisch.passbutler.crypto.Biometrics
 import kotlinx.coroutines.Dispatchers
