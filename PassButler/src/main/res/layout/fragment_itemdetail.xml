@@ -8,7 +8,7 @@
 
         <variable
             name="viewModel"
-            type="de.sicherheitskritisch.passbutler.ItemEditingViewModel" />
+            type="de.passbutler.app.ItemEditingViewModel" />
 
     </data>
 

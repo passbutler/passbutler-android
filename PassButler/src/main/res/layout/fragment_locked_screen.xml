@@ -9,11 +9,11 @@
 
         <variable
             name="fragment"
-            type="de.sicherheitskritisch.passbutler.LockedScreenFragment" />
+            type="de.passbutler.app.LockedScreenFragment" />
 
         <variable
             name="userViewModel"
-            type="de.sicherheitskritisch.passbutler.UserViewModel" />
+            type="de.passbutler.app.UserViewModel" />
 
     </data>
 

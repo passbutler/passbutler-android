@@ -13,6 +13,10 @@ ext.gitCommitHashShort = {
 }
 
 android {
+    sourceSets.all {
+        java.srcDir("src/$name/kotlin")
+    }
+
     compileSdkVersion rootProject.ext.compileSdkVersion
 
     compileOptions {
@@ -26,7 +30,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "de.sicherheitskritisch.passbutler"
+        applicationId "de.passbutler.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode gitCommitCount()
