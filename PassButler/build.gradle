@@ -14,7 +14,7 @@ ext.gitCommitHashShort = {
 
 android {
     sourceSets.all {
-        java.srcDir("src/$name/kotlin")
+        java.srcDirs += ["src/$name/kotlin"]
     }
 
     compileSdkVersion rootProject.ext.compileSdkVersion
