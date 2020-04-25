@@ -21,8 +21,7 @@ class RegisterLocalUserViewModel(application: Application) : CoroutineScopeAndro
         return if (masterPasswordTestResult is Failure) {
             masterPasswordTestResult
         } else {
-            val serverUrl = URI.create(serverUrlString)
-            userManager.registerLocalUser(serverUrl, masterPassword)
+            userManager.registerLocalUser(serverUrlString, masterPassword)
         }
     }
 }

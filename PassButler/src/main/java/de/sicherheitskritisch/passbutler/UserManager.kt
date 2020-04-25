@@ -12,6 +12,7 @@ import de.passbutler.common.base.Success
 import de.passbutler.common.base.byteSize
 import de.passbutler.common.base.clear
 import de.passbutler.common.base.resultOrThrowException
+import de.passbutler.common.base.toURIOrNull
 import de.passbutler.common.crypto.Derivation
 import de.passbutler.common.crypto.EncryptionAlgorithm
 import de.passbutler.common.crypto.MASTER_KEY_BIT_LENGTH
@@ -69,8 +70,10 @@ class UserManager(private val applicationContext: Context, private val localRepo
     private var loggedInStateStorage: LoggedInStateStorage? = null
     private var loggedInUser: User? = null
 
-    suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrl: URI): Result<Unit> {
+    suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrlString: String): Result<Unit> {
         return try {
+            val serverUrl = URI.create(serverUrlString)
+
             loggedInStateStorage = createLoggedInStateStorage().also { createdLoggedInStateStorage ->
                 createdLoggedInStateStorage.reset()
 
@@ -207,8 +210,10 @@ class UserManager(private val applicationContext: Context, private val localRepo
         return protectedUserSettings
     }
 
-    suspend fun registerLocalUser(serverUrl: URI, masterPassword: String): Result<Unit> {
+    suspend fun registerLocalUser(serverUrlString: String, masterPassword: String): Result<Unit> {
         return try {
+            val serverUrl = URI.create(serverUrlString)
+
             val loggedInStateStorage = loggedInStateStorage ?: throw LoggedInStateStorageUninitializedException
             val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is not initialized!")
             val username = loggedInUser.username
@@ -462,7 +467,7 @@ class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
             val restoredEncryptedMasterPassword = sharedPreferences.getString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, null)?.let { EncryptedValue.Deserializer.deserializeOrNull(it) }
 
             val restoredAuthToken = sharedPreferences.getString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, null)?.let { AuthToken.Deserializer.deserializeOrNull(it) }
-            val restoredServerUrl = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SERVERURL, null)?.let { URI.create(it) }
+            val restoredServerUrl = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SERVERURL, null)?.toURIOrNull()
             val restoredLastSuccessfulSyncDate = sharedPreferences.getLong(SHARED_PREFERENCES_KEY_LAST_SUCCESSFUL_SYNC_DATE, 0).takeIf { it > 0 }?.let { Date(it) }
 
             withContext(Dispatchers.Main) {

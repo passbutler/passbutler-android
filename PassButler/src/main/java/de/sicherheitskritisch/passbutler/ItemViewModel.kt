@@ -199,9 +199,7 @@ class ItemEditingViewModel(
         val asymmetricEncryptionAlgorithm = EncryptionAlgorithm.Asymmetric.RSA2048OAEP
 
         return try {
-            val protectedItemKey = ProtectedValue.create(asymmetricEncryptionAlgorithm, loggedInUserItemEncryptionPublicKey,
-                CryptographicKey(itemKey)
-            ).resultOrThrowException()
+            val protectedItemKey = ProtectedValue.create(asymmetricEncryptionAlgorithm, loggedInUserItemEncryptionPublicKey, CryptographicKey(itemKey)).resultOrThrowException()
             val currentDate = Date()
             val itemAuthorization = ItemAuthorization(
                 id = UUID.randomUUID().toString(),

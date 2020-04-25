@@ -18,10 +18,7 @@ class LoginViewModel(application: Application) : CoroutineScopeAndroidViewModel(
 
         return when (serverUrlString) {
             null -> userManager.loginLocalUser(username, masterPassword)
-            else -> {
-                val serverUrl = URI.create(serverUrlString)
-                userManager.loginRemoteUser(username, masterPassword, serverUrl)
-            }
+            else -> userManager.loginRemoteUser(username, masterPassword, serverUrlString)
         }
     }
 }
