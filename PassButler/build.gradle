@@ -14,7 +14,13 @@ ext.gitCommitHashShort = {
 
 android {
     sourceSets.all {
-        java.srcDir("src/$name/kotlin")
+        java.srcDirs += ["src/$name/kotlin"]
+
+        // For test targets include shared test code of common module
+        if (name.startsWith("test")) {
+            def commonModuleProjectDirectory = project(':PassButlerCommon').projectDir.path
+            java.srcDirs += ["$commonModuleProjectDirectory/src/$name/kotlin"]
+        }
     }
 
     compileSdkVersion rootProject.ext.compileSdkVersion
