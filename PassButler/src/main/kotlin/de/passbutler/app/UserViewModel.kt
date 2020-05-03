@@ -1,9 +1,7 @@
 package de.passbutler.app
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import com.squareup.sqldelight.Query
 import de.passbutler.app.base.NonNullMutableLiveData
 import de.passbutler.app.base.NonNullValueGetterLiveData
 import de.passbutler.app.base.viewmodels.ManualCancelledCoroutineScopeViewModel
@@ -11,19 +9,18 @@ import de.passbutler.app.crypto.Biometrics
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
+import de.passbutler.common.base.addSignal
 import de.passbutler.common.base.clear
 import de.passbutler.common.base.resultOrThrowException
+import de.passbutler.common.base.signal
 import de.passbutler.common.crypto.Derivation
 import de.passbutler.common.crypto.models.CryptographicKey
 import de.passbutler.common.crypto.models.EncryptedValue
 import de.passbutler.common.crypto.models.KeyDerivationInformation
 import de.passbutler.common.crypto.models.ProtectedValue
 import de.passbutler.common.database.models.Item
-import de.passbutler.common.database.models.ItemAuthorization
 import de.passbutler.common.database.models.User
 import de.passbutler.common.database.models.UserSettings
-import de.passbutler.common.database.models.generated.ItemAuthorizationModel
-import de.passbutler.common.database.models.generated.ItemModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -77,10 +74,10 @@ class UserViewModel private constructor(
         biometricUnlockAvailable.value && encryptedMasterPassword.value != null
     }
 
-    private var itemsObservable: Query<ItemModel>? = null
-    private var itemAuthorizationsObservable: Query<ItemAuthorizationModel>? = null
+    private val updateItemViewModelsSignal = signal {
+        updateItemViewModels()
+    }
 
-    private val updateItemViewModelsObserver = UpdateItemViewModelsObserver()
     private var itemViewModelsUpdateJob: Job? = null
 
     private val automaticLockTimeoutChangedObserver = Observer<Int?> { applyUserSettings() }
@@ -133,7 +130,7 @@ class UserViewModel private constructor(
             masterEncryptionKey = decryptMasterEncryptionKey(masterPassword).resultOrThrowException().also { masterEncryptionKey ->
                 itemEncryptionSecretKey = protectedItemEncryptionSecretKey.decrypt(masterEncryptionKey, CryptographicKey.Deserializer).resultOrThrowException().key
 
-                registerModelChangedObservers()
+                registerUpdateItemViewModelsSignal()
 
                 val decryptedSettings = protectedSettings.decrypt(masterEncryptionKey, UserSettings.Deserializer).resultOrThrowException()
                 registerUserSettingObservers(decryptedSettings)
@@ -165,16 +162,8 @@ class UserViewModel private constructor(
         }
     }
 
-    private suspend fun registerModelChangedObservers() {
-        withContext(Dispatchers.Main) {
-            // Save "item observable" instance to be able to unregister observer on exact this instance later
-            itemsObservable = userManager.itemsObservable()
-            itemsObservable?.addListener(updateItemViewModelsObserver)
-
-            // Save "item authorization observable" instance to be able to unregister observer on exact this instance later
-            itemAuthorizationsObservable = userManager.itemAuthorizationsObservable()
-            itemAuthorizationsObservable?.addListener(updateItemViewModelsObserver)
-        }
+    private fun registerUpdateItemViewModelsSignal() {
+        userManager.itemsOrItemAuthorizationsChanged.addSignal(updateItemViewModelsSignal, true)
     }
 
     private suspend fun registerUserSettingObservers(decryptedSettings: UserSettings) {
@@ -197,7 +186,7 @@ class UserViewModel private constructor(
         itemEncryptionSecretKey?.clear()
         itemEncryptionSecretKey = null
 
-        unregisterModelChangedObservers()
+        unregisterUpdateItemViewModelsSignal()
 
         itemViewModels.value.forEach {
             it.clearSensibleData()
@@ -206,14 +195,11 @@ class UserViewModel private constructor(
         unregisterUserSettingObservers()
     }
 
-    private suspend fun unregisterModelChangedObservers() {
-        withContext(Dispatchers.Main) {
-            // First remove observers and than cancel the (possible) running "update item viewmodels" job
-            itemsObservable?.removeListener(updateItemViewModelsObserver)
-            itemAuthorizationsObservable?.removeListener(updateItemViewModelsObserver)
+    private fun unregisterUpdateItemViewModelsSignal() {
+        userManager.itemsOrItemAuthorizationsChanged.removeSignal(updateItemViewModelsSignal)
 
-            itemViewModelsUpdateJob?.cancel()
-        }
+        // Finally cancel the (possible) running "update item viewmodels" job
+        itemViewModelsUpdateJob?.cancel()
     }
 
     private suspend fun unregisterUserSettingObservers() {
@@ -445,12 +431,6 @@ class UserViewModel private constructor(
                     is Failure -> null
                 }
             }
-    }
-
-    private inner class UpdateItemViewModelsObserver : Query.Listener {
-        override fun queryResultsChanged() {
-            updateItemViewModels()
-        }
     }
 
     companion object {

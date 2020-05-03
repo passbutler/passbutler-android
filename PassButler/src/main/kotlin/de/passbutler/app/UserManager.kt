@@ -13,6 +13,7 @@ import de.passbutler.app.database.requestWithResult
 import de.passbutler.app.database.requestWithoutResult
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
+import de.passbutler.common.base.SignalEmitter
 import de.passbutler.common.base.Success
 import de.passbutler.common.base.byteSize
 import de.passbutler.common.base.clear
@@ -35,8 +36,6 @@ import de.passbutler.common.database.models.Item
 import de.passbutler.common.database.models.ItemAuthorization
 import de.passbutler.common.database.models.User
 import de.passbutler.common.database.models.UserSettings
-import de.passbutler.common.database.models.generated.ItemAuthorizationModel
-import de.passbutler.common.database.models.generated.ItemModel
 import de.passbutler.common.database.remoteChangedItems
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -70,8 +69,18 @@ class UserManager(private val applicationContext: Context, private val localRepo
         authWebservice.value != null && userWebservice.value != null
     }
 
+    val itemsOrItemAuthorizationsChanged = SignalEmitter()
+
+    private val itemsOrItemAuthorizationsQueryListener = ItemsOrItemAuthorizationsQueryListener()
+
     private var loggedInStateStorage: LoggedInStateStorage? = null
     private var loggedInUser: User? = null
+
+    init {
+        // Listen for complete application lifecycle for repository changes
+        localRepository.itemQueries.findAll().addListener(itemsOrItemAuthorizationsQueryListener)
+        localRepository.itemAuthorizationQueries.findAll().addListener(itemsOrItemAuthorizationsQueryListener)
+    }
 
     suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrlString: String): Result<Unit> {
         return try {
@@ -291,10 +300,6 @@ class UserManager(private val applicationContext: Context, private val localRepo
         localRepository.updateUser(user)
     }
 
-    suspend fun itemsObservable(): Query<ItemModel> {
-        return localRepository.itemsObservable()
-    }
-
     suspend fun findAllItems(): List<Item> {
         return localRepository.findAllItems()
     }
@@ -305,10 +310,6 @@ class UserManager(private val applicationContext: Context, private val localRepo
 
     suspend fun updateItem(item: Item) {
         localRepository.updateItem(item)
-    }
-
-    suspend fun itemAuthorizationsObservable(): Query<ItemAuthorizationModel> {
-        return localRepository.itemAuthorizationsObservable()
     }
 
     suspend fun findItemAuthorizationForItem(item: Item): List<ItemAuthorization> {
@@ -401,6 +402,12 @@ class UserManager(private val applicationContext: Context, private val localRepo
 
         localRepository.reset()
         loggedInStateStorage?.reset()
+    }
+
+    private inner class ItemsOrItemAuthorizationsQueryListener : Query.Listener {
+        override fun queryResultsChanged() {
+            itemsOrItemAuthorizationsChanged.emit()
+        }
     }
 }
 
