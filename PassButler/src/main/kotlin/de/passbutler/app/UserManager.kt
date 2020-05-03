@@ -529,7 +529,7 @@ enum class UserType {
 
     companion object {
         fun valueOfOrNull(name: String): UserType? {
-            return values().firstOrNull { it.name == name }
+            return values().find { it.name == name }
         }
     }
 }

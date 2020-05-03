@@ -39,6 +39,11 @@ class RootViewModel : CoroutineScopedViewModel() {
         super.onCleared()
     }
 
+    private fun unregisterLoggedInUserResultObserver() {
+        val userManager = userManager ?: throw UserManagerUninitializedException
+        userManager.loggedInUserResult.removeObserver(loggedInUserResultObserver)
+    }
+
     suspend fun restoreLoggedInUser() {
         // Create `UserManager` if not already created
         val userManager = userManager ?: run {
@@ -59,11 +64,6 @@ class RootViewModel : CoroutineScopedViewModel() {
     private fun registerLoggedInUserResultObserver() {
         val userManager = userManager ?: throw UserManagerUninitializedException
         userManager.loggedInUserResult.observeForever(loggedInUserResultObserver)
-    }
-
-    private fun unregisterLoggedInUserResultObserver() {
-        val userManager = userManager ?: throw UserManagerUninitializedException
-        userManager.loggedInUserResult.removeObserver(loggedInUserResultObserver)
     }
 
     suspend fun unlockScreenWithPassword(masterPassword: String): Result<Unit> {
