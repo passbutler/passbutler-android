@@ -34,9 +34,7 @@ class RootViewModel : CoroutineScopedViewModel() {
     private var lockScreenTimerJob: Job? = null
 
     override fun onCleared() {
-        val userManager = userManager ?: throw UserManagerUninitializedException
-        userManager.loggedInUserResult.removeObserver(loggedInUserResultObserver)
-
+        unregisterLoggedInUserResultObserver()
         super.onCleared()
     }
 
@@ -45,12 +43,25 @@ class RootViewModel : CoroutineScopedViewModel() {
         val userManager = userManager ?: run {
             val localRepository = null
             val createdUserManager = UserManager(AbstractPassButlerApplication.applicationContext, localRepository)
+
+            // Set `UserManager` first to be sure registered observer can already access field
             userManager = createdUserManager
+            registerLoggedInUserResultObserver()
 
             createdUserManager
         }
 
         userManager.restoreLoggedInUser()
+    }
+
+    private fun registerLoggedInUserResultObserver() {
+        val userManager = userManager ?: throw UserManagerUninitializedException
+        userManager.loggedInUserResult.observeForever(loggedInUserResultObserver)
+    }
+
+    private fun unregisterLoggedInUserResultObserver() {
+        val userManager = userManager ?: throw UserManagerUninitializedException
+        userManager.loggedInUserResult.removeObserver(loggedInUserResultObserver)
     }
 
     suspend fun unlockScreenWithPassword(masterPassword: String): Result<Unit> {
