@@ -5,14 +5,10 @@ import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.squareup.sqldelight.Query
 import de.passbutler.app.base.DependentOptionalValueGetterLiveData
 import de.passbutler.app.database.AuthWebservice
-import de.passbutler.app.database.LocalRepository
 import de.passbutler.app.database.UserWebservice
-import de.passbutler.app.database.models.Item
-import de.passbutler.app.database.models.ItemAuthorization
-import de.passbutler.app.database.models.User
-import de.passbutler.app.database.models.UserSettings
 import de.passbutler.app.database.requestWithResult
 import de.passbutler.app.database.requestWithoutResult
 import de.passbutler.common.base.Failure
@@ -33,7 +29,14 @@ import de.passbutler.common.crypto.models.EncryptedValue
 import de.passbutler.common.crypto.models.KeyDerivationInformation
 import de.passbutler.common.crypto.models.ProtectedValue
 import de.passbutler.common.database.Differentiation
+import de.passbutler.common.database.LocalRepository
 import de.passbutler.common.database.SynchronizationTask
+import de.passbutler.common.database.models.Item
+import de.passbutler.common.database.models.ItemAuthorization
+import de.passbutler.common.database.models.User
+import de.passbutler.common.database.models.UserSettings
+import de.passbutler.common.database.models.generated.ItemAuthorizationModel
+import de.passbutler.common.database.models.generated.ItemModel
 import de.passbutler.common.database.remoteChangedItems
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -342,8 +345,12 @@ class UserManager(private val applicationContext: Context, private val localRepo
         localRepository.updateUser(user)
     }
 
-    suspend fun itemsObservable(): LiveData<List<Item>> {
+    suspend fun itemsObservable(): Query<ItemModel> {
         return localRepository.itemsObservable()
+    }
+
+    suspend fun findAllItems(): List<Item> {
+        return localRepository.findAllItems()
     }
 
     suspend fun createItem(item: Item) {
@@ -354,7 +361,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
         localRepository.updateItem(item)
     }
 
-    suspend fun itemAuthorizationsObservable(): LiveData<List<ItemAuthorization>> {
+    suspend fun itemAuthorizationsObservable(): Query<ItemAuthorizationModel> {
         return localRepository.itemAuthorizationsObservable()
     }
 

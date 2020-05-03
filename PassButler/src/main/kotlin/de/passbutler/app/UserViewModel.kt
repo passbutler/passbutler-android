@@ -3,14 +3,11 @@ package de.passbutler.app
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import com.squareup.sqldelight.Query
 import de.passbutler.app.base.NonNullMutableLiveData
 import de.passbutler.app.base.NonNullValueGetterLiveData
 import de.passbutler.app.base.viewmodels.ManualCancelledCoroutineScopeViewModel
 import de.passbutler.app.crypto.Biometrics
-import de.passbutler.app.database.models.Item
-import de.passbutler.app.database.models.ItemAuthorization
-import de.passbutler.app.database.models.User
-import de.passbutler.app.database.models.UserSettings
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
@@ -21,6 +18,12 @@ import de.passbutler.common.crypto.models.CryptographicKey
 import de.passbutler.common.crypto.models.EncryptedValue
 import de.passbutler.common.crypto.models.KeyDerivationInformation
 import de.passbutler.common.crypto.models.ProtectedValue
+import de.passbutler.common.database.models.Item
+import de.passbutler.common.database.models.ItemAuthorization
+import de.passbutler.common.database.models.User
+import de.passbutler.common.database.models.UserSettings
+import de.passbutler.common.database.models.generated.ItemAuthorizationModel
+import de.passbutler.common.database.models.generated.ItemModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -74,12 +77,10 @@ class UserViewModel private constructor(
         biometricUnlockAvailable.value && encryptedMasterPassword.value != null
     }
 
-    private var itemsObservable: LiveData<List<Item>>? = null
-    private val itemsObserver = ItemsChangedObserver()
+    private var itemsObservable: Query<ItemModel>? = null
+    private var itemAuthorizationsObservable: Query<ItemAuthorizationModel>? = null
 
-    private var itemAuthorizationsObservable: LiveData<List<ItemAuthorization>>? = null
-    private val itemAuthorizationsObserver = ItemAuthorizationsChangedObserver()
-
+    private val updateItemViewModelsObserver = UpdateItemViewModelsObserver()
     private var itemViewModelsUpdateJob: Job? = null
 
     private val automaticLockTimeoutChangedObserver = Observer<Int?> { applyUserSettings() }
@@ -121,7 +122,7 @@ class UserViewModel private constructor(
     }
 
     fun createNewItemEditingViewModel(): ItemEditingViewModel {
-        val itemModel = ItemModel.New(this)
+        val itemModel = ItemEditingViewModel.ItemModel.New(this)
         return ItemEditingViewModel(itemModel, userManager)
     }
 
@@ -168,11 +169,11 @@ class UserViewModel private constructor(
         withContext(Dispatchers.Main) {
             // Save "item observable" instance to be able to unregister observer on exact this instance later
             itemsObservable = userManager.itemsObservable()
-            itemsObservable?.observeForever(itemsObserver)
+            itemsObservable?.addListener(updateItemViewModelsObserver)
 
             // Save "item authorization observable" instance to be able to unregister observer on exact this instance later
             itemAuthorizationsObservable = userManager.itemAuthorizationsObservable()
-            itemAuthorizationsObservable?.observeForever(itemAuthorizationsObserver)
+            itemAuthorizationsObservable?.addListener(updateItemViewModelsObserver)
         }
     }
 
@@ -208,8 +209,8 @@ class UserViewModel private constructor(
     private suspend fun unregisterModelChangedObservers() {
         withContext(Dispatchers.Main) {
             // First remove observers and than cancel the (possible) running "update item viewmodels" job
-            itemsObservable?.removeObserver(itemsObserver)
-            itemAuthorizationsObservable?.removeObserver(itemAuthorizationsObserver)
+            itemsObservable?.removeListener(updateItemViewModelsObserver)
+            itemAuthorizationsObservable?.removeListener(updateItemViewModelsObserver)
 
             itemViewModelsUpdateJob?.cancel()
         }
@@ -360,9 +361,10 @@ class UserViewModel private constructor(
         )
     }
 
-    private fun updateItemViewModels(newItems: List<Item>) {
+    private fun updateItemViewModels() {
         itemViewModelsUpdateJob?.cancel()
         itemViewModelsUpdateJob = launch {
+            val newItems = userManager.findAllItems()
             val updatedItemViewModels = createItemViewModels(newItems)
             val decryptedItemViewModels = decryptItemViewModels(updatedItemViewModels)
 
@@ -445,17 +447,9 @@ class UserViewModel private constructor(
             }
     }
 
-    private inner class ItemsChangedObserver : Observer<List<Item>> {
-        override fun onChanged(newItems: List<Item>) {
-            updateItemViewModels(newItems)
-        }
-    }
-
-    private inner class ItemAuthorizationsChangedObserver : Observer<List<ItemAuthorization>> {
-        override fun onChanged(newItemAuthorizations: List<ItemAuthorization>) {
-            itemsObservable?.value?.let { newItems ->
-                updateItemViewModels(newItems)
-            }
+    private inner class UpdateItemViewModelsObserver : Query.Listener {
+        override fun queryResultsChanged() {
+            updateItemViewModels()
         }
     }
 

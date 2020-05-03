@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import de.passbutler.app.base.AbstractPassButlerApplication
 import de.passbutler.app.base.viewmodels.CoroutineScopedViewModel
 import de.passbutler.app.crypto.Biometrics
+import de.passbutler.app.database.createLocalRepository
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
@@ -41,8 +42,9 @@ class RootViewModel : CoroutineScopedViewModel() {
     suspend fun restoreLoggedInUser() {
         // Create `UserManager` if not already created
         val userManager = userManager ?: run {
-            val localRepository = null
-            val createdUserManager = UserManager(AbstractPassButlerApplication.applicationContext, localRepository)
+            val applicationContext = AbstractPassButlerApplication.applicationContext
+            val localRepository = createLocalRepository(applicationContext)
+            val createdUserManager = UserManager(applicationContext, localRepository)
 
             // Set `UserManager` first to be sure registered observer can already access field
             userManager = createdUserManager

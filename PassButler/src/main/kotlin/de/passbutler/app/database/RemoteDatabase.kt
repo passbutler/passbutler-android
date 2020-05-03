@@ -2,9 +2,9 @@ package de.passbutler.app.database
 
 import de.passbutler.app.UserManager
 import de.passbutler.app.base.BuildType
-import de.passbutler.app.database.models.Item
-import de.passbutler.app.database.models.ItemAuthorization
-import de.passbutler.app.database.models.User
+import de.passbutler.common.database.models.Item
+import de.passbutler.common.database.models.ItemAuthorization
+import de.passbutler.common.database.models.User
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success

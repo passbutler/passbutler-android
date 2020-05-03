@@ -113,12 +113,6 @@ dependencies {
     //noinspection LifecycleAnnotationProcessorWithJava8
     kapt "androidx.lifecycle:lifecycle-compiler:2.2.0"
 
-    // Android Room components (including Kotlin Coroutine support)
-    def roomVersion = "2.2.5"
-    implementation "androidx.room:room-runtime:$roomVersion"
-    implementation "androidx.room:room-ktx:$roomVersion"
-    kapt "androidx.room:room-compiler:$roomVersion"
-
     // Android Biometrics framework
     implementation "androidx.biometric:biometric:1.0.1"
 
