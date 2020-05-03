@@ -680,3 +680,4 @@ private class ItemAuthorizationsSynchronizationTask(
 }
 
 object LoggedInStateStorageUninitializedException : IllegalStateException("Access of uninitialized LoggedInStateStorage!")
+object UserManagerUninitializedException : IllegalStateException("The UserManager is null!")

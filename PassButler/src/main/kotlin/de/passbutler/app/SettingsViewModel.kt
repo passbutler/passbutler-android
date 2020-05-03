@@ -1,8 +1,7 @@
 package de.passbutler.app
 
-import android.app.Application
 import de.passbutler.app.base.NonNullValueGetterLiveData
-import de.passbutler.app.base.viewmodels.CoroutineScopeAndroidViewModel
+import de.passbutler.app.base.viewmodels.CoroutineScopedViewModel
 import de.passbutler.app.crypto.Biometrics
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
@@ -10,7 +9,7 @@ import de.passbutler.common.base.Success
 import de.passbutler.common.base.resultOrThrowException
 import javax.crypto.Cipher
 
-class SettingsViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
+class SettingsViewModel : CoroutineScopedViewModel() {
 
     var loggedInUserViewModel: UserViewModel? = null
 

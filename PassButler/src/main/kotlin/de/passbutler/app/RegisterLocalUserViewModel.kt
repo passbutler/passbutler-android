@@ -1,16 +1,15 @@
 package de.passbutler.app
 
-import android.app.Application
-import de.passbutler.app.base.viewmodels.CoroutineScopeAndroidViewModel
+import de.passbutler.app.base.viewmodels.CoroutineScopedViewModel
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 
-class RegisterLocalUserViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
+class RegisterLocalUserViewModel : CoroutineScopedViewModel() {
 
     lateinit var rootViewModel: RootViewModel
 
     suspend fun registerLocalUser(serverUrlString: String, masterPassword: String): Result<Unit> {
-        val userManager = rootViewModel.userManager
+        val userManager = rootViewModel.userManager ?: throw UserManagerUninitializedException
         val loggedInUserViewModel = rootViewModel.loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
 
         // Check the given master password locally to avoid the auth webservice is initialized with non-working authentication

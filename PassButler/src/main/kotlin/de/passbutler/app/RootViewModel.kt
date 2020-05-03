@@ -1,13 +1,12 @@
 package de.passbutler.app
 
-import android.app.Application
 import android.text.format.DateUtils
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import de.passbutler.app.base.AbstractPassButlerApplication
-import de.passbutler.app.base.viewmodels.CoroutineScopeAndroidViewModel
+import de.passbutler.app.base.viewmodels.CoroutineScopedViewModel
 import de.passbutler.app.crypto.Biometrics
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
@@ -22,34 +21,40 @@ import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 import javax.crypto.Cipher
 
-class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(application) {
+class RootViewModel : CoroutineScopedViewModel() {
 
+    var userManager: UserManager? = null
     var loggedInUserViewModel: UserViewModel? = null
 
     val rootScreenState = MutableLiveData<RootScreenState?>()
     val lockScreenState = MutableLiveData<LockScreenState?>()
 
-    val userManager
-        get() = getApplication<AbstractPassButlerApplication>().userManager
-
     private val loggedInUserResultObserver = LoggedInUserResultObserver()
 
     private var lockScreenTimerJob: Job? = null
 
-    init {
-        userManager.loggedInUserResult.observeForever(loggedInUserResultObserver)
-    }
-
     override fun onCleared() {
+        val userManager = userManager ?: throw UserManagerUninitializedException
         userManager.loggedInUserResult.removeObserver(loggedInUserResultObserver)
+
         super.onCleared()
     }
 
     suspend fun restoreLoggedInUser() {
+        // Create `UserManager` if not already created
+        val userManager = userManager ?: run {
+            val localRepository = null
+            val createdUserManager = UserManager(AbstractPassButlerApplication.applicationContext, localRepository)
+            userManager = createdUserManager
+
+            createdUserManager
+        }
+
         userManager.restoreLoggedInUser()
     }
 
     suspend fun unlockScreenWithPassword(masterPassword: String): Result<Unit> {
+        val userManager = userManager ?: throw UserManagerUninitializedException
         val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
         val decryptSensibleDataResult = loggedInUserViewModel.decryptSensibleData(masterPassword)
 
@@ -82,6 +87,7 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
     }
 
     suspend fun unlockScreenWithBiometrics(initializedBiometricUnlockCipher: Cipher): Result<Unit> {
+        val userManager = userManager ?: throw UserManagerUninitializedException
         val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
         val encryptedMasterPassword = loggedInUserViewModel.encryptedMasterPassword.value?.encryptedValue
             ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
@@ -152,6 +158,8 @@ class RootViewModel(application: Application) : CoroutineScopeAndroidViewModel(a
 
     private inner class LoggedInUserResultObserver : Observer<LoggedInUserResult?> {
         override fun onChanged(loggedInUserResult: LoggedInUserResult?) {
+            val userManager = userManager ?: throw UserManagerUninitializedException
+
             when (loggedInUserResult) {
                 is LoggedInUserResult.PerformedLogin -> {
                     loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.newLoggedInUser, loggedInUserResult.masterPassword)
