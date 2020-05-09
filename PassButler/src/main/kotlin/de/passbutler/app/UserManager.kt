@@ -365,8 +365,8 @@ class UserManager(private val localRepository: LocalRepository) {
 
         loggedInUser = null
 
-        localRepository.reset()
         loggedInStateStorage = null
+        localRepository.reset()
     }
 
     private inner class ItemsOrItemAuthorizationsQueryListener : Query.Listener {
