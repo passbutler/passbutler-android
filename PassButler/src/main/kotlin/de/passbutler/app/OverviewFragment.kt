@@ -39,7 +39,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
-import java.util.*
 
 class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
@@ -70,8 +69,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         }
     }
 
-    private val webservicesInitializedObserver = Observer<Boolean> { webservicesInitialized ->
-        if (webservicesInitialized) {
+    private val webservicesInitializedSignal = signal {
+        if (viewModel.loggedInUserViewModel?.webservicesInitialized == true) {
             synchronizeData(userTriggered = false)
         }
     }
@@ -144,7 +143,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
         viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
         viewModel.loggedInUserViewModel?.loggedInStateStorageChanged?.addSignal(loggedInStateStorageChangedSignal, true)
-        viewModel.loggedInUserViewModel?.webservicesInitialized?.observe(viewLifecycleOwner, true, webservicesInitializedObserver)
+        viewModel.loggedInUserViewModel?.webservicesInitializedSignalEmitter?.addSignal(webservicesInitializedSignal, true)
 
         updateToolbarJob?.cancel()
         updateToolbarJob = launch {
@@ -160,6 +159,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
     override fun onStop() {
         viewModel.loggedInUserViewModel?.loggedInStateStorageChanged?.removeSignal(loggedInStateStorageChangedSignal)
+        viewModel.loggedInUserViewModel?.webservicesInitializedSignalEmitter?.removeSignal(webservicesInitializedSignal)
+
         updateToolbarJob?.cancel()
         super.onStop()
     }
@@ -196,7 +197,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
             if (viewModel.loggedInUserViewModel?.userType == UserType.REMOTE) {
                 isEnabled = true
                 setOnRefreshListener {
-                    if (viewModel.loggedInUserViewModel?.webservicesInitialized?.value == true) {
+                    if (viewModel.loggedInUserViewModel?.webservicesInitialized == true) {
                         synchronizeData(userTriggered = true)
                     } else {
                         // Immediately stop refreshing if is not possible

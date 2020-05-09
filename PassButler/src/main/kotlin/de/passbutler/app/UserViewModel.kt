@@ -61,6 +61,9 @@ class UserViewModel private constructor(
     val webservicesInitialized
         get() = userManager.webservicesInitialized
 
+    val webservicesInitializedSignalEmitter
+        get() = userManager.webservicesInitializedSignalEmitter
+
     val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
 
     val automaticLockTimeout = MutableLiveData<Int?>()
