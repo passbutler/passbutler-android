@@ -6,9 +6,6 @@ import de.passbutler.app.base.NonNullValueGetterLiveData
 import de.passbutler.app.base.OptionalValueGetterLiveData
 import de.passbutler.app.base.viewmodels.EditableViewModel
 import de.passbutler.app.base.viewmodels.EditingViewModel
-import de.passbutler.app.database.models.Item
-import de.passbutler.app.database.models.ItemAuthorization
-import de.passbutler.app.database.models.ItemData
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
@@ -17,6 +14,9 @@ import de.passbutler.common.base.resultOrThrowException
 import de.passbutler.common.crypto.EncryptionAlgorithm
 import de.passbutler.common.crypto.models.CryptographicKey
 import de.passbutler.common.crypto.models.ProtectedValue
+import de.passbutler.common.database.models.Item
+import de.passbutler.common.database.models.ItemAuthorization
+import de.passbutler.common.database.models.ItemData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
@@ -79,7 +79,7 @@ class ItemViewModel(
         // Pass a copy of the item key to `ItemEditingViewModel` to avoid it get cleared via reference
         val itemKeyCopy = itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite a ItemEditingViewModel is created!")
 
-        val itemModel = ItemModel.Existing(item, itemAuthorization, itemData, itemKeyCopy)
+        val itemModel = ItemEditingViewModel.ItemModel.Existing(item, itemAuthorization, itemData, itemKeyCopy)
         return ItemEditingViewModel(itemModel, userManager)
     }
 
@@ -270,13 +270,14 @@ class ItemEditingViewModel(
 
         return Success(Unit)
     }
+
+    sealed class ItemModel {
+        class New(val loggedInUserViewModel: UserViewModel) : ItemModel()
+        class Existing(val item: Item, val itemAuthorization: ItemAuthorization, val itemData: ItemData, val itemKey: ByteArray) : ItemModel()
+    }
+
 }
 
-sealed class ItemModel {
-    class New(val loggedInUserViewModel: UserViewModel) : ItemModel()
-    class Existing(val item: Item, val itemAuthorization: ItemAuthorization, val itemData: ItemData, val itemKey: ByteArray) : ItemModel()
-}
-
-private fun ItemModel.asExistingOrNull(): ItemModel.Existing? {
-    return (this as? ItemModel.Existing)
+private fun ItemEditingViewModel.ItemModel.asExistingOrNull(): ItemEditingViewModel.ItemModel.Existing? {
+    return (this as? ItemEditingViewModel.ItemModel.Existing)
 }

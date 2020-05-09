@@ -2,6 +2,7 @@ apply plugin: "com.android.application"
 apply plugin: "kotlin-android"
 apply plugin: "kotlin-android-extensions"
 apply plugin: "kotlin-kapt"
+apply plugin: "com.squareup.sqldelight"
 apply plugin: "de.mannodermaus.android-junit5"
 
 ext.gitCommitCount = {
@@ -15,12 +16,6 @@ ext.gitCommitHashShort = {
 android {
     sourceSets.all {
         java.srcDirs += ["src/$name/kotlin"]
-
-        // For test targets include shared test code of common module
-        if (name.startsWith("test")) {
-            def commonModuleProjectDirectory = project(':PassButlerCommon').projectDir.path
-            java.srcDirs += ["$commonModuleProjectDirectory/src/$name/kotlin"]
-        }
     }
 
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -29,6 +24,11 @@ android {
         // Required minimum Java 8 for OkHttp3 used in Retrofit
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    // Avoid "More than one file was found with OS independent path" problem
+    packagingOptions {
+        exclude 'META-INF/*.kotlin_module'
     }
 
     dataBinding {
@@ -82,6 +82,18 @@ dependencies {
     // Kotlin Coroutines for Android
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.3"
 
+    // TinyLog logger
+    def tinylogVersion = "2.1.1"
+    implementation "org.tinylog:tinylog-api-kotlin:$tinylogVersion"
+    implementation "org.tinylog:tinylog-impl:$tinylogVersion"
+
+    // SQLDelight
+    implementation "com.squareup.sqldelight:android-driver:1.3.0"
+
+    // Retrofit with OkHttp
+    implementation "com.squareup.retrofit2:retrofit:2.8.1"
+    implementation "com.squareup.okhttp3:okhttp:4.6.0"
+
     // Google Material theme/components
     implementation "com.google.android.material:material:1.1.0"
 
@@ -92,39 +104,27 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout:1.1.3"
 
     // Android Lifecycle and ViewModel components
-    implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
+    def lifecycleVersion = "2.2.0"
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
 
     // Since no Java 8 is used this makes no sense
     //noinspection LifecycleAnnotationProcessorWithJava8
     kapt "androidx.lifecycle:lifecycle-compiler:2.2.0"
 
-    // Android Room components (including Kotlin Coroutine support)
-    def roomVersion = "2.2.5"
-    implementation "androidx.room:room-runtime:$roomVersion"
-    implementation "androidx.room:room-ktx:$roomVersion"
-    kapt "androidx.room:room-compiler:$roomVersion"
-
     // Android Biometrics framework
     implementation "androidx.biometric:biometric:1.0.1"
 
     // Android Preference framework
-    implementation "androidx.preference:preference:1.1.0"
-
-    // Retrofit with OkHttp
-    implementation "com.squareup.retrofit2:retrofit:2.8.1"
-    implementation "com.squareup.okhttp3:okhttp:4.5.0"
-
-    // TinyLog logger
-    def tinylogVersion = "2.1.1"
-    implementation "org.tinylog:tinylog-api-kotlin:$tinylogVersion"
-    implementation "org.tinylog:tinylog-impl:$tinylogVersion"
+    implementation "androidx.preference:preference:1.1.1"
 
     // JUnit 5
-    def junitVersion = "5.6.1"
+    def junitVersion = "5.6.2"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testImplementation "org.junit.jupiter:junit-jupiter-params:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
     // Mockk.io
-    testImplementation "io.mockk:mockk:1.9.3"
+    testImplementation "io.mockk:mockk:1.10.0"
 }

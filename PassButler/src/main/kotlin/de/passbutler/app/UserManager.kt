@@ -5,18 +5,15 @@ import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.squareup.sqldelight.Query
 import de.passbutler.app.base.DependentOptionalValueGetterLiveData
 import de.passbutler.app.database.AuthWebservice
-import de.passbutler.app.database.LocalRepository
 import de.passbutler.app.database.UserWebservice
-import de.passbutler.app.database.models.Item
-import de.passbutler.app.database.models.ItemAuthorization
-import de.passbutler.app.database.models.User
-import de.passbutler.app.database.models.UserSettings
 import de.passbutler.app.database.requestWithResult
 import de.passbutler.app.database.requestWithoutResult
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
+import de.passbutler.common.base.SignalEmitter
 import de.passbutler.common.base.Success
 import de.passbutler.common.base.byteSize
 import de.passbutler.common.base.clear
@@ -33,7 +30,12 @@ import de.passbutler.common.crypto.models.EncryptedValue
 import de.passbutler.common.crypto.models.KeyDerivationInformation
 import de.passbutler.common.crypto.models.ProtectedValue
 import de.passbutler.common.database.Differentiation
+import de.passbutler.common.database.LocalRepository
 import de.passbutler.common.database.SynchronizationTask
+import de.passbutler.common.database.models.Item
+import de.passbutler.common.database.models.ItemAuthorization
+import de.passbutler.common.database.models.User
+import de.passbutler.common.database.models.UserSettings
 import de.passbutler.common.database.remoteChangedItems
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -67,14 +69,24 @@ class UserManager(private val applicationContext: Context, private val localRepo
         authWebservice.value != null && userWebservice.value != null
     }
 
+    val itemsOrItemAuthorizationsChanged = SignalEmitter()
+
+    private val itemsOrItemAuthorizationsQueryListener = ItemsOrItemAuthorizationsQueryListener()
+
     private var loggedInStateStorage: LoggedInStateStorage? = null
     private var loggedInUser: User? = null
+
+    init {
+        // Listen for complete application lifecycle for repository changes
+        localRepository.itemQueries.findAll().addListener(itemsOrItemAuthorizationsQueryListener)
+        localRepository.itemAuthorizationQueries.findAll().addListener(itemsOrItemAuthorizationsQueryListener)
+    }
 
     suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrlString: String): Result<Unit> {
         return try {
             val serverUrl = URI.create(serverUrlString)
 
-            loggedInStateStorage = createLoggedInStateStorage().also { createdLoggedInStateStorage ->
+            loggedInStateStorage = createLoggedInStateStorage(applicationContext).also { createdLoggedInStateStorage ->
                 createdLoggedInStateStorage.reset()
 
                 withContext(Dispatchers.Main) {
@@ -117,7 +129,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
         var masterEncryptionKey: ByteArray? = null
 
         return try {
-            loggedInStateStorage = createLoggedInStateStorage().also { createdLoggedInStateStorage ->
+            loggedInStateStorage = createLoggedInStateStorage(applicationContext).also { createdLoggedInStateStorage ->
                 createdLoggedInStateStorage.reset()
 
                 withContext(Dispatchers.Main) {
@@ -175,41 +187,6 @@ class UserManager(private val applicationContext: Context, private val localRepo
         }
     }
 
-    @Throws(Exception::class)
-    private suspend fun deriveServerMasterPasswordAuthenticationHash(username: String, masterPassword: String): String {
-        val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
-        val serverMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(masterPasswordAuthenticationHash).resultOrThrowException()
-        return serverMasterPasswordAuthenticationHash
-    }
-
-    private suspend fun createMasterKeyDerivationInformation(): KeyDerivationInformation {
-        val masterKeySalt = RandomGenerator.generateRandomBytes(MASTER_KEY_BIT_LENGTH.byteSize)
-        val masterKeyIterationCount = MASTER_KEY_ITERATION_COUNT
-        val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
-
-        return masterKeyDerivationInformation
-    }
-
-    @Throws(Exception::class)
-    private suspend fun generateItemEncryptionKeyPair(masterEncryptionKey: ByteArray): Pair<CryptographicKey, ProtectedValue<CryptographicKey>> {
-        val itemEncryptionKeyPair = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.generateKeyPair().resultOrThrowException()
-
-        val serializableItemEncryptionPublicKey = CryptographicKey(itemEncryptionKeyPair.public.encoded)
-
-        val serializableItemEncryptionSecretKey = CryptographicKey(itemEncryptionKeyPair.private.encoded)
-        val protectedItemEncryptionSecretKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, serializableItemEncryptionSecretKey).resultOrThrowException()
-
-        return Pair(serializableItemEncryptionPublicKey, protectedItemEncryptionSecretKey)
-    }
-
-    @Throws(Exception::class)
-    private suspend fun createUserSettings(masterEncryptionKey: ByteArray): ProtectedValue<UserSettings> {
-        val userSettings = UserSettings()
-        val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, userSettings).resultOrThrowException()
-
-        return protectedUserSettings
-    }
-
     suspend fun registerLocalUser(serverUrlString: String, masterPassword: String): Result<Unit> {
         return try {
             val serverUrl = URI.create(serverUrlString)
@@ -243,7 +220,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
         if (loggedInUser == null) {
             Logger.debug("Try to restore logged-in user")
 
-            val restoredLoggedInStateStorage = createLoggedInStateStorage().apply {
+            val restoredLoggedInStateStorage = createLoggedInStateStorage(applicationContext).apply {
                 restore()
             }
 
@@ -268,13 +245,6 @@ class UserManager(private val applicationContext: Context, private val localRepo
         }
     }
 
-    private suspend fun createLoggedInStateStorage(): LoggedInStateStorage {
-        return withContext(Dispatchers.IO) {
-            val sharedPreferences = applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
-            LoggedInStateStorage(sharedPreferences)
-        }
-    }
-
     suspend fun restoreWebservices(masterPassword: String) {
         Logger.debug("Restore webservices")
 
@@ -292,18 +262,6 @@ class UserManager(private val applicationContext: Context, private val localRepo
         } catch (exception: Exception) {
             Logger.warn(exception, "The webservices could not be restored")
         }
-    }
-
-    @Throws(Exception::class)
-    private suspend fun createAuthWebservice(serverUrl: URI, username: String, masterPassword: String): AuthWebservice {
-        val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
-        val authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
-        return authWebservice
-    }
-
-    private suspend fun createUserWebservice(serverUrl: URI, authWebservice: AuthWebservice, userManager: UserManager): UserWebservice {
-        val userWebservice = UserWebservice.create(serverUrl, authWebservice, userManager)
-        return userWebservice
     }
 
     suspend fun reinitializeAuthWebservice(masterPassword: String) {
@@ -342,8 +300,8 @@ class UserManager(private val applicationContext: Context, private val localRepo
         localRepository.updateUser(user)
     }
 
-    suspend fun itemsObservable(): LiveData<List<Item>> {
-        return localRepository.itemsObservable()
+    suspend fun findAllItems(): List<Item> {
+        return localRepository.findAllItems()
     }
 
     suspend fun createItem(item: Item) {
@@ -352,10 +310,6 @@ class UserManager(private val applicationContext: Context, private val localRepo
 
     suspend fun updateItem(item: Item) {
         localRepository.updateItem(item)
-    }
-
-    suspend fun itemAuthorizationsObservable(): LiveData<List<ItemAuthorization>> {
-        return localRepository.itemAuthorizationsObservable()
     }
 
     suspend fun findItemAuthorizationForItem(item: Item): List<ItemAuthorization> {
@@ -449,6 +403,66 @@ class UserManager(private val applicationContext: Context, private val localRepo
         localRepository.reset()
         loggedInStateStorage?.reset()
     }
+
+    private inner class ItemsOrItemAuthorizationsQueryListener : Query.Listener {
+        override fun queryResultsChanged() {
+            itemsOrItemAuthorizationsChanged.emit()
+        }
+    }
+}
+
+private suspend fun createLoggedInStateStorage(applicationContext: Context): LoggedInStateStorage {
+    return withContext(Dispatchers.IO) {
+        val sharedPreferences = applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
+        LoggedInStateStorage(sharedPreferences)
+    }
+}
+
+@Throws(Exception::class)
+private suspend fun deriveServerMasterPasswordAuthenticationHash(username: String, masterPassword: String): String {
+    val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
+    val serverMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(masterPasswordAuthenticationHash).resultOrThrowException()
+    return serverMasterPasswordAuthenticationHash
+}
+
+private suspend fun createMasterKeyDerivationInformation(): KeyDerivationInformation {
+    val masterKeySalt = RandomGenerator.generateRandomBytes(MASTER_KEY_BIT_LENGTH.byteSize)
+    val masterKeyIterationCount = MASTER_KEY_ITERATION_COUNT
+    val masterKeyDerivationInformation = KeyDerivationInformation(masterKeySalt, masterKeyIterationCount)
+
+    return masterKeyDerivationInformation
+}
+
+@Throws(Exception::class)
+private suspend fun generateItemEncryptionKeyPair(masterEncryptionKey: ByteArray): Pair<CryptographicKey, ProtectedValue<CryptographicKey>> {
+    val itemEncryptionKeyPair = EncryptionAlgorithm.Asymmetric.RSA2048OAEP.generateKeyPair().resultOrThrowException()
+
+    val serializableItemEncryptionPublicKey = CryptographicKey(itemEncryptionKeyPair.public.encoded)
+
+    val serializableItemEncryptionSecretKey = CryptographicKey(itemEncryptionKeyPair.private.encoded)
+    val protectedItemEncryptionSecretKey = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, serializableItemEncryptionSecretKey).resultOrThrowException()
+
+    return Pair(serializableItemEncryptionPublicKey, protectedItemEncryptionSecretKey)
+}
+
+@Throws(Exception::class)
+private suspend fun createUserSettings(masterEncryptionKey: ByteArray): ProtectedValue<UserSettings> {
+    val userSettings = UserSettings()
+    val protectedUserSettings = ProtectedValue.create(EncryptionAlgorithm.Symmetric.AES256GCM, masterEncryptionKey, userSettings).resultOrThrowException()
+
+    return protectedUserSettings
+}
+
+@Throws(Exception::class)
+private suspend fun createAuthWebservice(serverUrl: URI, username: String, masterPassword: String): AuthWebservice {
+    val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
+    val authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
+    return authWebservice
+}
+
+private suspend fun createUserWebservice(serverUrl: URI, authWebservice: AuthWebservice, userManager: UserManager): UserWebservice {
+    val userWebservice = UserWebservice.create(serverUrl, authWebservice, userManager)
+    return userWebservice
 }
 
 class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
@@ -522,7 +536,7 @@ enum class UserType {
 
     companion object {
         fun valueOfOrNull(name: String): UserType? {
-            return values().firstOrNull { it.name == name }
+            return values().find { it.name == name }
         }
     }
 }
@@ -680,3 +694,4 @@ private class ItemAuthorizationsSynchronizationTask(
 }
 
 object LoggedInStateStorageUninitializedException : IllegalStateException("Access of uninitialized LoggedInStateStorage!")
+object UserManagerUninitializedException : IllegalStateException("The UserManager is null!")

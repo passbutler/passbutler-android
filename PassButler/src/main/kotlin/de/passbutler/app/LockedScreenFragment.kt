@@ -29,6 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
+import javax.crypto.Cipher
 
 class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
 
@@ -143,6 +144,10 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
         showBiometricPrompt()
     }
 
+    private fun removeFormFieldsFocus() {
+        binding?.constraintLayoutRootContainer?.requestFocus()
+    }
+
     private fun showBiometricPrompt() {
         launch {
             val initializedBiometricUnlockCipherResult = viewModel.initializeBiometricUnlockCipher()
@@ -171,8 +176,11 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
         }
     }
 
-    private fun removeFormFieldsFocus() {
-        binding?.constraintLayoutRootContainer?.requestFocus()
+    internal fun unlockScreenWithBiometrics(initializedBiometricUnlockCipher: Cipher) {
+        unlockRequestSendingJob?.cancel()
+        unlockRequestSendingJob = launchUnlockRequestSending {
+            viewModel.unlockScreenWithBiometrics(initializedBiometricUnlockCipher)
+        }
     }
 
     override fun onResume() {
@@ -217,10 +225,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
             val initializedBiometricUnlockCipher = result.cryptoObject?.cipher
 
             if (initializedBiometricUnlockCipher != null) {
-                unlockRequestSendingJob?.cancel()
-                unlockRequestSendingJob = launchUnlockRequestSending {
-                    viewModel.unlockScreenWithBiometrics(initializedBiometricUnlockCipher)
-                }
+                unlockScreenWithBiometrics(initializedBiometricUnlockCipher)
             } else {
                 showError(getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
             }
@@ -239,7 +244,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
     }
 }
 
-private fun LockedScreenFragment.launchUnlockRequestSending(
+internal fun LockedScreenFragment.launchUnlockRequestSending(
     block: suspend () -> Result<*>
 ): Job {
     return launchRequestSending(

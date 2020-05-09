@@ -243,6 +243,16 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         }
     }
 
+    internal fun logoutUser() {
+        logoutRequestSendingJob?.cancel()
+        logoutRequestSendingJob = launchRequestSending(
+            handleFailure = { showError(getString(R.string.overview_logout_failed_title)) },
+            isCancellable = false
+        ) {
+            viewModel.logoutUser()
+        }
+    }
+
     override fun onHandleBackPress(): Boolean {
         return if (binding?.drawerLayout?.isDrawerOpen(GravityCompat.START) == true) {
             binding?.drawerLayout?.closeDrawer(GravityCompat.START)
@@ -255,7 +265,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     /**
      * Closes drawer a little delayed to make show new fragment transaction more pretty
      */
-    private fun closeDrawerDelayed() {
+    internal fun closeDrawerDelayed() {
         launch {
             delay(100)
             binding?.drawerLayout?.closeDrawer(GravityCompat.START)
@@ -298,16 +308,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
             }
 
             return true
-        }
-
-        private fun logoutUser() {
-            logoutRequestSendingJob?.cancel()
-            logoutRequestSendingJob = launchRequestSending(
-                handleFailure = { showError(getString(R.string.overview_logout_failed_title)) },
-                isCancellable = false
-            ) {
-                viewModel.logoutUser()
-            }
         }
 
         private fun startExternalUriIntent(uriString: String) {
