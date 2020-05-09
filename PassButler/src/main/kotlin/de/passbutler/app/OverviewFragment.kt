@@ -63,9 +63,11 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 
     private val loggedInStateStorageChangedSignal = signal {
-        updateToolbarSubtitle()
-        updateNavigationHeaderUserTypeView()
-        updateSwipeRefreshLayout()
+        launch {
+            updateToolbarSubtitle()
+            updateNavigationHeaderUserTypeView()
+            updateSwipeRefreshLayout()
+        }
     }
 
     private val webservicesInitializedObserver = Observer<Boolean> { webservicesInitialized ->
