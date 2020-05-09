@@ -285,42 +285,40 @@ class UserManager(private val localRepository: LocalRepository) {
     suspend fun synchronize(): Result<Unit> {
         Logger.debug("Synchronize")
 
-        return withContext(Dispatchers.IO) {
-            val synchronizeResults = mutableListOf<Result<Differentiation.Result<*>>>()
+        val synchronizeResults = mutableListOf<Result<Differentiation.Result<*>>>()
 
-            // Execute each task synchronously
-            for (task in createSynchronizationTasks()) {
-                val synchronizeTaskName = task.javaClass.simpleName
+        // Execute each task synchronously
+        for (task in createSynchronizationTasks()) {
+            val synchronizeTaskName = task.javaClass.simpleName
 
-                Logger.debug("Starting task '$synchronizeTaskName'")
-                val result = task.synchronize()
+            Logger.debug("Starting task '$synchronizeTaskName'")
+            val result = task.synchronize()
 
-                val printableResult = when (result) {
-                    is Success -> "${result.javaClass.simpleName} (${result.result})"
-                    is Failure -> result.javaClass.simpleName
-                }
-                Logger.debug("Finished task '$synchronizeTaskName' with result: $printableResult")
+            val printableResult = when (result) {
+                is Success -> "${result.javaClass.simpleName} (${result.result})"
+                is Failure -> result.javaClass.simpleName
+            }
+            Logger.debug("Finished task '$synchronizeTaskName' with result: $printableResult")
 
-                synchronizeResults.add(result)
+            synchronizeResults.add(result)
 
-                // Do not stop if a task failed (otherwise later tasks may never synced if prior task failed) - except for timeout
-                if ((result as? Failure)?.throwable is SocketTimeoutException) {
-                    Logger.debug("Skip all other tasks because '$synchronizeTaskName' failed with timeout")
-                    break
-                }
+            // Do not stop if a task failed (otherwise later tasks may never synced if prior task failed) - except for timeout
+            if ((result as? Failure)?.throwable is SocketTimeoutException) {
+                Logger.debug("Skip all other tasks because '$synchronizeTaskName' failed with timeout")
+                break
+            }
+        }
+
+        val firstFailedTask = synchronizeResults.filterIsInstance(Failure::class.java).firstOrNull()
+
+        return if (firstFailedTask != null) {
+            Failure(firstFailedTask.throwable)
+        } else {
+            updateLoggedInStateStorage {
+                lastSuccessfulSyncDate = Date()
             }
 
-            val firstFailedTask = synchronizeResults.filterIsInstance(Failure::class.java).firstOrNull()
-
-            if (firstFailedTask != null) {
-                Failure(firstFailedTask.throwable)
-            } else {
-                updateLoggedInStateStorage {
-                    lastSuccessfulSyncDate = Date()
-                }
-
-                Success(Unit)
-            }
+            Success(Unit)
         }
     }
 
