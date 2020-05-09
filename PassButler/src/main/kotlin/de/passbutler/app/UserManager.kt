@@ -61,8 +61,6 @@ class UserManager(private val localRepository: LocalRepository) {
 
     private val itemsOrItemAuthorizationsQueryListener = ItemsOrItemAuthorizationsQueryListener()
 
-    private var loggedInUser: User? = null
-
     init {
         // Listen for complete application lifecycle for repository changes
         localRepository.itemQueries.findAll().addListener(itemsOrItemAuthorizationsQueryListener)
@@ -92,8 +90,6 @@ class UserManager(private val localRepository: LocalRepository) {
 
             val newUser = createdUserWebservice.requestWithResult { getUserDetails() }.resultOrThrowException()
             localRepository.insertUser(newUser)
-
-            loggedInUser = newUser
 
             withContext(Dispatchers.Main) {
                 loggedInUserResult.value = LoggedInUserResult.PerformedLogin(newUser, masterPassword)
@@ -149,8 +145,6 @@ class UserManager(private val localRepository: LocalRepository) {
 
             localRepository.insertUser(newUser)
 
-            loggedInUser = newUser
-
             withContext(Dispatchers.Main) {
                 loggedInUserResult.value = LoggedInUserResult.PerformedLogin(newUser, masterPassword)
             }
@@ -171,7 +165,7 @@ class UserManager(private val localRepository: LocalRepository) {
     suspend fun registerLocalUser(serverUrlString: String, masterPassword: String): Result<Unit> {
         return try {
             val serverUrl = URI.create(serverUrlString)
-            val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is not initialized!")
+            val loggedInUser = findLoggedInUser() ?: throw LoggedInUserUninitializedException
 
             val username = loggedInUser.username
             val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword)
@@ -197,7 +191,7 @@ class UserManager(private val localRepository: LocalRepository) {
     }
 
     suspend fun restoreLoggedInUser() {
-        if (loggedInUser == null) {
+        if (loggedInUserResult.value == null) {
             Logger.debug("Try to restore logged-in user")
 
             val restoredLoggedInStateStorage = localRepository.findLoggedInStateStorage()
@@ -207,7 +201,6 @@ class UserManager(private val localRepository: LocalRepository) {
 
             if (restoredLoggedInUser != null) {
                 loggedInStateStorage = restoredLoggedInStateStorage
-                loggedInUser = restoredLoggedInUser
 
                 withContext(Dispatchers.Main) {
                     loggedInUserResult.value = LoggedInUserResult.RestoredLogin(restoredLoggedInUser)
@@ -262,8 +255,6 @@ class UserManager(private val localRepository: LocalRepository) {
 
     suspend fun updateUser(user: User) {
         Logger.debug("user = $user")
-
-        loggedInUser = user
         localRepository.updateUser(user)
     }
 
@@ -333,9 +324,9 @@ class UserManager(private val localRepository: LocalRepository) {
         }
     }
 
-    private fun createSynchronizationTasks(): List<SynchronizationTask> {
+    private suspend fun createSynchronizationTasks(): List<SynchronizationTask> {
         val userWebservice = userWebservice.value ?: throw IllegalStateException("The user webservice is not initialized!")
-        val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is not initialized!")
+        val loggedInUser = findLoggedInUser() ?: throw LoggedInUserUninitializedException
 
         return listOf(
             UsersSynchronizationTask(localRepository, userWebservice, loggedInUser),
@@ -363,10 +354,14 @@ class UserManager(private val localRepository: LocalRepository) {
             userWebservice.value = null
         }
 
-        loggedInUser = null
-
         loggedInStateStorage = null
         localRepository.reset()
+    }
+
+    private suspend fun findLoggedInUser(): User? {
+        return loggedInUserResult.value?.loggedInUser?.username?.let { loggedInUsername ->
+            localRepository.findUser(loggedInUsername)
+        }
     }
 
     private inner class ItemsOrItemAuthorizationsQueryListener : Query.Listener {
@@ -423,7 +418,7 @@ private suspend fun createUserWebservice(serverUrl: URI, authWebservice: AuthWeb
     return userWebservice
 }
 
-sealed class LoggedInUserResult(val newLoggedInUser: User) {
+sealed class LoggedInUserResult(val loggedInUser: User) {
     class PerformedLogin(newLoggedInUser: User, val masterPassword: String) : LoggedInUserResult(newLoggedInUser)
     class RestoredLogin(newLoggedInUser: User) : LoggedInUserResult(newLoggedInUser)
 }
@@ -576,4 +571,5 @@ private class ItemAuthorizationsSynchronizationTask(
 }
 
 object LoggedInStateStorageUninitializedException : IllegalStateException("Access of uninitialized LoggedInStateStorage!")
-object UserManagerUninitializedException : IllegalStateException("The UserManager is null!")
+object LoggedInUserUninitializedException : IllegalStateException("The logged-in user is not initialized!")
+object UserManagerUninitializedException : IllegalStateException("The UserManager is not initialized!")

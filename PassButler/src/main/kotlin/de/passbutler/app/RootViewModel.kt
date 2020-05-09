@@ -176,13 +176,13 @@ class RootViewModel : CoroutineScopedViewModel() {
 
             when (loggedInUserResult) {
                 is LoggedInUserResult.PerformedLogin -> {
-                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.newLoggedInUser, loggedInUserResult.masterPassword)
+                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.loggedInUser, loggedInUserResult.masterPassword)
 
                     rootScreenState.value = RootScreenState.LoggedIn
                     lockScreenState.value = LockScreenState.Unlocked
                 }
                 is LoggedInUserResult.RestoredLogin -> {
-                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.newLoggedInUser, null)
+                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.loggedInUser, null)
 
                     rootScreenState.value = RootScreenState.LoggedIn
                     lockScreenState.value = LockScreenState.Locked
