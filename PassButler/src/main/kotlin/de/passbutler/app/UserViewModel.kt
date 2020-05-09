@@ -59,10 +59,10 @@ class UserViewModel private constructor(
         get() = loggedInStateStorage.lastSuccessfulSyncDate
 
     val webservicesInitialized
-        get() = userManager.webservicesInitialized
+        get() = userManager.webservices != null
 
     val webservicesInitializedSignalEmitter
-        get() = userManager.webservicesInitializedSignalEmitter
+        get() = userManager.webservicesInitialized
 
     val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
 
