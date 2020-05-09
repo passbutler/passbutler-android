@@ -78,6 +78,10 @@ class UserManager(private val localRepository: LocalRepository) {
                 serverUrl = serverUrl
             )
 
+            // Create logged-in state storage first to be sure, auth token can be applied
+            localRepository.insertLoggedInStateStorage(createdLoggedInStateStorage)
+            loggedInStateStorage = createdLoggedInStateStorage
+
             val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword)
             val createdUserWebservice = createUserWebservice(serverUrl, createdAuthWebservice, this)
 
@@ -88,10 +92,8 @@ class UserManager(private val localRepository: LocalRepository) {
 
             val newUser = createdUserWebservice.requestWithResult { getUserDetails() }.resultOrThrowException()
             localRepository.insertUser(newUser)
-            localRepository.insertLoggedInStateStorage(createdLoggedInStateStorage)
 
             loggedInUser = newUser
-            loggedInStateStorage = createdLoggedInStateStorage
 
             withContext(Dispatchers.Main) {
                 loggedInUserResult.value = LoggedInUserResult.PerformedLogin(newUser, masterPassword)
@@ -115,6 +117,9 @@ class UserManager(private val localRepository: LocalRepository) {
                 username = username,
                 userType = UserType.LOCAL
             )
+
+            localRepository.insertLoggedInStateStorage(createdLoggedInStateStorage)
+            loggedInStateStorage = createdLoggedInStateStorage
 
             val serverMasterPasswordAuthenticationHash = deriveServerMasterPasswordAuthenticationHash(username, masterPassword)
             val masterKeyDerivationInformation = createMasterKeyDerivationInformation()
@@ -143,10 +148,8 @@ class UserManager(private val localRepository: LocalRepository) {
             )
 
             localRepository.insertUser(newUser)
-            localRepository.insertLoggedInStateStorage(createdLoggedInStateStorage)
 
             loggedInUser = newUser
-            loggedInStateStorage = createdLoggedInStateStorage
 
             withContext(Dispatchers.Main) {
                 loggedInUserResult.value = LoggedInUserResult.PerformedLogin(newUser, masterPassword)
