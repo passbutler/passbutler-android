@@ -2,9 +2,6 @@ package de.passbutler.app.database
 
 import de.passbutler.app.UserManager
 import de.passbutler.app.base.BuildType
-import de.passbutler.common.database.models.Item
-import de.passbutler.common.database.models.ItemAuthorization
-import de.passbutler.common.database.models.User
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
@@ -12,6 +9,9 @@ import de.passbutler.common.base.asJSONObjectSequence
 import de.passbutler.common.base.isHttpsScheme
 import de.passbutler.common.base.serialize
 import de.passbutler.common.crypto.models.AuthToken
+import de.passbutler.common.database.models.Item
+import de.passbutler.common.database.models.ItemAuthorization
+import de.passbutler.common.database.models.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
