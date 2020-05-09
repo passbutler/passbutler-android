@@ -1,9 +1,5 @@
 package de.passbutler.app
 
-import android.content.Context
-import android.content.Context.MODE_PRIVATE
-import android.content.SharedPreferences
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.squareup.sqldelight.Query
 import de.passbutler.app.base.DependentOptionalValueGetterLiveData
@@ -18,15 +14,12 @@ import de.passbutler.common.base.Success
 import de.passbutler.common.base.byteSize
 import de.passbutler.common.base.clear
 import de.passbutler.common.base.resultOrThrowException
-import de.passbutler.common.base.toURIOrNull
 import de.passbutler.common.crypto.Derivation
 import de.passbutler.common.crypto.EncryptionAlgorithm
 import de.passbutler.common.crypto.MASTER_KEY_BIT_LENGTH
 import de.passbutler.common.crypto.MASTER_KEY_ITERATION_COUNT
 import de.passbutler.common.crypto.RandomGenerator
-import de.passbutler.common.crypto.models.AuthToken
 import de.passbutler.common.crypto.models.CryptographicKey
-import de.passbutler.common.crypto.models.EncryptedValue
 import de.passbutler.common.crypto.models.KeyDerivationInformation
 import de.passbutler.common.crypto.models.ProtectedValue
 import de.passbutler.common.database.Differentiation
@@ -34,8 +27,10 @@ import de.passbutler.common.database.LocalRepository
 import de.passbutler.common.database.SynchronizationTask
 import de.passbutler.common.database.models.Item
 import de.passbutler.common.database.models.ItemAuthorization
+import de.passbutler.common.database.models.LoggedInStateStorage
 import de.passbutler.common.database.models.User
 import de.passbutler.common.database.models.UserSettings
+import de.passbutler.common.database.models.UserType
 import de.passbutler.common.database.remoteChangedItems
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -46,19 +41,12 @@ import java.net.SocketTimeoutException
 import java.net.URI
 import java.util.*
 
-class UserManager(private val applicationContext: Context, private val localRepository: LocalRepository) {
+class UserManager(private val localRepository: LocalRepository) {
 
-    val userType: LiveData<UserType?>
-        get() = loggedInStateStorage?.userType ?: throw LoggedInStateStorageUninitializedException
+    var loggedInStateStorage: LoggedInStateStorage? = null
+        private set
 
-    val encryptedMasterPassword: LiveData<EncryptedValue?>
-        get() = loggedInStateStorage?.encryptedMasterPassword ?: throw LoggedInStateStorageUninitializedException
-
-    val authToken: LiveData<AuthToken?>
-        get() = loggedInStateStorage?.authToken ?: throw LoggedInStateStorageUninitializedException
-
-    val lastSuccessfulSyncDate: LiveData<Date?>
-        get() = loggedInStateStorage?.lastSuccessfulSyncDate ?: throw LoggedInStateStorageUninitializedException
+    val loggedInStateStorageChanged = SignalEmitter()
 
     val loggedInUserResult = MutableLiveData<LoggedInUserResult?>()
 
@@ -73,7 +61,6 @@ class UserManager(private val applicationContext: Context, private val localRepo
 
     private val itemsOrItemAuthorizationsQueryListener = ItemsOrItemAuthorizationsQueryListener()
 
-    private var loggedInStateStorage: LoggedInStateStorage? = null
     private var loggedInUser: User? = null
 
     init {
@@ -85,18 +72,11 @@ class UserManager(private val applicationContext: Context, private val localRepo
     suspend fun loginRemoteUser(username: String, masterPassword: String, serverUrlString: String): Result<Unit> {
         return try {
             val serverUrl = URI.create(serverUrlString)
-
-            loggedInStateStorage = createLoggedInStateStorage(applicationContext).also { createdLoggedInStateStorage ->
-                createdLoggedInStateStorage.reset()
-
-                withContext(Dispatchers.Main) {
-                    createdLoggedInStateStorage.userType.value = UserType.REMOTE
-                    createdLoggedInStateStorage.username.value = username
-                    createdLoggedInStateStorage.serverUrl.value = serverUrl
-                }
-
-                createdLoggedInStateStorage.persist()
-            }
+            val createdLoggedInStateStorage = LoggedInStateStorage.Implementation(
+                username = username,
+                userType = UserType.REMOTE,
+                serverUrl = serverUrl
+            )
 
             val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword)
             val createdUserWebservice = createUserWebservice(serverUrl, createdAuthWebservice, this)
@@ -108,8 +88,10 @@ class UserManager(private val applicationContext: Context, private val localRepo
 
             val newUser = createdUserWebservice.requestWithResult { getUserDetails() }.resultOrThrowException()
             localRepository.insertUser(newUser)
+            localRepository.insertLoggedInStateStorage(createdLoggedInStateStorage)
 
             loggedInUser = newUser
+            loggedInStateStorage = createdLoggedInStateStorage
 
             withContext(Dispatchers.Main) {
                 loggedInUserResult.value = LoggedInUserResult.PerformedLogin(newUser, masterPassword)
@@ -129,16 +111,10 @@ class UserManager(private val applicationContext: Context, private val localRepo
         var masterEncryptionKey: ByteArray? = null
 
         return try {
-            loggedInStateStorage = createLoggedInStateStorage(applicationContext).also { createdLoggedInStateStorage ->
-                createdLoggedInStateStorage.reset()
-
-                withContext(Dispatchers.Main) {
-                    createdLoggedInStateStorage.userType.value = UserType.LOCAL
-                    createdLoggedInStateStorage.username.value = username
-                }
-
-                createdLoggedInStateStorage.persist()
-            }
+            val createdLoggedInStateStorage = LoggedInStateStorage.Implementation(
+                username = username,
+                userType = UserType.LOCAL
+            )
 
             val serverMasterPasswordAuthenticationHash = deriveServerMasterPasswordAuthenticationHash(username, masterPassword)
             val masterKeyDerivationInformation = createMasterKeyDerivationInformation()
@@ -167,8 +143,10 @@ class UserManager(private val applicationContext: Context, private val localRepo
             )
 
             localRepository.insertUser(newUser)
+            localRepository.insertLoggedInStateStorage(createdLoggedInStateStorage)
 
             loggedInUser = newUser
+            loggedInStateStorage = createdLoggedInStateStorage
 
             withContext(Dispatchers.Main) {
                 loggedInUserResult.value = LoggedInUserResult.PerformedLogin(newUser, masterPassword)
@@ -191,10 +169,15 @@ class UserManager(private val applicationContext: Context, private val localRepo
         return try {
             val serverUrl = URI.create(serverUrlString)
 
-            val loggedInStateStorage = loggedInStateStorage ?: throw LoggedInStateStorageUninitializedException
-            val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is not initialized!")
-            val username = loggedInUser.username
+            // First try to update logged-in state storage
+            updateLoggedInStateStorage {
+                this.userType = UserType.REMOTE
+                this.serverUrl = serverUrl
+            }
 
+            val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is not initialized!")
+
+            val username = loggedInUser.username
             val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword)
             val createdUserWebservice = createUserWebservice(serverUrl, createdAuthWebservice, this)
 
@@ -203,12 +186,7 @@ class UserManager(private val applicationContext: Context, private val localRepo
             withContext(Dispatchers.Main) {
                 authWebservice.value = createdAuthWebservice
                 userWebservice.value = createdUserWebservice
-
-                loggedInStateStorage.userType.value = UserType.REMOTE
-                loggedInStateStorage.serverUrl.value = serverUrl
             }
-
-            loggedInStateStorage.persist()
 
             Success(Unit)
         } catch (exception: Exception) {
@@ -220,11 +198,8 @@ class UserManager(private val applicationContext: Context, private val localRepo
         if (loggedInUser == null) {
             Logger.debug("Try to restore logged-in user")
 
-            val restoredLoggedInStateStorage = createLoggedInStateStorage(applicationContext).apply {
-                restore()
-            }
-
-            val restoredLoggedInUser = restoredLoggedInStateStorage.username.value?.let { loggedInUsername ->
+            val restoredLoggedInStateStorage = localRepository.findLoggedInStateStorage()
+            val restoredLoggedInUser = restoredLoggedInStateStorage?.username?.let { loggedInUsername ->
                 localRepository.findUser(loggedInUsername)
             }
 
@@ -249,8 +224,8 @@ class UserManager(private val applicationContext: Context, private val localRepo
         Logger.debug("Restore webservices")
 
         try {
-            val serverUrl = loggedInStateStorage?.serverUrl?.value ?: throw IllegalStateException("The server url is null!")
-            val username = loggedInStateStorage?.username?.value ?: throw IllegalStateException("The username is null!")
+            val serverUrl = loggedInStateStorage?.serverUrl ?: throw IllegalStateException("The server url is null!")
+            val username = loggedInStateStorage?.username ?: throw IllegalStateException("The username is null!")
 
             val createdAuthWebservice = authWebservice.value ?: createAuthWebservice(serverUrl, username, masterPassword)
             val createdUserWebservice = userWebservice.value ?: createUserWebservice(serverUrl, createdAuthWebservice, this)
@@ -273,24 +248,14 @@ class UserManager(private val applicationContext: Context, private val localRepo
         restoreWebservices(masterPassword)
     }
 
-    suspend fun updateAuthToken(authToken: AuthToken?) {
-        val loggedInStateStorage = loggedInStateStorage ?: throw LoggedInStateStorageUninitializedException
+    suspend fun updateLoggedInStateStorage(block: LoggedInStateStorage.() -> Unit) {
+        val updatedLoggedInStateStorage = (loggedInStateStorage as? LoggedInStateStorage.Implementation)?.copy() ?: throw LoggedInStateStorageUninitializedException
+        block.invoke(updatedLoggedInStateStorage)
 
-        withContext(Dispatchers.Main) {
-            loggedInStateStorage.authToken.value = authToken
-        }
+        localRepository.updateLoggedInStateStorage(updatedLoggedInStateStorage)
 
-        loggedInStateStorage.persist()
-    }
-
-    suspend fun updateEncryptedMasterPassword(encryptedMasterPassword: EncryptedValue?) {
-        val loggedInStateStorage = loggedInStateStorage ?: throw LoggedInStateStorageUninitializedException
-
-        withContext(Dispatchers.Main) {
-            loggedInStateStorage.encryptedMasterPassword.value = encryptedMasterPassword
-        }
-
-        loggedInStateStorage.persist()
+        loggedInStateStorage = updatedLoggedInStateStorage
+        loggedInStateStorageChanged.emit()
     }
 
     suspend fun updateUser(user: User) {
@@ -357,11 +322,9 @@ class UserManager(private val applicationContext: Context, private val localRepo
             if (firstFailedTask != null) {
                 Failure(firstFailedTask.throwable)
             } else {
-                withContext(Dispatchers.Main) {
-                    loggedInStateStorage?.lastSuccessfulSyncDate?.value = Date()
+                updateLoggedInStateStorage {
+                    lastSuccessfulSyncDate = Date()
                 }
-
-                loggedInStateStorage?.persist()
 
                 Success(Unit)
             }
@@ -401,20 +364,13 @@ class UserManager(private val applicationContext: Context, private val localRepo
         loggedInUser = null
 
         localRepository.reset()
-        loggedInStateStorage?.reset()
+        loggedInStateStorage = null
     }
 
     private inner class ItemsOrItemAuthorizationsQueryListener : Query.Listener {
         override fun queryResultsChanged() {
             itemsOrItemAuthorizationsChanged.emit()
         }
-    }
-}
-
-private suspend fun createLoggedInStateStorage(applicationContext: Context): LoggedInStateStorage {
-    return withContext(Dispatchers.IO) {
-        val sharedPreferences = applicationContext.getSharedPreferences("UserManager", MODE_PRIVATE)
-        LoggedInStateStorage(sharedPreferences)
     }
 }
 
@@ -463,82 +419,6 @@ private suspend fun createAuthWebservice(serverUrl: URI, username: String, maste
 private suspend fun createUserWebservice(serverUrl: URI, authWebservice: AuthWebservice, userManager: UserManager): UserWebservice {
     val userWebservice = UserWebservice.create(serverUrl, authWebservice, userManager)
     return userWebservice
-}
-
-class LoggedInStateStorage(private val sharedPreferences: SharedPreferences) {
-
-    val userType = MutableLiveData<UserType?>()
-    val username = MutableLiveData<String?>()
-    val encryptedMasterPassword = MutableLiveData<EncryptedValue?>()
-    val authToken = MutableLiveData<AuthToken?>()
-    val serverUrl = MutableLiveData<URI?>()
-    val lastSuccessfulSyncDate = MutableLiveData<Date?>()
-
-    suspend fun restore() {
-        withContext(Dispatchers.IO) {
-            val restoredUserType = sharedPreferences.getString(SHARED_PREFERENCES_KEY_USER_TYPE, null)?.let { UserType.valueOfOrNull(it) }
-            val restoredUsername = sharedPreferences.getString(SHARED_PREFERENCES_KEY_USERNAME, null)
-            val restoredEncryptedMasterPassword = sharedPreferences.getString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, null)?.let { EncryptedValue.Deserializer.deserializeOrNull(it) }
-
-            val restoredAuthToken = sharedPreferences.getString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, null)?.let { AuthToken.Deserializer.deserializeOrNull(it) }
-            val restoredServerUrl = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SERVERURL, null)?.toURIOrNull()
-            val restoredLastSuccessfulSyncDate = sharedPreferences.getLong(SHARED_PREFERENCES_KEY_LAST_SUCCESSFUL_SYNC_DATE, 0).takeIf { it > 0 }?.let { Date(it) }
-
-            withContext(Dispatchers.Main) {
-                userType.value = restoredUserType
-                username.value = restoredUsername
-                encryptedMasterPassword.value = restoredEncryptedMasterPassword
-                authToken.value = restoredAuthToken
-                serverUrl.value = restoredServerUrl
-                lastSuccessfulSyncDate.value = restoredLastSuccessfulSyncDate
-            }
-        }
-    }
-
-    suspend fun persist() {
-        withContext(Dispatchers.IO) {
-            sharedPreferences.edit().apply {
-                putString(SHARED_PREFERENCES_KEY_USER_TYPE, userType.value?.name)
-                putString(SHARED_PREFERENCES_KEY_USERNAME, username.value)
-                putString(SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD, encryptedMasterPassword.value?.serialize()?.toString())
-                putString(SHARED_PREFERENCES_KEY_AUTH_TOKEN, authToken.value?.serialize()?.toString())
-                putString(SHARED_PREFERENCES_KEY_SERVERURL, serverUrl.value?.toString())
-                putLong(SHARED_PREFERENCES_KEY_LAST_SUCCESSFUL_SYNC_DATE, lastSuccessfulSyncDate.value?.time ?: 0)
-            }.commit()
-        }
-    }
-
-    suspend fun reset() {
-        withContext(Dispatchers.Main) {
-            userType.value = null
-            username.value = null
-            encryptedMasterPassword.value = null
-            authToken.value = null
-            serverUrl.value = null
-            lastSuccessfulSyncDate.value = null
-        }
-        persist()
-    }
-
-    companion object {
-        private const val SHARED_PREFERENCES_KEY_USER_TYPE = "userType"
-        private const val SHARED_PREFERENCES_KEY_USERNAME = "username"
-        private const val SHARED_PREFERENCES_KEY_ENCRYPTED_MASTER_PASSWORD = "encryptedMasterPassword"
-        private const val SHARED_PREFERENCES_KEY_AUTH_TOKEN = "authToken"
-        private const val SHARED_PREFERENCES_KEY_SERVERURL = "serverUrl"
-        private const val SHARED_PREFERENCES_KEY_LAST_SUCCESSFUL_SYNC_DATE = "lastSuccessfulSyncDate"
-    }
-}
-
-enum class UserType {
-    LOCAL,
-    REMOTE;
-
-    companion object {
-        fun valueOfOrNull(name: String): UserType? {
-            return values().find { it.name == name }
-        }
-    }
 }
 
 sealed class LoggedInUserResult(val newLoggedInUser: User) {

@@ -31,6 +31,9 @@ import de.passbutler.app.ui.showFadeInOutAnimation
 import de.passbutler.app.ui.showFragmentModally
 import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.visible
+import de.passbutler.common.base.addSignal
+import de.passbutler.common.base.signal
+import de.passbutler.common.database.models.UserType
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -59,14 +62,10 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         binding?.layoutOverviewContent?.groupEmptyScreenViews?.visible = showEmptyScreen
     }
 
-    private val userTypeObserver = Observer<UserType?> {
+    private val loggedInStateStorageChangedSignal = signal {
         updateToolbarSubtitle()
         updateNavigationHeaderUserTypeView()
         updateSwipeRefreshLayout()
-    }
-
-    private val lastSynchronizationDateObserver = Observer<Date?> {
-        updateToolbarSubtitle()
     }
 
     private val webservicesInitializedObserver = Observer<Boolean> { webservicesInitialized ->
@@ -142,9 +141,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         super.onStart()
 
         viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
-
-        viewModel.loggedInUserViewModel?.userType?.observe(viewLifecycleOwner, true, userTypeObserver)
-        viewModel.loggedInUserViewModel?.lastSuccessfulSyncDate?.observe(viewLifecycleOwner, true, lastSynchronizationDateObserver)
+        viewModel.loggedInUserViewModel?.loggedInStateStorageChanged?.addSignal(loggedInStateStorageChangedSignal, true)
         viewModel.loggedInUserViewModel?.webservicesInitialized?.observe(viewLifecycleOwner, true, webservicesInitializedObserver)
 
         updateToolbarJob?.cancel()
@@ -160,14 +157,15 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 
     override fun onStop() {
+        viewModel.loggedInUserViewModel?.loggedInStateStorageChanged?.removeSignal(loggedInStateStorageChangedSignal)
         updateToolbarJob?.cancel()
         super.onStop()
     }
 
     private fun updateToolbarSubtitle() {
         binding?.toolbar?.apply {
-            subtitle = if (viewModel.loggedInUserViewModel?.userType?.value == UserType.REMOTE) {
-                val newDate = viewModel.loggedInUserViewModel?.lastSuccessfulSyncDate?.value
+            subtitle = if (viewModel.loggedInUserViewModel?.userType == UserType.REMOTE) {
+                val newDate = viewModel.loggedInUserViewModel?.lastSuccessfulSyncDate
                 val formattedLastSuccessfulSync = newDate?.relativeDateTime(context) ?: getString(R.string.overview_last_sync_never)
                 getString(R.string.overview_last_sync_subtitle, formattedLastSuccessfulSync)
             } else {
@@ -178,7 +176,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
     private fun updateNavigationHeaderUserTypeView() {
         navigationHeaderUserTypeView?.apply {
-            if (viewModel.loggedInUserViewModel?.userType?.value == UserType.LOCAL) {
+            if (viewModel.loggedInUserViewModel?.userType == UserType.LOCAL) {
                 visible = true
                 setOnClickListener {
                     closeDrawerDelayed()
@@ -193,7 +191,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
     private fun updateSwipeRefreshLayout() {
         binding?.layoutOverviewContent?.swipeRefreshLayout?.apply {
-            if (viewModel.loggedInUserViewModel?.userType?.value == UserType.REMOTE) {
+            if (viewModel.loggedInUserViewModel?.userType == UserType.REMOTE) {
                 isEnabled = true
                 setOnRefreshListener {
                     if (viewModel.loggedInUserViewModel?.webservicesInitialized?.value == true) {

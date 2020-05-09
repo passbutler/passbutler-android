@@ -50,13 +50,13 @@ class UserViewModel private constructor(
         get() = user.username
 
     val userType
-        get() = userManager.userType
+        get() = loggedInStateStorage.userType
 
     val encryptedMasterPassword
-        get() = userManager.encryptedMasterPassword
+        get() = loggedInStateStorage.encryptedMasterPassword
 
     val lastSuccessfulSyncDate
-        get() = userManager.lastSuccessfulSyncDate
+        get() = loggedInStateStorage.lastSuccessfulSyncDate
 
     val webservicesInitialized
         get() = userManager.webservicesInitialized
@@ -71,8 +71,14 @@ class UserViewModel private constructor(
     }
 
     val biometricUnlockEnabled = NonNullValueGetterLiveData {
-        biometricUnlockAvailable.value && encryptedMasterPassword.value != null
+        biometricUnlockAvailable.value && encryptedMasterPassword != null
     }
+
+    val loggedInStateStorageChanged
+        get() = userManager.loggedInStateStorageChanged
+
+    private val loggedInStateStorage
+        get() = userManager.loggedInStateStorage ?: throw LoggedInStateStorageUninitializedException
 
     private val updateItemViewModelsSignal = signal {
         updateItemViewModels()
@@ -263,7 +269,9 @@ class UserViewModel private constructor(
             val encryptedMasterPasswordValue = Biometrics.encryptData(initializedSetupBiometricUnlockCipher, masterPassword.toByteArray()).resultOrThrowException()
 
             val encryptedMasterPassword = EncryptedValue(encryptedMasterPasswordInitializationVector, encryptedMasterPasswordValue)
-            userManager.updateEncryptedMasterPassword(encryptedMasterPassword)
+            userManager.updateLoggedInStateStorage {
+                this.encryptedMasterPassword = encryptedMasterPassword
+            }
 
             withContext(Dispatchers.Main) {
                 biometricUnlockEnabled.notifyChange()
@@ -284,7 +292,9 @@ class UserViewModel private constructor(
         return try {
             Biometrics.removeKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME).resultOrThrowException()
 
-            userManager.updateEncryptedMasterPassword(null)
+            userManager.updateLoggedInStateStorage {
+                encryptedMasterPassword = null
+            }
 
             withContext(Dispatchers.Main) {
                 biometricUnlockEnabled.notifyChange()
