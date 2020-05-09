@@ -35,7 +35,7 @@
     <string name="register_local_user_title">Benutzerkonto registrieren</string>
 
     <string name="register_local_user_header">Benutzerkonto registrieren</string>
-    <string name="register_local_user_description">Wenn Sie Ihre Passwörter zwischen mehreren Geräten synchronisieren möchten, können Sie es auf einem Pass Butler-Server registrieren.\n\nDazu benötigen Sie die URL des Servers, z.B. „https://server-adresse.abc“ sowie Ihr Master-Passwort.\n\nWichtig: Die Registrierung muss auf dem Server (temporär) aktiviert werden und der Benutzername darf noch nicht vergeben sein!</string>
+    <string name="register_local_user_description">Wenn Sie Ihre Passwörter zwischen mehreren Geräten synchronisieren möchten, können Sie es auf einem Pass Butler-Server registrieren.\n\nWichtig: Die Registrierung muss dafür auf dem Server aktiviert werden und der Benutzername darf noch nicht vergeben sein!</string>
 
     <string name="register_local_user_serverurl_hint">Server URL</string>
     <string name="register_local_user_master_password_hint">Master-Passwort</string>
