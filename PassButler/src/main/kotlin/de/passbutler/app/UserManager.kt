@@ -168,13 +168,6 @@ class UserManager(private val localRepository: LocalRepository) {
     suspend fun registerLocalUser(serverUrlString: String, masterPassword: String): Result<Unit> {
         return try {
             val serverUrl = URI.create(serverUrlString)
-
-            // First try to update logged-in state storage
-            updateLoggedInStateStorage {
-                this.userType = UserType.REMOTE
-                this.serverUrl = serverUrl
-            }
-
             val loggedInUser = loggedInUser ?: throw IllegalStateException("The logged-in user is not initialized!")
 
             val username = loggedInUser.username
@@ -186,6 +179,12 @@ class UserManager(private val localRepository: LocalRepository) {
             withContext(Dispatchers.Main) {
                 authWebservice.value = createdAuthWebservice
                 userWebservice.value = createdUserWebservice
+            }
+
+            // If everything worked, update logged-in state storage
+            updateLoggedInStateStorage {
+                this.userType = UserType.REMOTE
+                this.serverUrl = serverUrl
             }
 
             Success(Unit)
