@@ -46,9 +46,9 @@ import java.time.Duration
 typealias OkHttpResponse = okhttp3.Response
 
 private const val API_VERSION_PREFIX = "v1"
-private val API_TIMEOUT_CONNECT = Duration.ofSeconds(5)
-private val API_TIMEOUT_READ = Duration.ofSeconds(5)
-private val API_TIMEOUT_WRITE = Duration.ofSeconds(5)
+internal val API_TIMEOUT_CONNECT = Duration.ofSeconds(5)
+internal val API_TIMEOUT_READ = Duration.ofSeconds(5)
+internal val API_TIMEOUT_WRITE = Duration.ofSeconds(5)
 
 interface AuthWebservice {
     @GET("/$API_VERSION_PREFIX/token")
@@ -304,13 +304,13 @@ suspend fun UserWebservice.requestWithoutResult(block: suspend UserWebservice.()
     return block(this).completeRequestWithoutResult()
 }
 
-private fun Request.applyTokenAuthorizationHeader(token: String): Request {
+internal fun Request.applyTokenAuthorizationHeader(token: String): Request {
     return newBuilder()
         .header("Authorization", "Bearer $token")
         .build()
 }
 
-private fun <T> Response<T>.completeRequestWithResult(): Result<T> {
+internal fun <T> Response<T>.completeRequestWithResult(): Result<T> {
     val responseResult = body()
     val requestCode = code()
 
@@ -343,7 +343,7 @@ private fun String.minimized(): String {
         .replace(" ", "")
 }
 
-private fun Type.isListType(clazz: Class<*>): Boolean {
+internal fun Type.isListType(clazz: Class<*>): Boolean {
     return (this as? ParameterizedType)?.let { it.rawType == List::class.java && it.actualTypeArguments.firstOrNull() == clazz } ?: false
 }
 

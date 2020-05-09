@@ -41,7 +41,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     private var binding: FragmentSettingsBinding? = null
     private var settingsPreferenceFragment: SettingsPreferenceFragment? = null
     private var biometricPrompt: BiometricPrompt? = null
-    private var masterPasswordInputDialog: AlertDialog? = null
+    internal var masterPasswordInputDialog: AlertDialog? = null
 
     private val biometricUnlockEnabledObserver = Observer<Boolean> { newValue ->
         settingsPreferenceFragment?.enableBiometricUnlockPreference?.isChecked = newValue
@@ -51,7 +51,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         BiometricAuthenticationCallbackExecutor(this, Dispatchers.Main)
     }
 
-    private var setupBiometricUnlockKeyJob: Job? = null
+    internal var setupBiometricUnlockKeyJob: Job? = null
 
     override fun getToolBarTitle() = getString(R.string.settings_title)
 
@@ -138,7 +138,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         (settingsPreferenceFragment?.parentFragmentManager?.findFragmentByTag(preferenceDialogFragmentTag) as? DialogFragment)?.dismiss()
     }
 
-    private fun dismissMasterPasswordInputDialog() {
+    internal fun dismissMasterPasswordInputDialog() {
         masterPasswordInputDialog?.let {
             it.dismiss()
 
@@ -154,8 +154,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         biometricPrompt = null
     }
 
-
-    private fun generateBiometricUnlockKey() {
+    internal fun generateBiometricUnlockKey() {
         setupBiometricUnlockKeyJob?.cancel()
         setupBiometricUnlockKeyJob = launchRequestSending(
             handleSuccess = {
@@ -169,7 +168,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         }
     }
 
-    private fun disableBiometricUnlock() {
+    internal fun disableBiometricUnlock() {
         setupBiometricUnlockKeyJob?.cancel()
         setupBiometricUnlockKeyJob = launchRequestSending(
             handleSuccess = {
@@ -183,7 +182,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         }
     }
 
-    private fun cancelBiometricUnlockSetup() {
+    internal fun cancelBiometricUnlockSetup() {
         setupBiometricUnlockKeyJob?.cancel()
         setupBiometricUnlockKeyJob = launchRequestSending(
             handleFailure = {

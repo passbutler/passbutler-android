@@ -192,14 +192,14 @@ class FragmentPresenter(
     }
 }
 
-private val Class<*>.fragmentInstanceIdentification: String
+internal val Class<*>.fragmentInstanceIdentification: String
     get() {
         // Use class name with full package
         return name
     }
 
-private val Activity?.isNotFinished
+internal val Activity?.isNotFinished
     get() = this?.isFinishing != true
 
-private val Fragment?.isStateNotSaved
+internal val Fragment?.isStateNotSaved
     get() = this?.isStateSaved != true
