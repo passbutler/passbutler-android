@@ -10,10 +10,10 @@ class OverviewViewModel : CoroutineScopedViewModel() {
 
     var loggedInUserViewModel: UserViewModel? = null
         set(value) {
+            unregisterItemViewModelsObserver(field)
             field = value
 
-            unregisterItemViewModelsObserver()
-            registerItemViewModelsObserver()
+            registerItemViewModelsObserver(field)
         }
 
     val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
@@ -24,7 +24,7 @@ class OverviewViewModel : CoroutineScopedViewModel() {
     }
 
     override fun onCleared() {
-        unregisterItemViewModelsObserver()
+        unregisterItemViewModelsObserver(loggedInUserViewModel)
         super.onCleared()
     }
 
@@ -41,11 +41,11 @@ class OverviewViewModel : CoroutineScopedViewModel() {
         return loggedInUserViewModel.logout()
     }
 
-    private fun registerItemViewModelsObserver() {
+    private fun registerItemViewModelsObserver(loggedInUserViewModel: UserViewModel?) {
         loggedInUserViewModel?.itemViewModels?.observeForever(itemViewModelsChangedObserver)
     }
 
-    private fun unregisterItemViewModelsObserver() {
+    private fun unregisterItemViewModelsObserver(loggedInUserViewModel: UserViewModel?) {
         loggedInUserViewModel?.itemViewModels?.removeObserver(itemViewModelsChangedObserver)
     }
 }
