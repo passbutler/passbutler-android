@@ -53,13 +53,13 @@ class UserViewModel private constructor(
         get() = userManager.loggedInStateStorage
 
     val userType
-        get() = loggedInStateStorageValue.userType
+        get() = loggedInStateStorageValue?.userType
 
     val encryptedMasterPassword
-        get() = loggedInStateStorageValue.encryptedMasterPassword
+        get() = loggedInStateStorageValue?.encryptedMasterPassword
 
     val lastSuccessfulSyncDate
-        get() = loggedInStateStorageValue.lastSuccessfulSyncDate
+        get() = loggedInStateStorageValue?.lastSuccessfulSyncDate
 
     val webservices
         get() = userManager.webservices
@@ -78,7 +78,7 @@ class UserViewModel private constructor(
     }
 
     private val loggedInStateStorageValue
-        get() = userManager.loggedInStateStorage.value ?: throw LoggedInStateStorageUninitializedException
+        get() = userManager.loggedInStateStorage.value
 
     private val updateItemViewModelsSignal = signal {
         updateItemViewModels()
