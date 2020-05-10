@@ -244,7 +244,7 @@ class UserViewModel private constructor(
             protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey)).resultOrThrowException()
 
             val user = createModel()
-            userManager.updateUser(user)
+            userManager.localRepository.updateUser(user)
 
             // After all mandatory changes, try to disable biometric unlock because master password re-encryption would require complex flow with biometric authentication UI
             val disableBiometricUnlockResult = disableBiometricUnlock()
@@ -341,7 +341,7 @@ class UserViewModel private constructor(
                     protectedSettings.update(masterEncryptionKey, settings).resultOrThrowException()
 
                     val user = createModel()
-                    userManager.updateUser(user)
+                    userManager.localRepository.updateUser(user)
                 } catch (exception: Exception) {
                     Logger.warn(exception, "The user settings could not be updated")
                 }
@@ -363,7 +363,7 @@ class UserViewModel private constructor(
     private fun updateItemViewModels() {
         itemViewModelsUpdateJob?.cancel()
         itemViewModelsUpdateJob = launch {
-            val newItems = userManager.findAllItems()
+            val newItems = userManager.localRepository.findAllItems()
             val updatedItemViewModels = createItemViewModels(newItems)
             val decryptedItemViewModels = decryptItemViewModels(updatedItemViewModels)
 
@@ -381,7 +381,7 @@ class UserViewModel private constructor(
         val newItemViewModels = newItems
             .mapNotNull { item ->
                 // Check if the user has a non-deleted item authorization to access the item
-                val itemAuthorization = userManager.findItemAuthorizationForItem(item).firstOrNull {
+                val itemAuthorization = userManager.localRepository.findItemAuthorizationForItem(item).firstOrNull {
                     it.userId == username && !it.deleted
                 }
 

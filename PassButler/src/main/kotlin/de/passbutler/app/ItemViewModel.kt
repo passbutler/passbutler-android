@@ -160,10 +160,10 @@ class ItemEditingViewModel(
 
         return try {
             val (item, itemKey) = createNewItemAndKey(loggedInUserId, itemData).resultOrThrowException()
-            userManager.createItem(item)
+            userManager.localRepository.insertItem(item)
 
             val itemAuthorization = createNewItemAuthorization(loggedInUserId, loggedInUserItemEncryptionPublicKey, item, itemKey).resultOrThrowException()
-            userManager.createItemAuthorization(itemAuthorization)
+            userManager.localRepository.insertItemAuthorization(itemAuthorization)
 
             val updatedItemModel = ItemModel.Existing(item, itemAuthorization, itemData, itemKey)
             Success(updatedItemModel)
@@ -224,7 +224,7 @@ class ItemEditingViewModel(
 
         return try {
             val updatedItem = createUpdatedItem(item, itemKey).resultOrThrowException()
-            userManager.updateItem(updatedItem)
+            userManager.localRepository.updateItem(updatedItem)
 
             val updatedItemModel = ItemModel.Existing(updatedItem, itemModel.itemAuthorization, itemModel.itemData, itemModel.itemKey)
             Success(updatedItemModel)
@@ -266,7 +266,7 @@ class ItemEditingViewModel(
             deleted = true,
             modified = Date()
         )
-        userManager.updateItem(deletedItem)
+        userManager.localRepository.updateItem(deletedItem)
 
         return Success(Unit)
     }

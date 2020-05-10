@@ -40,7 +40,7 @@ import java.net.SocketTimeoutException
 import java.net.URI
 import java.util.*
 
-class UserManager(private val localRepository: LocalRepository) {
+class UserManager(val localRepository: LocalRepository) {
 
     var loggedInStateStorage: LoggedInStateStorage? = null
         private set
@@ -244,35 +244,6 @@ class UserManager(private val localRepository: LocalRepository) {
 
         loggedInStateStorage = updatedLoggedInStateStorage
         loggedInStateStorageChanged.emit()
-    }
-
-    suspend fun updateUser(user: User) {
-        Logger.debug("user = $user")
-        localRepository.updateUser(user)
-    }
-
-    suspend fun findAllItems(): List<Item> {
-        return localRepository.findAllItems()
-    }
-
-    suspend fun createItem(item: Item) {
-        localRepository.insertItem(item)
-    }
-
-    suspend fun updateItem(item: Item) {
-        localRepository.updateItem(item)
-    }
-
-    suspend fun findItemAuthorizationForItem(item: Item): List<ItemAuthorization> {
-        return localRepository.findItemAuthorizationForItem(item)
-    }
-
-    suspend fun createItemAuthorization(itemAuthorization: ItemAuthorization) {
-        localRepository.insertItemAuthorization(itemAuthorization)
-    }
-
-    suspend fun updateItemAuthorization(itemAuthorization: ItemAuthorization) {
-        localRepository.updateItemAuthorization(itemAuthorization)
     }
 
     suspend fun synchronize(): Result<Unit> {
