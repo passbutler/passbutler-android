@@ -1,12 +1,12 @@
 package de.passbutler.app
 
-import androidx.lifecycle.MutableLiveData
 import com.squareup.sqldelight.Query
 import de.passbutler.app.database.AuthWebservice
 import de.passbutler.app.database.UserWebservice
 import de.passbutler.app.database.requestWithResult
 import de.passbutler.app.database.requestWithoutResult
 import de.passbutler.common.base.Failure
+import de.passbutler.common.base.MutableBindable
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.SignalEmitter
 import de.passbutler.common.base.Success
@@ -31,10 +31,8 @@ import de.passbutler.common.database.models.User
 import de.passbutler.common.database.models.UserSettings
 import de.passbutler.common.database.models.UserType
 import de.passbutler.common.database.remoteChangedItems
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 import java.net.SocketTimeoutException
 import java.net.URI
@@ -42,25 +40,9 @@ import java.util.*
 
 class UserManager(val localRepository: LocalRepository) {
 
-    var loggedInStateStorage: LoggedInStateStorage? = null
-        private set
-
-    val loggedInStateStorageChanged = SignalEmitter()
-
-    val loggedInUserResult = MutableLiveData<LoggedInUserResult?>()
-
-    var webservices: Webservices? = null
-        private set(value) {
-            if (value != field) {
-                field = value
-
-                if (value != null) {
-                    webservicesInitialized.emit()
-                }
-            }
-        }
-
-    val webservicesInitialized = SignalEmitter()
+    val loggedInStateStorage = MutableBindable<LoggedInStateStorage?>(null)
+    val loggedInUserResult = MutableBindable<LoggedInUserResult?>(null)
+    val webservices = MutableBindable<Webservices?>(null)
 
     val itemsOrItemAuthorizationsChanged = SignalEmitter()
 
@@ -83,19 +65,17 @@ class UserManager(val localRepository: LocalRepository) {
 
             // Create logged-in state storage first to be sure, auth token can be applied
             localRepository.insertLoggedInStateStorage(createdLoggedInStateStorage)
-            loggedInStateStorage = createdLoggedInStateStorage
+            loggedInStateStorage.value = createdLoggedInStateStorage
 
             val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword)
             val createdUserWebservice = createUserWebservice(serverUrl, createdAuthWebservice, this)
 
-            webservices = Webservices(createdAuthWebservice, createdUserWebservice)
+            webservices.value = Webservices(createdAuthWebservice, createdUserWebservice)
 
             val newUser = createdUserWebservice.requestWithResult { getUserDetails() }.resultOrThrowException()
             localRepository.insertUser(newUser)
 
-            withContext(Dispatchers.Main) {
-                loggedInUserResult.value = LoggedInUserResult.PerformedLogin(newUser, masterPassword)
-            }
+            loggedInUserResult.value = LoggedInUserResult.LoggedIn.PerformedLogin(newUser, masterPassword)
 
             Success(Unit)
         } catch (exception: Exception) {
@@ -117,7 +97,7 @@ class UserManager(val localRepository: LocalRepository) {
             )
 
             localRepository.insertLoggedInStateStorage(createdLoggedInStateStorage)
-            loggedInStateStorage = createdLoggedInStateStorage
+            loggedInStateStorage.value = createdLoggedInStateStorage
 
             val serverMasterPasswordAuthenticationHash = deriveServerMasterPasswordAuthenticationHash(username, masterPassword)
             val masterKeyDerivationInformation = createMasterKeyDerivationInformation()
@@ -147,9 +127,7 @@ class UserManager(val localRepository: LocalRepository) {
 
             localRepository.insertUser(newUser)
 
-            withContext(Dispatchers.Main) {
-                loggedInUserResult.value = LoggedInUserResult.PerformedLogin(newUser, masterPassword)
-            }
+            loggedInUserResult.value = LoggedInUserResult.LoggedIn.PerformedLogin(newUser, masterPassword)
 
             Success(Unit)
         } catch (exception: Exception) {
@@ -175,7 +153,7 @@ class UserManager(val localRepository: LocalRepository) {
 
             createdUserWebservice.requestWithoutResult { registerUser(loggedInUser) }.resultOrThrowException()
 
-            webservices = Webservices(createdAuthWebservice, createdUserWebservice)
+            webservices.value = Webservices(createdAuthWebservice, createdUserWebservice)
 
             // If everything worked, update logged-in state storage
             updateLoggedInStateStorage {
@@ -199,15 +177,10 @@ class UserManager(val localRepository: LocalRepository) {
             }
 
             if (restoredLoggedInUser != null) {
-                loggedInStateStorage = restoredLoggedInStateStorage
-
-                withContext(Dispatchers.Main) {
-                    loggedInUserResult.value = LoggedInUserResult.RestoredLogin(restoredLoggedInUser)
-                }
+                loggedInStateStorage.value = restoredLoggedInStateStorage
+                loggedInUserResult.value = LoggedInUserResult.LoggedIn.RestoredLogin(restoredLoggedInUser)
             } else {
-                withContext(Dispatchers.Main) {
-                    loggedInUserResult.value = null
-                }
+                loggedInUserResult.value = LoggedInUserResult.LoggedOut
             }
         } else {
             Logger.debug("Restore is not needed because already restored")
@@ -218,10 +191,10 @@ class UserManager(val localRepository: LocalRepository) {
         Logger.debug("Restore webservices")
 
         try {
-            val serverUrl = loggedInStateStorage?.serverUrl ?: throw IllegalStateException("The server url is null!")
-            val username = loggedInStateStorage?.username ?: throw IllegalStateException("The username is null!")
+            val serverUrl = loggedInStateStorage.value?.serverUrl ?: throw IllegalStateException("The server url is null!")
+            val username = loggedInStateStorage.value?.username ?: throw IllegalStateException("The username is null!")
 
-            webservices = webservices ?: run {
+            webservices.value = webservices.value ?: run {
                 val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword)
                 val createdUserWebservice = createUserWebservice(serverUrl, createdAuthWebservice, this)
                 Webservices(createdAuthWebservice, createdUserWebservice)
@@ -232,18 +205,17 @@ class UserManager(val localRepository: LocalRepository) {
     }
 
     suspend fun reinitializeAuthWebservice(masterPassword: String) {
-        webservices = null
+        webservices.value = null
         restoreWebservices(masterPassword)
     }
 
     suspend fun updateLoggedInStateStorage(block: LoggedInStateStorage.() -> Unit) {
-        val updatedLoggedInStateStorage = (loggedInStateStorage as? LoggedInStateStorage.Implementation)?.copy() ?: throw LoggedInStateStorageUninitializedException
+        val updatedLoggedInStateStorage = (loggedInStateStorage.value as? LoggedInStateStorage.Implementation)?.copy() ?: throw LoggedInStateStorageUninitializedException
         block.invoke(updatedLoggedInStateStorage)
 
         localRepository.updateLoggedInStateStorage(updatedLoggedInStateStorage)
 
-        loggedInStateStorage = updatedLoggedInStateStorage
-        loggedInStateStorageChanged.emit()
+        loggedInStateStorage.value = updatedLoggedInStateStorage
     }
 
     suspend fun synchronize(): Result<Unit> {
@@ -287,7 +259,7 @@ class UserManager(val localRepository: LocalRepository) {
     }
 
     private suspend fun createSynchronizationTasks(): List<SynchronizationTask> {
-        val userWebservice = webservices?.userWebservice ?: throw IllegalStateException("The user webservice is not initialized!")
+        val userWebservice = webservices.value?.userWebservice ?: throw IllegalStateException("The user webservice is not initialized!")
         val loggedInUser = findLoggedInUser() ?: throw LoggedInUserUninitializedException
 
         return listOf(
@@ -303,22 +275,20 @@ class UserManager(val localRepository: LocalRepository) {
 
         resetLoggedInUser()
 
-        withContext(Dispatchers.Main) {
-            loggedInUserResult.value = null
-        }
+        loggedInUserResult.value = LoggedInUserResult.LoggedOut
     }
 
     private suspend fun resetLoggedInUser() {
         Logger.debug("Reset all data of user")
 
-        webservices = null
+        webservices.value = null
 
-        loggedInStateStorage = null
+        loggedInStateStorage.value = null
         localRepository.reset()
     }
 
     private suspend fun findLoggedInUser(): User? {
-        return loggedInUserResult.value?.loggedInUser?.username?.let { loggedInUsername ->
+        return (loggedInUserResult.value as? LoggedInUserResult.LoggedIn)?.loggedInUser?.username?.let { loggedInUsername ->
             localRepository.findUser(loggedInUsername)
         }
     }
@@ -379,9 +349,13 @@ private suspend fun createUserWebservice(serverUrl: URI, authWebservice: AuthWeb
 
 data class Webservices(val authWebservice: AuthWebservice, val userWebservice: UserWebservice)
 
-sealed class LoggedInUserResult(val loggedInUser: User) {
-    class PerformedLogin(newLoggedInUser: User, val masterPassword: String) : LoggedInUserResult(newLoggedInUser)
-    class RestoredLogin(newLoggedInUser: User) : LoggedInUserResult(newLoggedInUser)
+sealed class LoggedInUserResult {
+    object LoggedOut : LoggedInUserResult()
+
+    sealed class LoggedIn(val loggedInUser: User) : LoggedInUserResult() {
+        class PerformedLogin(loggedInUser: User, val masterPassword: String) : LoggedInUserResult.LoggedIn(loggedInUser)
+        class RestoredLogin(loggedInUser: User) : LoggedInUserResult.LoggedIn(loggedInUser)
+    }
 }
 
 private class UsersSynchronizationTask(

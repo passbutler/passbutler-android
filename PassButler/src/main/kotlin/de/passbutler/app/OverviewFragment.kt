@@ -15,6 +15,7 @@ import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -31,8 +32,8 @@ import de.passbutler.app.ui.showFadeInOutAnimation
 import de.passbutler.app.ui.showFragmentModally
 import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.visible
-import de.passbutler.common.base.addSignal
-import de.passbutler.common.base.signal
+import de.passbutler.common.base.BindableObserver
+import de.passbutler.common.database.models.LoggedInStateStorage
 import de.passbutler.common.database.models.UserType
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -61,16 +62,14 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         binding?.layoutOverviewContent?.groupEmptyScreenViews?.visible = showEmptyScreen
     }
 
-    private val loggedInStateStorageChangedSignal = signal {
-        launch {
-            updateToolbarSubtitle()
-            updateNavigationHeaderUserTypeView()
-            updateSwipeRefreshLayout()
-        }
+    private val loggedInStateStorageObserver: BindableObserver<LoggedInStateStorage?> = {
+        updateToolbarSubtitle()
+        updateNavigationHeaderUserTypeView()
+        updateSwipeRefreshLayout()
     }
 
-    private val webservicesInitializedSignal = signal {
-        if (viewModel.loggedInUserViewModel?.webservicesInitialized == true) {
+    private val webservicesInitializedObserver: BindableObserver<Webservices?> = {
+        if (it != null) {
             synchronizeData(userTriggered = false)
         }
     }
@@ -142,8 +141,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         super.onStart()
 
         viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
-        viewModel.loggedInUserViewModel?.loggedInStateStorageChanged?.addSignal(loggedInStateStorageChangedSignal, true)
-        viewModel.loggedInUserViewModel?.webservicesInitializedSignalEmitter?.addSignal(webservicesInitializedSignal, true)
+        viewModel.loggedInUserViewModel?.loggedInStateStorage?.addObserver(viewLifecycleOwner.lifecycleScope, true, loggedInStateStorageObserver)
+        viewModel.loggedInUserViewModel?.webservices?.addObserver(viewLifecycleOwner.lifecycleScope, true, webservicesInitializedObserver)
 
         updateToolbarJob?.cancel()
         updateToolbarJob = launch {
@@ -158,8 +157,8 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 
     override fun onStop() {
-        viewModel.loggedInUserViewModel?.loggedInStateStorageChanged?.removeSignal(loggedInStateStorageChangedSignal)
-        viewModel.loggedInUserViewModel?.webservicesInitializedSignalEmitter?.removeSignal(webservicesInitializedSignal)
+        viewModel.loggedInUserViewModel?.loggedInStateStorage?.removeObserver(loggedInStateStorageObserver)
+        viewModel.loggedInUserViewModel?.webservices?.removeObserver(webservicesInitializedObserver)
 
         updateToolbarJob?.cancel()
         super.onStop()
@@ -197,7 +196,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
             if (viewModel.loggedInUserViewModel?.userType == UserType.REMOTE) {
                 isEnabled = true
                 setOnRefreshListener {
-                    if (viewModel.loggedInUserViewModel?.webservicesInitialized == true) {
+                    if (viewModel.loggedInUserViewModel?.webservices?.value != null) {
                         synchronizeData(userTriggered = true)
                     } else {
                         // Immediately stop refreshing if is not possible

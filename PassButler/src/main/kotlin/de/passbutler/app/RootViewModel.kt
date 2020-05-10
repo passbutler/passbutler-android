@@ -3,12 +3,13 @@ package de.passbutler.app
 import android.text.format.DateUtils
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import de.passbutler.app.base.AbstractPassButlerApplication
 import de.passbutler.app.base.viewmodels.CoroutineScopedViewModel
 import de.passbutler.app.crypto.Biometrics
 import de.passbutler.app.database.createLocalRepository
+import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
@@ -64,7 +65,7 @@ class RootViewModel : CoroutineScopedViewModel() {
 
     private fun registerLoggedInUserResultObserver() {
         val userManager = userManager ?: throw UserManagerUninitializedException
-        userManager.loggedInUserResult.observeForever(loggedInUserResultObserver)
+        userManager.loggedInUserResult.addObserver(viewModelScope, false, loggedInUserResultObserver)
     }
 
     suspend fun unlockScreenWithPassword(masterPassword: String): Result<Unit> {
@@ -170,24 +171,24 @@ class RootViewModel : CoroutineScopedViewModel() {
         object Unlocked : LockScreenState()
     }
 
-    private inner class LoggedInUserResultObserver : Observer<LoggedInUserResult?> {
-        override fun onChanged(loggedInUserResult: LoggedInUserResult?) {
+    private inner class LoggedInUserResultObserver : BindableObserver<LoggedInUserResult?> {
+        override fun invoke(loggedInUserResult: LoggedInUserResult?) {
             val userManager = userManager ?: throw UserManagerUninitializedException
 
             when (loggedInUserResult) {
-                is LoggedInUserResult.PerformedLogin -> {
+                is LoggedInUserResult.LoggedIn.PerformedLogin -> {
                     loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.loggedInUser, loggedInUserResult.masterPassword)
 
                     rootScreenState.value = RootScreenState.LoggedIn
                     lockScreenState.value = LockScreenState.Unlocked
                 }
-                is LoggedInUserResult.RestoredLogin -> {
+                is LoggedInUserResult.LoggedIn.RestoredLogin -> {
                     loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.loggedInUser, null)
 
                     rootScreenState.value = RootScreenState.LoggedIn
                     lockScreenState.value = LockScreenState.Locked
                 }
-                else -> {
+                is LoggedInUserResult.LoggedOut -> {
                     rootScreenState.value = RootScreenState.LoggedOut
                     lockScreenState.value = null
 

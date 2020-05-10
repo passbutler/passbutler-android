@@ -140,7 +140,7 @@ interface UserWebservice {
 
     private class DefaultAuthTokenProvider(private val userManager: UserManager) : AuthTokenProvider {
         override var authToken: AuthToken?
-            get() = userManager.loggedInStateStorage?.authToken
+            get() = userManager.loggedInStateStorage.value?.authToken
             set(value) {
                 runBlocking {
                     userManager.updateLoggedInStateStorage {

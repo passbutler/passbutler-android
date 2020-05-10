@@ -49,20 +49,20 @@ class UserViewModel private constructor(
     val username: String
         get() = user.username
 
+    val loggedInStateStorage
+        get() = userManager.loggedInStateStorage
+
     val userType
-        get() = loggedInStateStorage.userType
+        get() = loggedInStateStorageValue.userType
 
     val encryptedMasterPassword
-        get() = loggedInStateStorage.encryptedMasterPassword
+        get() = loggedInStateStorageValue.encryptedMasterPassword
 
     val lastSuccessfulSyncDate
-        get() = loggedInStateStorage.lastSuccessfulSyncDate
+        get() = loggedInStateStorageValue.lastSuccessfulSyncDate
 
-    val webservicesInitialized
-        get() = userManager.webservices != null
-
-    val webservicesInitializedSignalEmitter
-        get() = userManager.webservicesInitialized
+    val webservices
+        get() = userManager.webservices
 
     val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
 
@@ -77,11 +77,8 @@ class UserViewModel private constructor(
         biometricUnlockAvailable.value && encryptedMasterPassword != null
     }
 
-    val loggedInStateStorageChanged
-        get() = userManager.loggedInStateStorageChanged
-
-    private val loggedInStateStorage
-        get() = userManager.loggedInStateStorage ?: throw LoggedInStateStorageUninitializedException
+    private val loggedInStateStorageValue
+        get() = userManager.loggedInStateStorage.value ?: throw LoggedInStateStorageUninitializedException
 
     private val updateItemViewModelsSignal = signal {
         updateItemViewModels()
