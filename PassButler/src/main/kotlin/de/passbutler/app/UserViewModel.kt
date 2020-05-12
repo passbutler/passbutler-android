@@ -186,19 +186,19 @@ class UserViewModel private constructor(
     suspend fun clearSensibleData() {
         Logger.debug("Clear sensible data")
 
+        // Be sure all observers that uses crypto resources cleared afterwards are unregistered first
+        unregisterUpdateItemViewModelsSignal()
+        unregisterUserSettingObservers()
+
         masterEncryptionKey?.clear()
         masterEncryptionKey = null
 
         itemEncryptionSecretKey?.clear()
         itemEncryptionSecretKey = null
 
-        unregisterUpdateItemViewModelsSignal()
-
         itemViewModels.value.forEach {
             it.clearSensibleData()
         }
-
-        unregisterUserSettingObservers()
     }
 
     private fun unregisterUpdateItemViewModelsSignal() {
