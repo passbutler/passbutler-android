@@ -21,6 +21,6 @@ suspend fun createLocalRepository(applicationContext: Context): LocalRepository 
         val driver = AndroidSqliteDriver(PassButlerDatabase.Schema, applicationContext, databaseName, callback = sqlDriverCallback)
 
         val localDatabase = PassButlerDatabase(driver)
-        LocalRepository(localDatabase)
+        LocalRepository(localDatabase, driver)
     }
 }
