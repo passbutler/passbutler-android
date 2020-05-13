@@ -49,17 +49,20 @@ class UserViewModel private constructor(
     val username: String
         get() = user.username
 
+    val loggedInStateStorage
+        get() = userManager.loggedInStateStorage
+
     val userType
-        get() = userManager.userType
+        get() = loggedInStateStorageValue?.userType
 
     val encryptedMasterPassword
-        get() = userManager.encryptedMasterPassword
+        get() = loggedInStateStorageValue?.encryptedMasterPassword
 
     val lastSuccessfulSyncDate
-        get() = userManager.lastSuccessfulSyncDate
+        get() = loggedInStateStorageValue?.lastSuccessfulSyncDate
 
-    val webservicesInitialized
-        get() = userManager.webservicesInitialized
+    val webservices
+        get() = userManager.webservices
 
     val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
 
@@ -71,8 +74,11 @@ class UserViewModel private constructor(
     }
 
     val biometricUnlockEnabled = NonNullValueGetterLiveData {
-        biometricUnlockAvailable.value && encryptedMasterPassword.value != null
+        biometricUnlockAvailable.value && encryptedMasterPassword != null
     }
+
+    private val loggedInStateStorageValue
+        get() = userManager.loggedInStateStorage.value
 
     private val updateItemViewModelsSignal = signal {
         updateItemViewModels()
@@ -180,19 +186,19 @@ class UserViewModel private constructor(
     suspend fun clearSensibleData() {
         Logger.debug("Clear sensible data")
 
+        // Be sure all observers that uses crypto resources cleared afterwards are unregistered first
+        unregisterUpdateItemViewModelsSignal()
+        unregisterUserSettingObservers()
+
         masterEncryptionKey?.clear()
         masterEncryptionKey = null
 
         itemEncryptionSecretKey?.clear()
         itemEncryptionSecretKey = null
 
-        unregisterUpdateItemViewModelsSignal()
-
         itemViewModels.value.forEach {
             it.clearSensibleData()
         }
-
-        unregisterUserSettingObservers()
     }
 
     private fun unregisterUpdateItemViewModelsSignal() {
@@ -235,7 +241,7 @@ class UserViewModel private constructor(
             protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey)).resultOrThrowException()
 
             val user = createModel()
-            userManager.updateUser(user)
+            userManager.localRepository.updateUser(user)
 
             // After all mandatory changes, try to disable biometric unlock because master password re-encryption would require complex flow with biometric authentication UI
             val disableBiometricUnlockResult = disableBiometricUnlock()
@@ -263,7 +269,9 @@ class UserViewModel private constructor(
             val encryptedMasterPasswordValue = Biometrics.encryptData(initializedSetupBiometricUnlockCipher, masterPassword.toByteArray()).resultOrThrowException()
 
             val encryptedMasterPassword = EncryptedValue(encryptedMasterPasswordInitializationVector, encryptedMasterPasswordValue)
-            userManager.updateEncryptedMasterPassword(encryptedMasterPassword)
+            userManager.updateLoggedInStateStorage {
+                this.encryptedMasterPassword = encryptedMasterPassword
+            }
 
             withContext(Dispatchers.Main) {
                 biometricUnlockEnabled.notifyChange()
@@ -284,7 +292,9 @@ class UserViewModel private constructor(
         return try {
             Biometrics.removeKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME).resultOrThrowException()
 
-            userManager.updateEncryptedMasterPassword(null)
+            userManager.updateLoggedInStateStorage {
+                encryptedMasterPassword = null
+            }
 
             withContext(Dispatchers.Main) {
                 biometricUnlockEnabled.notifyChange()
@@ -328,7 +338,7 @@ class UserViewModel private constructor(
                     protectedSettings.update(masterEncryptionKey, settings).resultOrThrowException()
 
                     val user = createModel()
-                    userManager.updateUser(user)
+                    userManager.localRepository.updateUser(user)
                 } catch (exception: Exception) {
                     Logger.warn(exception, "The user settings could not be updated")
                 }
@@ -350,7 +360,7 @@ class UserViewModel private constructor(
     private fun updateItemViewModels() {
         itemViewModelsUpdateJob?.cancel()
         itemViewModelsUpdateJob = launch {
-            val newItems = userManager.findAllItems()
+            val newItems = userManager.localRepository.findAllItems()
             val updatedItemViewModels = createItemViewModels(newItems)
             val decryptedItemViewModels = decryptItemViewModels(updatedItemViewModels)
 
@@ -368,7 +378,7 @@ class UserViewModel private constructor(
         val newItemViewModels = newItems
             .mapNotNull { item ->
                 // Check if the user has a non-deleted item authorization to access the item
-                val itemAuthorization = userManager.findItemAuthorizationForItem(item).firstOrNull {
+                val itemAuthorization = userManager.localRepository.findItemAuthorizationForItem(item).firstOrNull {
                     it.userId == username && !it.deleted
                 }
 

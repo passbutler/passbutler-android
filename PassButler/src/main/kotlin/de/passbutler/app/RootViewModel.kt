@@ -3,17 +3,19 @@ package de.passbutler.app
 import android.text.format.DateUtils
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import de.passbutler.app.base.AbstractPassButlerApplication
 import de.passbutler.app.base.viewmodels.CoroutineScopedViewModel
 import de.passbutler.app.crypto.Biometrics
 import de.passbutler.app.database.createLocalRepository
+import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
 import de.passbutler.common.base.resultOrThrowException
 import de.passbutler.common.base.toUTF8String
+import de.passbutler.common.database.models.UserType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -49,7 +51,7 @@ class RootViewModel : CoroutineScopedViewModel() {
         val userManager = userManager ?: run {
             val applicationContext = AbstractPassButlerApplication.applicationContext
             val localRepository = createLocalRepository(applicationContext)
-            val createdUserManager = UserManager(applicationContext, localRepository)
+            val createdUserManager = UserManager(localRepository)
 
             // Set `UserManager` first to be sure registered observer can already access field
             userManager = createdUserManager
@@ -63,7 +65,7 @@ class RootViewModel : CoroutineScopedViewModel() {
 
     private fun registerLoggedInUserResultObserver() {
         val userManager = userManager ?: throw UserManagerUninitializedException
-        userManager.loggedInUserResult.observeForever(loggedInUserResultObserver)
+        userManager.loggedInUserResult.addObserver(viewModelScope, false, loggedInUserResultObserver)
     }
 
     suspend fun unlockScreenWithPassword(masterPassword: String): Result<Unit> {
@@ -71,7 +73,7 @@ class RootViewModel : CoroutineScopedViewModel() {
         val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
         val decryptSensibleDataResult = loggedInUserViewModel.decryptSensibleData(masterPassword)
 
-        if (decryptSensibleDataResult is Success && loggedInUserViewModel.userType.value == UserType.REMOTE) {
+        if (decryptSensibleDataResult is Success && loggedInUserViewModel.userType == UserType.REMOTE) {
             // Restore webservices asynchronously to avoid slow network is blocking unlock progress
             launch {
                 userManager.restoreWebservices(masterPassword)
@@ -82,7 +84,7 @@ class RootViewModel : CoroutineScopedViewModel() {
     }
 
     suspend fun initializeBiometricUnlockCipher(): Result<Cipher> {
-        val encryptedMasterPasswordInitializationVector = loggedInUserViewModel?.encryptedMasterPassword?.value?.initializationVector
+        val encryptedMasterPasswordInitializationVector = loggedInUserViewModel?.encryptedMasterPassword?.initializationVector
             ?: throw IllegalStateException("The encrypted master key initialization vector was not found, despite biometric unlock was tried!")
 
         return try {
@@ -102,14 +104,14 @@ class RootViewModel : CoroutineScopedViewModel() {
     suspend fun unlockScreenWithBiometrics(initializedBiometricUnlockCipher: Cipher): Result<Unit> {
         val userManager = userManager ?: throw UserManagerUninitializedException
         val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
-        val encryptedMasterPassword = loggedInUserViewModel.encryptedMasterPassword.value?.encryptedValue
+        val encryptedMasterPassword = loggedInUserViewModel.encryptedMasterPassword?.encryptedValue
             ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
 
         return try {
             val masterPassword = Biometrics.decryptData(initializedBiometricUnlockCipher, encryptedMasterPassword).resultOrThrowException().toUTF8String()
             loggedInUserViewModel.decryptSensibleData(masterPassword).resultOrThrowException()
 
-            if (loggedInUserViewModel.userType.value == UserType.REMOTE) {
+            if (loggedInUserViewModel.userType == UserType.REMOTE) {
                 // Restore webservices asynchronously to avoid slow network is blocking unlock progress
                 launch {
                     userManager.restoreWebservices(masterPassword)
@@ -169,24 +171,24 @@ class RootViewModel : CoroutineScopedViewModel() {
         object Unlocked : LockScreenState()
     }
 
-    private inner class LoggedInUserResultObserver : Observer<LoggedInUserResult?> {
-        override fun onChanged(loggedInUserResult: LoggedInUserResult?) {
+    private inner class LoggedInUserResultObserver : BindableObserver<LoggedInUserResult?> {
+        override fun invoke(loggedInUserResult: LoggedInUserResult?) {
             val userManager = userManager ?: throw UserManagerUninitializedException
 
             when (loggedInUserResult) {
-                is LoggedInUserResult.PerformedLogin -> {
-                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.newLoggedInUser, loggedInUserResult.masterPassword)
+                is LoggedInUserResult.LoggedIn.PerformedLogin -> {
+                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.loggedInUser, loggedInUserResult.masterPassword)
 
                     rootScreenState.value = RootScreenState.LoggedIn
                     lockScreenState.value = LockScreenState.Unlocked
                 }
-                is LoggedInUserResult.RestoredLogin -> {
-                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.newLoggedInUser, null)
+                is LoggedInUserResult.LoggedIn.RestoredLogin -> {
+                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.loggedInUser, null)
 
                     rootScreenState.value = RootScreenState.LoggedIn
                     lockScreenState.value = LockScreenState.Locked
                 }
-                else -> {
+                is LoggedInUserResult.LoggedOut -> {
                     rootScreenState.value = RootScreenState.LoggedOut
                     lockScreenState.value = null
 
