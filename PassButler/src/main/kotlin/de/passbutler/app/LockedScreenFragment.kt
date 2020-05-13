@@ -63,24 +63,14 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
             binding.fragment = this
             binding.userViewModel = viewModel.loggedInUserViewModel
 
+            setupDebugPresetsButton(binding)
+            setupUnlockWithPasswordButton(binding)
+            setupUnlockWithBiometricsButton(binding)
+
             applyRestoredViewStates(binding)
         }
 
         return binding?.root
-    }
-
-    private fun applyRestoredViewStates(binding: FragmentLockedScreenBinding) {
-        formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        binding?.let {
-            setupDebugPresetsButton(it)
-            setupUnlockWithPasswordButton(it)
-            setupUnlockWithBiometricsButton(it)
-        }
     }
 
     private fun setupDebugPresetsButton(binding: FragmentLockedScreenBinding) {
@@ -176,6 +166,10 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
         }
     }
 
+    private fun applyRestoredViewStates(binding: FragmentLockedScreenBinding) {
+        formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
+    }
+
     internal fun unlockScreenWithBiometrics(initializedBiometricUnlockCipher: Cipher) {
         unlockRequestSendingJob?.cancel()
         unlockRequestSendingJob = launchUnlockRequestSending {
@@ -202,6 +196,11 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
         outState.putString(FORM_FIELD_MASTER_PASSWORD, binding?.textInputEditTextMasterPassword?.text?.toString())
 
         super.onSaveInstanceState(outState)
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 
     override fun onHandleBackPress(): Boolean {

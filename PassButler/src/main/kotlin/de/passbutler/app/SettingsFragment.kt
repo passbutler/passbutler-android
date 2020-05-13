@@ -38,7 +38,6 @@ import javax.crypto.Cipher
 
 class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
 
-    private var binding: FragmentSettingsBinding? = null
     private var settingsPreferenceFragment: SettingsPreferenceFragment? = null
     private var biometricPrompt: BiometricPrompt? = null
     internal var masterPasswordInputDialog: AlertDialog? = null
@@ -69,7 +68,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     }
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate<FragmentSettingsBinding>(inflater, R.layout.fragment_settings, container, false).also { binding ->
+        val binding = DataBindingUtil.inflate<FragmentSettingsBinding>(inflater, R.layout.fragment_settings, container, false).also { binding ->
             binding.lifecycleOwner = viewLifecycleOwner
         }
 
@@ -85,13 +84,9 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
             it.settingsFragment = this
         }
 
-        return binding?.root
-    }
-
-    override fun onStart() {
-        super.onStart()
-
         viewModel.biometricUnlockEnabled?.observe(viewLifecycleOwner, biometricUnlockEnabledObserver)
+
+        return binding.root
     }
 
     override fun onPause() {

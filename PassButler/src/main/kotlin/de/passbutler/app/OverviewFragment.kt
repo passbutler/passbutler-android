@@ -96,6 +96,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
             setupEntryList(binding)
         }
 
+        viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
+        viewModel.loggedInUserViewModel?.loggedInStateStorage?.addObserver(viewLifecycleOwner.lifecycleScope, true, loggedInStateStorageObserver)
+
         return binding?.root
     }
 
@@ -140,8 +143,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     override fun onStart() {
         super.onStart()
 
-        viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
-        viewModel.loggedInUserViewModel?.loggedInStateStorage?.addObserver(viewLifecycleOwner.lifecycleScope, true, loggedInStateStorageObserver)
         viewModel.loggedInUserViewModel?.webservices?.addObserver(viewLifecycleOwner.lifecycleScope, true, webservicesInitializedObserver)
 
         updateToolbarJob?.cancel()
@@ -157,10 +158,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 
     override fun onStop() {
-        viewModel.loggedInUserViewModel?.loggedInStateStorage?.removeObserver(loggedInStateStorageObserver)
         viewModel.loggedInUserViewModel?.webservices?.removeObserver(webservicesInitializedObserver)
-
         updateToolbarJob?.cancel()
+
         super.onStop()
     }
 
@@ -243,14 +243,14 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         }
     }
 
-    internal fun logoutUser() {
-        logoutRequestSendingJob?.cancel()
-        logoutRequestSendingJob = launchRequestSending(
-            handleFailure = { showError(getString(R.string.overview_logout_failed_title)) },
-            isCancellable = false
-        ) {
-            viewModel.logoutUser()
-        }
+    override fun onDestroyView() {
+        binding = null
+        navigationHeaderSubtitleView = null
+        navigationHeaderUserTypeView = null
+
+        viewModel.loggedInUserViewModel?.loggedInStateStorage?.removeObserver(loggedInStateStorageObserver)
+
+        super.onDestroyView()
     }
 
     override fun onHandleBackPress(): Boolean {
@@ -259,6 +259,16 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
             true
         } else {
             super.onHandleBackPress()
+        }
+    }
+
+    internal fun logoutUser() {
+        logoutRequestSendingJob?.cancel()
+        logoutRequestSendingJob = launchRequestSending(
+            handleFailure = { showError(getString(R.string.overview_logout_failed_title)) },
+            isCancellable = false
+        ) {
+            viewModel.logoutUser()
         }
     }
 

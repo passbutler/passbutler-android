@@ -55,24 +55,13 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
         binding = DataBindingUtil.inflate<FragmentRegisterLocalUserBinding>(inflater, R.layout.fragment_register_local_user, container, false).also { binding ->
             binding.lifecycleOwner = viewLifecycleOwner
 
+            setupRegisterButton(binding)
+            setupDebugPresetsButton(binding)
+
             applyRestoredViewStates(binding)
         }
 
         return binding?.root
-    }
-
-    private fun applyRestoredViewStates(binding: FragmentRegisterLocalUserBinding) {
-        formServerUrl?.let { binding.textInputEditTextServerurl.setText(it) }
-        formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        binding?.let {
-            setupRegisterButton(it)
-            setupDebugPresetsButton(it)
-        }
     }
 
     private fun setupRegisterButton(binding: FragmentRegisterLocalUserBinding) {
@@ -153,6 +142,11 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
         }
     }
 
+    private fun applyRestoredViewStates(binding: FragmentRegisterLocalUserBinding) {
+        formServerUrl?.let { binding.textInputEditTextServerurl.setText(it) }
+        formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
+    }
+
     override fun onStop() {
         // Always hide keyboard if fragment gets stopped
         Keyboard.hideKeyboard(context, this)
@@ -165,6 +159,11 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
         outState.putString(FORM_FIELD_MASTER_PASSWORD, binding?.textInputEditTextMasterPassword?.text?.toString())
 
         super.onSaveInstanceState(outState)
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 
     companion object {

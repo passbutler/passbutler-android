@@ -138,19 +138,15 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
             applyRestoredViewStates(binding)
         }
 
+        viewModel.title.observe(viewLifecycleOwner, titleObserver)
+        viewModel.isNewEntry.observe(viewLifecycleOwner, isNewEntryObserver)
+
         return binding?.root
     }
 
     private fun applyRestoredViewStates(binding: FragmentItemdetailBinding) {
         formTitle?.let { binding.editTextTitle.setText(it) }
         formPassword?.let { binding.editTextPassword.setText(it) }
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        viewModel.title.observe(viewLifecycleOwner, titleObserver)
-        viewModel.isNewEntry.observe(viewLifecycleOwner, isNewEntryObserver)
     }
 
     override fun onStop() {
@@ -165,6 +161,11 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         outState.putString(FORM_FIELD_PASSWORD, binding?.editTextPassword?.text?.toString())
 
         super.onSaveInstanceState(outState)
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 
     companion object {
