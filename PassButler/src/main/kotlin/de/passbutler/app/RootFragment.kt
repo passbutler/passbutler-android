@@ -51,11 +51,7 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_root, container, false)
-    }
-
-    override fun onStart() {
-        super.onStart()
+        val rootView = inflater.inflate(R.layout.fragment_root, container, false)
 
         viewModel.rootScreenState.observe(viewLifecycleOwner, rootScreenStateObserver)
         viewModel.lockScreenState.observe(viewLifecycleOwner, lockScreenStateObserver)
@@ -64,6 +60,8 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
         launch {
             viewModel.restoreLoggedInUser()
         }
+
+        return rootView
     }
 
     private fun showRootScreen() {

@@ -29,15 +29,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
-import javax.crypto.Cipher
 
 class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
 
     private var formMasterPassword: String? = null
 
     private var binding: FragmentLockedScreenBinding? = null
-
-    private var unlockRequestSendingJob: Job? = null
 
     private val biometricCallbackExecutor by lazy {
         BiometricAuthenticationCallbackExecutor(this, Dispatchers.Main)
@@ -63,24 +60,14 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
             binding.fragment = this
             binding.userViewModel = viewModel.loggedInUserViewModel
 
+            setupDebugPresetsButton(binding)
+            setupUnlockWithPasswordButton(binding)
+            setupUnlockWithBiometricsButton(binding)
+
             applyRestoredViewStates(binding)
         }
 
         return binding?.root
-    }
-
-    private fun applyRestoredViewStates(binding: FragmentLockedScreenBinding) {
-        formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        binding?.let {
-            setupDebugPresetsButton(it)
-            setupUnlockWithPasswordButton(it)
-            setupUnlockWithBiometricsButton(it)
-        }
     }
 
     private fun setupDebugPresetsButton(binding: FragmentLockedScreenBinding) {
@@ -118,8 +105,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
                 val masterPassword = binding.textInputEditTextMasterPassword.text?.toString()
 
                 if (masterPassword != null) {
-                    unlockRequestSendingJob?.cancel()
-                    unlockRequestSendingJob = launchUnlockRequestSending {
+                    launchUnlockRequestSending {
                         viewModel.unlockScreenWithPassword(masterPassword)
                     }
                 }
@@ -176,11 +162,8 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
         }
     }
 
-    internal fun unlockScreenWithBiometrics(initializedBiometricUnlockCipher: Cipher) {
-        unlockRequestSendingJob?.cancel()
-        unlockRequestSendingJob = launchUnlockRequestSending {
-            viewModel.unlockScreenWithBiometrics(initializedBiometricUnlockCipher)
-        }
+    private fun applyRestoredViewStates(binding: FragmentLockedScreenBinding) {
+        formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
     }
 
     override fun onResume() {
@@ -204,6 +187,11 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
         super.onSaveInstanceState(outState)
     }
 
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
+    }
+
     override fun onHandleBackPress(): Boolean {
         // Do not allow pop fragment via backpress
         return true
@@ -225,7 +213,9 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
             val initializedBiometricUnlockCipher = result.cryptoObject?.cipher
 
             if (initializedBiometricUnlockCipher != null) {
-                unlockScreenWithBiometrics(initializedBiometricUnlockCipher)
+                launchUnlockRequestSending {
+                    viewModel.unlockScreenWithBiometrics(initializedBiometricUnlockCipher)
+                }
             } else {
                 showError(getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
             }

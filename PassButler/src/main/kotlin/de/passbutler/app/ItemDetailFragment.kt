@@ -18,7 +18,6 @@ import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.showShortFeedback
-import kotlinx.coroutines.Job
 
 class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
@@ -38,9 +37,6 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         updateToolbarTitle()
         updateToolbarMenuItems()
     }
-
-    private var saveRequestSendingJob: Job? = null
-    private var deleteRequestSendingJob: Job? = null
 
     override fun getToolBarTitle(): String {
         return if (viewModel.isNewEntry.value) {
@@ -106,8 +102,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     private fun saveClicked() {
         Keyboard.hideKeyboard(context, this)
 
-        saveRequestSendingJob?.cancel()
-        saveRequestSendingJob = launchRequestSending(
+        launchRequestSending(
             handleSuccess = { showShortFeedback(getString(R.string.itemdetail_save_successful_message)) },
             handleFailure = { showError(getString(R.string.itemdetail_save_failed_general_title)) }
         ) {
@@ -118,8 +113,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     private fun deleteClicked() {
         Keyboard.hideKeyboard(context, this)
 
-        deleteRequestSendingJob?.cancel()
-        deleteRequestSendingJob = launchRequestSending(
+        launchRequestSending(
             handleSuccess = {
                 popBackstack()
                 showInformation(getString(R.string.itemdetail_delete_successful_message))
@@ -138,19 +132,15 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
             applyRestoredViewStates(binding)
         }
 
+        viewModel.title.observe(viewLifecycleOwner, titleObserver)
+        viewModel.isNewEntry.observe(viewLifecycleOwner, isNewEntryObserver)
+
         return binding?.root
     }
 
     private fun applyRestoredViewStates(binding: FragmentItemdetailBinding) {
         formTitle?.let { binding.editTextTitle.setText(it) }
         formPassword?.let { binding.editTextPassword.setText(it) }
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        viewModel.title.observe(viewLifecycleOwner, titleObserver)
-        viewModel.isNewEntry.observe(viewLifecycleOwner, isNewEntryObserver)
     }
 
     override fun onStop() {
@@ -165,6 +155,11 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         outState.putString(FORM_FIELD_PASSWORD, binding?.editTextPassword?.text?.toString())
 
         super.onSaveInstanceState(outState)
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 
     companion object {

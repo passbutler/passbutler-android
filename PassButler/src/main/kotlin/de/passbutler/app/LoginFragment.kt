@@ -23,7 +23,6 @@ import de.passbutler.app.ui.VisibilityHideMode
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showFadeInOutAnimation
 import de.passbutler.app.ui.validateForm
-import kotlinx.coroutines.Job
 
 class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
 
@@ -32,8 +31,6 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
     private var formMasterPassword: String? = null
 
     private var binding: FragmentLoginBinding? = null
-
-    private var loginRequestSendingJob: Job? = null
 
     private val isLocalLoginObserver = Observer<Boolean> { isLocalLoginValue ->
         val shouldShowServerUrl = !isLocalLoginValue
@@ -63,26 +60,14 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
             binding.lifecycleOwner = viewLifecycleOwner
             binding.viewModel = viewModel
 
+            setupDebugPresetsButton(binding)
+            setupLocalLoginCheckbox()
+            setupLoginButton(binding)
+
             applyRestoredViewStates(binding)
         }
 
         return binding?.root
-    }
-
-    private fun applyRestoredViewStates(binding: FragmentLoginBinding) {
-        formServerUrl?.let { binding.textInputEditTextServerurl.setText(it) }
-        formUsername?.let { binding.textInputEditTextUsername.setText(it) }
-        formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        binding?.let {
-            setupDebugPresetsButton(it)
-            setupLocalLoginCheckbox()
-            setupLoginButton(it)
-        }
     }
 
     private fun setupDebugPresetsButton(binding: FragmentLoginBinding) {
@@ -150,9 +135,12 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
         }
     }
 
+    private fun removeFormFieldsFocus() {
+        binding?.constraintLayoutRootContainer?.requestFocus()
+    }
+
     private fun loginUser(serverUrl: String?, username: String, masterPassword: String) {
-        loginRequestSendingJob?.cancel()
-        loginRequestSendingJob = launchRequestSending(
+        launchRequestSending(
             handleFailure = {
                 val errorStringResourceId = when (it) {
                     is RequestUnauthorizedException -> R.string.login_failed_unauthorized_title
@@ -167,8 +155,10 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
         }
     }
 
-    private fun removeFormFieldsFocus() {
-        binding?.constraintLayoutRootContainer?.requestFocus()
+    private fun applyRestoredViewStates(binding: FragmentLoginBinding) {
+        formServerUrl?.let { binding.textInputEditTextServerurl.setText(it) }
+        formUsername?.let { binding.textInputEditTextUsername.setText(it) }
+        formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
     }
 
     override fun onStop() {
@@ -184,6 +174,11 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
         outState.putString(FORM_FIELD_MASTER_PASSWORD, binding?.textInputEditTextMasterPassword?.text?.toString())
 
         super.onSaveInstanceState(outState)
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 
     companion object {

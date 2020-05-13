@@ -50,7 +50,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
     private var updateToolbarJob: Job? = null
     private var synchronizeDataRequestSendingJob: Job? = null
-    private var logoutRequestSendingJob: Job? = null
 
     private val itemViewModelsObserver = Observer<List<ItemViewModel>> { newItemViewModels ->
         Logger.debug("newItemViewModels.size = ${newItemViewModels.size}")
@@ -96,6 +95,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
             setupEntryList(binding)
         }
 
+        viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
+        viewModel.loggedInUserViewModel?.loggedInStateStorage?.addObserver(viewLifecycleOwner.lifecycleScope, true, loggedInStateStorageObserver)
+
         return binding?.root
     }
 
@@ -140,8 +142,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     override fun onStart() {
         super.onStart()
 
-        viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
-        viewModel.loggedInUserViewModel?.loggedInStateStorage?.addObserver(viewLifecycleOwner.lifecycleScope, true, loggedInStateStorageObserver)
         viewModel.loggedInUserViewModel?.webservices?.addObserver(viewLifecycleOwner.lifecycleScope, true, webservicesInitializedObserver)
 
         updateToolbarJob?.cancel()
@@ -157,10 +157,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 
     override fun onStop() {
-        viewModel.loggedInUserViewModel?.loggedInStateStorage?.removeObserver(loggedInStateStorageObserver)
         viewModel.loggedInUserViewModel?.webservices?.removeObserver(webservicesInitializedObserver)
-
         updateToolbarJob?.cancel()
+
         super.onStop()
     }
 
@@ -214,7 +213,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         val synchronizeDataRequestRunning = synchronizeDataRequestSendingJob?.isActive ?: false
 
         if (!synchronizeDataRequestRunning) {
-            synchronizeDataRequestSendingJob?.cancel()
             synchronizeDataRequestSendingJob = launchRequestSending(
                 handleSuccess = {
                     // Only show user feedback if it was user triggered to avoid confusing the user
@@ -243,14 +241,14 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         }
     }
 
-    internal fun logoutUser() {
-        logoutRequestSendingJob?.cancel()
-        logoutRequestSendingJob = launchRequestSending(
-            handleFailure = { showError(getString(R.string.overview_logout_failed_title)) },
-            isCancellable = false
-        ) {
-            viewModel.logoutUser()
-        }
+    override fun onDestroyView() {
+        binding = null
+        navigationHeaderSubtitleView = null
+        navigationHeaderUserTypeView = null
+
+        viewModel.loggedInUserViewModel?.loggedInStateStorage?.removeObserver(loggedInStateStorageObserver)
+
+        super.onDestroyView()
     }
 
     override fun onHandleBackPress(): Boolean {
@@ -259,6 +257,15 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
             true
         } else {
             super.onHandleBackPress()
+        }
+    }
+
+    internal fun logoutUser() {
+        launchRequestSending(
+            handleFailure = { showError(getString(R.string.overview_logout_failed_title)) },
+            isCancellable = false
+        ) {
+            viewModel.logoutUser()
         }
     }
 
