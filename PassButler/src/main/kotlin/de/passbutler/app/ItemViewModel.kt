@@ -6,6 +6,7 @@ import de.passbutler.app.base.NonNullValueGetterLiveData
 import de.passbutler.app.base.OptionalValueGetterLiveData
 import de.passbutler.app.base.viewmodels.EditableViewModel
 import de.passbutler.app.base.viewmodels.EditingViewModel
+import de.passbutler.common.UserManager
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success

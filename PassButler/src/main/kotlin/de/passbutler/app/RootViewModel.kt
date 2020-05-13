@@ -9,6 +9,9 @@ import de.passbutler.app.base.AbstractPassButlerApplication
 import de.passbutler.app.base.viewmodels.CoroutineScopedViewModel
 import de.passbutler.app.crypto.Biometrics
 import de.passbutler.app.database.createLocalRepository
+import de.passbutler.common.LoggedInUserResult
+import de.passbutler.common.UserManager
+import de.passbutler.common.UserManagerUninitializedException
 import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result

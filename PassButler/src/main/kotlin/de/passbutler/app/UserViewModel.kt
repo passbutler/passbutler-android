@@ -6,6 +6,7 @@ import de.passbutler.app.base.NonNullMutableLiveData
 import de.passbutler.app.base.NonNullValueGetterLiveData
 import de.passbutler.app.base.viewmodels.ManualCancelledCoroutineScopeViewModel
 import de.passbutler.app.crypto.Biometrics
+import de.passbutler.common.UserManager
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
