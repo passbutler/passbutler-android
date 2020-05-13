@@ -47,12 +47,6 @@ android {
         // Added custom build fields
         buildConfigField "java.util.Date", "BUILD_TIME", "new java.util.Date(" + System.currentTimeMillis() + "L)"
         buildConfigField "String", "BUILD_REVISION_HASH", "\"" + gitCommitHashShort() + "\""
-
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments = ["room.schemaLocation": "$projectDir/room_schemas".toString()]
-            }
-        }
     }
 
     buildTypes {
