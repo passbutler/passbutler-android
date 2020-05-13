@@ -31,7 +31,6 @@ import de.passbutler.app.ui.showInformation
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Success
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 import javax.crypto.Cipher
@@ -49,8 +48,6 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     private val biometricCallbackExecutor by lazy {
         BiometricAuthenticationCallbackExecutor(this, Dispatchers.Main)
     }
-
-    internal var setupBiometricUnlockKeyJob: Job? = null
 
     override fun getToolBarTitle() = getString(R.string.settings_title)
 
@@ -150,8 +147,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     }
 
     internal fun generateBiometricUnlockKey() {
-        setupBiometricUnlockKeyJob?.cancel()
-        setupBiometricUnlockKeyJob = launchRequestSending(
+        launchRequestSending(
             handleSuccess = {
                 showBiometricPrompt()
             },
@@ -164,8 +160,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     }
 
     internal fun disableBiometricUnlock() {
-        setupBiometricUnlockKeyJob?.cancel()
-        setupBiometricUnlockKeyJob = launchRequestSending(
+        launchRequestSending(
             handleSuccess = {
                 showInformation(getString(R.string.settings_disable_biometric_unlock_successful_message))
             },
@@ -178,8 +173,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
     }
 
     internal fun cancelBiometricUnlockSetup() {
-        setupBiometricUnlockKeyJob?.cancel()
-        setupBiometricUnlockKeyJob = launchRequestSending(
+        launchRequestSending(
             handleFailure = {
                 showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))
             }
@@ -228,8 +222,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
         }
 
         private fun confirmMasterPasswordInputDialog(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String) {
-            setupBiometricUnlockKeyJob?.cancel()
-            setupBiometricUnlockKeyJob = launchRequestSending(
+            launchRequestSending(
                 handleSuccess = {
                     showInformation(getString(R.string.settings_setup_biometric_unlock_successful_message))
                 },
@@ -245,7 +238,7 @@ class SettingsFragment : ToolBarFragment<SettingsViewModel>() {
                 viewModel.enableBiometricUnlock(initializedSetupBiometricUnlockCipher, masterPassword)
             }
 
-            // Clear view instance because the dialog want properly closed, so no later dismiss is needed
+            // Clear view instance because the dialog was properly closed, so no later dismiss is needed
             masterPasswordInputDialog = null
         }
 

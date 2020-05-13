@@ -23,7 +23,6 @@ import de.passbutler.app.ui.VisibilityHideMode
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showFadeInOutAnimation
 import de.passbutler.app.ui.validateForm
-import kotlinx.coroutines.Job
 
 class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
 
@@ -32,8 +31,6 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
     private var formMasterPassword: String? = null
 
     private var binding: FragmentLoginBinding? = null
-
-    private var loginRequestSendingJob: Job? = null
 
     private val isLocalLoginObserver = Observer<Boolean> { isLocalLoginValue ->
         val shouldShowServerUrl = !isLocalLoginValue
@@ -143,8 +140,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
     }
 
     private fun loginUser(serverUrl: String?, username: String, masterPassword: String) {
-        loginRequestSendingJob?.cancel()
-        loginRequestSendingJob = launchRequestSending(
+        launchRequestSending(
             handleFailure = {
                 val errorStringResourceId = when (it) {
                     is RequestUnauthorizedException -> R.string.login_failed_unauthorized_title

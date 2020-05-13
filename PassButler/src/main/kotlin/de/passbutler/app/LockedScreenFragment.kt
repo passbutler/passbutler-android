@@ -29,15 +29,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
-import javax.crypto.Cipher
 
 class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
 
     private var formMasterPassword: String? = null
 
     private var binding: FragmentLockedScreenBinding? = null
-
-    private var unlockRequestSendingJob: Job? = null
 
     private val biometricCallbackExecutor by lazy {
         BiometricAuthenticationCallbackExecutor(this, Dispatchers.Main)
@@ -108,8 +105,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
                 val masterPassword = binding.textInputEditTextMasterPassword.text?.toString()
 
                 if (masterPassword != null) {
-                    unlockRequestSendingJob?.cancel()
-                    unlockRequestSendingJob = launchUnlockRequestSending {
+                    launchUnlockRequestSending {
                         viewModel.unlockScreenWithPassword(masterPassword)
                     }
                 }
@@ -170,13 +166,6 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
         formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
     }
 
-    internal fun unlockScreenWithBiometrics(initializedBiometricUnlockCipher: Cipher) {
-        unlockRequestSendingJob?.cancel()
-        unlockRequestSendingJob = launchUnlockRequestSending {
-            viewModel.unlockScreenWithBiometrics(initializedBiometricUnlockCipher)
-        }
-    }
-
     override fun onResume() {
         super.onResume()
 
@@ -224,7 +213,9 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
             val initializedBiometricUnlockCipher = result.cryptoObject?.cipher
 
             if (initializedBiometricUnlockCipher != null) {
-                unlockScreenWithBiometrics(initializedBiometricUnlockCipher)
+                launchUnlockRequestSending {
+                    viewModel.unlockScreenWithBiometrics(initializedBiometricUnlockCipher)
+                }
             } else {
                 showError(getString(R.string.locked_screen_biometrics_unlock_failed_general_title))
             }

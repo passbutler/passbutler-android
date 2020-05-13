@@ -21,7 +21,6 @@ import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showShortFeedback
 import de.passbutler.app.ui.validateForm
-import kotlinx.coroutines.Job
 
 class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() {
 
@@ -29,8 +28,6 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
     private var formMasterPassword: String? = null
 
     private var binding: FragmentRegisterLocalUserBinding? = null
-
-    private var registerRequestSendingJob: Job? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -108,8 +105,7 @@ class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() 
     }
 
     private fun registerUser(serverUrl: String, masterPassword: String) {
-        registerRequestSendingJob?.cancel()
-        registerRequestSendingJob = launchRequestSending(
+        launchRequestSending(
             handleSuccess = {
                 showShortFeedback(getString(R.string.register_local_user_successful_message))
                 popBackstack()

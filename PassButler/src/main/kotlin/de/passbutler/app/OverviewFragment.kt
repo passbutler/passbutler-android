@@ -50,7 +50,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
     private var updateToolbarJob: Job? = null
     private var synchronizeDataRequestSendingJob: Job? = null
-    private var logoutRequestSendingJob: Job? = null
 
     private val itemViewModelsObserver = Observer<List<ItemViewModel>> { newItemViewModels ->
         Logger.debug("newItemViewModels.size = ${newItemViewModels.size}")
@@ -214,7 +213,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         val synchronizeDataRequestRunning = synchronizeDataRequestSendingJob?.isActive ?: false
 
         if (!synchronizeDataRequestRunning) {
-            synchronizeDataRequestSendingJob?.cancel()
             synchronizeDataRequestSendingJob = launchRequestSending(
                 handleSuccess = {
                     // Only show user feedback if it was user triggered to avoid confusing the user
@@ -263,8 +261,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 
     internal fun logoutUser() {
-        logoutRequestSendingJob?.cancel()
-        logoutRequestSendingJob = launchRequestSending(
+        launchRequestSending(
             handleFailure = { showError(getString(R.string.overview_logout_failed_title)) },
             isCancellable = false
         ) {
