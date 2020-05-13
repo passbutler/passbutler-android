@@ -11,7 +11,7 @@ import androidx.biometric.BiometricConstants.ERROR_NEGATIVE_BUTTON
 import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
-import de.passbutler.app.base.BuildType
+import de.passbutler.app.base.BuildInformationProvider
 import de.passbutler.app.base.DebugConstants
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.crypto.BiometricAuthenticationCallbackExecutor
@@ -22,6 +22,7 @@ import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.validateForm
+import de.passbutler.common.base.BuildType
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
@@ -71,7 +72,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
     }
 
     private fun setupDebugPresetsButton(binding: FragmentLockedScreenBinding) {
-        if (BuildType.isDebugBuild) {
+        if (BuildInformationProvider.buildType == BuildType.Debug) {
             binding.imageViewLogo.setOnLongClickListener {
                 binding.textInputEditTextMasterPassword.setText(DebugConstants.TEST_PASSWORD)
                 true
