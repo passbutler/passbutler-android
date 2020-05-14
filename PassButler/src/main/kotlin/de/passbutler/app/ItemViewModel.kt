@@ -279,6 +279,6 @@ class ItemEditingViewModel(
 
 }
 
-private fun ItemEditingViewModel.ItemModel.asExistingOrNull(): ItemEditingViewModel.ItemModel.Existing? {
+internal fun ItemEditingViewModel.ItemModel.asExistingOrNull(): ItemEditingViewModel.ItemModel.Existing? {
     return (this as? ItemEditingViewModel.ItemModel.Existing)
 }
