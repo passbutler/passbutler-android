@@ -2,6 +2,7 @@ package de.passbutler.app
 
 import de.passbutler.app.base.NonNullMutableLiveData
 import de.passbutler.app.base.viewmodels.CoroutineScopedViewModel
+import de.passbutler.common.UserManagerUninitializedException
 import de.passbutler.common.base.Result
 
 class LoginViewModel : CoroutineScopedViewModel() {

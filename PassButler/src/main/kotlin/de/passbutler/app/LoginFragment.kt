@@ -10,10 +10,9 @@ import android.webkit.URLUtil
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import de.passbutler.app.base.BuildType
 import de.passbutler.app.base.DebugConstants
+import de.passbutler.app.base.BuildInformationProvider
 import de.passbutler.app.base.launchRequestSending
-import de.passbutler.app.database.RequestUnauthorizedException
 import de.passbutler.app.databinding.FragmentLoginBinding
 import de.passbutler.app.ui.BaseViewModelFragment
 import de.passbutler.app.ui.FormFieldValidator
@@ -23,6 +22,8 @@ import de.passbutler.app.ui.VisibilityHideMode
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showFadeInOutAnimation
 import de.passbutler.app.ui.validateForm
+import de.passbutler.common.base.BuildType
+import de.passbutler.common.database.RequestUnauthorizedException
 
 class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
 
@@ -71,7 +72,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
     }
 
     private fun setupDebugPresetsButton(binding: FragmentLoginBinding) {
-        if (BuildType.isDebugBuild) {
+        if (BuildInformationProvider.buildType == BuildType.Debug) {
             binding.imageViewLogo.setOnLongClickListener {
                 binding.textInputEditTextServerurl.setText(DebugConstants.TEST_SERVERURL)
                 binding.textInputEditTextUsername.setText(DebugConstants.TEST_USERNAME)
@@ -99,7 +100,7 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
                     binding.textInputLayoutServerurl, binding.textInputEditTextServerurl, listOfNotNull(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_serverurl_validation_error_empty)),
                         FormFieldValidator.Rule({ !URLUtil.isValidUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid)),
-                        FormFieldValidator.Rule({ !URLUtil.isHttpsUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid_scheme)).takeIf { BuildType.isReleaseBuild }
+                        FormFieldValidator.Rule({ !URLUtil.isHttpsUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid_scheme)).takeIf { BuildInformationProvider.buildType == BuildType.Release }
                     )
                 ).takeIf { !viewModel.isLocalLogin.value },
                 FormFieldValidator(

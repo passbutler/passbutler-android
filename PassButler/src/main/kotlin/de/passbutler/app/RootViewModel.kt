@@ -6,9 +6,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import de.passbutler.app.base.AbstractPassButlerApplication
+import de.passbutler.app.base.BuildInformationProvider
 import de.passbutler.app.base.viewmodels.CoroutineScopedViewModel
 import de.passbutler.app.crypto.Biometrics
 import de.passbutler.app.database.createLocalRepository
+import de.passbutler.common.LoggedInUserResult
+import de.passbutler.common.UserManager
+import de.passbutler.common.UserManagerUninitializedException
 import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
@@ -51,7 +55,7 @@ class RootViewModel : CoroutineScopedViewModel() {
         val userManager = userManager ?: run {
             val applicationContext = AbstractPassButlerApplication.applicationContext
             val localRepository = createLocalRepository(applicationContext)
-            val createdUserManager = UserManager(localRepository)
+            val createdUserManager = UserManager(localRepository, BuildInformationProvider)
 
             // Set `UserManager` first to be sure registered observer can already access field
             userManager = createdUserManager
