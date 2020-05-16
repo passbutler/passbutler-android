@@ -130,6 +130,8 @@ class ItemEditingViewModel(
     }
 
     suspend fun save(): Result<Unit> {
+        check(isModificationAllowed.value) { "The item is not allowed to save because it has only a readonly authorization!" }
+
         val currentItemModel = itemModel
 
         val saveResult = when (currentItemModel) {
@@ -258,7 +260,6 @@ class ItemEditingViewModel(
         return ItemData(title.value, password.value)
     }
 
-    @Throws(IllegalStateException::class)
     suspend fun delete(): Result<Unit> {
         val existingItemModel = (itemModel as? ItemModel.Existing) ?: throw IllegalStateException("Only existing items can be deleted!")
         check(isModificationAllowed.value) { "The item is not allowed to delete because it has only a readonly authorization!" }
