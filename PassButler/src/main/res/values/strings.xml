@@ -107,6 +107,8 @@
     <string name="itemdetail_title_new">Neuen Eintrag anlegen</string>
     <string name="itemdetail_title_edit">%s</string>
 
+    <string name="itemdetail_details_header">Details</string>
+
     <string name="itemdetail_title_hint">Titel</string>
     <string name="itemdetail_password_hint">Passwort</string>
 
