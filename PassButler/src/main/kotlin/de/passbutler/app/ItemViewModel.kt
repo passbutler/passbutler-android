@@ -15,6 +15,7 @@ import de.passbutler.common.base.resultOrThrowException
 import de.passbutler.common.crypto.EncryptionAlgorithm
 import de.passbutler.common.crypto.models.CryptographicKey
 import de.passbutler.common.crypto.models.ProtectedValue
+import de.passbutler.common.database.LocalRepository
 import de.passbutler.common.database.models.Item
 import de.passbutler.common.database.models.ItemAuthorization
 import de.passbutler.common.database.models.ItemData
@@ -81,7 +82,7 @@ class ItemViewModel(
         val itemKeyCopy = itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite a ItemEditingViewModel is created!")
 
         val itemModel = ItemEditingViewModel.ItemModel.Existing(item, itemAuthorization, itemData, itemKeyCopy)
-        return ItemEditingViewModel(itemModel, userManager)
+        return ItemEditingViewModel(itemModel, userManager.localRepository)
     }
 
     /**
@@ -110,7 +111,7 @@ class ItemViewModel(
 
 class ItemEditingViewModel(
     private var itemModel: ItemModel,
-    private val userManager: UserManager
+    private val localRepository: LocalRepository
 ) : ViewModel(), EditingViewModel {
 
     val isNewEntry = NonNullValueGetterLiveData {
@@ -161,10 +162,10 @@ class ItemEditingViewModel(
 
         return try {
             val (item, itemKey) = createNewItemAndKey(loggedInUserId, itemData).resultOrThrowException()
-            userManager.localRepository.insertItem(item)
+            localRepository.insertItem(item)
 
             val itemAuthorization = createNewItemAuthorization(loggedInUserId, loggedInUserItemEncryptionPublicKey, item, itemKey).resultOrThrowException()
-            userManager.localRepository.insertItemAuthorization(itemAuthorization)
+            localRepository.insertItemAuthorization(itemAuthorization)
 
             val updatedItemModel = ItemModel.Existing(item, itemAuthorization, itemData, itemKey)
             Success(updatedItemModel)
@@ -225,7 +226,7 @@ class ItemEditingViewModel(
 
         return try {
             val updatedItem = createUpdatedItem(item, itemKey).resultOrThrowException()
-            userManager.localRepository.updateItem(updatedItem)
+            localRepository.updateItem(updatedItem)
 
             val updatedItemModel = ItemModel.Existing(updatedItem, itemModel.itemAuthorization, itemModel.itemData, itemModel.itemKey)
             Success(updatedItemModel)
@@ -267,7 +268,7 @@ class ItemEditingViewModel(
             deleted = true,
             modified = Date()
         )
-        userManager.localRepository.updateItem(deletedItem)
+        localRepository.updateItem(deletedItem)
 
         return Success(Unit)
     }

@@ -127,7 +127,7 @@ class UserViewModel private constructor(
 
     fun createNewItemEditingViewModel(): ItemEditingViewModel {
         val itemModel = ItemEditingViewModel.ItemModel.New(this)
-        return ItemEditingViewModel(itemModel, userManager)
+        return ItemEditingViewModel(itemModel, userManager.localRepository)
     }
 
     suspend fun decryptSensibleData(masterPassword: String): Result<Unit> {
