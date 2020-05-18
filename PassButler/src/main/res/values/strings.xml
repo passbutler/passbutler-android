@@ -111,6 +111,15 @@
 
     <string name="itemdetail_title_hint">Titel</string>
     <string name="itemdetail_password_hint">Passwort</string>
+    <string name="itemdetail_url_hint">URL</string>
+    <string name="itemdetail_notes_hint">Notizen</string>
+
+    <string name="itemdetail_information_header">Informationen</string>
+    <string name="itemdetail_modified_title">Verändert am</string>
+    <string name="itemdetail_created_title">Erstellt am</string>
+    <string name="itemdetail_id_title">UUID</string>
+
+    <string name="itemdetail_unavailable_information">nicht verfügbar</string>
 
     <string name="itemdetail_save_button_title">Speichern</string>
     <string name="itemdetail_delete_button_title">Eintrag löschen</string>

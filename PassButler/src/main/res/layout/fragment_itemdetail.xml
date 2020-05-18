@@ -19,14 +19,16 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusableInTouchMode="true">
 
             <TextView
                 android:id="@+id/textView_details_header"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="?marginM"
-                android:layout_marginTop="?marginL"
+                android:layout_marginTop="?marginM"
                 android:layout_marginEnd="?marginM"
                 android:text="@string/itemdetail_details_header"
                 android:textAppearance="?textAppearanceHeadline1"
@@ -34,42 +36,159 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <EditText
-                android:id="@+id/editText_title"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayout_title"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="?marginM"
                 android:layout_marginTop="?marginM"
                 android:layout_marginEnd="?marginM"
                 android:enabled="@{viewModel.isModificationAllowed}"
-                android:hint="@string/itemdetail_title_hint"
-                android:imeOptions="actionDone"
-                android:importantForAutofill="no"
-                android:inputType="text"
-                android:text="@={viewModel.title}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/textView_details_header" />
+                app:layout_constraintTop_toBottomOf="@id/textView_details_header">
 
-            <EditText
-                android:id="@+id/editText_password"
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textInputEditText_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/itemdetail_title_hint"
+                    android:imeOptions="actionNext"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:text="@={viewModel.title}" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayout_password"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="?marginM"
                 android:layout_marginTop="?marginM"
                 android:layout_marginEnd="?marginM"
-                android:layout_marginBottom="?marginM"
                 android:enabled="@{viewModel.isModificationAllowed}"
-                android:hint="@string/itemdetail_password_hint"
-                android:imeOptions="actionDone"
-                android:importantForAutofill="no"
-                android:inputType="textVisiblePassword"
-                android:text="@={viewModel.password}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/textInputLayout_title">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textInputEditText_password"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/itemdetail_password_hint"
+                    android:imeOptions="actionNext"
+                    android:importantForAutofill="no"
+                    android:inputType="textVisiblePassword"
+                    android:text="@={viewModel.password}" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayout_url"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginM"
+                android:layout_marginEnd="?marginM"
+                android:enabled="@{viewModel.isModificationAllowed}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/textInputLayout_password">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textInputEditText_url"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/itemdetail_url_hint"
+                    android:imeOptions="actionNext"
+                    android:importantForAutofill="no"
+                    android:inputType="textUri" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayout_notes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginM"
+                android:layout_marginEnd="?marginM"
+                android:enabled="@{viewModel.isModificationAllowed}"
+                app:counterEnabled="true"
+                app:counterMaxLength="1000"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/textInputLayout_url">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textInputEditText_notes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/itemdetail_notes_hint"
+                    android:imeOptions="actionNext"
+                    android:importantForAutofill="no"
+                    android:inputType="textMultiLine"
+                    android:maxLines="10"
+                    android:minLines="2"
+                    android:scrollbars="vertical" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:id="@+id/textView_information_header"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginM"
+                android:layout_marginEnd="?marginM"
+                android:text="@string/itemdetail_information_header"
+                android:textAppearance="?textAppearanceHeadline1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/textInputLayout_notes" />
+
+            <include
+                android:id="@+id/information_item_modified"
+                layout="@layout/layout_information_item"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginM"
+                android:layout_marginEnd="?marginM"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/textView_information_header"
+                app:title="@{@string/itemdetail_modified_title}" />
+
+            <include
+                android:id="@+id/information_item_created"
+                layout="@layout/layout_information_item"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginS"
+                android:layout_marginEnd="?marginM"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/information_item_modified"
+                app:title="@{@string/itemdetail_created_title}" />
+
+            <include
+                android:id="@+id/information_item_id"
+                layout="@layout/layout_information_item"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginS"
+                android:layout_marginEnd="?marginM"
+                android:layout_marginBottom="?marginL"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/editText_title"
-                app:layout_constraintVertical_bias="0.0" />
+                app:layout_constraintTop_toBottomOf="@id/information_item_created"
+                app:layout_constraintVertical_bias="0.0"
+                app:title="@{@string/itemdetail_id_title}" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

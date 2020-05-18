@@ -1,6 +1,7 @@
 package de.passbutler.app
 
 import android.content.Context
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -11,6 +12,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import de.passbutler.app.base.formattedDateTime
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentItemdetailBinding
 import de.passbutler.app.ui.Keyboard
@@ -18,6 +20,7 @@ import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.showShortFeedback
+import java.util.*
 
 class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
@@ -28,6 +31,18 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     private var toolbarMenuDeleteItem: MenuItem? = null
 
     private var binding: FragmentItemdetailBinding? = null
+
+    private val idObserver = Observer<String?> {
+        binding?.informationItemId?.textViewValue?.text = it ?: getString(R.string.itemdetail_unavailable_information)
+    }
+
+    private val modifiedObserver = Observer<Date?> {
+        binding?.informationItemModified?.textViewValue?.text = it?.formattedDateTime ?: getString(R.string.itemdetail_unavailable_information)
+    }
+
+    private val createdObserver = Observer<Date?> {
+        binding?.informationItemCreated?.textViewValue?.text = it?.formattedDateTime ?: getString(R.string.itemdetail_unavailable_information)
+    }
 
     private val titleObserver = Observer<String> {
         updateToolbarTitle()
@@ -129,18 +144,23 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
             binding.lifecycleOwner = viewLifecycleOwner
             binding.viewModel = viewModel
 
+            binding.informationItemId.textViewValue.typeface = Typeface.MONOSPACE
+
             applyRestoredViewStates(binding)
         }
 
+        viewModel.id.observe(viewLifecycleOwner, idObserver)
         viewModel.title.observe(viewLifecycleOwner, titleObserver)
         viewModel.isNewEntry.observe(viewLifecycleOwner, isNewEntryObserver)
+        viewModel.modified.observe(viewLifecycleOwner, modifiedObserver)
+        viewModel.created.observe(viewLifecycleOwner, createdObserver)
 
         return binding?.root
     }
 
     private fun applyRestoredViewStates(binding: FragmentItemdetailBinding) {
-        formTitle?.let { binding.editTextTitle.setText(it) }
-        formPassword?.let { binding.editTextPassword.setText(it) }
+        formTitle?.let { binding.textInputEditTextTitle.setText(it) }
+        formPassword?.let { binding.textInputEditTextPassword.setText(it) }
     }
 
     override fun onStop() {
@@ -151,8 +171,9 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString(FORM_FIELD_TITLE, binding?.editTextTitle?.text?.toString())
-        outState.putString(FORM_FIELD_PASSWORD, binding?.editTextPassword?.text?.toString())
+        // TODO: Save/restore all fields
+        outState.putString(FORM_FIELD_TITLE, binding?.textInputEditTextTitle?.text?.toString())
+        outState.putString(FORM_FIELD_PASSWORD, binding?.textInputEditTextPassword?.text?.toString())
 
         super.onSaveInstanceState(outState)
     }

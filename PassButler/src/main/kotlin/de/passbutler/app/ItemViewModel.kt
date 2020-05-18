@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import de.passbutler.app.base.NonNullMutableLiveData
 import de.passbutler.app.base.NonNullValueGetterLiveData
 import de.passbutler.app.base.OptionalValueGetterLiveData
+import de.passbutler.app.base.ValueGetterLiveData
 import de.passbutler.app.base.viewmodels.EditableViewModel
 import de.passbutler.app.base.viewmodels.EditingViewModel
 import de.passbutler.common.UserManager
@@ -122,8 +123,21 @@ class ItemEditingViewModel(
         (itemModel as? ItemModel.Existing)?.itemAuthorization?.readOnly?.not() ?: true
     }
 
+    val id = ValueGetterLiveData {
+        (itemModel as? ItemModel.Existing)?.item?.id
+    }
+
+    // TODO: Also bind other data to UI
     val title = NonNullMutableLiveData(itemModel.asExistingOrNull()?.itemData?.title ?: "")
     val password = NonNullMutableLiveData(itemModel.asExistingOrNull()?.itemData?.password ?: "")
+
+    val modified = ValueGetterLiveData {
+        (itemModel as? ItemModel.Existing)?.item?.modified
+    }
+
+    val created = ValueGetterLiveData {
+        (itemModel as? ItemModel.Existing)?.item?.created
+    }
 
     init {
         Logger.debug("Create new ItemEditingViewModel: item = ${itemModel.asExistingOrNull()?.item}, itemAuthorization = ${itemModel.asExistingOrNull()?.itemAuthorization}")
@@ -144,8 +158,11 @@ class ItemEditingViewModel(
                 itemModel = saveResult.result
 
                 withContext(Dispatchers.Main) {
+                    id.notifyChange()
                     isNewEntry.notifyChange()
                     isModificationAllowed.notifyChange()
+                    modified.notifyChange()
+                    created.notifyChange()
                 }
 
                 Success(Unit)
