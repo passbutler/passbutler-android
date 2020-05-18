@@ -3,6 +3,7 @@ package de.passbutler.app
 import android.content.Context
 import android.graphics.Typeface
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -15,11 +16,14 @@ import androidx.lifecycle.ViewModelProvider
 import de.passbutler.app.base.formattedDateTime
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentItemdetailBinding
+import de.passbutler.app.ui.FormFieldValidator
+import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.showShortFeedback
+import de.passbutler.app.ui.validateForm
 import java.util.*
 
 class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
@@ -115,13 +119,32 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     }
 
     private fun saveClicked() {
-        Keyboard.hideKeyboard(context, this)
+        binding?.let { binding ->
+            val formValidationResult = validateForm(
+                listOfNotNull(
+                    FormFieldValidator(
+                        binding.textInputLayoutTitle, binding.textInputEditTextTitle, listOf(
+                            FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.itemdetail_title_validation_error_empty))
+                        )
+                    )
+                )
+            )
 
-        launchRequestSending(
-            handleSuccess = { showShortFeedback(getString(R.string.itemdetail_save_successful_message)) },
-            handleFailure = { showError(getString(R.string.itemdetail_save_failed_general_title)) }
-        ) {
-            viewModel.save()
+            when (formValidationResult) {
+                is FormValidationResult.Valid -> {
+                    Keyboard.hideKeyboard(context, this)
+
+                    launchRequestSending(
+                        handleSuccess = { showShortFeedback(getString(R.string.itemdetail_save_successful_message)) },
+                        handleFailure = { showError(getString(R.string.itemdetail_save_failed_general_title)) }
+                    ) {
+                        viewModel.save()
+                    }
+                }
+                is FormValidationResult.Invalid -> {
+                    formValidationResult.firstInvalidFormField.requestFocus()
+                }
+            }
         }
     }
 

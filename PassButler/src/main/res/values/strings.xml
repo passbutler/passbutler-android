@@ -17,6 +17,8 @@
 
     <string name="locked_screen_password_validation_error_empty">Master-Passwort nicht ausgefüllt</string>
 
+    <string name="itemdetail_title_validation_error_empty">Titel nicht ausgefüllt</string>
+
     <!-- Login -->
 
     <string name="login_serverurl_hint">Server URL</string>
