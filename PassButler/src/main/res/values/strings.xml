@@ -112,6 +112,7 @@
     <string name="itemdetail_details_header">Details</string>
 
     <string name="itemdetail_title_hint">Titel</string>
+    <string name="itemdetail_username_hint">Benutzername</string>
     <string name="itemdetail_password_hint">Passwort</string>
     <string name="itemdetail_url_hint">URL</string>
     <string name="itemdetail_notes_hint">Notizen</string>
