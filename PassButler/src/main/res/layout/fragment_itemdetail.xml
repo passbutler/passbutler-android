@@ -71,7 +71,8 @@
                 android:enabled="@{viewModel.isModificationAllowed}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/textInputLayout_title">
+                app:layout_constraintTop_toBottomOf="@id/textInputLayout_title"
+                app:passwordToggleEnabled="true">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/textInputEditText_password"
@@ -80,7 +81,7 @@
                     android:hint="@string/itemdetail_password_hint"
                     android:imeOptions="actionNext"
                     android:importantForAutofill="no"
-                    android:inputType="textVisiblePassword"
+                    android:inputType="textPassword"
                     android:text="@={viewModel.password}" />
 
             </com.google.android.material.textfield.TextInputLayout>
