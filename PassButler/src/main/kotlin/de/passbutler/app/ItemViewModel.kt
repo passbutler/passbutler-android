@@ -7,7 +7,6 @@ import de.passbutler.app.base.OptionalValueGetterLiveData
 import de.passbutler.app.base.ValueGetterLiveData
 import de.passbutler.app.base.viewmodels.EditableViewModel
 import de.passbutler.app.base.viewmodels.EditingViewModel
-import de.passbutler.common.UserManager
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
@@ -28,6 +27,7 @@ import java.util.*
 class ItemViewModel(
     val item: Item,
     val itemAuthorization: ItemAuthorization,
+    private val loggedInUserViewModel: UserViewModel,
     private val localRepository: LocalRepository
 ) : EditableViewModel<ItemEditingViewModel> {
 
@@ -83,7 +83,7 @@ class ItemViewModel(
         val itemKeyCopy = itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite a ItemEditingViewModel is created!")
 
         val itemModel = ItemEditingViewModel.ItemModel.Existing(item, itemAuthorization, itemData, itemKeyCopy)
-        return ItemEditingViewModel(itemModel, localRepository)
+        return ItemEditingViewModel(itemModel, loggedInUserViewModel, localRepository)
     }
 
     /**
@@ -112,6 +112,7 @@ class ItemViewModel(
 
 class ItemEditingViewModel(
     private var itemModel: ItemModel,
+    private val loggedInUserViewModel: UserViewModel,
     private val localRepository: LocalRepository
 ) : ViewModel(), EditingViewModel {
 
@@ -122,6 +123,9 @@ class ItemEditingViewModel(
     val isModificationAllowed = NonNullValueGetterLiveData {
         (itemModel as? ItemModel.Existing)?.itemAuthorization?.readOnly?.not() ?: true
     }
+
+    val hidePasswordsEnabled
+        get() = loggedInUserViewModel.hidePasswordsEnabled.value == true
 
     val id = ValueGetterLiveData {
         (itemModel as? ItemModel.Existing)?.item?.id
@@ -149,7 +153,7 @@ class ItemEditingViewModel(
         val currentItemModel = itemModel
 
         val saveResult = when (currentItemModel) {
-            is ItemModel.New -> saveNewItem(currentItemModel)
+            is ItemModel.New -> saveNewItem()
             is ItemModel.Existing -> saveExistingItem(currentItemModel)
         }
 
@@ -173,9 +177,9 @@ class ItemEditingViewModel(
         }
     }
 
-    private suspend fun saveNewItem(itemModel: ItemModel.New): Result<ItemModel.Existing> {
-        val loggedInUserId = itemModel.loggedInUserViewModel.username
-        val loggedInUserItemEncryptionPublicKey = itemModel.loggedInUserViewModel.itemEncryptionPublicKey.key
+    private suspend fun saveNewItem(): Result<ItemModel.Existing> {
+        val loggedInUserId = loggedInUserViewModel.username
+        val loggedInUserItemEncryptionPublicKey = loggedInUserViewModel.itemEncryptionPublicKey.key
 
         val itemData = createItemData()
 
@@ -292,7 +296,7 @@ class ItemEditingViewModel(
     }
 
     sealed class ItemModel {
-        class New(val loggedInUserViewModel: UserViewModel) : ItemModel()
+        object New : ItemModel()
         class Existing(val item: Item, val itemAuthorization: ItemAuthorization, val itemData: ItemData, val itemKey: ByteArray) : ItemModel()
     }
 

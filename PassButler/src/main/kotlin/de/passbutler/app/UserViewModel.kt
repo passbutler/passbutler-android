@@ -126,8 +126,8 @@ class UserViewModel private constructor(
     }
 
     fun createNewItemEditingViewModel(): ItemEditingViewModel {
-        val itemModel = ItemEditingViewModel.ItemModel.New(this)
-        return ItemEditingViewModel(itemModel, userManager.localRepository)
+        val itemModel = ItemEditingViewModel.ItemModel.New
+        return ItemEditingViewModel(itemModel, this, userManager.localRepository)
     }
 
     suspend fun decryptSensibleData(masterPassword: String): Result<Unit> {
@@ -397,7 +397,7 @@ class UserViewModel private constructor(
                             Logger.debug("Create new viewmodel for item '${item.id}' because recycling was not possible")
 
                             // No existing item viewmodel was found, thus a new must be created for item
-                            ItemViewModel(item, itemAuthorization, userManager.localRepository)
+                            ItemViewModel(item, itemAuthorization, this, userManager.localRepository)
                         }
                 } else {
                     Logger.debug("A non-deleted item authorization of user for item '${item.id}' was not found - skip item")

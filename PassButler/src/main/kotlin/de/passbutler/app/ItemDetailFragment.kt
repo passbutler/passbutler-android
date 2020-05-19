@@ -3,6 +3,7 @@ package de.passbutler.app
 import android.content.Context
 import android.graphics.Typeface
 import android.os.Bundle
+import android.text.InputType
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -13,6 +14,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.textfield.TextInputLayout
 import de.passbutler.app.base.formattedDateTime
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentItemdetailBinding
@@ -169,6 +171,14 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
             binding.buttonManageAuthorizations.setOnClickListener {
                 // TODO: show screen
+            }
+
+            if (viewModel.hidePasswordsEnabled) {
+                binding.textInputLayoutPassword.endIconMode = TextInputLayout.END_ICON_PASSWORD_TOGGLE
+                binding.textInputEditTextPassword.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
+            } else {
+                binding.textInputLayoutPassword.endIconMode = TextInputLayout.END_ICON_NONE
+                binding.textInputEditTextPassword.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
             }
 
             binding.informationItemId.textViewValue.typeface = Typeface.MONOSPACE
