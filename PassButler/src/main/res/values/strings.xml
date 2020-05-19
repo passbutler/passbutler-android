@@ -122,6 +122,9 @@
     <string name="itemdetail_created_title">Erstellt am</string>
     <string name="itemdetail_id_title">UUID</string>
 
+    <string name="itemdetail_authorizations_header">Berechtigungen</string>
+    <string name="itemdetail_authorizations_description">Sie können diesen Eintrag mit anderen Personen teilen - verwalten Sie einfach die Berechtigungen:</string>
+    <string name="itemdetail_authorizations_button_text">Berechtigungen verwalten</string>
 
     <string name="itemdetail_save_button_title">Speichern</string>
     <string name="itemdetail_delete_button_title">Eintrag löschen</string>

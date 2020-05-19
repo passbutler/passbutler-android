@@ -161,6 +161,44 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
+                android:id="@+id/textView_authorizations_header"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginM"
+                android:layout_marginEnd="?marginM"
+                android:text="@string/itemdetail_authorizations_header"
+                android:textAppearance="?textAppearanceHeadline1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/textInputLayout_notes" />
+
+            <TextView
+                android:id="@+id/textView_authorizations_description"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginM"
+                android:layout_marginEnd="?marginM"
+                android:text="@string/itemdetail_authorizations_description"
+                android:textAppearance="?textAppearanceBody1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/textView_authorizations_header" />
+
+            <Button
+                android:id="@+id/button_manage_authorizations"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginS"
+                android:layout_marginEnd="?marginM"
+                android:text="@string/itemdetail_authorizations_button_text"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView_authorizations_description" />
+
+            <TextView
                 android:id="@+id/textView_information_header"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -171,7 +209,7 @@
                 android:textAppearance="?textAppearanceHeadline1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/textInputLayout_notes" />
+                app:layout_constraintTop_toBottomOf="@id/button_manage_authorizations" />
 
             <include
                 android:id="@+id/information_item_modified"
@@ -214,6 +252,14 @@
                 app:layout_constraintTop_toBottomOf="@id/information_item_created"
                 app:layout_constraintVertical_bias="0.0"
                 app:title="@{@string/itemdetail_id_title}" />
+
+            <androidx.constraintlayout.widget.Group
+                android:id="@+id/group_authorization_views"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="@{!viewModel.isNewEntry &amp;&amp; viewModel.isModificationAllowed ? View.VISIBLE : View.GONE}"
+                app:constraint_referenced_ids="textView_authorizations_header,textView_authorizations_description,button_manage_authorizations"
+                tools:visibility="visible" />
 
             <androidx.constraintlayout.widget.Group
                 android:id="@+id/group_information_views"

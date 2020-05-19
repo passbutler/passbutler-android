@@ -167,6 +167,10 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
             binding.lifecycleOwner = viewLifecycleOwner
             binding.viewModel = viewModel
 
+            binding.buttonManageAuthorizations.setOnClickListener {
+                // TODO: show screen
+            }
+
             binding.informationItemId.textViewValue.typeface = Typeface.MONOSPACE
 
             applyRestoredViewStates(binding)
