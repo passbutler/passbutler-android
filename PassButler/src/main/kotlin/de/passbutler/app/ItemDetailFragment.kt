@@ -37,15 +37,15 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     private var binding: FragmentItemdetailBinding? = null
 
     private val idObserver = Observer<String?> {
-        binding?.informationItemId?.textViewValue?.text = it ?: getString(R.string.itemdetail_unavailable_information)
+        binding?.informationItemId?.textViewValue?.text = it
     }
 
     private val modifiedObserver = Observer<Date?> {
-        binding?.informationItemModified?.textViewValue?.text = it?.formattedDateTime ?: getString(R.string.itemdetail_unavailable_information)
+        binding?.informationItemModified?.textViewValue?.text = it?.formattedDateTime
     }
 
     private val createdObserver = Observer<Date?> {
-        binding?.informationItemCreated?.textViewValue?.text = it?.formattedDateTime ?: getString(R.string.itemdetail_unavailable_information)
+        binding?.informationItemCreated?.textViewValue?.text = it?.formattedDateTime
     }
 
     private val titleObserver = Observer<String> {

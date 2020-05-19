@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -189,6 +190,14 @@
                 app:layout_constraintTop_toBottomOf="@id/information_item_created"
                 app:layout_constraintVertical_bias="0.0"
                 app:title="@{@string/itemdetail_id_title}" />
+
+            <androidx.constraintlayout.widget.Group
+                android:id="@+id/group_information_views"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="@{!viewModel.isNewEntry ? View.VISIBLE : View.GONE}"
+                app:constraint_referenced_ids="textView_information_header,information_item_modified,information_item_created,information_item_id"
+                tools:visibility="visible" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

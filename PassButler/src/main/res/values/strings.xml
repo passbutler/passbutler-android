@@ -121,7 +121,6 @@
     <string name="itemdetail_created_title">Erstellt am</string>
     <string name="itemdetail_id_title">UUID</string>
 
-    <string name="itemdetail_unavailable_information">nicht verfügbar</string>
 
     <string name="itemdetail_save_button_title">Speichern</string>
     <string name="itemdetail_delete_button_title">Eintrag löschen</string>
