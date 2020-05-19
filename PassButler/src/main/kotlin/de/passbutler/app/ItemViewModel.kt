@@ -28,7 +28,7 @@ import java.util.*
 class ItemViewModel(
     val item: Item,
     val itemAuthorization: ItemAuthorization,
-    private val userManager: UserManager
+    private val localRepository: LocalRepository
 ) : EditableViewModel<ItemEditingViewModel> {
 
     val id
@@ -83,7 +83,7 @@ class ItemViewModel(
         val itemKeyCopy = itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite a ItemEditingViewModel is created!")
 
         val itemModel = ItemEditingViewModel.ItemModel.Existing(item, itemAuthorization, itemData, itemKeyCopy)
-        return ItemEditingViewModel(itemModel, userManager.localRepository)
+        return ItemEditingViewModel(itemModel, localRepository)
     }
 
     /**

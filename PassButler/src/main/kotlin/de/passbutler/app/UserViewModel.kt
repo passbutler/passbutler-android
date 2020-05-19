@@ -397,7 +397,7 @@ class UserViewModel private constructor(
                             Logger.debug("Create new viewmodel for item '${item.id}' because recycling was not possible")
 
                             // No existing item viewmodel was found, thus a new must be created for item
-                            ItemViewModel(item, itemAuthorization, userManager)
+                            ItemViewModel(item, itemAuthorization, userManager.localRepository)
                         }
                 } else {
                     Logger.debug("A non-deleted item authorization of user for item '${item.id}' was not found - skip item")
