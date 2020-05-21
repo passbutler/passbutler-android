@@ -3,6 +3,7 @@ package de.passbutler.app
 import androidx.lifecycle.ViewModel
 import de.passbutler.app.base.DependentNonNullValueGetterLiveData
 import de.passbutler.app.base.DependentOptionalValueGetterLiveData
+import de.passbutler.app.base.NonNullDiscardableMutableLiveData
 import de.passbutler.app.base.NonNullMutableLiveData
 import de.passbutler.app.base.OptionalValueGetterLiveData
 import de.passbutler.app.base.viewmodels.EditableViewModel
@@ -147,11 +148,11 @@ class ItemEditingViewModel private constructor(
         itemModel.value.asExistingOrNull()?.item?.id
     }
 
-    val title = NonNullMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.title ?: "")
-    val username = NonNullMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.username ?: "")
-    val password = NonNullMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.password ?: "")
-    val url = NonNullMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.url ?: "")
-    val notes = NonNullMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.notes ?: "")
+    val title = NonNullDiscardableMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.title ?: "")
+    val username = NonNullDiscardableMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.username ?: "")
+    val password = NonNullDiscardableMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.password ?: "")
+    val url = NonNullDiscardableMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.url ?: "")
+    val notes = NonNullDiscardableMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.notes ?: "")
 
     val owner = DependentOptionalValueGetterLiveData(itemModel) {
         itemModel.value.asExistingOrNull()?.item?.userId
@@ -194,6 +195,7 @@ class ItemEditingViewModel private constructor(
             is Success -> {
                 withContext(Dispatchers.Main) {
                     itemModel.value = saveResult.result
+                    commitChangesAsInitialValue()
                 }
 
                 Success(Unit)
@@ -306,6 +308,18 @@ class ItemEditingViewModel private constructor(
 
     private fun createItemData(): ItemData {
         return ItemData(title.value, username.value, password.value, url.value, notes.value)
+    }
+
+    private fun commitChangesAsInitialValue() {
+        listOf(
+            title,
+            username,
+            password,
+            url,
+            notes
+        ).forEach {
+            it.commitChangeAsInitialValue()
+        }
     }
 
     suspend fun delete(): Result<Unit> {

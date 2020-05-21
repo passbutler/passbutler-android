@@ -18,7 +18,7 @@ fun <T> LiveData<T>.observe(owner: LifecycleOwner, notifyOnRegister: Boolean, ob
 /**
  * A `MutableLiveData<T>` that only excepts non-null values.
  */
-class NonNullMutableLiveData<T : Any>(initialValue: T) : MutableLiveData<T>(initialValue) {
+open class NonNullMutableLiveData<T : Any>(initialValue: T) : MutableLiveData<T>(initialValue) {
     override fun getValue(): T {
         // Because non-null type is enforced by Kotlin the double-bang is okay
         return super.getValue()!!
@@ -34,6 +34,44 @@ class NonNullMutableLiveData<T : Any>(initialValue: T) : MutableLiveData<T>(init
     @Suppress("RedundantOverride")
     override fun postValue(value: T) {
         super.postValue(value)
+    }
+}
+
+/**
+ * A `NonNullMutableLiveData<T>` that is able to track value touch/modification and is able to discard to initial value.
+ */
+class NonNullDiscardableMutableLiveData<T : Any>(private var initialValue: T) : NonNullMutableLiveData<T>(initialValue) {
+
+    val isModified
+        get() = value != initialValue
+
+    var isTouched = false
+
+    override fun setValue(value: T) {
+        isTouched = true
+        super.setValue(value)
+    }
+
+    override fun postValue(value: T) {
+        isTouched = true
+        super.postValue(value)
+    }
+
+    @MainThread
+    fun commitChangeAsInitialValue() {
+        initialValue = value
+        isTouched = false
+
+        // Trigger change to notify observers
+        value = value
+    }
+
+    @MainThread
+    fun discard() {
+        // First reset touched state to be sure, notified observers already see reset state
+        isTouched = false
+
+        value = initialValue
     }
 }
 

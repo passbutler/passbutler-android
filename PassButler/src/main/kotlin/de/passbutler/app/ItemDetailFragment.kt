@@ -15,6 +15,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.textfield.TextInputLayout
+import de.passbutler.app.base.DependentNonNullValueGetterLiveData
 import de.passbutler.app.base.DependentOptionalValueGetterLiveData
 import de.passbutler.app.base.formattedDateTime
 import de.passbutler.app.base.launchRequestSending
@@ -66,6 +67,28 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
     private val itemAuthorizationDescriptionObserver = Observer<String?> {
         updateManageAuthorizationsSection()
+    }
+
+    private val isItemModified by lazy {
+        DependentNonNullValueGetterLiveData(
+            viewModel.title,
+            viewModel.username,
+            viewModel.password,
+            viewModel.url,
+            viewModel.notes
+        ) {
+            listOf(
+                viewModel.title,
+                viewModel.username,
+                viewModel.password,
+                viewModel.url,
+                viewModel.notes
+            ).any { it.isModified }
+        }
+    }
+
+    private val isItemModifiedObserver = Observer<Boolean> {
+        updateToolbarMenuItems()
     }
 
     private val itemIdObserver = Observer<String?> {
@@ -138,6 +161,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
     private fun updateToolbarMenuItems() {
         toolbarMenuSaveItem?.isVisible = viewModel.isItemModificationAllowed.value
+        toolbarMenuSaveItem?.isEnabled = isItemModified.value
     }
 
     private fun saveClicked() {
@@ -186,6 +210,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
             applyRestoredViewStates(binding)
         }
 
+        isItemModified.observe(viewLifecycleOwner, true, isItemModifiedObserver)
         itemAuthorizationDescription.observe(viewLifecycleOwner, true, itemAuthorizationDescriptionObserver)
 
         viewModel.id.observe(viewLifecycleOwner, itemIdObserver)
