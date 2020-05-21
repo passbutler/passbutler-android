@@ -33,7 +33,10 @@ import de.passbutler.app.base.observe
 class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
     private var formTitle: String? = null
+    private var formUsername: String? = null
     private var formPassword: String? = null
+    private var formUrl: String? = null
+    private var formNotes: String? = null
 
     private var toolbarMenuSaveItem: MenuItem? = null
 
@@ -229,7 +232,10 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
     private fun applyRestoredViewStates(binding: FragmentItemdetailBinding) {
         formTitle?.let { binding.textInputEditTextTitle.setText(it) }
+        formUsername?.let { binding.textInputEditTextUsername.setText(it) }
         formPassword?.let { binding.textInputEditTextPassword.setText(it) }
+        formUrl?.let { binding.textInputEditTextUrl.setText(it) }
+        formNotes?.let { binding.textInputEditTextNotes.setText(it) }
     }
 
     private fun updateManageAuthorizationsSection() {
@@ -250,9 +256,11 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        // TODO: Save/restore all fields
         outState.putString(FORM_FIELD_TITLE, binding?.textInputEditTextTitle?.text?.toString())
+        outState.putString(FORM_FIELD_USERNAME, binding?.textInputEditTextUsername?.text?.toString())
         outState.putString(FORM_FIELD_PASSWORD, binding?.textInputEditTextPassword?.text?.toString())
+        outState.putString(FORM_FIELD_URL, binding?.textInputEditTextUrl?.text?.toString())
+        outState.putString(FORM_FIELD_NOTES, binding?.textInputEditTextNotes?.text?.toString())
 
         super.onSaveInstanceState(outState)
     }
@@ -266,7 +274,10 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         private const val ARGUMENT_ITEM_ID = "ARGUMENT_ITEM_ID"
 
         private const val FORM_FIELD_TITLE = "FORM_FIELD_TITLE"
+        private const val FORM_FIELD_USERNAME = "FORM_FIELD_USERNAME"
         private const val FORM_FIELD_PASSWORD = "FORM_FIELD_PASSWORD"
+        private const val FORM_FIELD_URL = "FORM_FIELD_URL"
+        private const val FORM_FIELD_NOTES = "FORM_FIELD_NOTES"
 
         fun newInstance(itemId: String?) = ItemDetailFragment().apply {
             arguments = Bundle().apply {
