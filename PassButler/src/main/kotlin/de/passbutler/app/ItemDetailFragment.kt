@@ -142,9 +142,13 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
                     ) {
                         viewModel.save()
                     }
+
+                    Unit
                 }
                 is FormValidationResult.Invalid -> {
                     formValidationResult.firstInvalidFormField.requestFocus()
+
+                    Unit
                 }
             }
         }
