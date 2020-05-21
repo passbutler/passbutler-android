@@ -24,6 +24,32 @@
             android:clickable="true"
             android:focusableInTouchMode="true">
 
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayout_title"
+                style="@style/Widget.PassButler.TextInputLayout.Filled"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginM"
+                android:layout_marginEnd="?marginM"
+                android:enabled="@{viewModel.isItemModificationAllowed}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textInputEditText_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/itemdetail_title_hint"
+                    android:imeOptions="actionNext"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:text="@={viewModel.title}"
+                    android:textAppearance="?textAppearanceHeadline1" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
             <TextView
                 android:id="@+id/textView_details_header"
                 android:layout_width="0dp"
@@ -35,31 +61,7 @@
                 android:textAppearance="?textAppearanceHeadline1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/textInputLayout_title"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="?marginM"
-                android:layout_marginTop="?marginM"
-                android:layout_marginEnd="?marginM"
-                android:enabled="@{viewModel.isItemModificationAllowed}"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/textView_details_header">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/textInputEditText_title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/itemdetail_title_hint"
-                    android:imeOptions="actionNext"
-                    android:importantForAutofill="no"
-                    android:inputType="text"
-                    android:text="@={viewModel.title}" />
-
-            </com.google.android.material.textfield.TextInputLayout>
+                app:layout_constraintTop_toBottomOf="@id/textInputLayout_title" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textInputLayout_username"
@@ -71,7 +73,7 @@
                 android:enabled="@{viewModel.isItemModificationAllowed}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/textInputLayout_title">
+                app:layout_constraintTop_toBottomOf="@id/textView_details_header">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/textInputEditText_username"
