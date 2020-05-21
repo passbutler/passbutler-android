@@ -301,7 +301,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:visibility="@{!viewModel.isNewItem ? View.VISIBLE : View.GONE}"
-                app:constraint_referenced_ids="textView_authorizations_header,textView_authorizations_description,textView_information_header,information_item_modified,information_item_created,information_item_id,button_delete_item"
+                app:constraint_referenced_ids="textView_authorizations_header,textView_authorizations_description,textView_information_header,information_item_modified,information_item_created,information_item_id,textView_delete_header,button_delete_item"
                 tools:visibility="visible" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
