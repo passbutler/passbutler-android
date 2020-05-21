@@ -147,9 +147,11 @@ class ItemEditingViewModel private constructor(
         itemModel.value.asExistingOrNull()?.item?.id
     }
 
-    // TODO: Also bind other data to UI
     val title = NonNullMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.title ?: "")
+    val username = NonNullMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.username ?: "")
     val password = NonNullMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.password ?: "")
+    val url = NonNullMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.url ?: "")
+    val notes = NonNullMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.notes ?: "")
 
     val owner = DependentOptionalValueGetterLiveData(itemModel) {
         itemModel.value.asExistingOrNull()?.item?.userId
@@ -303,7 +305,7 @@ class ItemEditingViewModel private constructor(
     }
 
     private fun createItemData(): ItemData {
-        return ItemData(title.value, password.value)
+        return ItemData(title.value, username.value, password.value, url.value, notes.value)
     }
 
     suspend fun delete(): Result<Unit> {

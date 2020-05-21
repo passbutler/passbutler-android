@@ -82,7 +82,8 @@
                     android:hint="@string/itemdetail_username_hint"
                     android:imeOptions="actionNext"
                     android:importantForAutofill="no"
-                    android:inputType="text" />
+                    android:inputType="text"
+                    android:text="@={viewModel.username}" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -128,7 +129,8 @@
                     android:hint="@string/itemdetail_url_hint"
                     android:imeOptions="actionNext"
                     android:importantForAutofill="no"
-                    android:inputType="textUri" />
+                    android:inputType="textUri"
+                    android:text="@={viewModel.url}" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -156,7 +158,8 @@
                     android:inputType="textMultiLine"
                     android:maxLines="10"
                     android:minLines="2"
-                    android:scrollbars="vertical" />
+                    android:scrollbars="vertical"
+                    android:text="@={viewModel.notes}" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
