@@ -36,7 +36,6 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     private var formPassword: String? = null
 
     private var toolbarMenuSaveItem: MenuItem? = null
-    private var toolbarMenuDeleteItem: MenuItem? = null
 
     private var binding: FragmentItemdetailBinding? = null
 
@@ -47,8 +46,16 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
             when {
                 viewModel.isItemAuthorizationAllowed.value -> getString(R.string.itemdetail_authorizations_description_owned_item)
-                viewModel.isItemModificationAllowed.value && itemOwner != null && itemAuthorizationModifiedDate != null -> getString(R.string.itemdetail_authorizations_description_shared_item, itemOwner, itemAuthorizationModifiedDate)
-                !viewModel.isItemModificationAllowed.value && itemOwner != null && itemAuthorizationModifiedDate != null -> getString(R.string.itemdetail_authorizations_description_shared_readonly_item, itemOwner, itemAuthorizationModifiedDate)
+                viewModel.isItemModificationAllowed.value && itemOwner != null && itemAuthorizationModifiedDate != null -> getString(
+                    R.string.itemdetail_authorizations_description_shared_item,
+                    itemOwner,
+                    itemAuthorizationModifiedDate
+                )
+                !viewModel.isItemModificationAllowed.value && itemOwner != null && itemAuthorizationModifiedDate != null -> getString(
+                    R.string.itemdetail_authorizations_description_shared_readonly_item,
+                    itemOwner,
+                    itemAuthorizationModifiedDate
+                )
                 else -> null
             }
         }
@@ -112,7 +119,6 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         toolbar.inflateMenu(R.menu.item_detail_menu)
 
         toolbarMenuSaveItem = toolbar.menu.findItem(R.id.item_detail_menu_item_save)
-        toolbarMenuDeleteItem = toolbar.menu.findItem(R.id.item_detail_menu_item_delete)
 
         updateToolbarMenuItems()
 
@@ -122,10 +128,6 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
                     saveClicked()
                     true
                 }
-                R.id.item_detail_menu_item_delete -> {
-                    deleteClicked()
-                    true
-                }
                 else -> false
             }
         }
@@ -133,7 +135,6 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
     private fun updateToolbarMenuItems() {
         toolbarMenuSaveItem?.isVisible = viewModel.isItemModificationAllowed.value
-        toolbarMenuDeleteItem?.isVisible = viewModel.isItemModificationAllowed.value && !viewModel.isNewItem.value
     }
 
     private fun saveClicked() {
@@ -170,20 +171,6 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         }
     }
 
-    private fun deleteClicked() {
-        Keyboard.hideKeyboard(context, this)
-
-        launchRequestSending(
-            handleSuccess = {
-                popBackstack()
-                showInformation(getString(R.string.itemdetail_delete_successful_message))
-            },
-            handleFailure = { showError(getString(R.string.itemdetail_delete_failed_general_title)) }
-        ) {
-            viewModel.delete()
-        }
-    }
-
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate<FragmentItemdetailBinding>(inflater, R.layout.fragment_itemdetail, container, false).also { binding ->
             binding.lifecycleOwner = viewLifecycleOwner
@@ -191,6 +178,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
             setupPasswordField(binding)
             setupInformationView(binding)
+            setupDeleteItemButton(binding)
 
             applyRestoredViewStates(binding)
         }
@@ -217,6 +205,26 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
     private fun setupInformationView(binding: FragmentItemdetailBinding) {
         binding.informationItemId.textViewValue.typeface = Typeface.MONOSPACE
+    }
+
+    private fun setupDeleteItemButton(binding: FragmentItemdetailBinding) {
+        binding.buttonDeleteItem.setOnClickListener {
+            deleteClicked()
+        }
+    }
+
+    private fun deleteClicked() {
+        Keyboard.hideKeyboard(context, this)
+
+        launchRequestSending(
+            handleSuccess = {
+                popBackstack()
+                showInformation(getString(R.string.itemdetail_delete_successful_message))
+            },
+            handleFailure = { showError(getString(R.string.itemdetail_delete_failed_general_title)) }
+        ) {
+            viewModel.delete()
+        }
     }
 
     private fun applyRestoredViewStates(binding: FragmentItemdetailBinding) {

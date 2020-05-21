@@ -131,8 +131,10 @@
     <string name="itemdetail_authorizations_button_text">Geteilte Zugänge verwalten</string>
     <string name="itemdetail_authorizations_footer">Registrieren Sie sich bei einem Pass Butler-Server, um den Zugang zu diesem Eintrag mit anderen Benutzern teilen zu können.</string>
 
-    <string name="itemdetail_save_button_title">Speichern</string>
+    <string name="itemdetail_delete_header">Eintrag löschen</string>
     <string name="itemdetail_delete_button_title">Eintrag löschen</string>
+
+    <string name="itemdetail_save_button_title">Speichern</string>
 
     <string name="itemdetail_save_successful_message">Speichern erfolgreich</string>
     <string name="itemdetail_save_failed_general_title">Speichern hat nicht geklappt</string>

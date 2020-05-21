@@ -259,13 +259,39 @@
                 android:layout_marginStart="?marginM"
                 android:layout_marginTop="?marginS"
                 android:layout_marginEnd="?marginM"
-                android:layout_marginBottom="?marginL"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/information_item_created"
                 app:layout_constraintVertical_bias="0.0"
                 app:title="@{@string/itemdetail_id_title}" />
+
+            <TextView
+                android:id="@+id/textView_delete_header"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginM"
+                android:layout_marginEnd="?marginM"
+                android:text="@string/itemdetail_delete_header"
+                android:textAppearance="?textAppearanceHeadline1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/information_item_id" />
+
+            <Button
+                android:id="@+id/button_delete_item"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginM"
+                android:layout_marginEnd="?marginM"
+                android:layout_marginBottom="?marginM"
+                android:enabled="@{viewModel.isItemModificationAllowed}"
+                android:text="@string/itemdetail_delete_button_title"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/textView_delete_header" />
 
             <!-- Contains all views that should be shown only for existing items (except for views `button_manage_authorizations` and `textView_authorizations_footer` that handle visibility by itself -->
             <androidx.constraintlayout.widget.Group
@@ -273,7 +299,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:visibility="@{!viewModel.isNewItem ? View.VISIBLE : View.GONE}"
-                app:constraint_referenced_ids="textView_authorizations_header,textView_authorizations_description,textView_information_header,information_item_modified,information_item_created,information_item_id"
+                app:constraint_referenced_ids="textView_authorizations_header,textView_authorizations_description,textView_information_header,information_item_modified,information_item_created,information_item_id,button_delete_item"
                 tools:visibility="visible" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
