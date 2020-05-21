@@ -51,7 +51,7 @@ open class ValueGetterLiveData<T>(private val valueGetter: () -> T) : LiveData<T
 /**
  * A non-null value enforcing `ValueGetterLiveData`.
  */
-class NonNullValueGetterLiveData<T : Any>(valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter) {
+open class NonNullValueGetterLiveData<T : Any>(valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter) {
     override fun getValue(): T {
         // Because non-null type is enforced by Kotlin the double-bang is okay
         return super.getValue()!!
@@ -61,12 +61,37 @@ class NonNullValueGetterLiveData<T : Any>(valueGetter: () -> T) : ValueGetterLiv
 /**
  * An optional value behaving `ValueGetterLiveData`.
  */
-class OptionalValueGetterLiveData<T : Any?>(valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter)
+open class OptionalValueGetterLiveData<T : Any?>(valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter)
+
+/**
+ * An non-null value behaving `ValueGetterLiveData` that uses dependent `LiveData` to trigger change.
+ */
+class DependentNonNullValueGetterLiveData<T : Any>(private vararg val dependencies: LiveData<out Any?>, valueGetter: () -> T) : NonNullValueGetterLiveData<T>(valueGetter) {
+    private val dependenciesChangedObserver = Observer<Any?> {
+        notifyChange()
+    }
+
+    override fun onActive() {
+        super.onActive()
+
+        dependencies.forEach {
+            it.observeForever(dependenciesChangedObserver)
+        }
+    }
+
+    override fun onInactive() {
+        super.onInactive()
+
+        dependencies.forEach {
+            it.removeObserver(dependenciesChangedObserver)
+        }
+    }
+}
 
 /**
  * An optional value behaving `ValueGetterLiveData` that uses dependent `LiveData` to trigger change.
  */
-class DependentOptionalValueGetterLiveData<T : Any?>(private vararg val dependencies: LiveData<out Any?>, valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter) {
+class DependentOptionalValueGetterLiveData<T : Any?>(private vararg val dependencies: LiveData<out Any?>, valueGetter: () -> T) : OptionalValueGetterLiveData<T>(valueGetter) {
     private val dependenciesChangedObserver = Observer<Any?> {
         notifyChange()
     }

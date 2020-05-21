@@ -44,7 +44,7 @@
                 android:layout_marginStart="?marginM"
                 android:layout_marginTop="?marginM"
                 android:layout_marginEnd="?marginM"
-                android:enabled="@{viewModel.isModificationAllowed}"
+                android:enabled="@{viewModel.isItemModificationAllowed}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/textView_details_header">
@@ -68,7 +68,7 @@
                 android:layout_marginStart="?marginM"
                 android:layout_marginTop="?marginS"
                 android:layout_marginEnd="?marginM"
-                android:enabled="@{viewModel.isModificationAllowed}"
+                android:enabled="@{viewModel.isItemModificationAllowed}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/textInputLayout_title">
@@ -91,7 +91,7 @@
                 android:layout_marginStart="?marginM"
                 android:layout_marginTop="?marginS"
                 android:layout_marginEnd="?marginM"
-                android:enabled="@{viewModel.isModificationAllowed}"
+                android:enabled="@{viewModel.isItemModificationAllowed}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/textInputLayout_username">
@@ -114,7 +114,7 @@
                 android:layout_marginStart="?marginM"
                 android:layout_marginTop="?marginS"
                 android:layout_marginEnd="?marginM"
-                android:enabled="@{viewModel.isModificationAllowed}"
+                android:enabled="@{viewModel.isItemModificationAllowed}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/textInputLayout_password">
@@ -137,7 +137,7 @@
                 android:layout_marginStart="?marginM"
                 android:layout_marginTop="?marginS"
                 android:layout_marginEnd="?marginM"
-                android:enabled="@{viewModel.isModificationAllowed}"
+                android:enabled="@{viewModel.isItemModificationAllowed}"
                 app:counterEnabled="true"
                 app:counterMaxLength="1000"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -178,11 +178,11 @@
                 android:layout_marginStart="?marginM"
                 android:layout_marginTop="?marginM"
                 android:layout_marginEnd="?marginM"
-                android:text="@string/itemdetail_authorizations_description"
                 android:textAppearance="?textAppearanceBody1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/textView_authorizations_header" />
+                app:layout_constraintTop_toBottomOf="@id/textView_authorizations_header"
+                tools:text="@string/itemdetail_authorizations_description_owned_item" />
 
             <Button
                 android:id="@+id/button_manage_authorizations"
@@ -191,10 +191,26 @@
                 android:layout_marginStart="?marginM"
                 android:layout_marginTop="?marginS"
                 android:layout_marginEnd="?marginM"
+                android:enabled="@{viewModel.isItemAuthorizationAvailable}"
                 android:text="@string/itemdetail_authorizations_button_text"
+                android:visibility="@{!viewModel.isNewItem &amp;&amp; viewModel.isItemAuthorizationAllowed ? View.VISIBLE : View.GONE}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView_authorizations_description" />
+
+            <TextView
+                android:id="@+id/textView_authorizations_footer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginS"
+                android:layout_marginEnd="?marginM"
+                android:text="@string/itemdetail_authorizations_footer"
+                android:textAppearance="?textAppearanceCaption"
+                android:visibility="@{!viewModel.isNewItem &amp;&amp; viewModel.isItemAuthorizationAllowed &amp;&amp; !viewModel.isItemAuthorizationAvailable ? View.VISIBLE : View.GONE}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/button_manage_authorizations" />
 
             <TextView
                 android:id="@+id/textView_information_header"
@@ -207,7 +223,7 @@
                 android:textAppearance="?textAppearanceHeadline1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/button_manage_authorizations" />
+                app:layout_constraintTop_toBottomOf="@id/textView_authorizations_footer" />
 
             <include
                 android:id="@+id/information_item_modified"
@@ -251,20 +267,13 @@
                 app:layout_constraintVertical_bias="0.0"
                 app:title="@{@string/itemdetail_id_title}" />
 
+            <!-- Contains all views that should be shown only for existing items (except for views `button_manage_authorizations` and `textView_authorizations_footer` that handle visibility by itself -->
             <androidx.constraintlayout.widget.Group
-                android:id="@+id/group_authorization_views"
+                android:id="@+id/group_existing_item_views"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="@{!viewModel.isNewEntry &amp;&amp; viewModel.isModificationAllowed ? View.VISIBLE : View.GONE}"
-                app:constraint_referenced_ids="textView_authorizations_header,textView_authorizations_description,button_manage_authorizations"
-                tools:visibility="visible" />
-
-            <androidx.constraintlayout.widget.Group
-                android:id="@+id/group_information_views"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:visibility="@{!viewModel.isNewEntry ? View.VISIBLE : View.GONE}"
-                app:constraint_referenced_ids="textView_information_header,information_item_modified,information_item_created,information_item_id"
+                android:visibility="@{!viewModel.isNewItem ? View.VISIBLE : View.GONE}"
+                app:constraint_referenced_ids="textView_authorizations_header,textView_authorizations_description,textView_information_header,information_item_modified,information_item_created,information_item_id"
                 tools:visibility="visible" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

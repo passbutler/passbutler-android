@@ -93,7 +93,7 @@
 
     <!-- Overview -->
 
-    <string name="overview_last_sync_subtitle">Zuletzt synchronisiert: %s</string>
+    <string name="overview_last_sync_subtitle">Zuletzt synchronisiert: %1$s</string>
     <string name="overview_last_sync_never">Nie</string>
 
     <string name="overview_sync_successful_message">Synchronisation war erfolgreich</string>
@@ -107,7 +107,7 @@
     <!-- Item detail-->
 
     <string name="itemdetail_title_new">Neuen Eintrag anlegen</string>
-    <string name="itemdetail_title_edit">%s</string>
+    <string name="itemdetail_title_edit">Eintrag ansehen/bearbeiten</string>
 
     <string name="itemdetail_details_header">Details</string>
 
@@ -122,9 +122,14 @@
     <string name="itemdetail_created_title">Erstellt am</string>
     <string name="itemdetail_id_title">UUID</string>
 
-    <string name="itemdetail_authorizations_header">Berechtigungen</string>
-    <string name="itemdetail_authorizations_description">Sie können diesen Eintrag mit anderen Personen teilen - verwalten Sie einfach die Berechtigungen:</string>
-    <string name="itemdetail_authorizations_button_text">Berechtigungen verwalten</string>
+    <string name="itemdetail_authorizations_header">Zugang teilen</string>
+
+    <string name="itemdetail_authorizations_description_owned_item">Teilen Sie den Zugang zu diesem Eintrag mit anderen Benutzern eines Pass Butler-Servers.</string>
+    <string name="itemdetail_authorizations_description_shared_item">Der Zugang zu diesem Eintag wurde von dem Benutzer „%1$s“ am %2$s mit Ihnen geteilt. Sie dürfen den Eintrag ansehen und bearbeiten.</string>
+    <string name="itemdetail_authorizations_description_shared_readonly_item">Der Benutzer „%1$s“ hat diesen Eintrag seit dem %2$s mit Ihnen geteilt. Sie dürfen den Eintrag lediglich ansehen.</string>
+
+    <string name="itemdetail_authorizations_button_text">Geteilte Zugänge verwalten</string>
+    <string name="itemdetail_authorizations_footer">Registrieren Sie sich bei einem Pass Butler-Server, um den Zugang zu diesem Eintrag mit anderen Benutzern teilen zu können.</string>
 
     <string name="itemdetail_save_button_title">Speichern</string>
     <string name="itemdetail_delete_button_title">Eintrag löschen</string>

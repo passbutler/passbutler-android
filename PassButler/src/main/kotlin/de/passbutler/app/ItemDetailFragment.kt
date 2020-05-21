@@ -15,6 +15,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.textfield.TextInputLayout
+import de.passbutler.app.base.DependentOptionalValueGetterLiveData
 import de.passbutler.app.base.formattedDateTime
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentItemdetailBinding
@@ -27,6 +28,7 @@ import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.showShortFeedback
 import de.passbutler.app.ui.validateForm
 import java.util.*
+import de.passbutler.app.base.observe
 
 class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
@@ -38,32 +40,46 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
     private var binding: FragmentItemdetailBinding? = null
 
-    private val idObserver = Observer<String?> {
+    private val itemAuthorizationDescription by lazy {
+        DependentOptionalValueGetterLiveData(viewModel.isItemAuthorizationAllowed, viewModel.isItemModificationAllowed, viewModel.owner, viewModel.itemAuthorizationModifiedDate) {
+            val itemOwner = viewModel.owner.value
+            val itemAuthorizationModifiedDate = viewModel.itemAuthorizationModifiedDate.value?.formattedDateTime
+
+            when {
+                viewModel.isItemAuthorizationAllowed.value -> getString(R.string.itemdetail_authorizations_description_owned_item)
+                viewModel.isItemModificationAllowed.value && itemOwner != null && itemAuthorizationModifiedDate != null -> getString(R.string.itemdetail_authorizations_description_shared_item, itemOwner, itemAuthorizationModifiedDate)
+                !viewModel.isItemModificationAllowed.value && itemOwner != null && itemAuthorizationModifiedDate != null -> getString(R.string.itemdetail_authorizations_description_shared_readonly_item, itemOwner, itemAuthorizationModifiedDate)
+                else -> null
+            }
+        }
+    }
+
+    private val itemAuthorizationDescriptionObserver = Observer<String?> {
+        updateManageAuthorizationsSection()
+    }
+
+    private val itemIdObserver = Observer<String?> {
         binding?.informationItemId?.textViewValue?.text = it
     }
 
-    private val modifiedObserver = Observer<Date?> {
+    private val itemModifiedDateObserver = Observer<Date?> {
         binding?.informationItemModified?.textViewValue?.text = it?.formattedDateTime
     }
 
-    private val createdObserver = Observer<Date?> {
+    private val itemCreatedDateObserver = Observer<Date?> {
         binding?.informationItemCreated?.textViewValue?.text = it?.formattedDateTime
     }
 
-    private val titleObserver = Observer<String> {
-        updateToolbarTitle()
-    }
-
-    private val isNewEntryObserver = Observer<Boolean> {
+    private val isNewItemObserver = Observer<Boolean> {
         updateToolbarTitle()
         updateToolbarMenuItems()
     }
 
     override fun getToolBarTitle(): String {
-        return if (viewModel.isNewEntry.value) {
+        return if (viewModel.isNewItem.value) {
             getString(R.string.itemdetail_title_new)
         } else {
-            getString(R.string.itemdetail_title_edit, viewModel.title.value)
+            getString(R.string.itemdetail_title_edit)
         }
     }
 
@@ -116,8 +132,8 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     }
 
     private fun updateToolbarMenuItems() {
-        toolbarMenuSaveItem?.isVisible = viewModel.isModificationAllowed.value
-        toolbarMenuDeleteItem?.isVisible = viewModel.isModificationAllowed.value && !viewModel.isNewEntry.value
+        toolbarMenuSaveItem?.isVisible = viewModel.isItemModificationAllowed.value
+        toolbarMenuDeleteItem?.isVisible = viewModel.isItemModificationAllowed.value && !viewModel.isNewItem.value
     }
 
     private fun saveClicked() {
@@ -173,35 +189,49 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
             binding.lifecycleOwner = viewLifecycleOwner
             binding.viewModel = viewModel
 
-            binding.buttonManageAuthorizations.setOnClickListener {
-                // TODO: show screen
-            }
-
-            if (viewModel.hidePasswordsEnabled) {
-                binding.textInputLayoutPassword.endIconMode = TextInputLayout.END_ICON_PASSWORD_TOGGLE
-                binding.textInputEditTextPassword.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
-            } else {
-                binding.textInputLayoutPassword.endIconMode = TextInputLayout.END_ICON_NONE
-                binding.textInputEditTextPassword.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            }
-
-            binding.informationItemId.textViewValue.typeface = Typeface.MONOSPACE
+            setupPasswordField(binding)
+            setupInformationView(binding)
 
             applyRestoredViewStates(binding)
         }
 
-        viewModel.id.observe(viewLifecycleOwner, idObserver)
-        viewModel.title.observe(viewLifecycleOwner, titleObserver)
-        viewModel.isNewEntry.observe(viewLifecycleOwner, isNewEntryObserver)
-        viewModel.modified.observe(viewLifecycleOwner, modifiedObserver)
-        viewModel.created.observe(viewLifecycleOwner, createdObserver)
+        itemAuthorizationDescription.observe(viewLifecycleOwner, true, itemAuthorizationDescriptionObserver)
+
+        viewModel.id.observe(viewLifecycleOwner, itemIdObserver)
+        viewModel.isNewItem.observe(viewLifecycleOwner, isNewItemObserver)
+        viewModel.modified.observe(viewLifecycleOwner, itemModifiedDateObserver)
+        viewModel.created.observe(viewLifecycleOwner, itemCreatedDateObserver)
 
         return binding?.root
+    }
+
+    private fun setupPasswordField(binding: FragmentItemdetailBinding) {
+        if (viewModel.hidePasswordsEnabled) {
+            binding.textInputLayoutPassword.endIconMode = TextInputLayout.END_ICON_PASSWORD_TOGGLE
+            binding.textInputEditTextPassword.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
+        } else {
+            binding.textInputLayoutPassword.endIconMode = TextInputLayout.END_ICON_NONE
+            binding.textInputEditTextPassword.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+        }
+    }
+
+    private fun setupInformationView(binding: FragmentItemdetailBinding) {
+        binding.informationItemId.textViewValue.typeface = Typeface.MONOSPACE
     }
 
     private fun applyRestoredViewStates(binding: FragmentItemdetailBinding) {
         formTitle?.let { binding.textInputEditTextTitle.setText(it) }
         formPassword?.let { binding.textInputEditTextPassword.setText(it) }
+    }
+
+    private fun updateManageAuthorizationsSection() {
+        binding?.textViewAuthorizationsDescription?.text = itemAuthorizationDescription.value
+
+        if (viewModel.isItemAuthorizationAvailable) {
+            binding?.buttonManageAuthorizations?.setOnClickListener {
+                // TODO: show screen
+            }
+        }
     }
 
     override fun onStop() {

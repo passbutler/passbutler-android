@@ -1,10 +1,10 @@
 package de.passbutler.app
 
 import androidx.lifecycle.ViewModel
+import de.passbutler.app.base.DependentNonNullValueGetterLiveData
+import de.passbutler.app.base.DependentOptionalValueGetterLiveData
 import de.passbutler.app.base.NonNullMutableLiveData
-import de.passbutler.app.base.NonNullValueGetterLiveData
 import de.passbutler.app.base.OptionalValueGetterLiveData
-import de.passbutler.app.base.ValueGetterLiveData
 import de.passbutler.app.base.viewmodels.EditableViewModel
 import de.passbutler.app.base.viewmodels.EditingViewModel
 import de.passbutler.common.base.Failure
@@ -19,6 +19,7 @@ import de.passbutler.common.database.LocalRepository
 import de.passbutler.common.database.models.Item
 import de.passbutler.common.database.models.ItemAuthorization
 import de.passbutler.common.database.models.ItemData
+import de.passbutler.common.database.models.UserType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
@@ -110,47 +111,77 @@ class ItemViewModel(
     }
 }
 
-class ItemEditingViewModel(
-    private var itemModel: ItemModel,
+class ItemEditingViewModel private constructor(
+    private var itemModel: NonNullMutableLiveData<ItemModel>,
     private val loggedInUserViewModel: UserViewModel,
     private val localRepository: LocalRepository
 ) : ViewModel(), EditingViewModel {
 
-    val isNewEntry = NonNullValueGetterLiveData {
-        itemModel is ItemModel.New
-    }
-
-    val isModificationAllowed = NonNullValueGetterLiveData {
-        (itemModel as? ItemModel.Existing)?.itemAuthorization?.readOnly?.not() ?: true
-    }
-
     val hidePasswordsEnabled
         get() = loggedInUserViewModel.hidePasswordsEnabled.value == true
 
-    val id = ValueGetterLiveData {
-        (itemModel as? ItemModel.Existing)?.item?.id
+    val isItemAuthorizationAvailable: Boolean
+        get() {
+            // Item authorization makes only sense on a server
+            return loggedInUserViewModel.userType == UserType.REMOTE
+        }
+
+    val isNewItem = DependentNonNullValueGetterLiveData(itemModel) {
+        itemModel.value is ItemModel.New
+    }
+
+    val isItemModificationAllowed = DependentNonNullValueGetterLiveData(itemModel) {
+        itemModel.value.asExistingOrNull()?.itemAuthorization?.readOnly?.not() ?: true
+    }
+
+    val itemAuthorizationModifiedDate = DependentOptionalValueGetterLiveData(itemModel) {
+        itemModel.value.asExistingOrNull()?.itemAuthorization?.modified
+    }
+
+    val isItemAuthorizationAllowed = DependentNonNullValueGetterLiveData(itemModel) {
+        // Checks if the item is owned by current user
+        itemModel.value.asExistingOrNull()?.item?.userId == loggedInUserViewModel.username
+    }
+
+    val id = DependentOptionalValueGetterLiveData(itemModel) {
+        itemModel.value.asExistingOrNull()?.item?.id
     }
 
     // TODO: Also bind other data to UI
-    val title = NonNullMutableLiveData(itemModel.asExistingOrNull()?.itemData?.title ?: "")
-    val password = NonNullMutableLiveData(itemModel.asExistingOrNull()?.itemData?.password ?: "")
+    val title = NonNullMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.title ?: "")
+    val password = NonNullMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.password ?: "")
 
-    val modified = ValueGetterLiveData {
-        (itemModel as? ItemModel.Existing)?.item?.modified
+    val owner = DependentOptionalValueGetterLiveData(itemModel) {
+        itemModel.value.asExistingOrNull()?.item?.userId
     }
 
-    val created = ValueGetterLiveData {
-        (itemModel as? ItemModel.Existing)?.item?.created
+    val modified = DependentOptionalValueGetterLiveData(itemModel) {
+        itemModel.value.asExistingOrNull()?.item?.modified
     }
+
+    val created = DependentOptionalValueGetterLiveData(itemModel) {
+        itemModel.value.asExistingOrNull()?.item?.created
+    }
+
+    constructor(
+        initialItemModel: ItemModel,
+        loggedInUserViewModel: UserViewModel,
+        localRepository: LocalRepository
+    ) : this(
+        NonNullMutableLiveData(initialItemModel),
+        loggedInUserViewModel,
+        localRepository
+    )
 
     init {
-        Logger.debug("Create new ItemEditingViewModel: item = ${itemModel.asExistingOrNull()?.item}, itemAuthorization = ${itemModel.asExistingOrNull()?.itemAuthorization}")
+        val itemModelValue = itemModel.value
+        Logger.debug("Create new ItemEditingViewModel: item = ${itemModelValue.asExistingOrNull()?.item}, itemAuthorization = ${itemModelValue.asExistingOrNull()?.itemAuthorization}")
     }
 
     suspend fun save(): Result<Unit> {
-        check(isModificationAllowed.value) { "The item is not allowed to save because it has only a readonly authorization!" }
+        check(isItemModificationAllowed.value) { "The item is not allowed to save because it has only a readonly authorization!" }
 
-        val currentItemModel = itemModel
+        val currentItemModel = itemModel.value
 
         val saveResult = when (currentItemModel) {
             is ItemModel.New -> saveNewItem()
@@ -159,14 +190,8 @@ class ItemEditingViewModel(
 
         return when (saveResult) {
             is Success -> {
-                itemModel = saveResult.result
-
                 withContext(Dispatchers.Main) {
-                    id.notifyChange()
-                    isNewEntry.notifyChange()
-                    isModificationAllowed.notifyChange()
-                    modified.notifyChange()
-                    created.notifyChange()
+                    itemModel.value = saveResult.result
                 }
 
                 Success(Unit)
@@ -282,8 +307,8 @@ class ItemEditingViewModel(
     }
 
     suspend fun delete(): Result<Unit> {
-        val existingItemModel = (itemModel as? ItemModel.Existing) ?: throw IllegalStateException("Only existing items can be deleted!")
-        check(isModificationAllowed.value) { "The item is not allowed to delete because it has only a readonly authorization!" }
+        val existingItemModel = (itemModel.value as? ItemModel.Existing) ?: throw IllegalStateException("Only existing items can be deleted!")
+        check(isItemModificationAllowed.value) { "The item is not allowed to delete because it has only a readonly authorization!" }
 
         // Only mark item as deleted (item authorization deletion is only managed via item shared screen)
         val deletedItem = existingItemModel.item.copy(
@@ -299,7 +324,6 @@ class ItemEditingViewModel(
         object New : ItemModel()
         class Existing(val item: Item, val itemAuthorization: ItemAuthorization, val itemData: ItemData, val itemKey: ByteArray) : ItemModel()
     }
-
 }
 
 internal fun ItemEditingViewModel.ItemModel.asExistingOrNull(): ItemEditingViewModel.ItemModel.Existing? {
