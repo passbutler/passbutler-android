@@ -18,6 +18,7 @@ import com.google.android.material.textfield.TextInputLayout
 import de.passbutler.app.base.DependentOptionalValueGetterLiveData
 import de.passbutler.app.base.formattedDateTime
 import de.passbutler.app.base.launchRequestSending
+import de.passbutler.app.base.observe
 import de.passbutler.app.databinding.FragmentItemdetailBinding
 import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
@@ -28,7 +29,6 @@ import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.showShortFeedback
 import de.passbutler.app.ui.validateForm
 import java.util.*
-import de.passbutler.app.base.observe
 
 class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
