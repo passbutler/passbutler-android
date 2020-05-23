@@ -29,6 +29,7 @@ import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.showShortFeedback
 import de.passbutler.app.ui.validateForm
+import org.tinylog.kotlin.Logger
 import java.util.*
 
 class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
@@ -104,6 +105,7 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     }
 
     private val isNewItemObserver = Observer<Boolean> {
+        Logger.debug("isNewItem = $it")
         updateToolbarTitle()
         updateToolbarMenuItems()
     }
