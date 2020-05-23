@@ -113,7 +113,7 @@ class ItemViewModel(
 }
 
 class ItemEditingViewModel private constructor(
-    private var itemModel: NonNullMutableLiveData<ItemModel>,
+    private val itemModel: NonNullMutableLiveData<ItemModel>,
     private val loggedInUserViewModel: UserViewModel,
     private val localRepository: LocalRepository
 ) : ViewModel(), EditingViewModel {
