@@ -1,5 +1,6 @@
 package de.passbutler.app
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,7 +17,9 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import de.passbutler.app.databinding.FragmentItemAuthorizationsDetailBinding
 import de.passbutler.app.databinding.ListItemAuthorizationEntryBinding
+import de.passbutler.app.databinding.ListItemAuthorizationHeaderBinding
 import de.passbutler.app.ui.ToolBarFragment
+import de.passbutler.common.base.addAllIfNotNull
 import de.passbutler.common.database.models.ItemAuthorization
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
@@ -25,11 +28,11 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
 
     private var binding: FragmentItemAuthorizationsDetailBinding? = null
 
-    private val itemAuthorizationsObserver = Observer<List<ItemAuthorization>> { newItemAuthorizations ->
-        Logger.debug("newItemAuthorizations.size = ${newItemAuthorizations.size}")
+    private val itemAuthorizationsObserver = Observer<List<ItemAuthorizationViewModel>> { newItemAuthorizationViewModels ->
+        Logger.debug("newItemAuthorizationViewModels.size = ${newItemAuthorizationViewModels.size}")
 
         val adapter = binding?.recyclerViewItemAuthorizations?.adapter as? ItemAuthorizationsAdapter
-        adapter?.submitList(newItemAuthorizations)
+        adapter?.submitList(newItemAuthorizationViewModels)
     }
 
     override fun getToolBarTitle(): String {
@@ -93,43 +96,99 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
     }
 }
 
-class ItemAuthorizationsAdapter : ListAdapter<ItemAuthorization, ItemAuthorizationsAdapter.ItemAuthorizationViewHolder>(ItemAuthorizationDiffCallback()) {
+interface Identifiable {
+    val listItemId: String
+}
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemAuthorizationViewHolder {
-        val binding = DataBindingUtil.inflate<ListItemAuthorizationEntryBinding>(LayoutInflater.from(parent.context), R.layout.list_item_authorization_entry, parent, false)
-        return ItemAuthorizationViewHolder(binding)
+//data class HeaderListItem(
+//    val createViewHolder: () -> RecyclerView.ViewHolder,
+//    val bindViewHolder: (RecyclerView.ViewHolder) -> Unit
+//) {
+//
+//}
+
+class HeaderListItem : Identifiable {
+    override val listItemId = "DUMMY_HEADER_ID"
+}
+
+class ItemAuthorizationsAdapter : ListAdapter<Identifiable, RecyclerView.ViewHolder>(ItemAuthorizationDiffCallback()) {
+
+    override fun submitList(normalList: List<Identifiable>?) {
+        val newSubmittedList = mutableListOf<Identifiable>().apply {
+            add(0, HeaderListItem())
+            addAllIfNotNull(normalList)
+        }
+
+        super.submitList(newSubmittedList)
     }
 
-    override fun onBindViewHolder(holder: ItemAuthorizationViewHolder, position: Int) {
-        getItem(position).let { item ->
-            holder.apply {
-                itemView.tag = item
-                bind(item)
+    override fun getItemViewType(position: Int): Int {
+        return when (position) {
+            0 -> ListItemType.HEADER.ordinal
+            else -> ListItemType.NORMAL.ordinal
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            ListItemType.HEADER.ordinal -> {
+                val binding = DataBindingUtil.inflate<ListItemAuthorizationHeaderBinding>(LayoutInflater.from(parent.context), R.layout.list_item_authorization_header, parent, false)
+                HeaderViewHolder(binding)
+            }
+            else -> {
+                val binding = DataBindingUtil.inflate<ListItemAuthorizationEntryBinding>(LayoutInflater.from(parent.context), R.layout.list_item_authorization_entry, parent, false)
+                ItemAuthorizationViewHolder(binding)
             }
         }
     }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (holder) {
+            is ItemAuthorizationViewHolder -> {
+                (getItem(position) as? ItemAuthorizationViewModel)?.let { item ->
+                    holder.apply {
+                        itemView.tag = item
+                        bind(item)
+                    }
+                }
+            }
+            is HeaderViewHolder -> {
+                // No need to update static header
+            }
+        }
+    }
+
+    class HeaderViewHolder(
+        binding: ListItemAuthorizationHeaderBinding
+    ) : RecyclerView.ViewHolder(binding.root)
 
     class ItemAuthorizationViewHolder(
         private val binding: ListItemAuthorizationEntryBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(itemAuthorization: ItemAuthorization) {
+        fun bind(itemAuthorizationViewModel: ItemAuthorizationViewModel) {
             binding.apply {
                 // TODO: Username not id semantically
-                textViewTitle.text = itemAuthorization.userId
+                textViewTitle.text = itemAuthorizationViewModel.itemAuthorization.id
 
                 // TODO: Init switches
             }
         }
     }
+
+    enum class ListItemType {
+        HEADER,
+        NORMAL
+    }
 }
 
-private class ItemAuthorizationDiffCallback : DiffUtil.ItemCallback<ItemAuthorization>() {
-    override fun areItemsTheSame(oldItem: ItemAuthorization, newItem: ItemAuthorization): Boolean {
-        return oldItem.id == newItem.id
+private class ItemAuthorizationDiffCallback : DiffUtil.ItemCallback<Identifiable>() {
+    override fun areItemsTheSame(oldItem: Identifiable, newItem: Identifiable): Boolean {
+        return oldItem.listItemId == newItem.listItemId
     }
 
-    override fun areContentsTheSame(oldItem: ItemAuthorization, newItem: ItemAuthorization): Boolean {
+    @SuppressLint("DiffUtilEquals")
+    override fun areContentsTheSame(oldItem: Identifiable, newItem: Identifiable): Boolean {
         return oldItem == newItem
     }
 }

@@ -33,18 +33,25 @@ class ItemAuthorizationsDetailViewModel(
     private val localRepository: LocalRepository
 ) : ViewModel(), EditingViewModel {
 
-    val itemAuthorizations: LiveData<List<ItemAuthorization>>
+    val itemAuthorizations: LiveData<List<ItemAuthorizationViewModel>>
         get() = _itemAuthorizations
 
-    private val _itemAuthorizations = NonNullMutableLiveData<List<ItemAuthorization>>(emptyList())
+    private val _itemAuthorizations = NonNullMutableLiveData<List<ItemAuthorizationViewModel>>(emptyList())
 
     suspend fun initializeItemAuthorizations() {
         localRepository.findItem(itemId)?.let { item ->
-            val itemAuthorizations = localRepository.findItemAuthorizationForItem(item)
+            val itemAuthorizations = localRepository.findItemAuthorizationForItem(item).map {
+                ItemAuthorizationViewModel(it)
+            }
 
             withContext(Dispatchers.Main) {
                 _itemAuthorizations.value = itemAuthorizations
             }
         }
     }
+}
+
+class ItemAuthorizationViewModel(val itemAuthorization: ItemAuthorization) : Identifiable {
+    override val listItemId: String
+        get() = itemAuthorization.id
 }

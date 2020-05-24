@@ -144,6 +144,7 @@
     <!-- Item authorizations detail -->
 
     <string name="itemauthorizations_title">Geteilte Zugänge verwalten</string>
+    <string name="itemauthorizations_description">Entscheiden Sie mit welchen Benutzern die den Eintrag teilen möchte. Sie können entscheiden, ob der jeweilige Benutzer den Eintrag lediglich ansehen oder auch bearbeiten kann.</string>
 
     <string name="itemauthorizations_read_switch_title">Ansehen</string>
     <string name="itemauthorizations_write_switch_title">Bearbeiten</string>
