@@ -27,7 +27,6 @@ import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showInformation
-import de.passbutler.app.ui.showShortFeedback
 import de.passbutler.app.ui.validateForm
 import org.tinylog.kotlin.Logger
 import java.util.*
@@ -183,7 +182,6 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
                     Keyboard.hideKeyboard(context, this)
 
                     launchRequestSending(
-                        handleSuccess = { showShortFeedback(getString(R.string.itemdetail_save_successful_message)) },
                         handleFailure = { showError(getString(R.string.itemdetail_save_failed_general_title)) }
                     ) {
                         viewModel.save()
