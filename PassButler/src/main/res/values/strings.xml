@@ -149,6 +149,10 @@
     <string name="itemauthorizations_read_switch_title">Ansehen</string>
     <string name="itemauthorizations_write_switch_title">Bearbeiten</string>
 
+    <string name="itemauthorizations_save_button_title">Speichern</string>
+
+    <string name="itemauthorizations_save_failed_general_title">Speichern hat nicht geklappt</string>
+
     <!-- About -->
 
     <string name="about_title">Über / Lizenz</string>

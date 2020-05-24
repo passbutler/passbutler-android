@@ -2,9 +2,11 @@ package de.passbutler.app
 
 import android.content.Context
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.Toolbar
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -13,12 +15,18 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentItemAuthorizationsDetailBinding
 import de.passbutler.app.databinding.ListItemAuthorizationEntryBinding
 import de.passbutler.app.databinding.ListItemAuthorizationHeaderBinding
+import de.passbutler.app.ui.FormFieldValidator
+import de.passbutler.app.ui.FormValidationResult
+import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.ToolBarFragment
+import de.passbutler.app.ui.showError
+import de.passbutler.app.ui.validateForm
 import de.passbutler.common.base.addAllIfNotNull
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
@@ -51,6 +59,28 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
 
             // Use actual fragment (not the activity) for provider because we want always want to get a new `ItemEditingViewModel`
             viewModel = ViewModelProvider(this, factory).get(ItemAuthorizationsDetailViewModel::class.java)
+        }
+    }
+
+    override fun setupToolbarMenu(toolbar: Toolbar) {
+        toolbar.inflateMenu(R.menu.item_authorizations_detail_menu)
+
+        toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.item_authorizations_detail_menu_item_save -> {
+                    saveClicked()
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun saveClicked() {
+        launchRequestSending(
+            handleFailure = { showError(getString(R.string.itemauthorizations_save_failed_general_title)) }
+        ) {
+            viewModel.save()
         }
     }
 

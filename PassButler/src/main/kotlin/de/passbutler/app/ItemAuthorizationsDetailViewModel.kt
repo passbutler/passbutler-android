@@ -2,9 +2,12 @@ package de.passbutler.app
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import de.passbutler.app.base.NonNullDiscardableMutableLiveData
 import de.passbutler.app.base.NonNullMutableLiveData
 import de.passbutler.app.base.viewmodels.EditingViewModel
 import de.passbutler.app.ui.ListItemIdentifiable
+import de.passbutler.common.base.Result
+import de.passbutler.common.base.Success
 import de.passbutler.common.database.LocalRepository
 import de.passbutler.common.database.models.ItemAuthorization
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +27,6 @@ class ItemAuthorizationsDetailViewModel(
 
     suspend fun initializeItemAuthorizations() {
         localRepository.findItem(itemId)?.let { item ->
-
             val existingItemAuthorizations = localRepository.findItemAuthorizationForItem(item)
                 .filter { it.userId != loggedInUserViewModel.id }
                 .map {
@@ -44,9 +46,28 @@ class ItemAuthorizationsDetailViewModel(
             }
         }
     }
+
+    suspend fun save(): Result<Unit> {
+        val currentItemAuthorizations = _itemAuthorizations.value
+
+        val changedExistingItemAuthorizations = currentItemAuthorizations
+            .filter { it.model is ItemAuthorizationViewModel.Model.Existing }
+            .filter { it.isReadAllowed.isModified || it.isWriteAllowed.isModified }
+
+        localRepository.updateItemAuthorization(changedExistingItemAuthorizations)
+
+        val changedPossibleItemAuthorizations = currentItemAuthorizations
+            .filter { it.model is ItemAuthorizationViewModel.Model.New }
+            .filter { it.isReadAllowed.isModified || it.isWriteAllowed.isModified }
+
+        // TODO: changed dates
+        // TODO: apply commitChangesAsInitialValue
+
+        return Success(Unit)
+    }
 }
 
-class ItemAuthorizationViewModel(private val model: Model) : ListItemIdentifiable {
+class ItemAuthorizationViewModel(val model: Model) : ListItemIdentifiable {
 
     override val listItemId: String
         get() = when (model) {
@@ -60,8 +81,12 @@ class ItemAuthorizationViewModel(private val model: Model) : ListItemIdentifiabl
             is Model.Existing -> model.itemAuthorization.userId
         }
 
-    val isReadAllowed = NonNullMutableLiveData(determineInitialIsReadAllowed())
-    val isWriteAllowed = NonNullMutableLiveData(determineInitialIsWriteAllowed())
+    val isReadAllowed = NonNullDiscardableMutableLiveData(determineInitialIsReadAllowed())
+    val isWriteAllowed = NonNullDiscardableMutableLiveData(determineInitialIsWriteAllowed())
+
+    fun createItemAuthorization(): ItemAuthorization {
+        TODO()
+    }
 
     private fun determineInitialIsReadAllowed(): Boolean {
         return when (model) {
