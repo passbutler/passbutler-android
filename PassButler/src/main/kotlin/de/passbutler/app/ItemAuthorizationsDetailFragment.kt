@@ -6,12 +6,30 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
+import de.passbutler.app.base.observe
 import de.passbutler.app.databinding.FragmentItemAuthorizationsDetailBinding
+import de.passbutler.app.databinding.ListItemAuthorizationEntryBinding
 import de.passbutler.app.ui.ToolBarFragment
+import de.passbutler.common.database.models.ItemAuthorization
+import kotlinx.coroutines.launch
+import org.tinylog.kotlin.Logger
 
 class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetailViewModel>() {
+
+    private var binding: FragmentItemAuthorizationsDetailBinding? = null
+
+    private val itemAuthorizationsObserver = Observer<List<ItemAuthorization>> { newItemAuthorizations ->
+        Logger.debug("newItemAuthorizations.size = ${newItemAuthorizations.size}")
+
+        val adapter = binding?.recyclerViewItemAuthorizations?.adapter as? ItemAuthorizationsAdapter
+        adapter?.submitList(newItemAuthorizations)
+    }
 
     override fun getToolBarTitle(): String {
         return getString(R.string.itemauthorizations_title)
@@ -38,7 +56,20 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
             binding.lifecycleOwner = viewLifecycleOwner
         }
 
+        setupItemAuthorizationsList(binding)
+
+        this.binding = binding
         return binding?.root
+    }
+
+    private fun setupItemAuthorizationsList(binding: FragmentItemAuthorizationsDetailBinding) {
+        binding.recyclerViewItemAuthorizations.adapter = ItemAuthorizationsAdapter()
+
+        viewModel.itemAuthorizations.observe(viewLifecycleOwner, true, itemAuthorizationsObserver)
+
+        launch {
+            viewModel.initializeItemAuthorizations()
+        }
     }
 
     companion object {
@@ -49,6 +80,47 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
                 putString(ARGUMENT_ITEM_ID, itemId)
             }
         }
+    }
+}
+
+class ItemAuthorizationsAdapter : ListAdapter<ItemAuthorization, ItemAuthorizationsAdapter.ItemAuthorizationViewHolder>(ItemAuthorizationDiffCallback()) {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemAuthorizationViewHolder {
+        val binding = DataBindingUtil.inflate<ListItemAuthorizationEntryBinding>(LayoutInflater.from(parent.context), R.layout.list_item_authorization_entry, parent, false)
+        return ItemAuthorizationViewHolder(binding)
+    }
+
+    override fun onBindViewHolder(holder: ItemAuthorizationViewHolder, position: Int) {
+        getItem(position).let { item ->
+            holder.apply {
+                itemView.tag = item
+                bind(item)
+            }
+        }
+    }
+
+    class ItemAuthorizationViewHolder(
+        private val binding: ListItemAuthorizationEntryBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(itemAuthorization: ItemAuthorization) {
+            binding.apply {
+                // TODO: Username not id semantically
+                textViewTitle.text = itemAuthorization.userId
+
+                // TODO: Init switches
+            }
+        }
+    }
+}
+
+private class ItemAuthorizationDiffCallback : DiffUtil.ItemCallback<ItemAuthorization>() {
+    override fun areItemsTheSame(oldItem: ItemAuthorization, newItem: ItemAuthorization): Boolean {
+        return oldItem.id == newItem.id
+    }
+
+    override fun areContentsTheSame(oldItem: ItemAuthorization, newItem: ItemAuthorization): Boolean {
+        return oldItem == newItem
     }
 }
 

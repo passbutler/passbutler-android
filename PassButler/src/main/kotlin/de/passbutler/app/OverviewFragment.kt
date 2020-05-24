@@ -88,7 +88,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        this.binding = DataBindingUtil.inflate<FragmentOverviewBinding>(inflater, R.layout.fragment_overview, container, false).also { binding ->
+        binding = DataBindingUtil.inflate<FragmentOverviewBinding>(inflater, R.layout.fragment_overview, container, false).also { binding ->
             binding.lifecycleOwner = viewLifecycleOwner
 
             setupToolBar(binding)
@@ -357,6 +357,7 @@ class ItemAdapter(private val overviewFragment: OverviewFragment) : ListAdapter<
 
         fun bind(itemViewModel: ItemViewModel) {
             binding.apply {
+                // TODO: Correct `lifecycleOwner`?
                 lifecycleOwner = overviewFragment.viewLifecycleOwner
                 viewModel = itemViewModel
 
