@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import de.passbutler.app.base.observe
 import de.passbutler.app.databinding.FragmentItemAuthorizationsDetailBinding
 import de.passbutler.app.databinding.ListItemAuthorizationEntryBinding
 import de.passbutler.app.ui.ToolBarFragment
@@ -67,7 +66,7 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
         binding.recyclerViewItemAuthorizations.layoutManager = LinearLayoutManager(binding.recyclerViewItemAuthorizations.context)
         binding.recyclerViewItemAuthorizations.adapter = ItemAuthorizationsAdapter()
 
-        viewModel.itemAuthorizations.observe(viewLifecycleOwner, true, itemAuthorizationsObserver)
+        viewModel.itemAuthorizations.observe(viewLifecycleOwner, itemAuthorizationsObserver)
 
         launch {
             viewModel.initializeItemAuthorizations()
