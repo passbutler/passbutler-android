@@ -17,6 +17,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
@@ -133,6 +134,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 
     private fun setupEntryList(binding: FragmentOverviewBinding) {
+        binding.layoutOverviewContent.recyclerViewItemList.layoutManager = LinearLayoutManager(binding.layoutOverviewContent.recyclerViewItemList.context)
         binding.layoutOverviewContent.recyclerViewItemList.adapter = ItemAdapter(this)
 
         binding.layoutOverviewContent.floatingActionButtonAddEntry.setOnClickListener {
