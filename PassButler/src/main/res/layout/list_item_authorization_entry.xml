@@ -3,7 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <data />
+    <data>
+
+        <variable
+            name="viewModel"
+            type="de.passbutler.app.ItemAuthorizationViewModel" />
+    </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -29,6 +34,7 @@
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
             android:lines="1"
+            android:text="@{viewModel.username}"
             android:textAppearance="?textAppearanceHeadline1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/imageView_icon"
@@ -43,6 +49,7 @@
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginS"
             android:layout_marginBottom="?marginS"
+            android:checked="@={viewModel.isReadAllowed}"
             android:text="@string/itemauthorizations_read_switch_title"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/guideline2"
@@ -57,6 +64,7 @@
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
             android:layout_marginBottom="?marginS"
+            android:checked="@={viewModel.isWriteAllowed}"
             android:text="@string/itemauthorizations_write_switch_title"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

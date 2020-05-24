@@ -1,6 +1,5 @@
 package de.passbutler.app
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,7 +9,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -18,9 +16,10 @@ import androidx.recyclerview.widget.RecyclerView
 import de.passbutler.app.databinding.FragmentItemAuthorizationsDetailBinding
 import de.passbutler.app.databinding.ListItemAuthorizationEntryBinding
 import de.passbutler.app.databinding.ListItemAuthorizationHeaderBinding
+import de.passbutler.app.ui.ListItemIdentifiable
+import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.common.base.addAllIfNotNull
-import de.passbutler.common.database.models.ItemAuthorization
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 
@@ -96,25 +95,10 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
     }
 }
 
-interface Identifiable {
-    val listItemId: String
-}
+class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView.ViewHolder>(ListItemIdentifiableDiffCallback()) {
 
-//data class HeaderListItem(
-//    val createViewHolder: () -> RecyclerView.ViewHolder,
-//    val bindViewHolder: (RecyclerView.ViewHolder) -> Unit
-//) {
-//
-//}
-
-class HeaderListItem : Identifiable {
-    override val listItemId = "DUMMY_HEADER_ID"
-}
-
-class ItemAuthorizationsAdapter : ListAdapter<Identifiable, RecyclerView.ViewHolder>(ItemAuthorizationDiffCallback()) {
-
-    override fun submitList(normalList: List<Identifiable>?) {
-        val newSubmittedList = mutableListOf<Identifiable>().apply {
+    override fun submitList(normalList: List<ListItemIdentifiable>?) {
+        val newSubmittedList = mutableListOf<ListItemIdentifiable>().apply {
             add(0, HeaderListItem())
             addAllIfNotNull(normalList)
         }
@@ -144,6 +128,9 @@ class ItemAuthorizationsAdapter : ListAdapter<Identifiable, RecyclerView.ViewHol
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
+            is HeaderViewHolder -> {
+                // No need to update static header
+            }
             is ItemAuthorizationViewHolder -> {
                 (getItem(position) as? ItemAuthorizationViewModel)?.let { item ->
                     holder.apply {
@@ -152,10 +139,11 @@ class ItemAuthorizationsAdapter : ListAdapter<Identifiable, RecyclerView.ViewHol
                     }
                 }
             }
-            is HeaderViewHolder -> {
-                // No need to update static header
-            }
         }
+    }
+
+    class HeaderListItem : ListItemIdentifiable {
+        override val listItemId = "DUMMY_HEADER_ID"
     }
 
     class HeaderViewHolder(
@@ -168,10 +156,9 @@ class ItemAuthorizationsAdapter : ListAdapter<Identifiable, RecyclerView.ViewHol
 
         fun bind(itemAuthorizationViewModel: ItemAuthorizationViewModel) {
             binding.apply {
-                // TODO: Username not id semantically
-                textViewTitle.text = itemAuthorizationViewModel.itemAuthorization.id
-
-                // TODO: Init switches
+                // TODO: Set `lifecycleOwner`?
+                viewModel = itemAuthorizationViewModel
+                executePendingBindings()
             }
         }
     }
@@ -179,17 +166,6 @@ class ItemAuthorizationsAdapter : ListAdapter<Identifiable, RecyclerView.ViewHol
     enum class ListItemType {
         HEADER,
         NORMAL
-    }
-}
-
-private class ItemAuthorizationDiffCallback : DiffUtil.ItemCallback<Identifiable>() {
-    override fun areItemsTheSame(oldItem: Identifiable, newItem: Identifiable): Boolean {
-        return oldItem.listItemId == newItem.listItemId
-    }
-
-    @SuppressLint("DiffUtilEquals")
-    override fun areContentsTheSame(oldItem: Identifiable, newItem: Identifiable): Boolean {
-        return oldItem == newItem
     }
 }
 

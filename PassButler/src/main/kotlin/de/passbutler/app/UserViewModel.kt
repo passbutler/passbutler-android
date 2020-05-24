@@ -47,6 +47,9 @@ class UserViewModel private constructor(
     masterPassword: String?
 ) : ManualCancelledCoroutineScopeViewModel() {
 
+    val id: String
+        get() = user.username
+
     val username: String
         get() = user.username
 
