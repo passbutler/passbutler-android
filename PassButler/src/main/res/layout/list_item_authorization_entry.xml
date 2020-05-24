@@ -7,8 +7,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?selectableItemBackground">
+        android:layout_height="wrap_content">
 
         <ImageView
             android:id="@+id/imageView_icon"
@@ -30,7 +29,7 @@
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
             android:lines="1"
-            android:textAppearance="@style/TextAppearance.PassButler.Headline1"
+            android:textAppearance="?textAppearanceHeadline1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/imageView_icon"
             app:layout_constraintTop_toTopOf="parent"
