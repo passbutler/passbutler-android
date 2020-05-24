@@ -50,6 +50,9 @@ class UserViewModel private constructor(
     val username: String
         get() = user.username
 
+    val localRepository
+        get() = userManager.localRepository
+
     val loggedInStateStorage
         get() = userManager.loggedInStateStorage
 
@@ -127,7 +130,7 @@ class UserViewModel private constructor(
 
     fun createNewItemEditingViewModel(): ItemEditingViewModel {
         val itemModel = ItemEditingViewModel.ItemModel.New
-        return ItemEditingViewModel(itemModel, this, userManager.localRepository)
+        return ItemEditingViewModel(itemModel, this, localRepository)
     }
 
     suspend fun decryptSensibleData(masterPassword: String): Result<Unit> {
@@ -242,7 +245,7 @@ class UserViewModel private constructor(
             protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey)).resultOrThrowException()
 
             val user = createModel()
-            userManager.localRepository.updateUser(user)
+            localRepository.updateUser(user)
 
             // After all mandatory changes, try to disable biometric unlock because master password re-encryption would require complex flow with biometric authentication UI
             val disableBiometricUnlockResult = disableBiometricUnlock()
@@ -339,7 +342,7 @@ class UserViewModel private constructor(
                     protectedSettings.update(masterEncryptionKey, settings).resultOrThrowException()
 
                     val user = createModel()
-                    userManager.localRepository.updateUser(user)
+                    localRepository.updateUser(user)
                 } catch (exception: Exception) {
                     Logger.warn(exception, "The user settings could not be updated")
                 }
@@ -361,7 +364,7 @@ class UserViewModel private constructor(
     private fun updateItemViewModels() {
         itemViewModelsUpdateJob?.cancel()
         itemViewModelsUpdateJob = launch {
-            val newItems = userManager.localRepository.findAllItems()
+            val newItems = localRepository.findAllItems()
             val updatedItemViewModels = createItemViewModels(newItems)
             val decryptedItemViewModels = decryptItemViewModels(updatedItemViewModels)
 
@@ -379,7 +382,7 @@ class UserViewModel private constructor(
         val newItemViewModels = newItems
             .mapNotNull { item ->
                 // Check if the user has a non-deleted item authorization to access the item
-                val itemAuthorization = userManager.localRepository.findItemAuthorizationForItem(item).firstOrNull {
+                val itemAuthorization = localRepository.findItemAuthorizationForItem(item).firstOrNull {
                     it.userId == username && !it.deleted
                 }
 
@@ -397,7 +400,7 @@ class UserViewModel private constructor(
                             Logger.debug("Create new viewmodel for item '${item.id}' because recycling was not possible")
 
                             // No existing item viewmodel was found, thus a new must be created for item
-                            ItemViewModel(item, itemAuthorization, this, userManager.localRepository)
+                            ItemViewModel(item, itemAuthorization, this, localRepository)
                         }
                 } else {
                     Logger.debug("A non-deleted item authorization of user for item '${item.id}' was not found - skip item")

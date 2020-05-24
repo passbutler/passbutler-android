@@ -270,7 +270,9 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 
         if (viewModel.isItemAuthorizationAvailable) {
             binding?.buttonManageAuthorizations?.setOnClickListener {
-                // TODO: show screen
+                viewModel.id.value?.let { itemId ->
+                    showFragment(ItemAuthorizationsDetailFragment.newInstance(itemId))
+                }
             }
         }
     }

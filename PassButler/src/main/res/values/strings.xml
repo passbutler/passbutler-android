@@ -142,6 +142,13 @@
     <string name="itemdetail_delete_successful_message">Löschen erfolgreich</string>
     <string name="itemdetail_delete_failed_general_title">Löschen hat nicht geklappt</string>
 
+    <!-- Item authorizations detail -->
+
+    <string name="itemauthorizations_title">Geteilte Zugänge verwalten</string>
+
+    <string name="itemauthorizations_read_switch_title">Ansehen</string>
+    <string name="itemauthorizations_write_switch_title">Bearbeiten</string>
+
     <!-- About -->
 
     <string name="about_title">Über / Lizenz</string>
