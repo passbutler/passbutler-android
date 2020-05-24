@@ -34,6 +34,8 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
         activity?.let {
             viewModel = getRootViewModel(it)
 
+            Logger.debug("Apply viewModel = $viewModel in $this")
+
             val contentContainerResourceId = R.id.frameLayout_fragment_root_content_container
             val progressScreenViewResourceId = R.id.frameLayout_progress_container
             fragmentPresentingDelegate = FragmentPresenter(
@@ -56,7 +58,7 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
         viewModel.rootScreenState.observe(viewLifecycleOwner, rootScreenStateObserver)
         viewModel.lockScreenState.observe(viewLifecycleOwner, lockScreenStateObserver)
 
-        // Try to restore logged-in user after the observer were added
+        // Try to restore logged-in user after the observers were added
         launch {
             viewModel.restoreLoggedInUser()
         }

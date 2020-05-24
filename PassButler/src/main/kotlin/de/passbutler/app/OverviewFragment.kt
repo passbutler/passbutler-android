@@ -81,9 +81,10 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         viewModel = ViewModelProvider(this).get(OverviewViewModel::class.java)
 
         activity?.let {
-            val loggedInUserViewModel = getRootViewModel(it).loggedInUserViewModel
+            val rootViewModel = getRootViewModel(it)
+            val loggedInUserViewModel = rootViewModel.loggedInUserViewModel
 
-            Logger.debug("Apply loggedInUserViewModel = $loggedInUserViewModel to viewModel = $viewModel")
+            Logger.debug("Apply loggedInUserViewModel = $loggedInUserViewModel from rootViewModel = $rootViewModel to viewModel = $viewModel in $this")
             viewModel.loggedInUserViewModel = loggedInUserViewModel
         }
     }
