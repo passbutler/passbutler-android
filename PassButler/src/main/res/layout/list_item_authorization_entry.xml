@@ -16,9 +16,9 @@
             android:layout_height="24dp"
             android:layout_marginStart="?marginM"
             android:tint="?android:textColorPrimary"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/textView_title"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/textView_title"
             app:srcCompat="@drawable/icon_account_circle_24dp"
             tools:ignore="ContentDescription" />
 

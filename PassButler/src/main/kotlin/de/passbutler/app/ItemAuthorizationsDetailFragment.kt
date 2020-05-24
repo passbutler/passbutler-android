@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -63,8 +64,16 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
     }
 
     private fun setupItemAuthorizationsList(binding: FragmentItemAuthorizationsDetailBinding) {
-        binding.recyclerViewItemAuthorizations.layoutManager = LinearLayoutManager(binding.recyclerViewItemAuthorizations.context)
-        binding.recyclerViewItemAuthorizations.adapter = ItemAuthorizationsAdapter()
+        binding.recyclerViewItemAuthorizations.apply {
+            val linearLayoutManager = LinearLayoutManager(context)
+
+            layoutManager = linearLayoutManager
+            adapter = ItemAuthorizationsAdapter()
+
+            // TODO: More lighter decoration for android.R.attr.listDivider / R.attr.recyclerViewStyle
+            val dividerItemDecoration = DividerItemDecoration(context, linearLayoutManager.orientation)
+            addItemDecoration(dividerItemDecoration)
+        }
 
         viewModel.itemAuthorizations.observe(viewLifecycleOwner, itemAuthorizationsObserver)
 
