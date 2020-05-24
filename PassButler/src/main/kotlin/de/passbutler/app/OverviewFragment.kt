@@ -134,8 +134,11 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 
     private fun setupEntryList(binding: FragmentOverviewBinding) {
-        binding.layoutOverviewContent.recyclerViewItemList.layoutManager = LinearLayoutManager(binding.layoutOverviewContent.recyclerViewItemList.context)
-        binding.layoutOverviewContent.recyclerViewItemList.adapter = ItemAdapter(this)
+        binding.layoutOverviewContent.recyclerViewItemList.apply {
+            val linearLayoutManager = LinearLayoutManager(context)
+            layoutManager = linearLayoutManager
+            adapter = ItemAdapter(this@OverviewFragment)
+        }
 
         binding.layoutOverviewContent.floatingActionButtonAddEntry.setOnClickListener {
             showFragment(ItemDetailFragment.newInstance(null))
