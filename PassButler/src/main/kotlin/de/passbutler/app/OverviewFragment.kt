@@ -16,7 +16,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -28,6 +27,8 @@ import de.passbutler.app.databinding.FragmentOverviewBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
 import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.BaseViewModelFragment
+import de.passbutler.app.ui.ListItemIdentifiable
+import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.VisibilityHideMode
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showFadeInOutAnimation
@@ -341,15 +342,15 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 }
 
-class ItemAdapter(private val parentFragment: BaseFragment) : ListAdapter<ItemViewModel, ItemAdapter.EntryViewHolder>(ItemDiffCallback()) {
+class ItemAdapter(private val parentFragment: BaseFragment) : ListAdapter<ListItemIdentifiable, ItemAdapter.ItemViewHolder>(ListItemIdentifiableDiffCallback()) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EntryViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         val binding = DataBindingUtil.inflate<ListItemEntryBinding>(LayoutInflater.from(parent.context), R.layout.list_item_entry, parent, false)
-        return EntryViewHolder(binding, parentFragment)
+        return ItemViewHolder(binding, parentFragment)
     }
 
-    override fun onBindViewHolder(holder: EntryViewHolder, position: Int) {
-        getItem(position).let { item ->
+    override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
+        (getItem(position) as? ItemViewModel)?.let { item ->
             holder.apply {
                 itemView.tag = item
                 bind(item)
@@ -357,7 +358,7 @@ class ItemAdapter(private val parentFragment: BaseFragment) : ListAdapter<ItemVi
         }
     }
 
-    class EntryViewHolder(
+    class ItemViewHolder(
         private val binding: ListItemEntryBinding,
         private val parentFragment: BaseFragment
     ) : RecyclerView.ViewHolder(binding.root) {
@@ -374,15 +375,5 @@ class ItemAdapter(private val parentFragment: BaseFragment) : ListAdapter<ItemVi
                 }
             }
         }
-    }
-}
-
-private class ItemDiffCallback : DiffUtil.ItemCallback<ItemViewModel>() {
-    override fun areItemsTheSame(oldItem: ItemViewModel, newItem: ItemViewModel): Boolean {
-        return oldItem.id == newItem.id
-    }
-
-    override fun areContentsTheSame(oldItem: ItemViewModel, newItem: ItemViewModel): Boolean {
-        return oldItem == newItem
     }
 }

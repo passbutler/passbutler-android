@@ -8,6 +8,7 @@ import de.passbutler.app.base.NonNullMutableLiveData
 import de.passbutler.app.base.OptionalValueGetterLiveData
 import de.passbutler.app.base.viewmodels.EditableViewModel
 import de.passbutler.app.base.viewmodels.EditingViewModel
+import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
@@ -31,7 +32,10 @@ class ItemViewModel(
     val itemAuthorization: ItemAuthorization,
     private val loggedInUserViewModel: UserViewModel,
     private val localRepository: LocalRepository
-) : EditableViewModel<ItemEditingViewModel> {
+) : EditableViewModel<ItemEditingViewModel>, ListItemIdentifiable {
+
+    override val listItemId: String
+        get() = id
 
     val id
         get() = item.id
