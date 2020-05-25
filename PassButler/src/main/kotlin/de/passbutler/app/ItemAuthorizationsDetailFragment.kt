@@ -2,7 +2,6 @@ package de.passbutler.app
 
 import android.content.Context
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,14 +18,11 @@ import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentItemAuthorizationsDetailBinding
 import de.passbutler.app.databinding.ListItemAuthorizationEntryBinding
 import de.passbutler.app.databinding.ListItemAuthorizationHeaderBinding
-import de.passbutler.app.ui.FormFieldValidator
-import de.passbutler.app.ui.FormValidationResult
-import de.passbutler.app.ui.Keyboard
+import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
-import de.passbutler.app.ui.validateForm
 import de.passbutler.common.base.addAllIfNotNull
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
@@ -100,7 +96,7 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
             val linearLayoutManager = LinearLayoutManager(context)
 
             layoutManager = linearLayoutManager
-            adapter = ItemAuthorizationsAdapter()
+            adapter = ItemAuthorizationsAdapter(this@ItemAuthorizationsDetailFragment)
 
             // TODO: More lighter decoration for android.R.attr.listDivider / R.attr.recyclerViewStyle
             val dividerItemDecoration = DividerItemDecoration(context, linearLayoutManager.orientation)
@@ -125,7 +121,7 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
     }
 }
 
-class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView.ViewHolder>(ListItemIdentifiableDiffCallback()) {
+class ItemAuthorizationsAdapter(private val parentFragment: BaseFragment) : ListAdapter<ListItemIdentifiable, RecyclerView.ViewHolder>(ListItemIdentifiableDiffCallback()) {
 
     override fun submitList(normalList: List<ListItemIdentifiable>?) {
         val newSubmittedList = mutableListOf<ListItemIdentifiable>().apply {
@@ -151,7 +147,7 @@ class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView
             }
             else -> {
                 val binding = DataBindingUtil.inflate<ListItemAuthorizationEntryBinding>(LayoutInflater.from(parent.context), R.layout.list_item_authorization_entry, parent, false)
-                ItemAuthorizationViewHolder(binding)
+                ItemAuthorizationViewHolder(binding, parentFragment)
             }
         }
     }
@@ -181,12 +177,13 @@ class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView
     ) : RecyclerView.ViewHolder(binding.root)
 
     class ItemAuthorizationViewHolder(
-        private val binding: ListItemAuthorizationEntryBinding
+        private val binding: ListItemAuthorizationEntryBinding,
+        private val parentFragment: BaseFragment
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(itemAuthorizationViewModel: ItemAuthorizationViewModel) {
             binding.apply {
-                // TODO: Set `lifecycleOwner`?
+                lifecycleOwner = parentFragment.viewLifecycleOwner
                 viewModel = itemAuthorizationViewModel
                 executePendingBindings()
             }
