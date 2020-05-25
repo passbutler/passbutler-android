@@ -54,7 +54,10 @@ class ItemViewModel(
         get() = item.created
 
     var itemData: ItemData? = null
-    private var itemKey: ByteArray? = null
+        private set
+
+    var itemKey: ByteArray? = null
+        private set
 
     suspend fun decryptSensibleData(userItemEncryptionSecretKey: ByteArray): Result<Unit> {
         return try {

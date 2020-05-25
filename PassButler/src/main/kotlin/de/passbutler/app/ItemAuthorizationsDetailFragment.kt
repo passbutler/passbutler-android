@@ -103,10 +103,10 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
             addItemDecoration(dividerItemDecoration)
         }
 
-        viewModel.itemAuthorizations.observe(viewLifecycleOwner, itemAuthorizationsObserver)
+        viewModel.itemAuthorizationViewModels.observe(viewLifecycleOwner, itemAuthorizationsObserver)
 
         launch {
-            viewModel.initializeItemAuthorizations()
+            viewModel.initializeItemAuthorizationViewModels()
         }
     }
 
