@@ -165,7 +165,7 @@ class ItemAuthorizationViewModel(val itemAuthorizationModel: ItemAuthorizationMo
 
     override val listItemId: String
         get() = when (itemAuthorizationModel) {
-            is ItemAuthorizationModel.Provisional -> itemAuthorizationModel.provisionalItemAuthorizationId
+            is ItemAuthorizationModel.Provisional -> itemAuthorizationModel.itemAuthorizationId
             is ItemAuthorizationModel.Existing -> itemAuthorizationModel.itemAuthorization.id
         }
 
@@ -204,7 +204,7 @@ class ItemAuthorizationViewModel(val itemAuthorizationModel: ItemAuthorizationMo
             val userItemEncryptionPublicKey: ByteArray,
             val item: Item,
             val itemKey: ByteArray,
-            val provisionalItemAuthorizationId: String
+            val itemAuthorizationId: String
         ) : ItemAuthorizationModel() {
             override suspend fun createItemAuthorization(isReadAllowed: Boolean, isWriteAllowed: Boolean): Result<ItemAuthorization> {
                 val asymmetricEncryptionAlgorithm = EncryptionAlgorithm.Asymmetric.RSA2048OAEP
@@ -213,7 +213,7 @@ class ItemAuthorizationViewModel(val itemAuthorizationModel: ItemAuthorizationMo
                     val protectedItemKey = ProtectedValue.create(asymmetricEncryptionAlgorithm, userItemEncryptionPublicKey, CryptographicKey(itemKey)).resultOrThrowException()
                     val currentDate = Date()
                     val createdItemAuthorization = ItemAuthorization(
-                        id = provisionalItemAuthorizationId,
+                        id = itemAuthorizationId,
                         userId = userId,
                         itemId = item.id,
                         itemKey = protectedItemKey,

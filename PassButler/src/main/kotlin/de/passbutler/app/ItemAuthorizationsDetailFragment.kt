@@ -185,6 +185,14 @@ class ItemAuthorizationsAdapter(private val parentFragment: BaseFragment) : List
             binding.apply {
                 lifecycleOwner = parentFragment.viewLifecycleOwner
                 viewModel = itemAuthorizationViewModel
+
+                // If no read access is given, write access is meaningless
+                switchRead.setOnCheckedChangeListener { _, isChecked ->
+                    if (!isChecked) {
+                        switchWrite.isChecked = false
+                    }
+                }
+
                 executePendingBindings()
             }
         }
