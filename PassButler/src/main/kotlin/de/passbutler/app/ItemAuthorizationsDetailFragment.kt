@@ -180,12 +180,18 @@ class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(itemAuthorizationViewModel: ItemAuthorizationViewModel) {
+            bindTitle(binding, itemAuthorizationViewModel)
+            bindReadSwitch(binding, itemAuthorizationViewModel)
+            bindWriteSwitch(binding, itemAuthorizationViewModel)
+        }
+
+        private fun bindTitle(binding: ListItemAuthorizationEntryBinding, itemAuthorizationViewModel: ItemAuthorizationViewModel) {
+            binding.textViewTitle.text = itemAuthorizationViewModel.username
+        }
+
+        private fun bindReadSwitch(binding: ListItemAuthorizationEntryBinding, itemAuthorizationViewModel: ItemAuthorizationViewModel) {
             binding.apply {
-                textViewTitle.text = itemAuthorizationViewModel.username
-
                 switchRead.isChecked = itemAuthorizationViewModel.isReadAllowed.value
-                switchWrite.isChecked = itemAuthorizationViewModel.isWriteAllowed.value
-
                 switchRead.setOnCheckedChangeListener { _, isChecked ->
                     itemAuthorizationViewModel.isReadAllowed.value = isChecked
 
@@ -194,7 +200,12 @@ class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView
                         switchWrite.isChecked = false
                     }
                 }
+            }
+        }
 
+        private fun bindWriteSwitch(binding: ListItemAuthorizationEntryBinding, itemAuthorizationViewModel: ItemAuthorizationViewModel) {
+            binding.apply {
+                switchWrite.isChecked = itemAuthorizationViewModel.isWriteAllowed.value
                 switchWrite.setOnCheckedChangeListener { _, isChecked ->
                     itemAuthorizationViewModel.isWriteAllowed.value = isChecked
 
@@ -203,8 +214,6 @@ class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView
                         switchRead.isChecked = true
                     }
                 }
-
-                executePendingBindings()
             }
         }
     }
