@@ -113,7 +113,6 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
             layoutManager = linearLayoutManager
             adapter = ItemAuthorizationsAdapter()
 
-            // TODO: More lighter decoration for android.R.attr.listDivider / R.attr.recyclerViewStyle!
             val dividerItemDecoration = DividerItemDecoration(context, linearLayoutManager.orientation)
             addItemDecoration(dividerItemDecoration)
         }
