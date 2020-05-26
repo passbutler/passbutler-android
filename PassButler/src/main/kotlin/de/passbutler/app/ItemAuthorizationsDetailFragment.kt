@@ -18,7 +18,6 @@ import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentItemAuthorizationsDetailBinding
 import de.passbutler.app.databinding.ListItemAuthorizationEntryBinding
 import de.passbutler.app.databinding.ListItemAuthorizationHeaderBinding
-import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.ToolBarFragment
@@ -96,9 +95,9 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
             val linearLayoutManager = LinearLayoutManager(context)
 
             layoutManager = linearLayoutManager
-            adapter = ItemAuthorizationsAdapter(this@ItemAuthorizationsDetailFragment)
+            adapter = ItemAuthorizationsAdapter()
 
-            // TODO: More lighter decoration for android.R.attr.listDivider / R.attr.recyclerViewStyle
+            // TODO: More lighter decoration for android.R.attr.listDivider / R.attr.recyclerViewStyle!
             val dividerItemDecoration = DividerItemDecoration(context, linearLayoutManager.orientation)
             addItemDecoration(dividerItemDecoration)
         }
@@ -121,7 +120,7 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
     }
 }
 
-class ItemAuthorizationsAdapter(private val parentFragment: BaseFragment) : ListAdapter<ListItemIdentifiable, RecyclerView.ViewHolder>(ListItemIdentifiableDiffCallback()) {
+class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView.ViewHolder>(ListItemIdentifiableDiffCallback()) {
 
     override fun submitList(normalList: List<ListItemIdentifiable>?) {
         val newSubmittedList = mutableListOf<ListItemIdentifiable>().apply {
@@ -147,7 +146,7 @@ class ItemAuthorizationsAdapter(private val parentFragment: BaseFragment) : List
             }
             else -> {
                 val binding = DataBindingUtil.inflate<ListItemAuthorizationEntryBinding>(LayoutInflater.from(parent.context), R.layout.list_item_authorization_entry, parent, false)
-                ItemAuthorizationViewHolder(binding, parentFragment)
+                ItemAuthorizationViewHolder(binding)
             }
         }
     }
@@ -177,24 +176,29 @@ class ItemAuthorizationsAdapter(private val parentFragment: BaseFragment) : List
     ) : RecyclerView.ViewHolder(binding.root)
 
     class ItemAuthorizationViewHolder(
-        private val binding: ListItemAuthorizationEntryBinding,
-        private val parentFragment: BaseFragment
+        private val binding: ListItemAuthorizationEntryBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(itemAuthorizationViewModel: ItemAuthorizationViewModel) {
             binding.apply {
-                lifecycleOwner = parentFragment.viewLifecycleOwner
-                viewModel = itemAuthorizationViewModel
+                textViewTitle.text = itemAuthorizationViewModel.username
 
-                // If no read access is given, write access is meaningless
+                switchRead.isChecked = itemAuthorizationViewModel.isReadAllowed.value
+                switchWrite.isChecked = itemAuthorizationViewModel.isWriteAllowed.value
+
                 switchRead.setOnCheckedChangeListener { _, isChecked ->
+                    itemAuthorizationViewModel.isReadAllowed.value = isChecked
+
+                    // If no read access is given, write access is meaningless
                     if (!isChecked) {
                         switchWrite.isChecked = false
                     }
                 }
 
-                // If write access is given, read access is implied
                 switchWrite.setOnCheckedChangeListener { _, isChecked ->
+                    itemAuthorizationViewModel.isWriteAllowed.value = isChecked
+
+                    // If write access is given, read access is implied
                     if (isChecked) {
                         switchRead.isChecked = true
                     }

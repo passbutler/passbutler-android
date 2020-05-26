@@ -3,12 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <data>
-
-        <variable
-            name="viewModel"
-            type="de.passbutler.app.ItemAuthorizationViewModel" />
-    </data>
+    <data />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -34,7 +29,6 @@
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
             android:lines="1"
-            android:text="@{viewModel.username}"
             android:textAppearance="?textAppearanceHeadline1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/imageView_icon"
@@ -49,10 +43,9 @@
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginS"
             android:layout_marginBottom="?marginS"
-            android:checked="@={viewModel.isReadAllowed}"
             android:text="@string/itemauthorizations_read_switch_title"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/guideline2"
+            app:layout_constraintEnd_toStartOf="@+id/guideline_middle_divider"
             app:layout_constraintStart_toEndOf="@+id/imageView_icon"
             app:layout_constraintTop_toBottomOf="@+id/textView_title" />
 
@@ -64,16 +57,15 @@
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
             android:layout_marginBottom="?marginS"
-            android:checked="@={viewModel.isWriteAllowed}"
             android:text="@string/itemauthorizations_write_switch_title"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="@+id/guideline2"
+            app:layout_constraintStart_toStartOf="@+id/guideline_middle_divider"
             app:layout_constraintTop_toBottomOf="@+id/textView_title" />
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline2"
+            android:id="@+id/guideline_middle_divider"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
