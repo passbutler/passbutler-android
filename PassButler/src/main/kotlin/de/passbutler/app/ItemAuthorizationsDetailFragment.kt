@@ -3,6 +3,7 @@ package de.passbutler.app
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
@@ -28,6 +29,7 @@ import org.tinylog.kotlin.Logger
 
 class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetailViewModel>() {
 
+    private var toolbarMenuSaveItem: MenuItem? = null
     private var binding: FragmentItemAuthorizationsDetailBinding? = null
 
     private val itemAuthorizationsObserver = Observer<List<ItemAuthorizationViewModel>> { newItemAuthorizationViewModels ->
@@ -35,6 +37,10 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
 
         val adapter = binding?.recyclerViewItemAuthorizations?.adapter as? ItemAuthorizationsAdapter
         adapter?.submitList(newItemAuthorizationViewModels)
+    }
+
+    private val anyItemAuthorizationWasModifiedObserver = Observer<Boolean> {
+        updateToolbarMenuItems()
     }
 
     override fun getToolBarTitle(): String {
@@ -60,6 +66,10 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
     override fun setupToolbarMenu(toolbar: Toolbar) {
         toolbar.inflateMenu(R.menu.item_authorizations_detail_menu)
 
+        toolbarMenuSaveItem = toolbar.menu.findItem(R.id.item_authorizations_detail_menu_item_save)
+
+        updateToolbarMenuItems()
+
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.item_authorizations_detail_menu_item_save -> {
@@ -69,6 +79,10 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
                 else -> false
             }
         }
+    }
+
+    private fun updateToolbarMenuItems() {
+        toolbarMenuSaveItem?.isEnabled = viewModel.anyItemAuthorizationWasModified.value
     }
 
     private fun saveClicked() {
@@ -82,11 +96,13 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = DataBindingUtil.inflate<FragmentItemAuthorizationsDetailBinding>(inflater, R.layout.fragment_item_authorizations_detail, container, false).also { binding ->
             binding.lifecycleOwner = viewLifecycleOwner
+            this.binding = binding
         }
 
         setupItemAuthorizationsList(binding)
 
-        this.binding = binding
+        viewModel.anyItemAuthorizationWasModified.observe(viewLifecycleOwner, anyItemAuthorizationWasModifiedObserver)
+
         return binding?.root
     }
 

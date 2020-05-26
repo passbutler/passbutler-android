@@ -1,9 +1,11 @@
 package de.passbutler.app
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import de.passbutler.app.base.NonNullDiscardableMutableLiveData
 import de.passbutler.app.base.NonNullMutableLiveData
+import de.passbutler.app.base.NonNullValueGetterLiveData
 import de.passbutler.app.base.viewmodels.EditingViewModel
 import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.common.base.Failure
@@ -33,6 +35,14 @@ class ItemAuthorizationsDetailViewModel(
 
     private val _itemAuthorizationViewModels = NonNullMutableLiveData<List<ItemAuthorizationViewModel>>(emptyList())
 
+    val anyItemAuthorizationWasModified = NonNullValueGetterLiveData {
+        _itemAuthorizationViewModels.value.any { it.isReadAllowed.isModified || it.isWriteAllowed.isModified } ?: false
+    }
+
+    private val itemAuthorizationViewModelsModifiedObserver = Observer<Boolean> {
+        anyItemAuthorizationWasModified.notifyChange()
+    }
+
     suspend fun initializeItemAuthorizationViewModels() {
         val itemViewModel = loggedInUserViewModel.itemViewModels.value.find { it.id == itemId }
         val item = itemViewModel?.item ?: throw IllegalStateException("The item is null despite the ItemAuthorizationViewModel are created!")
@@ -46,7 +56,17 @@ class ItemAuthorizationsDetailViewModel(
         val newItemAuthorizations = existingItemAuthorizationViewModels + provisionalItemAuthorizationViewModels
 
         withContext(Dispatchers.Main) {
+            _itemAuthorizationViewModels.value.forEach {
+                it.isReadAllowed.removeObserver(itemAuthorizationViewModelsModifiedObserver)
+                it.isWriteAllowed.removeObserver(itemAuthorizationViewModelsModifiedObserver)
+            }
+
             _itemAuthorizationViewModels.value = newItemAuthorizations
+
+            _itemAuthorizationViewModels.value.forEach {
+                it.isReadAllowed.observeForever(itemAuthorizationViewModelsModifiedObserver)
+                it.isWriteAllowed.observeForever(itemAuthorizationViewModelsModifiedObserver)
+            }
         }
     }
 
