@@ -365,10 +365,8 @@ class ItemAdapter(private val parentFragment: BaseFragment) : ListAdapter<ListIt
 
         fun bind(itemViewModel: ItemViewModel) {
             binding.apply {
-                lifecycleOwner = parentFragment.viewLifecycleOwner
-                viewModel = itemViewModel
-
-                executePendingBindings()
+                textViewTitle.text = itemViewModel.title.value
+                textViewSubtitle.text = itemViewModel.subtitle
 
                 root.setOnClickListener {
                     parentFragment.showFragment(ItemDetailFragment.newInstance(itemViewModel.id))

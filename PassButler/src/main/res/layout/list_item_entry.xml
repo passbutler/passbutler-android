@@ -3,13 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <data>
-
-        <variable
-            name="viewModel"
-            type="de.passbutler.app.ItemViewModel" />
-
-    </data>
+    <data />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -36,7 +30,6 @@
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
             android:lines="1"
-            android:text="@{viewModel.title}"
             android:textAppearance="?textAppearanceHeadline1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/imageView_icon"
@@ -51,7 +44,6 @@
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
             android:layout_marginBottom="?marginS"
-            android:text="@{viewModel.subtitle}"
             android:textAppearance="?textAppearanceSubtitle1"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
