@@ -123,19 +123,28 @@ class ItemAuthorizationsDetailViewModel(
     suspend fun save(): Result<Unit> {
         val currentItemAuthorizationViewModels = _itemAuthorizationViewModels.value
 
-        saveExistingItemAuthorizations(currentItemAuthorizationViewModels)
-        saveProvisionalItemAuthorizations(currentItemAuthorizationViewModels)
+        val saveResults = listOf(
+            saveExistingItemAuthorizations(currentItemAuthorizationViewModels),
+            saveProvisionalItemAuthorizations(currentItemAuthorizationViewModels)
+        )
 
-        // Reinitialize list of `ItemAuthorizationViewModel` to be sure, the states are applied
-        initializeItemAuthorizationViewModels()
+        val firstFailure = saveResults.filterIsInstance(Failure::class.java).firstOrNull()
 
-        return Success(Unit)
+        return if (firstFailure != null) {
+            Failure(firstFailure.throwable)
+        } else {
+            // Reinitialize list of `ItemAuthorizationViewModel` to be sure, the states are applied
+            initializeItemAuthorizationViewModels()
+
+            Success(Unit)
+        }
     }
 
-    private suspend fun saveExistingItemAuthorizations(currentItemAuthorizationViewModels: List<ItemAuthorizationViewModel>) {
+    private suspend fun saveExistingItemAuthorizations(currentItemAuthorizationViewModels: List<ItemAuthorizationViewModel>): Result<Unit> {
         val changedExistingItemAuthorizationViewModels = currentItemAuthorizationViewModels
             .filter { it.isReadAllowed.isModified || it.isWriteAllowed.isModified }
 
+        var failedResultException: Throwable? = null
         val changedExistingItemAuthorizations = changedExistingItemAuthorizationViewModels.mapNotNull { itemAuthorizationViewModel ->
             (itemAuthorizationViewModel.itemAuthorizationModel as? ItemAuthorizationViewModel.ItemAuthorizationModel.Existing)?.let { itemAuthorizationModel ->
                 val isReadAllowed = itemAuthorizationViewModel.isReadAllowed.value
@@ -145,21 +154,28 @@ class ItemAuthorizationsDetailViewModel(
                 when (updateItemAuthorizationResult) {
                     is Success -> updateItemAuthorizationResult.result
                     is Failure -> {
-                        // TODO: Log failure?
+                        failedResultException = updateItemAuthorizationResult.throwable
                         null
                     }
                 }
             }
         }
 
-        Logger.debug("changedExistingItemAuthorizations = $changedExistingItemAuthorizations")
-        localRepository.updateItemAuthorization(*changedExistingItemAuthorizations.toTypedArray())
+        return failedResultException?.let {
+            Failure(it)
+        } ?: run {
+            Logger.debug("changedExistingItemAuthorizations = $changedExistingItemAuthorizations")
+            localRepository.updateItemAuthorization(*changedExistingItemAuthorizations.toTypedArray())
+
+            Success(Unit)
+        }
     }
 
-    private suspend fun saveProvisionalItemAuthorizations(currentItemAuthorizationViewModels: List<ItemAuthorizationViewModel>) {
+    private suspend fun saveProvisionalItemAuthorizations(currentItemAuthorizationViewModels: List<ItemAuthorizationViewModel>): Result<Unit> {
         val changedProvisionalItemAuthorizationViewModels = currentItemAuthorizationViewModels
             .filter { it.isReadAllowed.isModified || it.isWriteAllowed.isModified }
 
+        var failedResultException: Throwable? = null
         val changedProvisionalItemAuthorizations = changedProvisionalItemAuthorizationViewModels.mapNotNull { itemAuthorizationViewModel ->
             (itemAuthorizationViewModel.itemAuthorizationModel as? ItemAuthorizationViewModel.ItemAuthorizationModel.Provisional)?.let { itemAuthorizationModel ->
                 val isReadAllowed = itemAuthorizationViewModel.isReadAllowed.value
@@ -169,15 +185,21 @@ class ItemAuthorizationsDetailViewModel(
                 when (createItemAuthorizationResult) {
                     is Success -> createItemAuthorizationResult.result
                     is Failure -> {
-                        // TODO: Log failure?
+                        failedResultException = createItemAuthorizationResult.throwable
                         null
                     }
                 }
             }
         }
 
-        Logger.debug("changedProvisionalItemAuthorizations = $changedProvisionalItemAuthorizations")
-        localRepository.insertItemAuthorization(*changedProvisionalItemAuthorizations.toTypedArray())
+        return failedResultException?.let {
+            Failure(it)
+        } ?: run {
+            Logger.debug("changedProvisionalItemAuthorizations = $changedProvisionalItemAuthorizations")
+            localRepository.insertItemAuthorization(*changedProvisionalItemAuthorizations.toTypedArray())
+
+            Success(Unit)
+        }
     }
 }
 
