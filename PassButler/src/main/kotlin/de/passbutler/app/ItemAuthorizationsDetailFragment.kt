@@ -53,7 +53,7 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
             val itemAuthorizationsDetailViewModel = ItemAuthorizationsDetailViewModel(itemId, loggedInUserViewModel, loggedInUserViewModel.localRepository)
             val factory = ItemAuthorizationsDetailViewModelFactory(itemAuthorizationsDetailViewModel)
 
-            // Use actual fragment (not the activity) for provider because we want always want to get a new `ItemEditingViewModel`
+            // Use actual fragment (not the activity) for provider because we want always want to get a new viewmodel
             viewModel = ViewModelProvider(this, factory).get(ItemAuthorizationsDetailViewModel::class.java)
         }
     }

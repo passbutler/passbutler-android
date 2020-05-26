@@ -88,7 +88,7 @@ class ItemViewModel(
     override fun createEditingViewModel(): ItemEditingViewModel {
         val itemData = itemData ?: throw IllegalStateException("The item data is null despite a ItemEditingViewModel is created!")
 
-        // Pass a copy of the item key to `ItemEditingViewModel` to avoid it get cleared via reference
+        // Pass a copy of the item key to `ItemEditingViewModel` to avoid it get cleared via reference on screen lock
         val itemKeyCopy = itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite a ItemEditingViewModel is created!")
 
         val itemModel = ItemEditingViewModel.ItemModel.Existing(item, itemAuthorization, itemData, itemKeyCopy)

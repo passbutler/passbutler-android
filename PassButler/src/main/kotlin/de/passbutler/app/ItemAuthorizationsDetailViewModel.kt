@@ -37,7 +37,7 @@ class ItemAuthorizationsDetailViewModel(
         val itemViewModel = loggedInUserViewModel.itemViewModels.value.find { it.id == itemId }
         val item = itemViewModel?.item ?: throw IllegalStateException("The item is null despite the ItemAuthorizationViewModel are created!")
 
-        // Pass a copy of the item key to avoid it get cleared via reference
+        // Pass a copy of the item key to avoid it get cleared via reference on screen lock
         val itemKeyCopy = itemViewModel.itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite the ItemAuthorizationViewModel are created!")
 
         val existingItemAuthorizationViewModels = createExistingItemAuthorizationViewModels(item)
@@ -77,7 +77,7 @@ class ItemAuthorizationsDetailViewModel(
             .filter { user ->
                 val userId = user.username
 
-                // Do not create provisional item authorizations for existing item authorizations
+                // Do not create provisional item authorization for existing item authorizations
                 existingItemAuthorizationViewModels.containsNot {
                     val itemAuthorizationUserId = (it.itemAuthorizationModel as ItemAuthorizationViewModel.ItemAuthorizationModel.Existing).itemAuthorization.userId
                     userId == itemAuthorizationUserId
