@@ -193,6 +193,13 @@ class ItemAuthorizationsAdapter(private val parentFragment: BaseFragment) : List
                     }
                 }
 
+                // If write access is given, read access is implied
+                switchWrite.setOnCheckedChangeListener { _, isChecked ->
+                    if (isChecked) {
+                        switchRead.isChecked = true
+                    }
+                }
+
                 executePendingBindings()
             }
         }
