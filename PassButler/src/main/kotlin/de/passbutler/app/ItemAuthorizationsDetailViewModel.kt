@@ -71,13 +71,15 @@ class ItemAuthorizationsDetailViewModel(
     }
 
     private suspend fun createExistingItemAuthorizationViewModels(item: Item): List<ItemAuthorizationViewModel> {
+        val users = localRepository.findAllUsers()
         val existingItemAuthorizationViewModels = localRepository.findItemAuthorizationForItem(item)
             .filter { itemAuthorization ->
                 // Do not show item authorization of logged-in user
                 itemAuthorization.userId != loggedInUserViewModel.id
             }
-            .map {
-                ItemAuthorizationViewModel(ItemAuthorizationViewModel.ItemAuthorizationModel.Existing(it))
+            .map { itemAuthorization ->
+                val user = users.find { it.id == itemAuthorization.userId } ?: throw IllegalStateException("The user of the item authorization was not found!")
+                ItemAuthorizationViewModel(ItemAuthorizationViewModel.ItemAuthorizationModel.Existing(user.username, itemAuthorization))
             }
 
         Logger.debug("existingItemAuthorizationViewModels = $existingItemAuthorizationViewModels")
@@ -104,12 +106,13 @@ class ItemAuthorizationsDetailViewModel(
 
                 !itemAuthorizationOfLoggedInUser && !itemAuthorizationAlreadyExists
             }
-            .map {
+            .map { user ->
                 val itemAuthorizationId = UUID.randomUUID().toString()
                 ItemAuthorizationViewModel(
                     ItemAuthorizationViewModel.ItemAuthorizationModel.Provisional(
-                        it.id,
-                        it.itemEncryptionPublicKey.key,
+                        user.id,
+                        user.username,
+                        user.itemEncryptionPublicKey.key,
                         item,
                         itemKey,
                         itemAuthorizationId
@@ -214,8 +217,8 @@ class ItemAuthorizationViewModel(val itemAuthorizationModel: ItemAuthorizationMo
 
     val username: String
         get() = when (itemAuthorizationModel) {
-            is ItemAuthorizationModel.Provisional -> itemAuthorizationModel.userId
-            is ItemAuthorizationModel.Existing -> itemAuthorizationModel.itemAuthorization.userId
+            is ItemAuthorizationModel.Provisional -> itemAuthorizationModel.username
+            is ItemAuthorizationModel.Existing -> itemAuthorizationModel.username
         }
 
     val isReadAllowed = NonNullDiscardableMutableLiveData(determineInitialIsReadAllowed())
@@ -244,6 +247,7 @@ class ItemAuthorizationViewModel(val itemAuthorizationModel: ItemAuthorizationMo
 
         class Provisional(
             val userId: String,
+            val username: String,
             val userItemEncryptionPublicKey: ByteArray,
             val item: Item,
             val itemKey: ByteArray,
@@ -273,7 +277,10 @@ class ItemAuthorizationViewModel(val itemAuthorizationModel: ItemAuthorizationMo
             }
         }
 
-        class Existing(val itemAuthorization: ItemAuthorization) : ItemAuthorizationModel() {
+        class Existing(
+            val username: String,
+            val itemAuthorization: ItemAuthorization
+        ) : ItemAuthorizationModel() {
             override suspend fun createItemAuthorization(isReadAllowed: Boolean, isWriteAllowed: Boolean): Result<ItemAuthorization> {
                 val currentDate = Date()
                 val updatedItemAuthorization = itemAuthorization.copy(
