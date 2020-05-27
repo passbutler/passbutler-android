@@ -7,8 +7,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?selectableItemBackground">
+        android:layout_height="wrap_content">
 
         <ImageView
             android:id="@+id/imageView_icon"
@@ -16,10 +15,10 @@
             android:layout_height="24dp"
             android:layout_marginStart="?marginM"
             android:tint="?android:textColorPrimary"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/textView_title"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/icon_favorite_24dp"
+            app:layout_constraintTop_toTopOf="@+id/textView_title"
+            app:srcCompat="@drawable/icon_account_circle_24dp"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -34,23 +33,43 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/imageView_icon"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Title" />
+            tools:text="testuser@passbutler.de" />
 
-        <TextView
-            android:id="@+id/textView_subtitle"
+        <Switch
+            android:id="@+id/switch_read"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="?marginM"
             android:layout_marginTop="?marginS"
+            android:layout_marginEnd="?marginS"
+            android:layout_marginBottom="?marginS"
+            android:text="@string/itemauthorizations_read_switch_title"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline_middle_divider"
+            app:layout_constraintStart_toEndOf="@+id/imageView_icon"
+            app:layout_constraintTop_toBottomOf="@+id/textView_title" />
+
+        <Switch
+            android:id="@+id/switch_write"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="?marginS"
+            android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
             android:layout_marginBottom="?marginS"
-            android:textAppearance="?textAppearanceSubtitle1"
+            android:text="@string/itemauthorizations_write_switch_title"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/imageView_icon"
-            app:layout_constraintTop_toBottomOf="@+id/textView_title"
-            app:layout_constraintVertical_bias="0.0"
-            tools:text="Subtitle" />
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/guideline_middle_divider"
+            app:layout_constraintTop_toBottomOf="@+id/textView_title" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_middle_divider"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

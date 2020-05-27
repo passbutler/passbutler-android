@@ -16,7 +16,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
@@ -26,6 +26,9 @@ import de.passbutler.app.base.relativeDateTime
 import de.passbutler.app.databinding.FragmentOverviewBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
 import de.passbutler.app.ui.BaseViewModelFragment
+import de.passbutler.app.ui.FragmentPresenting
+import de.passbutler.app.ui.ListItemIdentifiable
+import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.VisibilityHideMode
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showFadeInOutAnimation
@@ -80,15 +83,16 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         viewModel = ViewModelProvider(this).get(OverviewViewModel::class.java)
 
         activity?.let {
-            val loggedInUserViewModel = getRootViewModel(it).loggedInUserViewModel
+            val rootViewModel = getRootViewModel(it)
+            val loggedInUserViewModel = rootViewModel.loggedInUserViewModel
 
-            Logger.debug("Apply loggedInUserViewModel = $loggedInUserViewModel to viewModel = $viewModel")
+            Logger.debug("Apply loggedInUserViewModel = $loggedInUserViewModel from rootViewModel = $rootViewModel to viewModel = $viewModel in $this")
             viewModel.loggedInUserViewModel = loggedInUserViewModel
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        this.binding = DataBindingUtil.inflate<FragmentOverviewBinding>(inflater, R.layout.fragment_overview, container, false).also { binding ->
+        binding = DataBindingUtil.inflate<FragmentOverviewBinding>(inflater, R.layout.fragment_overview, container, false).also { binding ->
             binding.lifecycleOwner = viewLifecycleOwner
 
             setupToolBar(binding)
@@ -133,7 +137,11 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 
     private fun setupEntryList(binding: FragmentOverviewBinding) {
-        binding.layoutOverviewContent.recyclerViewItemList.adapter = ItemAdapter(this)
+        binding.layoutOverviewContent.recyclerViewItemList.apply {
+            val linearLayoutManager = LinearLayoutManager(context)
+            layoutManager = linearLayoutManager
+            adapter = ItemAdapter(this@OverviewFragment)
+        }
 
         binding.layoutOverviewContent.floatingActionButtonAddEntry.setOnClickListener {
             showFragment(ItemDetailFragment.newInstance(null))
@@ -334,15 +342,15 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 }
 
-class ItemAdapter(private val overviewFragment: OverviewFragment) : ListAdapter<ItemViewModel, ItemAdapter.EntryViewHolder>(ItemDiffCallback()) {
+class ItemAdapter(private val fragmentPresenter: FragmentPresenting) : ListAdapter<ListItemIdentifiable, ItemAdapter.ItemViewHolder>(ListItemIdentifiableDiffCallback()) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EntryViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         val binding = DataBindingUtil.inflate<ListItemEntryBinding>(LayoutInflater.from(parent.context), R.layout.list_item_entry, parent, false)
-        return EntryViewHolder(binding, overviewFragment)
+        return ItemViewHolder(binding, fragmentPresenter)
     }
 
-    override fun onBindViewHolder(holder: EntryViewHolder, position: Int) {
-        getItem(position).let { item ->
+    override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
+        (getItem(position) as? ItemViewModel)?.let { item ->
             holder.apply {
                 itemView.tag = item
                 bind(item)
@@ -350,32 +358,20 @@ class ItemAdapter(private val overviewFragment: OverviewFragment) : ListAdapter<
         }
     }
 
-    class EntryViewHolder(
+    class ItemViewHolder(
         private val binding: ListItemEntryBinding,
-        private val overviewFragment: OverviewFragment
+        private val fragmentPresenter: FragmentPresenting
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(itemViewModel: ItemViewModel) {
             binding.apply {
-                lifecycleOwner = overviewFragment.viewLifecycleOwner
-                viewModel = itemViewModel
-
-                executePendingBindings()
+                textViewTitle.text = itemViewModel.title.value
+                textViewSubtitle.text = itemViewModel.subtitle
 
                 root.setOnClickListener {
-                    overviewFragment.showFragment(ItemDetailFragment.newInstance(itemViewModel.id))
+                    fragmentPresenter.showFragment(ItemDetailFragment.newInstance(itemViewModel.id))
                 }
             }
         }
-    }
-}
-
-private class ItemDiffCallback : DiffUtil.ItemCallback<ItemViewModel>() {
-    override fun areItemsTheSame(oldItem: ItemViewModel, newItem: ItemViewModel): Boolean {
-        return oldItem.id == newItem.id
-    }
-
-    override fun areContentsTheSame(oldItem: ItemViewModel, newItem: ItemViewModel): Boolean {
-        return oldItem == newItem
     }
 }

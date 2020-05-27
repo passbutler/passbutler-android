@@ -28,7 +28,8 @@
         <item name="android:textSize">@dimen/textSizeMedium</item>
     </style>
 
-    <style name="Widget.PassButler.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense" />
+    <style name="Widget.PassButler.TextInputLayout.Outlined" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense" />
+    <style name="Widget.PassButler.TextInputLayout.Filled" parent="Widget.MaterialComponents.TextInputLayout.FilledBox.Dense" />
 
     <!-- Use "Primary" style to have "primary color using" style both in light and dark mode (otherwise `Widget.MaterialComponents.Toolbar.Surface` would be taken in dark mode) -->
     <style name="Widget.PassButler.Toolbar" parent="Widget.MaterialComponents.Toolbar.Primary" />

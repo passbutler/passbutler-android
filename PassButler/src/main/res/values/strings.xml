@@ -17,6 +17,8 @@
 
     <string name="locked_screen_password_validation_error_empty">Master-Passwort nicht ausgefüllt</string>
 
+    <string name="itemdetail_title_validation_error_empty">Titel nicht ausgefüllt</string>
+
     <!-- Login -->
 
     <string name="login_serverurl_hint">Server URL</string>
@@ -91,7 +93,7 @@
 
     <!-- Overview -->
 
-    <string name="overview_last_sync_subtitle">Zuletzt synchronisiert: %s</string>
+    <string name="overview_last_sync_subtitle">Zuletzt synchronisiert: %1$s</string>
     <string name="overview_last_sync_never">Nie</string>
 
     <string name="overview_sync_successful_message">Synchronisation war erfolgreich</string>
@@ -105,19 +107,53 @@
     <!-- Item detail-->
 
     <string name="itemdetail_title_new">Neuen Eintrag anlegen</string>
-    <string name="itemdetail_title_edit">%s</string>
+    <string name="itemdetail_title_edit">Eintrag ansehen/bearbeiten</string>
+
+    <string name="itemdetail_details_header">Details</string>
 
     <string name="itemdetail_title_hint">Titel</string>
+    <string name="itemdetail_username_hint">Benutzername</string>
     <string name="itemdetail_password_hint">Passwort</string>
+    <string name="itemdetail_url_hint">URL</string>
+    <string name="itemdetail_notes_hint">Notizen</string>
 
-    <string name="itemdetail_save_button_title">Speichern</string>
+    <string name="itemdetail_information_header">Informationen</string>
+    <string name="itemdetail_modified_title">Verändert am</string>
+    <string name="itemdetail_created_title">Erstellt am</string>
+    <string name="itemdetail_id_title">UUID</string>
+
+    <string name="itemdetail_authorizations_header">Zugang teilen</string>
+
+    <string name="itemdetail_authorizations_description_owned_item">Teilen Sie den Zugang zu diesem Eintrag mit anderen Benutzern Ihres Pass Butler-Servers.</string>
+    <string name="itemdetail_authorizations_description_shared_item">Der Zugang zu diesem Eintag wurde von dem Benutzer „%1$s“ am %2$s mit Ihnen geteilt. Sie dürfen den Eintrag ansehen und bearbeiten.</string>
+    <string name="itemdetail_authorizations_description_shared_readonly_item">Der Zugang zu diesem Eintag wurde von dem Benutzer „%1$s“ am %2$s mit Ihnen geteilt. Sie dürfen den Eintrag lediglich ansehen.</string>
+
+    <string name="itemdetail_authorizations_button_text">Zugang teilen</string>
+    <string name="itemdetail_authorizations_footer">Registrieren Sie sich bei einem Pass Butler-Server, um den Zugang zu diesem Eintrag mit anderen Benutzern teilen zu können.</string>
+
+    <string name="itemdetail_delete_header">Eintrag löschen</string>
     <string name="itemdetail_delete_button_title">Eintrag löschen</string>
 
-    <string name="itemdetail_save_successful_message">Speichern erfolgreich</string>
+    <string name="itemdetail_save_button_title">Speichern</string>
+
     <string name="itemdetail_save_failed_general_title">Speichern hat nicht geklappt</string>
 
     <string name="itemdetail_delete_successful_message">Löschen erfolgreich</string>
     <string name="itemdetail_delete_failed_general_title">Löschen hat nicht geklappt</string>
+
+    <!-- Item authorizations detail -->
+
+    <string name="itemauthorizations_title">Zugang teilen</string>
+
+    <string name="itemauthorizations_header">Zugang teilen</string>
+    <string name="itemauthorizations_description">Entscheiden Sie mit welchen Benutzern Sie den Eintrag teilen möchten. Sie können wählen ob der jeweilige Benutzer den Eintrag lediglich ansehen oder auch bearbeiten darf.</string>
+
+    <string name="itemauthorizations_read_switch_title">Ansehen</string>
+    <string name="itemauthorizations_write_switch_title">Bearbeiten</string>
+
+    <string name="itemauthorizations_save_button_title">Übernehmen</string>
+
+    <string name="itemauthorizations_save_failed_general_title">Speichern hat nicht geklappt</string>
 
     <!-- About -->
 

@@ -18,7 +18,7 @@ fun <T> LiveData<T>.observe(owner: LifecycleOwner, notifyOnRegister: Boolean, ob
 /**
  * A `MutableLiveData<T>` that only excepts non-null values.
  */
-class NonNullMutableLiveData<T : Any>(initialValue: T) : MutableLiveData<T>(initialValue) {
+open class NonNullMutableLiveData<T : Any>(initialValue: T) : MutableLiveData<T>(initialValue) {
     override fun getValue(): T {
         // Because non-null type is enforced by Kotlin the double-bang is okay
         return super.getValue()!!
@@ -38,6 +38,44 @@ class NonNullMutableLiveData<T : Any>(initialValue: T) : MutableLiveData<T>(init
 }
 
 /**
+ * A `NonNullMutableLiveData<T>` that is able to track value touch/modification and is able to discard to initial value.
+ */
+class NonNullDiscardableMutableLiveData<T : Any>(private var initialValue: T) : NonNullMutableLiveData<T>(initialValue) {
+
+    val isModified
+        get() = value != initialValue
+
+    var isTouched = false
+
+    override fun setValue(value: T) {
+        isTouched = true
+        super.setValue(value)
+    }
+
+    override fun postValue(value: T) {
+        isTouched = true
+        super.postValue(value)
+    }
+
+    @MainThread
+    fun commitChangeAsInitialValue() {
+        initialValue = value
+        isTouched = false
+
+        // Trigger change to notify observers
+        value = value
+    }
+
+    @MainThread
+    fun discard() {
+        // First reset touched state to be sure, notified observers already see reset state
+        isTouched = false
+
+        value = initialValue
+    }
+}
+
+/**
  * A `LiveData<T>` that retrieves its value via lambda.
  * On a known change of values used in the lambda, `notifyChange()` must be called on main-thread!
  */
@@ -51,7 +89,7 @@ open class ValueGetterLiveData<T>(private val valueGetter: () -> T) : LiveData<T
 /**
  * A non-null value enforcing `ValueGetterLiveData`.
  */
-class NonNullValueGetterLiveData<T : Any>(valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter) {
+open class NonNullValueGetterLiveData<T : Any>(valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter) {
     override fun getValue(): T {
         // Because non-null type is enforced by Kotlin the double-bang is okay
         return super.getValue()!!
@@ -61,12 +99,37 @@ class NonNullValueGetterLiveData<T : Any>(valueGetter: () -> T) : ValueGetterLiv
 /**
  * An optional value behaving `ValueGetterLiveData`.
  */
-class OptionalValueGetterLiveData<T : Any?>(valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter)
+open class OptionalValueGetterLiveData<T : Any?>(valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter)
+
+/**
+ * An non-null value behaving `ValueGetterLiveData` that uses dependent `LiveData` to trigger change.
+ */
+class DependentNonNullValueGetterLiveData<T : Any>(private vararg val dependencies: LiveData<out Any?>, valueGetter: () -> T) : NonNullValueGetterLiveData<T>(valueGetter) {
+    private val dependenciesChangedObserver = Observer<Any?> {
+        notifyChange()
+    }
+
+    override fun onActive() {
+        super.onActive()
+
+        dependencies.forEach {
+            it.observeForever(dependenciesChangedObserver)
+        }
+    }
+
+    override fun onInactive() {
+        super.onInactive()
+
+        dependencies.forEach {
+            it.removeObserver(dependenciesChangedObserver)
+        }
+    }
+}
 
 /**
  * An optional value behaving `ValueGetterLiveData` that uses dependent `LiveData` to trigger change.
  */
-class DependentOptionalValueGetterLiveData<T : Any?>(private vararg val dependencies: LiveData<out Any?>, valueGetter: () -> T) : ValueGetterLiveData<T>(valueGetter) {
+class DependentOptionalValueGetterLiveData<T : Any?>(private vararg val dependencies: LiveData<out Any?>, valueGetter: () -> T) : OptionalValueGetterLiveData<T>(valueGetter) {
     private val dependenciesChangedObserver = Observer<Any?> {
         notifyChange()
     }
