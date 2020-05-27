@@ -47,12 +47,6 @@ class UserViewModel private constructor(
     masterPassword: String?
 ) : ManualCancelledCoroutineScopeViewModel() {
 
-    val id: String
-        get() = user.username
-
-    val username: String
-        get() = user.username
-
     val localRepository
         get() = userManager.localRepository
 
@@ -60,16 +54,21 @@ class UserViewModel private constructor(
         get() = userManager.loggedInStateStorage
 
     val userType
-        get() = loggedInStateStorageValue?.userType
+        get() = loggedInStateStorage.value?.userType
 
     val encryptedMasterPassword
-        get() = loggedInStateStorageValue?.encryptedMasterPassword
+        get() = loggedInStateStorage.value?.encryptedMasterPassword
 
     val lastSuccessfulSyncDate
-        get() = loggedInStateStorageValue?.lastSuccessfulSyncDate
+        get() = loggedInStateStorage.value?.lastSuccessfulSyncDate
 
     val webservices
         get() = userManager.webservices
+
+    val id: String
+        get() = user.id
+
+    val username = NonNullMutableLiveData(user.username)
 
     val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
 
@@ -83,9 +82,6 @@ class UserViewModel private constructor(
     val biometricUnlockEnabled = NonNullValueGetterLiveData {
         biometricUnlockAvailable.value && encryptedMasterPassword != null
     }
-
-    private val loggedInStateStorageValue
-        get() = userManager.loggedInStateStorage.value
 
     private val updateItemViewModelsSignal = signal {
         updateItemViewModels()
@@ -356,6 +352,7 @@ class UserViewModel private constructor(
     private fun createModel(): User {
         // Only update fields that are allowed to modify (server reject changes on non-allowed field anyway)
         return user.copy(
+            username = username.value,
             masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
             masterKeyDerivationInformation = masterKeyDerivationInformation,
             masterEncryptionKey = protectedMasterEncryptionKey,
@@ -386,7 +383,7 @@ class UserViewModel private constructor(
             .mapNotNull { item ->
                 // Check if the user has a non-deleted item authorization to access the item
                 val itemAuthorization = localRepository.findItemAuthorizationForItem(item).firstOrNull {
-                    it.userId == username && !it.deleted
+                    it.userId == id && !it.deleted
                 }
 
                 if (itemAuthorization != null) {

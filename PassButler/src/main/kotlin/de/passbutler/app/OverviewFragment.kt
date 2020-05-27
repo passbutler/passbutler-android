@@ -55,6 +55,16 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     private var updateToolbarJob: Job? = null
     private var synchronizeDataRequestSendingJob: Job? = null
 
+    private val usernameObserver = Observer<String> {
+        updateNavigationHeaderSubtitleView()
+    }
+
+    private val loggedInStateStorageObserver: BindableObserver<LoggedInStateStorage?> = {
+        updateToolbarSubtitle()
+        updateNavigationHeaderUserTypeView()
+        updateSwipeRefreshLayout()
+    }
+
     private val itemViewModelsObserver = Observer<List<ItemViewModel>> { newItemViewModels ->
         Logger.debug("newItemViewModels.size = ${newItemViewModels.size}")
 
@@ -63,12 +73,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
         val showEmptyScreen = newItemViewModels.isEmpty()
         binding?.layoutOverviewContent?.groupEmptyScreenViews?.visible = showEmptyScreen
-    }
-
-    private val loggedInStateStorageObserver: BindableObserver<LoggedInStateStorage?> = {
-        updateToolbarSubtitle()
-        updateNavigationHeaderUserTypeView()
-        updateSwipeRefreshLayout()
     }
 
     private val webservicesInitializedObserver: BindableObserver<Webservices?> = {
@@ -100,8 +104,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
             setupEntryList(binding)
         }
 
-        viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
+        viewModel.loggedInUserViewModel?.username?.observe(viewLifecycleOwner, true, usernameObserver)
         viewModel.loggedInUserViewModel?.loggedInStateStorage?.addObserver(viewLifecycleOwner.lifecycleScope, true, loggedInStateStorageObserver)
+        viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
 
         return binding?.root
     }
@@ -131,8 +136,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
         val navigationHeaderView = binding.navigationView.inflateHeaderView(R.layout.main_drawer_header)
         navigationHeaderSubtitleView = navigationHeaderView?.findViewById(R.id.textView_drawer_header_subtitle)
-        navigationHeaderSubtitleView?.text = viewModel.loggedInUserViewModel?.username
-
         navigationHeaderUserTypeView = navigationHeaderView?.findViewById(R.id.textView_drawer_header_usertype)
     }
 
@@ -182,6 +185,10 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
                 null
             }
         }
+    }
+
+    private fun updateNavigationHeaderSubtitleView() {
+        navigationHeaderSubtitleView?.text = viewModel.loggedInUserViewModel?.username?.value
     }
 
     private fun updateNavigationHeaderUserTypeView() {

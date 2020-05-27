@@ -91,7 +91,7 @@ class ItemAuthorizationsDetailViewModel(
     ): List<ItemAuthorizationViewModel> {
         val provisionalItemAuthorizationViewModels = localRepository.findAllUsers()
             .filter { user ->
-                val userId = user.username
+                val userId = user.id
 
                 // Do not show item authorization of logged-in user
                 val itemAuthorizationOfLoggedInUser = userId == loggedInUserViewModel.id
@@ -108,7 +108,7 @@ class ItemAuthorizationsDetailViewModel(
                 val itemAuthorizationId = UUID.randomUUID().toString()
                 ItemAuthorizationViewModel(
                     ItemAuthorizationViewModel.ItemAuthorizationModel.Provisional(
-                        it.username,
+                        it.id,
                         it.itemEncryptionPublicKey.key,
                         item,
                         itemKey,

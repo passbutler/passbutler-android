@@ -148,7 +148,7 @@ class ItemEditingViewModel private constructor(
 
     val isItemAuthorizationAllowed = DependentNonNullValueGetterLiveData(itemModel) {
         // Checks if the item is owned by logged-in user
-        itemModel.value.asExistingOrNull()?.item?.userId == loggedInUserViewModel.username
+        itemModel.value.asExistingOrNull()?.item?.userId == loggedInUserViewModel.id
     }
 
     val id = DependentOptionalValueGetterLiveData(itemModel) {
@@ -217,7 +217,7 @@ class ItemEditingViewModel private constructor(
     }
 
     private suspend fun saveNewItem(): Result<ItemModel.Existing> {
-        val loggedInUserId = loggedInUserViewModel.username
+        val loggedInUserId = loggedInUserViewModel.id
         val loggedInUserItemEncryptionPublicKey = loggedInUserViewModel.itemEncryptionPublicKey.key
 
         val itemData = createItemData()
