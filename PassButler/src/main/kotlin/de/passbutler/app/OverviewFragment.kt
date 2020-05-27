@@ -25,8 +25,8 @@ import de.passbutler.app.base.observe
 import de.passbutler.app.base.relativeDateTime
 import de.passbutler.app.databinding.FragmentOverviewBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
-import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.BaseViewModelFragment
+import de.passbutler.app.ui.FragmentPresenting
 import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.VisibilityHideMode
@@ -342,11 +342,11 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
     }
 }
 
-class ItemAdapter(private val parentFragment: BaseFragment) : ListAdapter<ListItemIdentifiable, ItemAdapter.ItemViewHolder>(ListItemIdentifiableDiffCallback()) {
+class ItemAdapter(private val fragmentPresenter: FragmentPresenting) : ListAdapter<ListItemIdentifiable, ItemAdapter.ItemViewHolder>(ListItemIdentifiableDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         val binding = DataBindingUtil.inflate<ListItemEntryBinding>(LayoutInflater.from(parent.context), R.layout.list_item_entry, parent, false)
-        return ItemViewHolder(binding, parentFragment)
+        return ItemViewHolder(binding, fragmentPresenter)
     }
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
@@ -360,7 +360,7 @@ class ItemAdapter(private val parentFragment: BaseFragment) : ListAdapter<ListIt
 
     class ItemViewHolder(
         private val binding: ListItemEntryBinding,
-        private val parentFragment: BaseFragment
+        private val fragmentPresenter: FragmentPresenting
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(itemViewModel: ItemViewModel) {
@@ -369,7 +369,7 @@ class ItemAdapter(private val parentFragment: BaseFragment) : ListAdapter<ListIt
                 textViewSubtitle.text = itemViewModel.subtitle
 
                 root.setOnClickListener {
-                    parentFragment.showFragment(ItemDetailFragment.newInstance(itemViewModel.id))
+                    fragmentPresenter.showFragment(ItemDetailFragment.newInstance(itemViewModel.id))
                 }
             }
         }

@@ -130,7 +130,7 @@ class ItemEditingViewModel private constructor(
 
     val isItemAuthorizationAvailable: Boolean
         get() {
-            // Item authorization makes only sense on a server
+            // Item authorization feature makes only sense on a server
             return loggedInUserViewModel.userType == UserType.REMOTE
         }
 
@@ -147,7 +147,7 @@ class ItemEditingViewModel private constructor(
     }
 
     val isItemAuthorizationAllowed = DependentNonNullValueGetterLiveData(itemModel) {
-        // Checks if the item is owned by current user
+        // Checks if the item is owned by logged-in user
         itemModel.value.asExistingOrNull()?.item?.userId == loggedInUserViewModel.username
     }
 
@@ -155,11 +155,11 @@ class ItemEditingViewModel private constructor(
         itemModel.value.asExistingOrNull()?.item?.id
     }
 
-    val title = NonNullDiscardableMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.title ?: "")
-    val username = NonNullDiscardableMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.username ?: "")
-    val password = NonNullDiscardableMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.password ?: "")
-    val url = NonNullDiscardableMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.url ?: "")
-    val notes = NonNullDiscardableMutableLiveData(itemModel.value.asExistingOrNull()?.itemData?.notes ?: "")
+    val title = NonNullDiscardableMutableLiveData(itemData?.title ?: "")
+    val username = NonNullDiscardableMutableLiveData(itemData?.username ?: "")
+    val password = NonNullDiscardableMutableLiveData(itemData?.password ?: "")
+    val url = NonNullDiscardableMutableLiveData(itemData?.url ?: "")
+    val notes = NonNullDiscardableMutableLiveData(itemData?.notes ?: "")
 
     val owner = DependentOptionalValueGetterLiveData(itemModel) {
         itemModel.value.asExistingOrNull()?.item?.userId
@@ -173,6 +173,9 @@ class ItemEditingViewModel private constructor(
         itemModel.value.asExistingOrNull()?.item?.created
     }
 
+    private val itemData
+        get() = itemModel.value.asExistingOrNull()?.itemData
+
     constructor(
         initialItemModel: ItemModel,
         loggedInUserViewModel: UserViewModel,
@@ -184,12 +187,12 @@ class ItemEditingViewModel private constructor(
     )
 
     init {
-        val itemModelValue = itemModel.value
-        Logger.debug("Create new ItemEditingViewModel: item = ${itemModelValue.asExistingOrNull()?.item}, itemAuthorization = ${itemModelValue.asExistingOrNull()?.itemAuthorization}")
+        val existingItemModel = itemModel.value.asExistingOrNull()
+        Logger.debug("Create new ItemEditingViewModel: item = ${existingItemModel?.item}, itemAuthorization = ${existingItemModel?.itemAuthorization}")
     }
 
     suspend fun save(): Result<Unit> {
-        check(isItemModificationAllowed.value) { "The item is not allowed to save because it has only a readonly authorization!" }
+        check(isItemModificationAllowed.value) { "The item is not allowed to save because it has only a readonly item authorization!" }
 
         val currentItemModel = itemModel.value
 
@@ -331,7 +334,7 @@ class ItemEditingViewModel private constructor(
 
     suspend fun delete(): Result<Unit> {
         val existingItemModel = (itemModel.value as? ItemModel.Existing) ?: throw IllegalStateException("Only existing items can be deleted!")
-        check(isItemModificationAllowed.value) { "The item is not allowed to delete because it has only a readonly authorization!" }
+        check(isItemModificationAllowed.value) { "The item is not allowed to delete because it has only a readonly item authorization!" }
 
         // Only mark item as deleted (item authorization deletion is only managed via item shared screen)
         val deletedItem = existingItemModel.item.copy(

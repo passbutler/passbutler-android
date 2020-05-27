@@ -124,11 +124,11 @@
 
     <string name="itemdetail_authorizations_header">Zugang teilen</string>
 
-    <string name="itemdetail_authorizations_description_owned_item">Teilen Sie den Zugang zu diesem Eintrag mit anderen Benutzern eines Pass Butler-Servers.</string>
+    <string name="itemdetail_authorizations_description_owned_item">Teilen Sie den Zugang zu diesem Eintrag mit anderen Benutzern Ihres Pass Butler-Servers.</string>
     <string name="itemdetail_authorizations_description_shared_item">Der Zugang zu diesem Eintag wurde von dem Benutzer „%1$s“ am %2$s mit Ihnen geteilt. Sie dürfen den Eintrag ansehen und bearbeiten.</string>
-    <string name="itemdetail_authorizations_description_shared_readonly_item">Der Benutzer „%1$s“ hat diesen Eintrag seit dem %2$s mit Ihnen geteilt. Sie dürfen den Eintrag lediglich ansehen.</string>
+    <string name="itemdetail_authorizations_description_shared_readonly_item">Der Zugang zu diesem Eintag wurde von dem Benutzer „%1$s“ am %2$s mit Ihnen geteilt. Sie dürfen den Eintrag lediglich ansehen.</string>
 
-    <string name="itemdetail_authorizations_button_text">Geteilte Zugänge verwalten</string>
+    <string name="itemdetail_authorizations_button_text">Zugang teilen</string>
     <string name="itemdetail_authorizations_footer">Registrieren Sie sich bei einem Pass Butler-Server, um den Zugang zu diesem Eintrag mit anderen Benutzern teilen zu können.</string>
 
     <string name="itemdetail_delete_header">Eintrag löschen</string>
@@ -143,13 +143,15 @@
 
     <!-- Item authorizations detail -->
 
-    <string name="itemauthorizations_title">Geteilte Zugänge verwalten</string>
-    <string name="itemauthorizations_description">Entscheiden Sie mit welchen Benutzern die den Eintrag teilen möchte. Sie können entscheiden, ob der jeweilige Benutzer den Eintrag lediglich ansehen oder auch bearbeiten kann.</string>
+    <string name="itemauthorizations_title">Zugang teilen</string>
+
+    <string name="itemauthorizations_header">Zugang teilen</string>
+    <string name="itemauthorizations_description">Entscheiden Sie mit welchen Benutzern Sie den Eintrag teilen möchten. Sie können wählen ob der jeweilige Benutzer den Eintrag lediglich ansehen oder auch bearbeiten darf.</string>
 
     <string name="itemauthorizations_read_switch_title">Ansehen</string>
     <string name="itemauthorizations_write_switch_title">Bearbeiten</string>
 
-    <string name="itemauthorizations_save_button_title">Speichern</string>
+    <string name="itemauthorizations_save_button_title">Übernehmen</string>
 
     <string name="itemauthorizations_save_failed_general_title">Speichern hat nicht geklappt</string>
 

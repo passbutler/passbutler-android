@@ -154,13 +154,15 @@ class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val layoutInflater = LayoutInflater.from(parent.context)
+
         return when (viewType) {
             ListItemType.HEADER.ordinal -> {
-                val binding = DataBindingUtil.inflate<ListItemAuthorizationHeaderBinding>(LayoutInflater.from(parent.context), R.layout.list_item_authorization_header, parent, false)
+                val binding = DataBindingUtil.inflate<ListItemAuthorizationHeaderBinding>(layoutInflater, R.layout.list_item_authorization_header, parent, false)
                 HeaderViewHolder(binding)
             }
             else -> {
-                val binding = DataBindingUtil.inflate<ListItemAuthorizationEntryBinding>(LayoutInflater.from(parent.context), R.layout.list_item_authorization_entry, parent, false)
+                val binding = DataBindingUtil.inflate<ListItemAuthorizationEntryBinding>(layoutInflater, R.layout.list_item_authorization_entry, parent, false)
                 ItemAuthorizationViewHolder(binding)
             }
         }

@@ -16,7 +16,7 @@
             android:layout_marginTop="?marginM"
             android:layout_marginEnd="?marginM"
             android:layout_marginBottom="?marginM"
-            android:text="@string/itemauthorizations_title"
+            android:text="@string/itemauthorizations_header"
             android:textAppearance="?textAppearanceHeadline1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

@@ -11,7 +11,7 @@ import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
-import de.passbutler.common.base.containsNot
+import de.passbutler.common.base.contains
 import de.passbutler.common.base.resultOrThrowException
 import de.passbutler.common.crypto.EncryptionAlgorithm
 import de.passbutler.common.crypto.models.CryptographicKey
@@ -45,10 +45,10 @@ class ItemAuthorizationsDetailViewModel(
 
     suspend fun initializeItemAuthorizationViewModels() {
         val itemViewModel = loggedInUserViewModel.itemViewModels.value.find { it.id == itemId }
-        val item = itemViewModel?.item ?: throw IllegalStateException("The item is null despite the ItemAuthorizationViewModel are created!")
+        val item = itemViewModel?.item ?: throw IllegalStateException("The item is null despite the ItemAuthorizationViewModel is created!")
 
         // Pass a copy of the item key to avoid it get cleared via reference on screen lock
-        val itemKeyCopy = itemViewModel.itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite the ItemAuthorizationViewModel are created!")
+        val itemKeyCopy = itemViewModel.itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite the ItemAuthorizationViewModel is created!")
 
         val existingItemAuthorizationViewModels = createExistingItemAuthorizationViewModels(item)
         val provisionalItemAuthorizationViewModels = createProvisionalItemAuthorizationViewModels(existingItemAuthorizationViewModels, item, itemKeyCopy)
@@ -87,31 +87,32 @@ class ItemAuthorizationsDetailViewModel(
     private suspend fun createProvisionalItemAuthorizationViewModels(
         existingItemAuthorizationViewModels: List<ItemAuthorizationViewModel>,
         item: Item,
-        itemKeyCopy: ByteArray
+        itemKey: ByteArray
     ): List<ItemAuthorizationViewModel> {
         val provisionalItemAuthorizationViewModels = localRepository.findAllUsers()
             .filter { user ->
-                // Do not show item authorization of logged-in user
-                user.username != loggedInUserViewModel.id
-            }
-            .filter { user ->
                 val userId = user.username
 
+                // Do not show item authorization of logged-in user
+                val itemAuthorizationOfLoggedInUser = userId == loggedInUserViewModel.id
+
                 // Do not create provisional item authorization for existing item authorizations
-                existingItemAuthorizationViewModels.containsNot {
+                val itemAuthorizationAlreadyExists = existingItemAuthorizationViewModels.contains {
                     val itemAuthorizationUserId = (it.itemAuthorizationModel as ItemAuthorizationViewModel.ItemAuthorizationModel.Existing).itemAuthorization.userId
                     userId == itemAuthorizationUserId
                 }
+
+                !itemAuthorizationOfLoggedInUser && !itemAuthorizationAlreadyExists
             }
             .map {
-                val provisionalItemAuthorizationId = UUID.randomUUID().toString()
+                val itemAuthorizationId = UUID.randomUUID().toString()
                 ItemAuthorizationViewModel(
                     ItemAuthorizationViewModel.ItemAuthorizationModel.Provisional(
                         it.username,
                         it.itemEncryptionPublicKey.key,
                         item,
-                        itemKeyCopy,
-                        provisionalItemAuthorizationId
+                        itemKey,
+                        itemAuthorizationId
                     )
                 )
             }

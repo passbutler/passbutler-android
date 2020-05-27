@@ -214,9 +214,9 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
         itemAuthorizationDescription.observe(viewLifecycleOwner, true, itemAuthorizationDescriptionObserver)
 
         viewModel.id.observe(viewLifecycleOwner, itemIdObserver)
-        viewModel.isNewItem.observe(viewLifecycleOwner, isNewItemObserver)
         viewModel.modified.observe(viewLifecycleOwner, itemModifiedDateObserver)
         viewModel.created.observe(viewLifecycleOwner, itemCreatedDateObserver)
+        viewModel.isNewItem.observe(viewLifecycleOwner, isNewItemObserver)
 
         return binding?.root
     }
