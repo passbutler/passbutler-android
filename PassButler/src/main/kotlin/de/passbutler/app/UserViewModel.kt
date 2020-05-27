@@ -233,7 +233,7 @@ class UserViewModel private constructor(
         var newMasterKey: ByteArray? = null
 
         return try {
-            val newLocalMasterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, newMasterPassword).resultOrThrowException()
+            val newLocalMasterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username.value, newMasterPassword).resultOrThrowException()
             val newServerMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(newLocalMasterPasswordAuthenticationHash).resultOrThrowException()
             masterPasswordAuthenticationHash = newServerMasterPasswordAuthenticationHash
 
