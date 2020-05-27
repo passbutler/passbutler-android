@@ -36,7 +36,7 @@ class ItemAuthorizationsDetailViewModel(
     private val _itemAuthorizationViewModels = NonNullMutableLiveData<List<ItemAuthorizationViewModel>>(emptyList())
 
     val anyItemAuthorizationWasModified = NonNullValueGetterLiveData {
-        _itemAuthorizationViewModels.value.any { it.isReadAllowed.isModified || it.isWriteAllowed.isModified } ?: false
+        _itemAuthorizationViewModels.value.any { it.isReadAllowed.isModified || it.isWriteAllowed.isModified }
     }
 
     private val itemAuthorizationViewModelsModifiedObserver = Observer<Boolean> {
