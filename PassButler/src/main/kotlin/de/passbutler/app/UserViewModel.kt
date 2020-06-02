@@ -379,6 +379,11 @@ class UserViewModel private constructor(
         val existingItemViewModels = itemViewModels.value
         Logger.debug("Create item viewmodels: newItems.size = ${newItems.size}, existingItemViewModels.size = ${existingItemViewModels.size}")
 
+        // Load list once instead query user for every item later
+        val usersIdUsernameMapping = localRepository.findAllUsers().associate {
+            it.id to it.username
+        }
+
         val newItemViewModels = newItems
             .mapNotNull { item ->
                 // Check if the user has a non-deleted item authorization to access the item
@@ -397,10 +402,18 @@ class UserViewModel private constructor(
                             it.item == item && it.itemAuthorization == itemAuthorization
                         }
                         ?: run {
-                            Logger.debug("Create new viewmodel for item '${item.id}' because recycling was not possible")
+                            val itemOwnerUserId = item.userId
+                            val itemOwnerUsername = usersIdUsernameMapping[itemOwnerUserId]
 
-                            // No existing item viewmodel was found, thus a new must be created for item
-                            ItemViewModel(item, itemAuthorization, this, localRepository)
+                            if (itemOwnerUsername != null) {
+                                Logger.debug("Create new viewmodel for item '${item.id}' because recycling was not possible")
+
+                                // No existing item viewmodel was found, thus a new must be created for item
+                                ItemViewModel(item, itemAuthorization, itemOwnerUsername, this, localRepository)
+                            } else {
+                                Logger.warn("The owner username could not be mapped for user id = $itemOwnerUserId!")
+                                null
+                            }
                         }
                 } else {
                     Logger.debug("A non-deleted item authorization of user for item '${item.id}' was not found - skip item")

@@ -30,6 +30,7 @@ import java.util.*
 class ItemViewModel(
     val item: Item,
     val itemAuthorization: ItemAuthorization,
+    private val itemOwnerUsername: String,
     private val loggedInUserViewModel: UserViewModel,
     private val localRepository: LocalRepository
 ) : EditableViewModel<ItemEditingViewModel>, ListItemIdentifiable {
@@ -91,7 +92,7 @@ class ItemViewModel(
         // Pass a copy of the item key to `ItemEditingViewModel` to avoid it get cleared via reference on screen lock
         val itemKeyCopy = itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite a ItemEditingViewModel is created!")
 
-        val itemModel = ItemEditingViewModel.ItemModel.Existing(item, itemAuthorization, itemData, itemKeyCopy)
+        val itemModel = ItemEditingViewModel.ItemModel.Existing(item, itemAuthorization, itemOwnerUsername, itemData, itemKeyCopy)
         return ItemEditingViewModel(itemModel, loggedInUserViewModel, localRepository)
     }
 
@@ -161,8 +162,8 @@ class ItemEditingViewModel private constructor(
     val url = NonNullDiscardableMutableLiveData(initialItemData?.url ?: "")
     val notes = NonNullDiscardableMutableLiveData(initialItemData?.notes ?: "")
 
-    val owner = DependentOptionalValueGetterLiveData(itemModel) {
-        itemModel.value.asExistingOrNull()?.item?.userId
+    val ownerUsername = DependentOptionalValueGetterLiveData(itemModel) {
+        itemModel.value.asExistingOrNull()?.itemOwnerUsername
     }
 
     val modified = DependentOptionalValueGetterLiveData(itemModel) {
@@ -229,7 +230,9 @@ class ItemEditingViewModel private constructor(
             val itemAuthorization = createNewItemAuthorization(loggedInUserId, loggedInUserItemEncryptionPublicKey, item, itemKey).resultOrThrowException()
             localRepository.insertItemAuthorization(itemAuthorization)
 
-            val updatedItemModel = ItemModel.Existing(item, itemAuthorization, itemData, itemKey)
+            val itemOwnerUsername = loggedInUserViewModel.username.value
+
+            val updatedItemModel = ItemModel.Existing(item, itemAuthorization, itemOwnerUsername, itemData, itemKey)
             Success(updatedItemModel)
         } catch (exception: Exception) {
             Failure(exception)
@@ -290,7 +293,7 @@ class ItemEditingViewModel private constructor(
             val (updatedItem, updatedItemData) = createUpdatedItem(item, itemKey).resultOrThrowException()
             localRepository.updateItem(updatedItem)
 
-            val updatedItemModel = ItemModel.Existing(updatedItem, itemModel.itemAuthorization, updatedItemData, itemModel.itemKey)
+            val updatedItemModel = ItemModel.Existing(updatedItem, itemModel.itemAuthorization, itemModel.itemOwnerUsername, updatedItemData, itemModel.itemKey)
             Success(updatedItemModel)
         } catch (exception: Exception) {
             Failure(exception)
@@ -352,6 +355,7 @@ class ItemEditingViewModel private constructor(
         class Existing(
             val item: Item,
             val itemAuthorization: ItemAuthorization,
+            val itemOwnerUsername: String,
             val itemData: ItemData,
             val itemKey: ByteArray
         ) : ItemModel()
