@@ -65,7 +65,7 @@ class UserViewModel private constructor(
     val webservices
         get() = userManager.webservices
 
-    val id: String
+    val id
         get() = user.id
 
     val username = NonNullMutableLiveData(user.username)
