@@ -30,6 +30,7 @@ import java.util.*
 class ItemViewModel(
     val item: Item,
     val itemAuthorization: ItemAuthorization,
+    private val itemOwnerUsername: String,
     private val loggedInUserViewModel: UserViewModel,
     private val localRepository: LocalRepository
 ) : EditableViewModel<ItemEditingViewModel>, ListItemIdentifiable {
@@ -91,7 +92,7 @@ class ItemViewModel(
         // Pass a copy of the item key to `ItemEditingViewModel` to avoid it get cleared via reference on screen lock
         val itemKeyCopy = itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite a ItemEditingViewModel is created!")
 
-        val itemModel = ItemEditingViewModel.ItemModel.Existing(item, itemAuthorization, itemData, itemKeyCopy)
+        val itemModel = ItemEditingViewModel.ItemModel.Existing(item, itemAuthorization, itemOwnerUsername, itemData, itemKeyCopy)
         return ItemEditingViewModel(itemModel, loggedInUserViewModel, localRepository)
     }
 
@@ -148,21 +149,21 @@ class ItemEditingViewModel private constructor(
 
     val isItemAuthorizationAllowed = DependentNonNullValueGetterLiveData(itemModel) {
         // Checks if the item is owned by logged-in user
-        itemModel.value.asExistingOrNull()?.item?.userId == loggedInUserViewModel.username
+        itemModel.value.asExistingOrNull()?.item?.userId == loggedInUserViewModel.id
     }
 
     val id = DependentOptionalValueGetterLiveData(itemModel) {
         itemModel.value.asExistingOrNull()?.item?.id
     }
 
-    val title = NonNullDiscardableMutableLiveData(itemData?.title ?: "")
-    val username = NonNullDiscardableMutableLiveData(itemData?.username ?: "")
-    val password = NonNullDiscardableMutableLiveData(itemData?.password ?: "")
-    val url = NonNullDiscardableMutableLiveData(itemData?.url ?: "")
-    val notes = NonNullDiscardableMutableLiveData(itemData?.notes ?: "")
+    val title = NonNullDiscardableMutableLiveData(initialItemData?.title ?: "")
+    val username = NonNullDiscardableMutableLiveData(initialItemData?.username ?: "")
+    val password = NonNullDiscardableMutableLiveData(initialItemData?.password ?: "")
+    val url = NonNullDiscardableMutableLiveData(initialItemData?.url ?: "")
+    val notes = NonNullDiscardableMutableLiveData(initialItemData?.notes ?: "")
 
-    val owner = DependentOptionalValueGetterLiveData(itemModel) {
-        itemModel.value.asExistingOrNull()?.item?.userId
+    val ownerUsername = DependentOptionalValueGetterLiveData(itemModel) {
+        itemModel.value.asExistingOrNull()?.itemOwnerUsername
     }
 
     val modified = DependentOptionalValueGetterLiveData(itemModel) {
@@ -173,7 +174,7 @@ class ItemEditingViewModel private constructor(
         itemModel.value.asExistingOrNull()?.item?.created
     }
 
-    private val itemData
+    private val initialItemData
         get() = itemModel.value.asExistingOrNull()?.itemData
 
     constructor(
@@ -217,7 +218,7 @@ class ItemEditingViewModel private constructor(
     }
 
     private suspend fun saveNewItem(): Result<ItemModel.Existing> {
-        val loggedInUserId = loggedInUserViewModel.username
+        val loggedInUserId = loggedInUserViewModel.id
         val loggedInUserItemEncryptionPublicKey = loggedInUserViewModel.itemEncryptionPublicKey.key
 
         val itemData = createItemData()
@@ -229,7 +230,9 @@ class ItemEditingViewModel private constructor(
             val itemAuthorization = createNewItemAuthorization(loggedInUserId, loggedInUserItemEncryptionPublicKey, item, itemKey).resultOrThrowException()
             localRepository.insertItemAuthorization(itemAuthorization)
 
-            val updatedItemModel = ItemModel.Existing(item, itemAuthorization, itemData, itemKey)
+            val itemOwnerUsername = loggedInUserViewModel.username.value
+
+            val updatedItemModel = ItemModel.Existing(item, itemAuthorization, itemOwnerUsername, itemData, itemKey)
             Success(updatedItemModel)
         } catch (exception: Exception) {
             Failure(exception)
@@ -287,22 +290,22 @@ class ItemEditingViewModel private constructor(
         val itemKey = itemModel.itemKey
 
         return try {
-            val updatedItem = createUpdatedItem(item, itemKey).resultOrThrowException()
+            val (updatedItem, updatedItemData) = createUpdatedItem(item, itemKey).resultOrThrowException()
             localRepository.updateItem(updatedItem)
 
-            val updatedItemModel = ItemModel.Existing(updatedItem, itemModel.itemAuthorization, itemModel.itemData, itemModel.itemKey)
+            val updatedItemModel = ItemModel.Existing(updatedItem, itemModel.itemAuthorization, itemModel.itemOwnerUsername, updatedItemData, itemModel.itemKey)
             Success(updatedItemModel)
         } catch (exception: Exception) {
             Failure(exception)
         }
     }
 
-    private suspend fun createUpdatedItem(item: Item, itemKey: ByteArray): Result<Item> {
+    private suspend fun createUpdatedItem(item: Item, itemKey: ByteArray): Result<Pair<Item, ItemData>> {
         val protectedItemData = item.data
-        val itemData = createItemData()
+        val updatedItemData = createItemData()
 
         return try {
-            protectedItemData.update(itemKey, itemData).resultOrThrowException()
+            protectedItemData.update(itemKey, updatedItemData).resultOrThrowException()
 
             val currentDate = Date()
             val updatedItem = item.copy(
@@ -310,7 +313,7 @@ class ItemEditingViewModel private constructor(
                 modified = currentDate
             )
 
-            Success(updatedItem)
+            Success(Pair(updatedItem, updatedItemData))
         } catch (exception: Exception) {
             Failure(exception)
         }
@@ -336,7 +339,7 @@ class ItemEditingViewModel private constructor(
         val existingItemModel = (itemModel.value as? ItemModel.Existing) ?: throw IllegalStateException("Only existing items can be deleted!")
         check(isItemModificationAllowed.value) { "The item is not allowed to delete because it has only a readonly item authorization!" }
 
-        // Only mark item as deleted (item authorization deletion is only managed via item shared screen)
+        // Only mark item as deleted (item authorization deletion is only managed via item authorizations detail screen)
         val deletedItem = existingItemModel.item.copy(
             deleted = true,
             modified = Date()
@@ -348,7 +351,14 @@ class ItemEditingViewModel private constructor(
 
     sealed class ItemModel {
         object New : ItemModel()
-        class Existing(val item: Item, val itemAuthorization: ItemAuthorization, val itemData: ItemData, val itemKey: ByteArray) : ItemModel()
+
+        class Existing(
+            val item: Item,
+            val itemAuthorization: ItemAuthorization,
+            val itemOwnerUsername: String,
+            val itemData: ItemData,
+            val itemKey: ByteArray
+        ) : ItemModel()
     }
 }
 

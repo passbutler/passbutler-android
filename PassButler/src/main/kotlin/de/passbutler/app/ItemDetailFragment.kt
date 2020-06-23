@@ -44,20 +44,20 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
     private var binding: FragmentItemdetailBinding? = null
 
     private val itemAuthorizationDescription by lazy {
-        DependentOptionalValueGetterLiveData(viewModel.isItemAuthorizationAllowed, viewModel.isItemModificationAllowed, viewModel.owner, viewModel.itemAuthorizationModifiedDate) {
-            val itemOwner = viewModel.owner.value
+        DependentOptionalValueGetterLiveData(viewModel.isItemAuthorizationAllowed, viewModel.isItemModificationAllowed, viewModel.ownerUsername, viewModel.itemAuthorizationModifiedDate) {
+            val itemOwnerUsername = viewModel.ownerUsername.value
             val itemAuthorizationModifiedDate = viewModel.itemAuthorizationModifiedDate.value?.formattedDateTime
 
             when {
                 viewModel.isItemAuthorizationAllowed.value -> getString(R.string.itemdetail_authorizations_description_owned_item)
-                viewModel.isItemModificationAllowed.value && itemOwner != null && itemAuthorizationModifiedDate != null -> getString(
+                viewModel.isItemModificationAllowed.value && itemOwnerUsername != null && itemAuthorizationModifiedDate != null -> getString(
                     R.string.itemdetail_authorizations_description_shared_item,
-                    itemOwner,
+                    itemOwnerUsername,
                     itemAuthorizationModifiedDate
                 )
-                !viewModel.isItemModificationAllowed.value && itemOwner != null && itemAuthorizationModifiedDate != null -> getString(
+                !viewModel.isItemModificationAllowed.value && itemOwnerUsername != null && itemAuthorizationModifiedDate != null -> getString(
                     R.string.itemdetail_authorizations_description_shared_readonly_item,
-                    itemOwner,
+                    itemOwnerUsername,
                     itemAuthorizationModifiedDate
                 )
                 else -> null
