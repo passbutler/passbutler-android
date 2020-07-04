@@ -6,10 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import de.passbutler.app.base.formattedDateTime
-import de.passbutler.app.base.viewmodels.EmptyViewModel
 import de.passbutler.app.ui.ToolBarFragment
 
-class AboutFragment : ToolBarFragment<EmptyViewModel>() {
+class AboutFragment : ToolBarFragment() {
 
     override fun getToolBarTitle() = getString(R.string.about_title)
 
