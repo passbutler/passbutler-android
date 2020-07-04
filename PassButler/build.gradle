@@ -100,6 +100,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion"
 
+    implementation "androidx.fragment:fragment-ktx:1.1.0"
+
     // Since no Java 8 is used this makes no sense
     //noinspection LifecycleAnnotationProcessorWithJava8
     kapt "androidx.lifecycle:lifecycle-compiler:2.2.0"
