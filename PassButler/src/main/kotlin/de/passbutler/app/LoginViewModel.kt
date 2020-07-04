@@ -1,18 +1,16 @@
 package de.passbutler.app
 
+import androidx.lifecycle.ViewModel
+import de.passbutler.app.base.AbstractPassButlerApplication
 import de.passbutler.app.base.NonNullMutableLiveData
-import de.passbutler.app.base.viewmodels.CoroutineScopedViewModel
-import de.passbutler.common.UserManagerUninitializedException
 import de.passbutler.common.base.Result
 
-class LoginViewModel : CoroutineScopedViewModel() {
-
-    lateinit var rootViewModel: RootViewModel
+class LoginViewModel : ViewModel() {
 
     val isLocalLogin = NonNullMutableLiveData(false)
 
     suspend fun loginUser(serverUrlString: String?, username: String, masterPassword: String): Result<Unit> {
-        val userManager = rootViewModel.userManager ?: throw UserManagerUninitializedException
+        val userManager = AbstractPassButlerApplication.userManager
 
         return when (serverUrlString) {
             null -> userManager.loginLocalUser(username, masterPassword)

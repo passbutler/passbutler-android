@@ -1,6 +1,5 @@
 package de.passbutler.app
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -8,6 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -27,7 +28,14 @@ import de.passbutler.common.base.addAllIfNotNull
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 
-class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetailViewModel>() {
+class ItemAuthorizationsDetailFragment : ToolBarFragment() {
+
+    val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
+
+    val viewModel by viewModels<ItemAuthorizationsDetailViewModel> {
+        val itemId = arguments?.getString(ARGUMENT_ITEM_ID) ?: throw IllegalArgumentException("The given item id is null!")
+        ItemAuthorizationsDetailViewModelFactory(userViewModelProvidingViewModel, itemId)
+    }
 
     private var toolbarMenuSaveItem: MenuItem? = null
     private var binding: FragmentItemAuthorizationsDetailBinding? = null
@@ -45,22 +53,6 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment<ItemAuthorizationsDetai
 
     override fun getToolBarTitle(): String {
         return getString(R.string.itemauthorizations_title)
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            val rootViewModel = getRootViewModel(it)
-            val loggedInUserViewModel = rootViewModel.loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
-
-            val itemId = arguments?.getString(ARGUMENT_ITEM_ID) ?: throw IllegalArgumentException("The given item id is null!")
-            val itemAuthorizationsDetailViewModel = ItemAuthorizationsDetailViewModel(itemId, loggedInUserViewModel, loggedInUserViewModel.localRepository)
-            val factory = ItemAuthorizationsDetailViewModelFactory(itemAuthorizationsDetailViewModel)
-
-            // Use actual fragment (not the activity) for provider because we want always want to get a new viewmodel
-            viewModel = ViewModelProvider(this, factory).get(ItemAuthorizationsDetailViewModel::class.java)
-        }
     }
 
     override fun setupToolbarMenu(toolbar: Toolbar) {
@@ -242,11 +234,15 @@ class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView
 }
 
 class ItemAuthorizationsDetailViewModelFactory(
-    private val itemAuthorizationsDetailViewModel: ItemAuthorizationsDetailViewModel
+    private val userViewModelProvidingViewModel: UserViewModelProvidingViewModel,
+    private val itemId: String
 ) : ViewModelProvider.NewInstanceFactory() {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return itemAuthorizationsDetailViewModel as T
+        val loggedInUserViewModel = userViewModelProvidingViewModel.loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
+        val itemAuthorizationsDetailViewModel = ItemAuthorizationsDetailViewModel(itemId, loggedInUserViewModel, loggedInUserViewModel.localRepository)
+
+        return (itemAuthorizationsDetailViewModel as T)
     }
 }

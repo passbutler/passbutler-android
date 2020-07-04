@@ -1,6 +1,5 @@
 package de.passbutler.app
 
-import android.content.Context
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.InputType
@@ -11,6 +10,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -31,7 +32,14 @@ import de.passbutler.app.ui.validateForm
 import org.tinylog.kotlin.Logger
 import java.util.*
 
-class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
+class ItemDetailFragment : ToolBarFragment() {
+
+    val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
+
+    val viewModel by viewModels<ItemEditingViewModel> {
+        val itemId = arguments?.getString(ARGUMENT_ITEM_ID)
+        ItemEditingViewModelFactory(userViewModelProvidingViewModel, itemId)
+    }
 
     private var formTitle: String? = null
     private var formUsername: String? = null
@@ -114,24 +122,6 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
             getString(R.string.itemdetail_title_new)
         } else {
             getString(R.string.itemdetail_title_edit)
-        }
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            val rootViewModel = getRootViewModel(it)
-            val loggedInUserViewModel = rootViewModel.loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
-
-            val itemId = arguments?.getString(ARGUMENT_ITEM_ID)
-            val itemEditingViewModel = loggedInUserViewModel.itemViewModels.value.find { itemViewModel -> itemViewModel.id == itemId }?.createEditingViewModel()
-                ?: loggedInUserViewModel.createNewItemEditingViewModel()
-
-            val factory = ItemEditingViewModelFactory(itemEditingViewModel)
-
-            // Use actual fragment (not the activity) for provider because we want always want to get a new `ItemEditingViewModel`
-            viewModel = ViewModelProvider(this, factory).get(ItemEditingViewModel::class.java)
         }
     }
 
@@ -315,11 +305,16 @@ class ItemDetailFragment : ToolBarFragment<ItemEditingViewModel>() {
 }
 
 class ItemEditingViewModelFactory(
-    private val itemEditingViewModel: ItemEditingViewModel
+    private val userViewModelProvidingViewModel: UserViewModelProvidingViewModel,
+    private val itemId: String?
 ) : ViewModelProvider.NewInstanceFactory() {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return itemEditingViewModel as T
+        val loggedInUserViewModel = userViewModelProvidingViewModel.loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
+        val itemEditingViewModel = loggedInUserViewModel.itemViewModels.value.find { itemViewModel -> itemViewModel.id == itemId }?.createEditingViewModel()
+            ?: loggedInUserViewModel.createNewItemEditingViewModel()
+
+        return (itemEditingViewModel as T)
     }
 }
