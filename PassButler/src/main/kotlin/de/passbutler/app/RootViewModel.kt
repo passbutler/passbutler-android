@@ -3,7 +3,6 @@ package de.passbutler.app
 import android.text.format.DateUtils
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import de.passbutler.app.base.AbstractPassButlerApplication
 import de.passbutler.app.crypto.Biometrics
 import de.passbutler.common.LoggedInUserResult
 import de.passbutler.common.base.BindableObserver
@@ -14,7 +13,6 @@ import de.passbutler.common.base.resultOrThrowException
 import de.passbutler.common.base.toUTF8String
 import de.passbutler.common.database.models.UserType
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
