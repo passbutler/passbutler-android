@@ -30,12 +30,12 @@ import org.tinylog.kotlin.Logger
 
 class ItemAuthorizationsDetailFragment : ToolBarFragment() {
 
-    val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
-
     val viewModel by viewModels<ItemAuthorizationsDetailViewModel> {
         val itemId = arguments?.getString(ARGUMENT_ITEM_ID) ?: throw IllegalArgumentException("The given item id is null!")
         ItemAuthorizationsDetailViewModelFactory(userViewModelProvidingViewModel, itemId)
     }
+
+    private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var toolbarMenuSaveItem: MenuItem? = null
     private var binding: FragmentItemAuthorizationsDetailBinding? = null

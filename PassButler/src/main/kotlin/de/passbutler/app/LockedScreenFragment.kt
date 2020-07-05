@@ -33,8 +33,8 @@ import org.tinylog.kotlin.Logger
 
 class LockedScreenFragment : BaseFragment() {
 
-    val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
     val viewModel by userViewModelUsingViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var formMasterPassword: String? = null
 

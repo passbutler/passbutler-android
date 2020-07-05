@@ -34,12 +34,12 @@ import java.util.*
 
 class ItemDetailFragment : ToolBarFragment() {
 
-    val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
-
     val viewModel by viewModels<ItemEditingViewModel> {
         val itemId = arguments?.getString(ARGUMENT_ITEM_ID)
         ItemEditingViewModelFactory(userViewModelProvidingViewModel, itemId)
     }
+
+    private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var formTitle: String? = null
     private var formUsername: String? = null

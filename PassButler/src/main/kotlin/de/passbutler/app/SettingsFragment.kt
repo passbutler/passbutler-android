@@ -38,10 +38,9 @@ import javax.crypto.Cipher
 
 class SettingsFragment : ToolBarFragment() {
 
-    val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
-
     // Retrieve viewmodel from activity to provide nested fragment the same instance
     val viewModel by userViewModelUsingActivityViewModels<SettingsViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var settingsPreferenceFragment: SettingsPreferenceFragment? = null
     private var biometricPrompt: BiometricPrompt? = null
@@ -243,9 +242,8 @@ class SettingsFragment : ToolBarFragment() {
 
     class SettingsPreferenceFragment : PreferenceFragmentCompat() {
 
-        val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
-
-        val settingsViewModel by userViewModelUsingActivityViewModels<SettingsViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+        val viewModel by userViewModelUsingActivityViewModels<SettingsViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+        private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
         var enableBiometricUnlockPreference: SwitchPreferenceCompat? = null
             private set
@@ -253,7 +251,7 @@ class SettingsFragment : ToolBarFragment() {
         var settingsFragment: SettingsFragment? = null
 
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-            preferenceManager.preferenceDataStore = SettingsPreferenceDataStore(settingsViewModel)
+            preferenceManager.preferenceDataStore = SettingsPreferenceDataStore(viewModel)
             preferenceScreen = preferenceManager.createPreferenceScreen(context)
 
             setupSecuritySettingsSection()
@@ -274,8 +272,8 @@ class SettingsFragment : ToolBarFragment() {
                 key = SettingKey.AUTOMATIC_LOCK_TIMEOUT.name
                 title = getString(R.string.settings_automatic_lock_timeout_setting_title)
                 summary = getString(R.string.settings_automatic_lock_timeout_setting_summary)
-                entries = settingsViewModel.automaticLockTimeoutSettingValues.userFacingStrings { getString(it) }
-                entryValues = settingsViewModel.automaticLockTimeoutSettingValues.listPreferenceEntryValues
+                entries = viewModel.automaticLockTimeoutSettingValues.userFacingStrings { getString(it) }
+                entryValues = viewModel.automaticLockTimeoutSettingValues.listPreferenceEntryValues
             })
         }
 
@@ -292,7 +290,7 @@ class SettingsFragment : ToolBarFragment() {
                 key = SettingKey.BIOMETRIC_UNLOCK_ENABLED.name
                 title = getString(R.string.settings_biometric_unlock_setting_title)
                 summary = getString(R.string.settings_biometric_unlock_setting_summary)
-                isVisible = settingsViewModel.loggedInUserViewModel?.biometricUnlockAvailable?.value ?: false
+                isVisible = viewModel.loggedInUserViewModel?.biometricUnlockAvailable?.value ?: false
 
                 setOnPreferenceChangeListener { _, newValue ->
                     when (newValue) {

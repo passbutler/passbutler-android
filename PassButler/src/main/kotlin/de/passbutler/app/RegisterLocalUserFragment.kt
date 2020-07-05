@@ -24,8 +24,8 @@ import de.passbutler.common.database.RequestForbiddenException
 
 class RegisterLocalUserFragment : ToolBarFragment() {
 
-    val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
     val viewModel by userViewModelUsingViewModels<RegisterLocalUserViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var formServerUrl: String? = null
     private var formMasterPassword: String? = null
