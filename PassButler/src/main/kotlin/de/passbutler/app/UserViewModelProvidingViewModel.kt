@@ -63,28 +63,16 @@ class UserViewModelProvidingViewModel : ViewModel() {
     }
 }
 
-object UserViewModelProvidingViewModelUninitializedException : IllegalStateException("The UserViewModelProvidingViewModel is null!")
 object LoggedInUserViewModelUninitializedException : IllegalStateException("The logged-in UserViewModel is null!")
 
 abstract class UserViewModelUsingViewModel : ViewModel() {
+    lateinit var userViewModelProvidingViewModel: UserViewModelProvidingViewModel
+
     val loggedInUserViewModel: UserViewModel?
-        get() {
-            val userViewModelProvidingViewModel = userViewModelProvidingViewModel ?: throw UserViewModelProvidingViewModelUninitializedException
-            return userViewModelProvidingViewModel.loggedInUserViewModel
-        }
+        get() = userViewModelProvidingViewModel.loggedInUserViewModel
 
     val userManager: UserManager
-        get() {
-            val userViewModelProvidingViewModel = userViewModelProvidingViewModel ?: throw UserViewModelProvidingViewModelUninitializedException
-            return userViewModelProvidingViewModel.userManager
-        }
-
-    // TODO: lateinit
-    private var userViewModelProvidingViewModel: UserViewModelProvidingViewModel? = null
-
-    fun setUserViewModelProvidingViewModel(newUserViewModelProvidingViewModel: UserViewModelProvidingViewModel) {
-        userViewModelProvidingViewModel = newUserViewModelProvidingViewModel
-    }
+        get() = userViewModelProvidingViewModel.userManager
 }
 
 @MainThread
@@ -109,7 +97,7 @@ inline fun <reified VM : UserViewModelUsingViewModel> Fragment.userViewModelUsin
 class UserViewModelUsingViewModelFactory(private val userViewModelProvidingViewModel: UserViewModelProvidingViewModel) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return super.create(modelClass).also {
-            (it as UserViewModelUsingViewModel).setUserViewModelProvidingViewModel(userViewModelProvidingViewModel)
+            (it as UserViewModelUsingViewModel).userViewModelProvidingViewModel = userViewModelProvidingViewModel
         }
     }
 }
