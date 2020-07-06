@@ -1,6 +1,9 @@
 package de.passbutler.app.ui
 
 import android.content.Context
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
+import android.graphics.drawable.Drawable
 import android.util.TypedValue
 import android.view.View
 import androidx.annotation.AttrRes
@@ -29,4 +32,11 @@ fun Context.resolveThemeAttributeId(@AttrRes attribute: Int): Int {
     theme.resolveAttribute(attribute, typedValue, true)
 
     return typedValue.resourceId
+}
+
+/**
+ * Apply given resolved color value to drawable.
+ */
+fun Drawable.applyTint(color: Int) {
+    colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
 }
