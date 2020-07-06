@@ -128,8 +128,7 @@ class OverviewFragment : BaseFragment() {
 
     private fun setupEntryList(binding: FragmentOverviewBinding) {
         binding.layoutOverviewContent.recyclerViewItemList.apply {
-            val linearLayoutManager = LinearLayoutManager(context)
-            layoutManager = linearLayoutManager
+            layoutManager = LinearLayoutManager(context)
             adapter = ItemAdapter(this@OverviewFragment)
         }
 
