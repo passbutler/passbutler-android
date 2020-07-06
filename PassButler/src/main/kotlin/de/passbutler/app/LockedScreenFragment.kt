@@ -9,10 +9,11 @@ import androidx.biometric.BiometricConstants.ERROR_CANCELED
 import androidx.biometric.BiometricConstants.ERROR_NEGATIVE_BUTTON
 import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
 import de.passbutler.app.base.BuildInformationProvider
 import de.passbutler.app.base.DebugConstants
+import de.passbutler.app.base.bindEnabled
+import de.passbutler.app.base.bindVisibility
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.crypto.BiometricAuthenticationCallbackExecutor
 import de.passbutler.app.databinding.FragmentLockedScreenBinding
@@ -36,6 +37,9 @@ class LockedScreenFragment : BaseFragment() {
     val viewModel by userViewModelUsingViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
+    private val loggedInUserViewModel
+        get() = userViewModelProvidingViewModel.loggedInUserViewModel
+
     private var formMasterPassword: String? = null
 
     private var binding: FragmentLockedScreenBinding? = null
@@ -51,11 +55,7 @@ class LockedScreenFragment : BaseFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate<FragmentLockedScreenBinding>(inflater, R.layout.fragment_locked_screen, container, false).also { binding ->
-            binding.lifecycleOwner = viewLifecycleOwner
-            binding.fragment = this
-            binding.userViewModel = userViewModelProvidingViewModel.loggedInUserViewModel
-
+        binding = FragmentLockedScreenBinding.inflate(inflater).also { binding ->
             setupDebugPresetsButton(binding)
             setupUnlockWithPasswordButton(binding)
             setupUnlockWithBiometricsButton(binding)
@@ -113,6 +113,13 @@ class LockedScreenFragment : BaseFragment() {
     }
 
     private fun setupUnlockWithBiometricsButton(binding: FragmentLockedScreenBinding) {
+        binding.textViewUnlockMethodDivider.bindVisibility(viewLifecycleOwner, loggedInUserViewModel?.biometricUnlockAvailable)
+
+        binding.buttonUnlockBiometric.bindVisibility(viewLifecycleOwner, loggedInUserViewModel?.biometricUnlockAvailable)
+        binding.buttonUnlockBiometric.bindEnabled(viewLifecycleOwner, loggedInUserViewModel?.biometricUnlockEnabled)
+
+        binding.textViewButtonUnlockBiometricDisabledHint.bindVisibility(viewLifecycleOwner, loggedInUserViewModel?.biometricUnlockAvailable, loggedInUserViewModel?.biometricUnlockEnabled)
+
         binding.buttonUnlockBiometric.setOnClickListener {
             unlockWithBiometricsClicked()
         }

@@ -1,42 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
-    <data>
-
-        <variable
-            name="title"
-            type="String" />
-
-
-        <variable
-            name="value"
-            type="String" />
-
-    </data>
-
-    <LinearLayout
+    <TextView
+        android:id="@+id/textView_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:textAppearance="?textAppearanceBody1"
+        android:textStyle="bold"
+        tools:text="Title" />
 
-        <TextView
-            android:id="@+id/textView_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@{title}"
-            android:textAppearance="?textAppearanceBody1"
-            android:textStyle="bold"
-            tools:text="Title" />
+    <TextView
+        android:id="@+id/textView_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?textAppearanceBody2"
+        tools:text="Value" />
 
-        <TextView
-            android:id="@+id/textView_value"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@{value}"
-            android:textAppearance="?textAppearanceBody2"
-            tools:text="Value" />
-
-    </LinearLayout>
-
-</layout>
+</LinearLayout>

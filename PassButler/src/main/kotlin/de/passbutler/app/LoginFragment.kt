@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import de.passbutler.app.base.BuildInformationProvider
@@ -31,13 +30,9 @@ class LoginFragment : BaseFragment() {
     private var formServerUrl: String? = null
     private var formUsername: String? = null
     private var formMasterPassword: String? = null
+    private var formLocalLogin: Boolean? = null
 
     private var binding: FragmentLoginBinding? = null
-
-    private val isLocalLoginObserver = Observer<Boolean> { isLocalLoginValue ->
-        val shouldShowServerUrl = !isLocalLoginValue
-        binding?.textInputLayoutServerurl?.showFadeInOutAnimation(shouldShowServerUrl, VisibilityHideMode.INVISIBLE)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,15 +40,13 @@ class LoginFragment : BaseFragment() {
         formServerUrl = savedInstanceState?.getString(FORM_FIELD_SERVERURL)
         formUsername = savedInstanceState?.getString(FORM_FIELD_USERNAME)
         formMasterPassword = savedInstanceState?.getString(FORM_FIELD_MASTER_PASSWORD)
+        formLocalLogin = savedInstanceState?.getBoolean(FORM_FIELD_LOCAL_LOGIN)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate<FragmentLoginBinding>(inflater, R.layout.fragment_login, container, false).also { binding ->
-            binding.lifecycleOwner = viewLifecycleOwner
-            binding.viewModel = viewModel
-
+        binding = FragmentLoginBinding.inflate(inflater).also { binding ->
             setupDebugPresetsButton(binding)
-            setupLocalLoginCheckbox()
+            setupLocalLoginCheckbox(binding)
             setupLoginButton(binding)
 
             applyRestoredViewStates(binding)
@@ -74,8 +67,11 @@ class LoginFragment : BaseFragment() {
         }
     }
 
-    private fun setupLocalLoginCheckbox() {
-        viewModel.isLocalLogin.observe(viewLifecycleOwner, isLocalLoginObserver)
+    private fun setupLocalLoginCheckbox(binding: FragmentLoginBinding) {
+        binding.checkBoxLocalLogin.setOnCheckedChangeListener { _, isLocalLogin ->
+            val shouldShowServerUrl = !isLocalLogin
+            binding.textInputLayoutServerurl.showFadeInOutAnimation(shouldShowServerUrl, VisibilityHideMode.INVISIBLE)
+        }
     }
 
     private fun setupLoginButton(binding: FragmentLoginBinding) {
@@ -85,6 +81,7 @@ class LoginFragment : BaseFragment() {
     }
 
     private fun loginClicked(binding: FragmentLoginBinding) {
+        val isLocalLogin = binding.checkBoxLocalLogin.isChecked
         val formValidationResult = validateForm(
             listOfNotNull(
                 FormFieldValidator(
@@ -94,7 +91,7 @@ class LoginFragment : BaseFragment() {
                         FormFieldValidator.Rule({ !URLUtil.isHttpsUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid_scheme))
                             .takeIf { BuildInformationProvider.buildType == BuildType.Release }
                     )
-                ).takeIf { !viewModel.isLocalLogin.value },
+                ).takeIf { !isLocalLogin },
                 FormFieldValidator(
                     binding.textInputLayoutUsername, binding.textInputEditTextUsername, listOf(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_username_validation_error_empty))
@@ -114,7 +111,7 @@ class LoginFragment : BaseFragment() {
                 removeFormFieldsFocus()
                 Keyboard.hideKeyboard(context, this)
 
-                val serverUrl = binding.textInputEditTextServerurl.text?.toString()?.takeIf { !viewModel.isLocalLogin.value }
+                val serverUrl = binding.textInputEditTextServerurl.text?.toString()?.takeIf { !isLocalLogin }
                 val username = binding.textInputEditTextUsername.text?.toString()
                 val masterPassword = binding.textInputEditTextMasterPassword.text?.toString()
 
@@ -152,6 +149,7 @@ class LoginFragment : BaseFragment() {
         formServerUrl?.let { binding.textInputEditTextServerurl.setText(it) }
         formUsername?.let { binding.textInputEditTextUsername.setText(it) }
         formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
+        formLocalLogin?.let { binding.checkBoxLocalLogin.isChecked = it }
     }
 
     override fun onStop() {
@@ -165,6 +163,7 @@ class LoginFragment : BaseFragment() {
         outState.putString(FORM_FIELD_SERVERURL, binding?.textInputEditTextServerurl?.text?.toString())
         outState.putString(FORM_FIELD_USERNAME, binding?.textInputEditTextUsername?.text?.toString())
         outState.putString(FORM_FIELD_MASTER_PASSWORD, binding?.textInputEditTextMasterPassword?.text?.toString())
+        outState.putBoolean(FORM_FIELD_LOCAL_LOGIN, binding?.checkBoxLocalLogin?.isChecked ?: false)
 
         super.onSaveInstanceState(outState)
     }
@@ -178,6 +177,7 @@ class LoginFragment : BaseFragment() {
         private const val FORM_FIELD_SERVERURL = "FORM_FIELD_SERVERURL"
         private const val FORM_FIELD_USERNAME = "FORM_FIELD_USERNAME"
         private const val FORM_FIELD_MASTER_PASSWORD = "FORM_FIELD_MASTER_PASSWORD"
+        private const val FORM_FIELD_LOCAL_LOGIN = "FORM_FIELD_LOCAL_LOGIN"
 
         fun newInstance() = LoginFragment()
     }

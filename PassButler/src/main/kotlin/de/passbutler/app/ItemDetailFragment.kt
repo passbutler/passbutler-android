@@ -9,7 +9,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -189,10 +188,7 @@ class ItemDetailFragment : ToolBarFragment() {
     }
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate<FragmentItemdetailBinding>(inflater, R.layout.fragment_itemdetail, container, false).also { binding ->
-            binding.lifecycleOwner = viewLifecycleOwner
-            binding.viewModel = viewModel
-
+        binding = FragmentItemdetailBinding.inflate(inflater).also { binding ->
             setupPasswordField(binding)
             setupInformationView(binding)
             setupDeleteItemButton(binding)

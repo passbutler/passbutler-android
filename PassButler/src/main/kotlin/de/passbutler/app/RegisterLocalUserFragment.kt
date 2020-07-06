@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
 import de.passbutler.app.base.BuildInformationProvider
 import de.passbutler.app.base.DebugConstants
@@ -42,9 +41,7 @@ class RegisterLocalUserFragment : ToolBarFragment() {
     override fun getToolBarTitle() = getString(R.string.register_local_user_title)
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate<FragmentRegisterLocalUserBinding>(inflater, R.layout.fragment_register_local_user, container, false).also { binding ->
-            binding.lifecycleOwner = viewLifecycleOwner
-
+        binding = FragmentRegisterLocalUserBinding.inflate(inflater).also { binding ->
             setupRegisterButton(binding)
             setupDebugPresetsButton(binding)
 

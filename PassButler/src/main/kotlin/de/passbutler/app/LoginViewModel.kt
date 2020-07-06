@@ -2,12 +2,9 @@ package de.passbutler.app
 
 import androidx.lifecycle.ViewModel
 import de.passbutler.app.base.AbstractPassButlerApplication
-import de.passbutler.app.base.NonNullMutableLiveData
 import de.passbutler.common.base.Result
 
 class LoginViewModel : ViewModel() {
-
-    val isLocalLogin = NonNullMutableLiveData(false)
 
     suspend fun loginUser(serverUrlString: String?, username: String, masterPassword: String): Result<Unit> {
         val userManager = AbstractPassButlerApplication.userManager

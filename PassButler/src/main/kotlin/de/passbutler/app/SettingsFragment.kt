@@ -9,7 +9,6 @@ import androidx.biometric.BiometricConstants.ERROR_CANCELED
 import androidx.biometric.BiometricConstants.ERROR_NEGATIVE_BUTTON
 import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -55,9 +54,7 @@ class SettingsFragment : ToolBarFragment() {
     override fun getToolBarTitle() = getString(R.string.settings_title)
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val binding = DataBindingUtil.inflate<FragmentSettingsBinding>(inflater, R.layout.fragment_settings, container, false).also { binding ->
-            binding.lifecycleOwner = viewLifecycleOwner
-        }
+        val binding = FragmentSettingsBinding.inflate(inflater)
 
         val settingsPreferenceFragmentTag = FragmentPresenter.getFragmentTag(SettingsPreferenceFragment::class.java)
         settingsPreferenceFragment = ((childFragmentManager.findFragmentByTag(settingsPreferenceFragmentTag) as? SettingsPreferenceFragment) ?: run {

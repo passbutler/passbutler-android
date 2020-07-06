@@ -1,157 +1,136 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
-    <data>
-
-        <import type="android.view.View" />
-
-        <variable
-            name="fragment"
-            type="de.passbutler.app.LockedScreenFragment" />
-
-        <variable
-            name="userViewModel"
-            type="de.passbutler.app.UserViewModel" />
-
-    </data>
-
-    <ScrollView
+    <!-- Add explicit background to hide underlaying fragments, also made container clickable to avoid touch-through underlaying fragments -->
+    <!-- The `focusableInTouchMode` with `clickable` removes focus of `TextInputEditText` if user clicked outer area -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout_root_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:layout_height="wrap_content"
+        android:background="?android:attr/colorBackground"
+        android:clickable="true"
+        android:focusableInTouchMode="true">
 
-        <!-- Add explicit background to hide underlaying fragments, also made container clickable to avoid touch-through underlaying fragments -->
-        <!-- The `focusableInTouchMode` with `clickable` removes focus of `TextInputEditText` if user clicked outer area -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/constraintLayout_root_container"
-            android:layout_width="match_parent"
+        <ImageView
+            android:id="@+id/imageView_background"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/background_mesh_polygons"
+            android:tint="?colorBackgroundImageTint"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription" />
+
+        <!-- Use 0dp elevation to avoid different border color when translucent background is used -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/materialCardView_container"
+            android:layout_width="320dp"
             android:layout_height="wrap_content"
-            android:background="?android:attr/colorBackground"
-            android:clickable="true"
-            android:focusableInTouchMode="true">
+            app:cardBackgroundColor="@color/color_surface_transparent"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <ImageView
-                android:id="@+id/imageView_background"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/background_mesh_polygons"
-                android:tint="?colorBackgroundImageTint"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:ignore="ContentDescription" />
-
-            <!-- Use 0dp elevation to avoid different border color when translucent background is used -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/materialCardView_container"
-                android:layout_width="320dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/color_surface_transparent"
-                app:cardElevation="0dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                android:orientation="vertical"
+                android:paddingStart="?marginM"
+                android:paddingTop="50dp"
+                android:paddingEnd="?marginM"
+                android:paddingBottom="?marginM">
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/textView_headline"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingStart="?marginM"
-                    android:paddingTop="50dp"
-                    android:paddingEnd="?marginM"
-                    android:paddingBottom="?marginM">
+                    android:layout_marginTop="?marginM"
+                    android:text="@string/locked_screen_header"
+                    android:textAlignment="center"
+                    android:textAppearance="?textAppearanceHeadline1" />
 
-                    <TextView
-                        android:id="@+id/textView_headline"
+                <TextView
+                    android:id="@+id/textView_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="?marginM"
+                    android:text="@string/locked_screen_description_password"
+                    android:textAlignment="center"
+                    android:textAppearance="?textAppearanceBody1" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textInputLayout_master_password"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="?marginM">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/textInputEditText_master_password"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="?marginM"
-                        android:text="@string/locked_screen_header"
-                        android:textAlignment="center"
-                        android:textAppearance="?textAppearanceHeadline1" />
+                        android:hint="@string/locked_screen_master_password_hint"
+                        android:imeOptions="actionUnspecified"
+                        android:importantForAutofill="no"
+                        android:inputType="textPassword" />
 
-                    <TextView
-                        android:id="@+id/textView_description"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="?marginM"
-                        android:text="@string/locked_screen_description_password"
-                        android:textAlignment="center"
-                        android:textAppearance="?textAppearanceBody1" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/textInputLayout_master_password"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="?marginM">
+                <Button
+                    android:id="@+id/button_unlock_password"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="?marginS"
+                    android:text="@string/locked_screen_button_password_text" />
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/textInputEditText_master_password"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="@string/locked_screen_master_password_hint"
-                            android:imeOptions="actionUnspecified"
-                            android:importantForAutofill="no"
-                            android:inputType="textPassword" />
+                <TextView
+                    android:id="@+id/textView_unlock_method_divider"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="?marginS"
+                    android:gravity="center_horizontal"
+                    android:text="@string/locked_screen_method_dividing_text" />
 
-                    </com.google.android.material.textfield.TextInputLayout>
+                <Button
+                    android:id="@+id/button_unlock_biometric"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="?marginS"
+                    android:text="@string/locked_screen_button_biometric_text" />
 
-                    <Button
-                        android:id="@+id/button_unlock_password"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="?marginS"
-                        android:text="@string/locked_screen_button_password_text" />
+                <TextView
+                    android:id="@+id/textView_button_unlock_biometric_disabled_hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="?marginS"
+                    android:text="@string/locked_screen_button_biometric_disabled_hint_text"
+                    android:textAlignment="center"
+                    android:textAppearance="?textAppearanceCaption" />
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="?marginS"
-                        android:gravity="center_horizontal"
-                        android:text="@string/locked_screen_method_dividing_text"
-                        android:visibility="@{safeUnbox(userViewModel.biometricUnlockAvailable) ? View.VISIBLE : View.GONE}" />
+            </LinearLayout>
 
-                    <Button
-                        android:id="@+id/button_unlock_biometric"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="?marginS"
-                        android:enabled="@{safeUnbox(userViewModel.biometricUnlockEnabled)}"
-                        android:text="@string/locked_screen_button_biometric_text"
-                        android:visibility="@{safeUnbox(userViewModel.biometricUnlockAvailable) ? View.VISIBLE : View.GONE}" />
+        </com.google.android.material.card.MaterialCardView>
 
-                    <TextView
-                        android:id="@+id/textView_button_unlock_biometric_disabled_hint"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="?marginS"
-                        android:text="@string/locked_screen_button_biometric_disabled_hint_text"
-                        android:textAlignment="center"
-                        android:textAppearance="?textAppearanceCaption"
-                        android:visibility="@{safeUnbox(userViewModel.biometricUnlockAvailable) &amp;&amp; safeUnbox(userViewModel.biometricUnlockEnabled) == false ? View.VISIBLE : View.GONE}" />
+        <ImageView
+            android:id="@+id/imageView_logo"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            app:layout_constraintBottom_toTopOf="@+id/materialCardView_container"
+            app:layout_constraintEnd_toEndOf="@+id/materialCardView_container"
+            app:layout_constraintStart_toStartOf="@+id/materialCardView_container"
+            app:layout_constraintTop_toTopOf="@+id/materialCardView_container"
+            app:srcCompat="@drawable/logo_elevated"
+            tools:ignore="ContentDescription" />
 
-                </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-            </com.google.android.material.card.MaterialCardView>
-
-            <ImageView
-                android:id="@+id/imageView_logo"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                app:layout_constraintBottom_toTopOf="@+id/materialCardView_container"
-                app:layout_constraintEnd_toEndOf="@+id/materialCardView_container"
-                app:layout_constraintStart_toStartOf="@+id/materialCardView_container"
-                app:layout_constraintTop_toTopOf="@+id/materialCardView_container"
-                app:srcCompat="@drawable/logo_elevated"
-                tools:ignore="ContentDescription" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </ScrollView>
-
-</layout>
+</ScrollView>

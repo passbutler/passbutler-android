@@ -36,8 +36,8 @@ android {
         exclude 'META-INF/*.kotlin_module'
     }
 
-    dataBinding {
-        enabled = true
+    buildFeatures {
+        viewBinding true
     }
 
     defaultConfig {

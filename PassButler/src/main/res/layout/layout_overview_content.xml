@@ -1,103 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <data />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <!-- Initial visibility must be set to `invisible` because it is not programmatically set initially -->
+    <ProgressBar
+        android:id="@+id/progressBar_refreshing"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible" />
 
-        <!-- Initial visibility must be set to `invisible` because it is not programmatically set initially -->
-        <ProgressBar
-            android:id="@+id/progressBar_refreshing"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView_item_list"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:indeterminate="true"
-            android:visibility="invisible"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:visibility="visible" />
+            android:layout_height="match_parent"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:itemCount="3"
+            tools:listitem="@layout/list_item_entry" />
 
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/swipeRefreshLayout"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerView_item_list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:itemCount="3"
-                tools:listitem="@layout/list_item_entry" />
+    <ImageView
+        android:id="@+id/imageView_empty_screen_icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:tint="?colorOnBackground"
+        app:layout_constraintBottom_toTopOf="@id/textView_empty_screen_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.40"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:srcCompat="@drawable/icon_list_24dp"
+        tools:ignore="ContentDescription" />
 
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    <TextView
+        android:id="@+id/textView_empty_screen_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="?marginL"
+        android:layout_marginEnd="?marginL"
+        android:gravity="center_horizontal"
+        android:text="@string/overview_empty_screen_title"
+        android:textAppearance="?textAppearanceHeadline1"
+        app:layout_constraintBottom_toTopOf="@id/textView_empty_screen_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imageView_empty_screen_icon" />
 
-        <ImageView
-            android:id="@+id/imageView_empty_screen_icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:tint="?colorOnBackground"
-            app:layout_constraintBottom_toTopOf="@id/textView_empty_screen_title"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.40"
-            app:layout_constraintVertical_chainStyle="packed"
-            app:srcCompat="@drawable/icon_list_24dp"
-            tools:ignore="ContentDescription" />
+    <TextView
+        android:id="@+id/textView_empty_screen_description"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="?marginL"
+        android:layout_marginTop="?marginS"
+        android:layout_marginEnd="?marginL"
+        android:gravity="center_horizontal"
+        android:text="@string/overview_empty_screen_description"
+        android:textAppearance="?textAppearanceBody1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textView_empty_screen_title" />
 
-        <TextView
-            android:id="@+id/textView_empty_screen_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="?marginL"
-            android:layout_marginEnd="?marginL"
-            android:gravity="center_horizontal"
-            android:text="@string/overview_empty_screen_title"
-            android:textAppearance="?textAppearanceHeadline1"
-            app:layout_constraintBottom_toTopOf="@id/textView_empty_screen_description"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/imageView_empty_screen_icon" />
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group_empty_screen_views"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:constraint_referenced_ids="imageView_empty_screen_icon,textView_empty_screen_title,textView_empty_screen_description" />
 
-        <TextView
-            android:id="@+id/textView_empty_screen_description"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="?marginL"
-            android:layout_marginTop="?marginS"
-            android:layout_marginEnd="?marginL"
-            android:gravity="center_horizontal"
-            android:text="@string/overview_empty_screen_description"
-            android:textAppearance="?textAppearanceBody1"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textView_empty_screen_title" />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingActionButton_add_entry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="?marginM"
+        android:layout_marginBottom="?marginM"
+        android:src="@drawable/icon_add_24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <androidx.constraintlayout.widget.Group
-            android:id="@+id/group_empty_screen_views"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:constraint_referenced_ids="imageView_empty_screen_icon,textView_empty_screen_title,textView_empty_screen_description" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/floatingActionButton_add_entry"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="?marginM"
-            android:layout_marginBottom="?marginM"
-            android:src="@drawable/icon_add_24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</layout>
+</androidx.constraintlayout.widget.ConstraintLayout>
