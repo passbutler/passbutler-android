@@ -32,8 +32,8 @@ import java.util.*
 import javax.crypto.Cipher
 
 /**
- * This viewmodel is held by `RootViewModel` end contains the business logic for logged-in user.
- * The method `cancelJobs()` is manually called by `RootViewModel`.
+ * This viewmodel is held by `UserViewModelProvidingViewModel` end contains the business logic for logged-in user.
+ * The method `cancelJobs()` is manually called by `UserViewModelProvidingViewModel`.
  */
 class UserViewModel private constructor(
     private val userManager: UserManager,

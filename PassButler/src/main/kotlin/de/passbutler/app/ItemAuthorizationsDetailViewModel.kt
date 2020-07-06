@@ -45,28 +45,34 @@ class ItemAuthorizationsDetailViewModel(
 
     suspend fun initializeItemAuthorizationViewModels() {
         val itemViewModel = loggedInUserViewModel.itemViewModels.value.find { it.id == itemId }
-        val item = itemViewModel?.item ?: throw IllegalStateException("The item is null despite the ItemAuthorizationViewModel is created!")
 
-        // Pass a copy of the item key to avoid it get cleared via reference on screen lock
-        val itemKeyCopy = itemViewModel.itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite the ItemAuthorizationViewModel is created!")
+        // The item viewmodel should be only null if the `Activity` was restored by Android
+        if (itemViewModel != null) {
+            val item = itemViewModel.item
 
-        val existingItemAuthorizationViewModels = createExistingItemAuthorizationViewModels(item)
-        val provisionalItemAuthorizationViewModels = createProvisionalItemAuthorizationViewModels(existingItemAuthorizationViewModels, item, itemKeyCopy)
+            // Pass a copy of the item key to avoid it get cleared via reference on screen lock
+            val itemKeyCopy = itemViewModel.itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite the ItemAuthorizationViewModel is created!")
 
-        val newItemAuthorizations = existingItemAuthorizationViewModels + provisionalItemAuthorizationViewModels
+            val existingItemAuthorizationViewModels = createExistingItemAuthorizationViewModels(item)
+            val provisionalItemAuthorizationViewModels = createProvisionalItemAuthorizationViewModels(existingItemAuthorizationViewModels, item, itemKeyCopy)
 
-        withContext(Dispatchers.Main) {
-            _itemAuthorizationViewModels.value.forEach {
-                it.isReadAllowed.removeObserver(itemAuthorizationViewModelsModifiedObserver)
-                it.isWriteAllowed.removeObserver(itemAuthorizationViewModelsModifiedObserver)
+            val newItemAuthorizations = existingItemAuthorizationViewModels + provisionalItemAuthorizationViewModels
+
+            withContext(Dispatchers.Main) {
+                _itemAuthorizationViewModels.value.forEach {
+                    it.isReadAllowed.removeObserver(itemAuthorizationViewModelsModifiedObserver)
+                    it.isWriteAllowed.removeObserver(itemAuthorizationViewModelsModifiedObserver)
+                }
+
+                _itemAuthorizationViewModels.value = newItemAuthorizations
+
+                _itemAuthorizationViewModels.value.forEach {
+                    it.isReadAllowed.observeForever(itemAuthorizationViewModelsModifiedObserver)
+                    it.isWriteAllowed.observeForever(itemAuthorizationViewModelsModifiedObserver)
+                }
             }
-
-            _itemAuthorizationViewModels.value = newItemAuthorizations
-
-            _itemAuthorizationViewModels.value.forEach {
-                it.isReadAllowed.observeForever(itemAuthorizationViewModelsModifiedObserver)
-                it.isWriteAllowed.observeForever(itemAuthorizationViewModelsModifiedObserver)
-            }
+        } else {
+            Logger.warn("The ItemViewModel for id = $itemId was not found!")
         }
     }
 

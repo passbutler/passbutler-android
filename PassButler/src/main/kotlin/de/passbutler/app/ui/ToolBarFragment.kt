@@ -6,10 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.appcompat.widget.Toolbar
-import androidx.lifecycle.ViewModel
 import de.passbutler.app.R
 
-abstract class ToolBarFragment<ViewModelType : ViewModel> : BaseViewModelFragment<ViewModelType>() {
+abstract class ToolBarFragment : BaseFragment() {
 
     private var toolBar: Toolbar? = null
 

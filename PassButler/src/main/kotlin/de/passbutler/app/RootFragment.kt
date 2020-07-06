@@ -5,8 +5,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import de.passbutler.app.ui.BaseViewModelFragment
+import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.FragmentPresenter
 import de.passbutler.app.ui.TransitionType
 import de.passbutler.app.ui.showFragmentAsFirstScreen
@@ -14,7 +15,10 @@ import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 import java.lang.ref.WeakReference
 
-class RootFragment : BaseViewModelFragment<RootViewModel>() {
+class RootFragment : BaseFragment() {
+
+    val viewModel by userViewModelUsingViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var viewWasInitialized = false
 
@@ -32,8 +36,6 @@ class RootFragment : BaseViewModelFragment<RootViewModel>() {
         super.onAttach(context)
 
         activity?.let {
-            viewModel = getRootViewModel(it)
-
             Logger.debug("Apply viewModel = $viewModel in $this")
 
             val contentContainerResourceId = R.id.frameLayout_fragment_root_content_container

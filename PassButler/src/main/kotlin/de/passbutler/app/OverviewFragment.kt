@@ -1,6 +1,5 @@
 package de.passbutler.app
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -13,8 +12,8 @@ import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -25,7 +24,7 @@ import de.passbutler.app.base.observe
 import de.passbutler.app.base.relativeDateTime
 import de.passbutler.app.databinding.FragmentOverviewBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
-import de.passbutler.app.ui.BaseViewModelFragment
+import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.FragmentPresenting
 import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
@@ -45,7 +44,10 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 
-class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
+class OverviewFragment : BaseFragment() {
+
+    val viewModel by userViewModelUsingViewModels<OverviewViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var binding: FragmentOverviewBinding? = null
     private var navigationHeaderSubtitleView: TextView? = null
@@ -65,7 +67,9 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         updateSwipeRefreshLayout()
     }
 
-    private val itemViewModelsObserver = Observer<List<ItemViewModel>> { newItemViewModels ->
+    private val itemViewModelsObserver = Observer<List<ItemViewModel>> { newUnfilteredItemViewModels ->
+        // Only show non-deleted items
+        val newItemViewModels = newUnfilteredItemViewModels.filter { !it.deleted }
         Logger.debug("newItemViewModels.size = ${newItemViewModels.size}")
 
         val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemAdapter
@@ -81,20 +85,6 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
         }
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        viewModel = ViewModelProvider(this).get(OverviewViewModel::class.java)
-
-        activity?.let {
-            val rootViewModel = getRootViewModel(it)
-            val loggedInUserViewModel = rootViewModel.loggedInUserViewModel
-
-            Logger.debug("Apply loggedInUserViewModel = $loggedInUserViewModel from rootViewModel = $rootViewModel to viewModel = $viewModel in $this")
-            viewModel.loggedInUserViewModel = loggedInUserViewModel
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate<FragmentOverviewBinding>(inflater, R.layout.fragment_overview, container, false).also { binding ->
             binding.lifecycleOwner = viewLifecycleOwner
@@ -106,7 +96,7 @@ class OverviewFragment : BaseViewModelFragment<OverviewViewModel>() {
 
         viewModel.loggedInUserViewModel?.username?.observe(viewLifecycleOwner, true, usernameObserver)
         viewModel.loggedInUserViewModel?.loggedInStateStorage?.addObserver(viewLifecycleOwner.lifecycleScope, true, loggedInStateStorageObserver)
-        viewModel.itemViewModels.observe(viewLifecycleOwner, true, itemViewModelsObserver)
+        viewModel.loggedInUserViewModel?.itemViewModels?.observe(viewLifecycleOwner, true, itemViewModelsObserver)
 
         return binding?.root
     }

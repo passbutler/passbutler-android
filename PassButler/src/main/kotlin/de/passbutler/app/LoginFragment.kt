@@ -1,6 +1,5 @@
 package de.passbutler.app
 
-import android.content.Context
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -8,13 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import de.passbutler.app.base.DebugConstants
 import de.passbutler.app.base.BuildInformationProvider
+import de.passbutler.app.base.DebugConstants
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentLoginBinding
-import de.passbutler.app.ui.BaseViewModelFragment
+import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
@@ -25,7 +24,9 @@ import de.passbutler.app.ui.validateForm
 import de.passbutler.common.base.BuildType
 import de.passbutler.common.database.RequestUnauthorizedException
 
-class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
+class LoginFragment : BaseFragment() {
+
+    val viewModel by viewModels<LoginViewModel>()
 
     private var formServerUrl: String? = null
     private var formUsername: String? = null
@@ -36,16 +37,6 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
     private val isLocalLoginObserver = Observer<Boolean> { isLocalLoginValue ->
         val shouldShowServerUrl = !isLocalLoginValue
         binding?.textInputLayoutServerurl?.showFadeInOutAnimation(shouldShowServerUrl, VisibilityHideMode.INVISIBLE)
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        viewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
-
-        activity?.let {
-            viewModel.rootViewModel = getRootViewModel(it)
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,7 +91,8 @@ class LoginFragment : BaseViewModelFragment<LoginViewModel>() {
                     binding.textInputLayoutServerurl, binding.textInputEditTextServerurl, listOfNotNull(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_serverurl_validation_error_empty)),
                         FormFieldValidator.Rule({ !URLUtil.isValidUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid)),
-                        FormFieldValidator.Rule({ !URLUtil.isHttpsUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid_scheme)).takeIf { BuildInformationProvider.buildType == BuildType.Release }
+                        FormFieldValidator.Rule({ !URLUtil.isHttpsUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid_scheme))
+                            .takeIf { BuildInformationProvider.buildType == BuildType.Release }
                     )
                 ).takeIf { !viewModel.isLocalLogin.value },
                 FormFieldValidator(

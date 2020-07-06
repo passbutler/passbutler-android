@@ -1,6 +1,5 @@
 package de.passbutler.app
 
-import android.content.Context
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -11,12 +10,13 @@ import androidx.biometric.BiometricConstants.ERROR_NEGATIVE_BUTTON
 import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.activityViewModels
 import de.passbutler.app.base.BuildInformationProvider
 import de.passbutler.app.base.DebugConstants
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.crypto.BiometricAuthenticationCallbackExecutor
 import de.passbutler.app.databinding.FragmentLockedScreenBinding
-import de.passbutler.app.ui.BaseViewModelFragment
+import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
@@ -31,7 +31,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 
-class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
+class LockedScreenFragment : BaseFragment() {
+
+    val viewModel by userViewModelUsingViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var formMasterPassword: String? = null
 
@@ -39,14 +42,6 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
 
     private val biometricCallbackExecutor by lazy {
         BiometricAuthenticationCallbackExecutor(this, Dispatchers.Main)
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            viewModel = getRootViewModel(it)
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,7 +54,7 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
         binding = DataBindingUtil.inflate<FragmentLockedScreenBinding>(inflater, R.layout.fragment_locked_screen, container, false).also { binding ->
             binding.lifecycleOwner = viewLifecycleOwner
             binding.fragment = this
-            binding.userViewModel = viewModel.loggedInUserViewModel
+            binding.userViewModel = userViewModelProvidingViewModel.loggedInUserViewModel
 
             setupDebugPresetsButton(binding)
             setupUnlockWithPasswordButton(binding)
@@ -171,8 +166,8 @@ class LockedScreenFragment : BaseViewModelFragment<RootViewModel>() {
         super.onResume()
 
         // The states may changed when user had the app in the background
-        viewModel.loggedInUserViewModel?.biometricUnlockAvailable?.notifyChange()
-        viewModel.loggedInUserViewModel?.biometricUnlockEnabled?.notifyChange()
+        userViewModelProvidingViewModel.loggedInUserViewModel?.biometricUnlockAvailable?.notifyChange()
+        userViewModelProvidingViewModel.loggedInUserViewModel?.biometricUnlockEnabled?.notifyChange()
     }
 
     override fun onStop() {

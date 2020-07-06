@@ -1,6 +1,5 @@
 package de.passbutler.app
 
-import android.content.Context
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -8,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import de.passbutler.app.base.BuildInformationProvider
 import de.passbutler.app.base.DebugConstants
 import de.passbutler.app.base.launchRequestSending
@@ -23,22 +22,15 @@ import de.passbutler.app.ui.validateForm
 import de.passbutler.common.base.BuildType
 import de.passbutler.common.database.RequestForbiddenException
 
-class RegisterLocalUserFragment : ToolBarFragment<RegisterLocalUserViewModel>() {
+class RegisterLocalUserFragment : ToolBarFragment() {
+
+    val viewModel by userViewModelUsingViewModels<RegisterLocalUserViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var formServerUrl: String? = null
     private var formMasterPassword: String? = null
 
     private var binding: FragmentRegisterLocalUserBinding? = null
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        viewModel = ViewModelProvider(this).get(RegisterLocalUserViewModel::class.java)
-
-        activity?.let {
-            viewModel.rootViewModel = getRootViewModel(it)
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
