@@ -146,11 +146,11 @@ class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView
 
         return when (viewType) {
             ListItemType.HEADER.ordinal -> {
-                val binding = ListItemAuthorizationHeaderBinding.inflate(layoutInflater)
+                val binding = ListItemAuthorizationHeaderBinding.inflate(layoutInflater, parent, false)
                 HeaderViewHolder(binding)
             }
             else -> {
-                val binding = ListItemAuthorizationEntryBinding.inflate(layoutInflater)
+                val binding = ListItemAuthorizationEntryBinding.inflate(layoutInflater, parent, false)
                 ItemAuthorizationViewHolder(binding)
             }
         }

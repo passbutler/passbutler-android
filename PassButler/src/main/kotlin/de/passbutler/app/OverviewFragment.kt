@@ -338,7 +338,7 @@ class OverviewFragment : BaseFragment() {
 class ItemAdapter(private val fragmentPresenter: FragmentPresenting) : ListAdapter<ListItemIdentifiable, ItemAdapter.ItemViewHolder>(ListItemIdentifiableDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val binding = ListItemEntryBinding.inflate(LayoutInflater.from(parent.context))
+        val binding = ListItemEntryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ItemViewHolder(binding, fragmentPresenter)
     }
 
