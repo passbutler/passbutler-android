@@ -64,7 +64,8 @@ class RegisterLocalUserFragment : ToolBarFragment() {
                     binding.textInputLayoutServerurl, binding.textInputEditTextServerurl, listOfNotNull(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_serverurl_validation_error_empty)),
                         FormFieldValidator.Rule({ !URLUtil.isValidUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid)),
-                        FormFieldValidator.Rule({ !URLUtil.isHttpsUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid_scheme)).takeIf { BuildInformationProvider.buildType == BuildType.Release }
+                        FormFieldValidator.Rule({ !URLUtil.isHttpsUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid_scheme))
+                            .takeIf { BuildInformationProvider.buildType == BuildType.Release }
                     )
                 ),
                 FormFieldValidator(
