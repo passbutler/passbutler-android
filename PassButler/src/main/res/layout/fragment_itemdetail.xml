@@ -19,7 +19,6 @@
             android:layout_marginStart="?marginM"
             android:layout_marginTop="?marginM"
             android:layout_marginEnd="?marginM"
-            android:enabled="@{viewModel.isItemModificationAllowed}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -32,7 +31,6 @@
                 android:imeOptions="actionNext"
                 android:importantForAutofill="no"
                 android:inputType="text"
-                android:text="@={viewModel.title}"
                 android:textAppearance="?textAppearanceHeadline1" />
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -57,7 +55,6 @@
             android:layout_marginStart="?marginM"
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
-            android:enabled="@{viewModel.isItemModificationAllowed}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textView_details_header">
@@ -69,8 +66,7 @@
                 android:hint="@string/itemdetail_username_hint"
                 android:imeOptions="actionNext"
                 android:importantForAutofill="no"
-                android:inputType="text"
-                android:text="@={viewModel.username}" />
+                android:inputType="text" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -81,7 +77,6 @@
             android:layout_marginStart="?marginM"
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
-            android:enabled="@{viewModel.isItemModificationAllowed}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textInputLayout_username">
@@ -92,8 +87,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/itemdetail_password_hint"
                 android:imeOptions="actionNext"
-                android:importantForAutofill="no"
-                android:text="@={viewModel.password}" />
+                android:importantForAutofill="no" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -104,7 +98,6 @@
             android:layout_marginStart="?marginM"
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
-            android:enabled="@{viewModel.isItemModificationAllowed}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textInputLayout_password">
@@ -116,8 +109,7 @@
                 android:hint="@string/itemdetail_url_hint"
                 android:imeOptions="actionNext"
                 android:importantForAutofill="no"
-                android:inputType="textUri"
-                android:text="@={viewModel.url}" />
+                android:inputType="textUri" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -128,7 +120,6 @@
             android:layout_marginStart="?marginM"
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
-            android:enabled="@{viewModel.isItemModificationAllowed}"
             app:counterEnabled="true"
             app:counterMaxLength="1000"
             app:layout_constraintEnd_toEndOf="parent"
@@ -145,8 +136,7 @@
                 android:inputType="textMultiLine"
                 android:maxLines="10"
                 android:minLines="2"
-                android:scrollbars="vertical"
-                android:text="@={viewModel.notes}" />
+                android:scrollbars="vertical" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -183,9 +173,7 @@
             android:layout_marginStart="?marginM"
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
-            android:enabled="@{viewModel.isItemAuthorizationAvailable}"
             android:text="@string/itemdetail_authorizations_button_text"
-            android:visibility="@{!viewModel.isNewItem &amp;&amp; viewModel.isItemAuthorizationAllowed ? View.VISIBLE : View.GONE}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView_authorizations_description" />
@@ -199,7 +187,6 @@
             android:layout_marginEnd="?marginM"
             android:text="@string/itemdetail_authorizations_footer"
             android:textAppearance="?textAppearanceCaption"
-            android:visibility="@{!viewModel.isNewItem &amp;&amp; viewModel.isItemAuthorizationAllowed &amp;&amp; !viewModel.isItemAuthorizationAvailable ? View.VISIBLE : View.GONE}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/button_manage_authorizations" />
@@ -227,8 +214,7 @@
             android:layout_marginEnd="?marginM"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textView_information_header"
-            app:title="@{@string/itemdetail_modified_title}" />
+            app:layout_constraintTop_toBottomOf="@id/textView_information_header" />
 
         <include
             android:id="@+id/information_item_created"
@@ -240,8 +226,7 @@
             android:layout_marginEnd="?marginM"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/information_item_modified"
-            app:title="@{@string/itemdetail_created_title}" />
+            app:layout_constraintTop_toBottomOf="@id/information_item_modified" />
 
         <include
             android:id="@+id/information_item_id"
@@ -254,8 +239,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/information_item_created"
-            app:layout_constraintVertical_bias="0.0"
-            app:title="@{@string/itemdetail_id_title}" />
+            app:layout_constraintVertical_bias="0.0" />
 
         <TextView
             android:id="@+id/textView_delete_header"
@@ -278,7 +262,6 @@
             android:layout_marginTop="?marginM"
             android:layout_marginEnd="?marginM"
             android:layout_marginBottom="?marginM"
-            android:enabled="@{viewModel.isItemModificationAllowed}"
             android:text="@string/itemdetail_delete_button_title"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -290,7 +273,6 @@
             android:id="@+id/group_existing_item_views"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="@{!viewModel.isNewItem ? View.VISIBLE : View.GONE}"
             app:constraint_referenced_ids="textView_authorizations_header,textView_authorizations_description,textView_information_header,information_item_modified,information_item_created,information_item_id,textView_delete_header,button_delete_item"
             tools:visibility="visible" />
 
