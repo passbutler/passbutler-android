@@ -26,16 +26,6 @@ fun View.bindVisibility(lifecycleOwner: LifecycleOwner, liveDataDependency: Live
     })
 }
 
-fun View.bindVisibility(lifecycleOwner: LifecycleOwner, liveDataDependency1: LiveData<Boolean>, liveDataDependency2: LiveData<Boolean>) {
-    liveDataDependency1.observe(lifecycleOwner, false, Observer { newValue ->
-        visible = newValue && liveDataDependency2.value ?: false
-    })
-
-    liveDataDependency2.observe(lifecycleOwner, true, Observer { newValue ->
-        visible = newValue && liveDataDependency1.value ?: false
-    })
-}
-
 fun View.bindVisibility(lifecycleOwner: LifecycleOwner, liveDataDependency1: LiveData<Boolean>, liveDataDependency2: LiveData<Boolean>, block: (Boolean, Boolean) -> Boolean) {
     liveDataDependency1.observe(lifecycleOwner, false, Observer { newValue ->
         visible = block(newValue, liveDataDependency2.value ?: false)
@@ -119,6 +109,6 @@ fun <T> TextView.bindTextAndVisibility(lifecycleOwner: LifecycleOwner, liveDataD
 fun TextInputEditText.bindInput(liveData: MutableLiveData<String>) {
     setText(liveData.value ?: "")
     addTextChangedListener { newText ->
-        liveData.value = newText.toString() ?: ""
+        liveData.value = newText.toString()
     }
 }
