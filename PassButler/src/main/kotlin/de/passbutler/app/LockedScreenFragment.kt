@@ -113,15 +113,17 @@ class LockedScreenFragment : BaseFragment() {
     }
 
     private fun setupUnlockWithBiometricsButton(binding: FragmentLockedScreenBinding) {
-        binding.textViewUnlockMethodDivider.bindVisibility(viewLifecycleOwner, loggedInUserViewModel?.biometricUnlockAvailable)
+        loggedInUserViewModel?.let { loggedInUserViewModel ->
+            binding.textViewUnlockMethodDivider.bindVisibility(viewLifecycleOwner, loggedInUserViewModel.biometricUnlockAvailable)
 
-        binding.buttonUnlockBiometric.bindVisibility(viewLifecycleOwner, loggedInUserViewModel?.biometricUnlockAvailable)
-        binding.buttonUnlockBiometric.bindEnabled(viewLifecycleOwner, loggedInUserViewModel?.biometricUnlockEnabled)
+            binding.buttonUnlockBiometric.bindVisibility(viewLifecycleOwner, loggedInUserViewModel.biometricUnlockAvailable)
+            binding.buttonUnlockBiometric.bindEnabled(viewLifecycleOwner, loggedInUserViewModel.biometricUnlockEnabled)
 
-        binding.textViewButtonUnlockBiometricDisabledHint.bindVisibility(viewLifecycleOwner, loggedInUserViewModel?.biometricUnlockAvailable, loggedInUserViewModel?.biometricUnlockEnabled)
+            binding.textViewButtonUnlockBiometricDisabledHint.bindVisibility(viewLifecycleOwner, loggedInUserViewModel.biometricUnlockAvailable, loggedInUserViewModel.biometricUnlockEnabled)
 
-        binding.buttonUnlockBiometric.setOnClickListener {
-            unlockWithBiometricsClicked()
+            binding.buttonUnlockBiometric.setOnClickListener {
+                unlockWithBiometricsClicked()
+            }
         }
     }
 
