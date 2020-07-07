@@ -212,12 +212,13 @@ class ItemDetailFragment : ToolBarFragment() {
         binding.textInputLayoutPassword.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
         binding.textInputEditTextPassword.bindInput(viewModel.password)
 
+        // Be sure, the `inputType` is set first to make `END_ICON_PASSWORD_TOGGLE` as `endIconMode` work properly
         if (viewModel.hidePasswordsEnabled) {
-            binding.textInputLayoutPassword.endIconMode = TextInputLayout.END_ICON_PASSWORD_TOGGLE
             binding.textInputEditTextPassword.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
+            binding.textInputLayoutPassword.endIconMode = TextInputLayout.END_ICON_PASSWORD_TOGGLE
         } else {
-            binding.textInputLayoutPassword.endIconMode = TextInputLayout.END_ICON_NONE
             binding.textInputEditTextPassword.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            binding.textInputLayoutPassword.endIconMode = TextInputLayout.END_ICON_NONE
         }
     }
 
