@@ -29,6 +29,8 @@ fun View.showFadeInOutAnimation(shouldShow: Boolean, visibilityHideMode: Visibil
                 if (!shouldShow) {
                     visibility = visibilityHideMode.viewConstant
                 }
+
+                // TODO: Unregister listener to be sure other animations are not affecting this listener after animation end
             }
         ))
 }

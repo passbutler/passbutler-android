@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import de.passbutler.app.databinding.FragmentRootBinding
 import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.FragmentPresenter
 import de.passbutler.app.ui.TransitionType
@@ -55,7 +56,7 @@ class RootFragment : BaseFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val rootView = inflater.inflate(R.layout.fragment_root, container, false)
+        val binding = FragmentRootBinding.inflate(inflater)
 
         viewModel.rootScreenState.observe(viewLifecycleOwner, rootScreenStateObserver)
         viewModel.lockScreenState.observe(viewLifecycleOwner, lockScreenStateObserver)
@@ -65,7 +66,7 @@ class RootFragment : BaseFragment() {
             viewModel.restoreLoggedInUser()
         }
 
-        return rootView
+        return binding.root
     }
 
     private fun showRootScreen() {

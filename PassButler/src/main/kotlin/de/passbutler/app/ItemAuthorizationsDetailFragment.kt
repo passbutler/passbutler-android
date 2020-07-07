@@ -6,7 +6,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -86,12 +85,9 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment() {
     }
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val binding = DataBindingUtil.inflate<FragmentItemAuthorizationsDetailBinding>(inflater, R.layout.fragment_item_authorizations_detail, container, false).also { binding ->
-            binding.lifecycleOwner = viewLifecycleOwner
-            this.binding = binding
+        binding = FragmentItemAuthorizationsDetailBinding.inflate(inflater).also { binding ->
+            setupItemAuthorizationsList(binding)
         }
-
-        setupItemAuthorizationsList(binding)
 
         viewModel.anyItemAuthorizationWasModified.observe(viewLifecycleOwner, anyItemAuthorizationWasModifiedObserver)
 
@@ -150,11 +146,11 @@ class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView
 
         return when (viewType) {
             ListItemType.HEADER.ordinal -> {
-                val binding = DataBindingUtil.inflate<ListItemAuthorizationHeaderBinding>(layoutInflater, R.layout.list_item_authorization_header, parent, false)
+                val binding = ListItemAuthorizationHeaderBinding.inflate(layoutInflater, parent, false)
                 HeaderViewHolder(binding)
             }
             else -> {
-                val binding = DataBindingUtil.inflate<ListItemAuthorizationEntryBinding>(layoutInflater, R.layout.list_item_authorization_entry, parent, false)
+                val binding = ListItemAuthorizationEntryBinding.inflate(layoutInflater, parent, false)
                 ItemAuthorizationViewHolder(binding)
             }
         }

@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -86,9 +85,7 @@ class OverviewFragment : BaseFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate<FragmentOverviewBinding>(inflater, R.layout.fragment_overview, container, false).also { binding ->
-            binding.lifecycleOwner = viewLifecycleOwner
-
+        binding = FragmentOverviewBinding.inflate(inflater).also { binding ->
             setupToolBar(binding)
             setupDrawerLayout(binding)
             setupEntryList(binding)
@@ -131,8 +128,7 @@ class OverviewFragment : BaseFragment() {
 
     private fun setupEntryList(binding: FragmentOverviewBinding) {
         binding.layoutOverviewContent.recyclerViewItemList.apply {
-            val linearLayoutManager = LinearLayoutManager(context)
-            layoutManager = linearLayoutManager
+            layoutManager = LinearLayoutManager(context)
             adapter = ItemAdapter(this@OverviewFragment)
         }
 
@@ -342,7 +338,7 @@ class OverviewFragment : BaseFragment() {
 class ItemAdapter(private val fragmentPresenter: FragmentPresenting) : ListAdapter<ListItemIdentifiable, ItemAdapter.ItemViewHolder>(ListItemIdentifiableDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val binding = DataBindingUtil.inflate<ListItemEntryBinding>(LayoutInflater.from(parent.context), R.layout.list_item_entry, parent, false)
+        val binding = ListItemEntryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ItemViewHolder(binding, fragmentPresenter)
     }
 

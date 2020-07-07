@@ -9,7 +9,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -18,6 +17,10 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.textfield.TextInputLayout
 import de.passbutler.app.base.DependentNonNullValueGetterLiveData
 import de.passbutler.app.base.DependentOptionalValueGetterLiveData
+import de.passbutler.app.base.bindEnabled
+import de.passbutler.app.base.bindInput
+import de.passbutler.app.base.bindTextAndVisibility
+import de.passbutler.app.base.bindVisibility
 import de.passbutler.app.base.formattedDateTime
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.base.observe
@@ -29,8 +32,6 @@ import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.validateForm
-import org.tinylog.kotlin.Logger
-import java.util.*
 
 class ItemDetailFragment : ToolBarFragment() {
 
@@ -73,10 +74,6 @@ class ItemDetailFragment : ToolBarFragment() {
         }
     }
 
-    private val itemAuthorizationDescriptionObserver = Observer<String?> {
-        updateManageAuthorizationsSection()
-    }
-
     private val isItemModified by lazy {
         DependentNonNullValueGetterLiveData(
             viewModel.title,
@@ -99,20 +96,7 @@ class ItemDetailFragment : ToolBarFragment() {
         updateToolbarMenuItems()
     }
 
-    private val itemIdObserver = Observer<String?> {
-        binding?.informationItemId?.textViewValue?.text = it
-    }
-
-    private val itemModifiedDateObserver = Observer<Date?> {
-        binding?.informationItemModified?.textViewValue?.text = it?.formattedDateTime
-    }
-
-    private val itemCreatedDateObserver = Observer<Date?> {
-        binding?.informationItemCreated?.textViewValue?.text = it?.formattedDateTime
-    }
-
     private val isNewItemObserver = Observer<Boolean> {
-        Logger.debug("isNewItem = $it")
         updateToolbarTitle()
         updateToolbarMenuItems()
     }
@@ -189,29 +173,45 @@ class ItemDetailFragment : ToolBarFragment() {
     }
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate<FragmentItemdetailBinding>(inflater, R.layout.fragment_itemdetail, container, false).also { binding ->
-            binding.lifecycleOwner = viewLifecycleOwner
-            binding.viewModel = viewModel
-
-            setupPasswordField(binding)
+        binding = FragmentItemdetailBinding.inflate(inflater).also { binding ->
+            setupItemFields(binding)
+            setupItemAuthorizationsSection(binding)
             setupInformationView(binding)
             setupDeleteItemButton(binding)
+
+            binding.groupExistingItemViews.bindVisibility(viewLifecycleOwner, viewModel.isNewItem) { isNewItem ->
+                !isNewItem
+            }
 
             applyRestoredViewStates(binding)
         }
 
         isItemModified.observe(viewLifecycleOwner, true, isItemModifiedObserver)
-        itemAuthorizationDescription.observe(viewLifecycleOwner, true, itemAuthorizationDescriptionObserver)
-
-        viewModel.id.observe(viewLifecycleOwner, itemIdObserver)
-        viewModel.modified.observe(viewLifecycleOwner, itemModifiedDateObserver)
-        viewModel.created.observe(viewLifecycleOwner, itemCreatedDateObserver)
         viewModel.isNewItem.observe(viewLifecycleOwner, isNewItemObserver)
 
         return binding?.root
     }
 
+    private fun setupItemFields(binding: FragmentItemdetailBinding) {
+        binding.textInputLayoutTitle.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
+        binding.textInputEditTextTitle.bindInput(viewModel.title)
+
+        setupPasswordField(binding)
+
+        binding.textInputLayoutUsername.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
+        binding.textInputEditTextUsername.bindInput(viewModel.username)
+
+        binding.textInputLayoutUrl.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
+        binding.textInputEditTextUrl.bindInput(viewModel.url)
+
+        binding.textInputLayoutNotes.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
+        binding.textInputEditTextNotes.bindInput(viewModel.notes)
+    }
+
     private fun setupPasswordField(binding: FragmentItemdetailBinding) {
+        binding.textInputLayoutPassword.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
+        binding.textInputEditTextPassword.bindInput(viewModel.password)
+
         if (viewModel.hidePasswordsEnabled) {
             binding.textInputLayoutPassword.endIconMode = TextInputLayout.END_ICON_PASSWORD_TOGGLE
             binding.textInputEditTextPassword.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
@@ -221,11 +221,46 @@ class ItemDetailFragment : ToolBarFragment() {
         }
     }
 
+    private fun setupItemAuthorizationsSection(binding: FragmentItemdetailBinding) {
+        binding.buttonManageAuthorizations.isEnabled = viewModel.isItemAuthorizationAvailable
+        binding.buttonManageAuthorizations.bindVisibility(viewLifecycleOwner, viewModel.isNewItem, viewModel.isItemAuthorizationAllowed) { isNewItem, isItemAuthorizationAllowed ->
+            !isNewItem && isItemAuthorizationAllowed
+        }
+
+        if (viewModel.isItemAuthorizationAvailable) {
+            binding.buttonManageAuthorizations.setOnClickListener {
+                viewModel.id.value?.let { itemId ->
+                    showFragment(ItemAuthorizationsDetailFragment.newInstance(itemId))
+                }
+            }
+        }
+
+        binding.textViewAuthorizationsFooter.bindVisibility(viewLifecycleOwner, viewModel.isNewItem, viewModel.isItemAuthorizationAllowed) { isNewItem, isItemAuthorizationAllowed ->
+            !isNewItem && isItemAuthorizationAllowed && !viewModel.isItemAuthorizationAvailable
+        }
+
+        binding.textViewAuthorizationsDescription.bindTextAndVisibility(viewLifecycleOwner, itemAuthorizationDescription)
+    }
+
     private fun setupInformationView(binding: FragmentItemdetailBinding) {
+        binding.informationItemId.textViewTitle.text = getString(R.string.itemdetail_id_title)
         binding.informationItemId.textViewValue.typeface = Typeface.MONOSPACE
+        binding.informationItemId.textViewValue.bindTextAndVisibility(viewLifecycleOwner, viewModel.id)
+
+        binding.informationItemModified.textViewTitle.text = getString(R.string.itemdetail_modified_title)
+        binding.informationItemModified.textViewValue.bindTextAndVisibility(viewLifecycleOwner, viewModel.modified) {
+            it?.formattedDateTime
+        }
+
+        binding.informationItemCreated.textViewTitle.text = getString(R.string.itemdetail_created_title)
+        binding.informationItemCreated.textViewValue.bindTextAndVisibility(viewLifecycleOwner, viewModel.created) {
+            it?.formattedDateTime
+        }
     }
 
     private fun setupDeleteItemButton(binding: FragmentItemdetailBinding) {
+        binding.buttonDeleteItem.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
+
         binding.buttonDeleteItem.setOnClickListener {
             deleteClicked()
         }
@@ -251,18 +286,6 @@ class ItemDetailFragment : ToolBarFragment() {
         formPassword?.let { binding.textInputEditTextPassword.setText(it) }
         formUrl?.let { binding.textInputEditTextUrl.setText(it) }
         formNotes?.let { binding.textInputEditTextNotes.setText(it) }
-    }
-
-    private fun updateManageAuthorizationsSection() {
-        binding?.textViewAuthorizationsDescription?.text = itemAuthorizationDescription.value
-
-        if (viewModel.isItemAuthorizationAvailable) {
-            binding?.buttonManageAuthorizations?.setOnClickListener {
-                viewModel.id.value?.let { itemId ->
-                    showFragment(ItemAuthorizationsDetailFragment.newInstance(itemId))
-                }
-            }
-        }
     }
 
     override fun onStop() {
