@@ -27,8 +27,9 @@ class StructureParser(private val assistStructure: AssistStructure) {
             Logger.debug("Received application id '$applicationId'.")
             result.applicationId = applicationId
 
-            // TODO: break loop
-            parseViewNode(windowNode.rootViewNode, result)
+            if (parseViewNode(windowNode.rootViewNode, result)) {
+                break
+            }
         }
 
         // If no explicit username field was found, use the guessed username field
@@ -84,7 +85,6 @@ class StructureParser(private val assistStructure: AssistStructure) {
                     Logger.debug("The autofill id '$autofillId' was detected as password.")
                     result.passwordId = autofillId
 
-                    // TODO: May not work with `forEach` loop
                     return true
                 }
                 AUTOFILL_AUTOCOMPLETE_IGNORE_HINTS.containsIgnoreCase(autofillHint) -> {
@@ -130,7 +130,6 @@ class StructureParser(private val assistStructure: AssistStructure) {
                             Logger.debug("The autofill id '$autofillId' was detected as password.")
                             result.passwordId = autofillId
 
-                            // TODO: May not work with `forEach` loop
                             return true
                         }
                     }
