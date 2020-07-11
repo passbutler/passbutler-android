@@ -46,21 +46,23 @@ class StructureParser(private val assistStructure: AssistStructure) {
             Logger.debug("Received web domain '$it'.")
         }
 
-        val autofillId = viewNode.autofillId
+        // Only process visible nodes
+        if (viewNode.visibility == View.VISIBLE) {
+            val autofillId = viewNode.autofillId
 
-        // Only process visible text views
-        if (autofillId != null && viewNode.visibility == View.VISIBLE && viewNode.autofillType == View.AUTOFILL_TYPE_TEXT) {
-            val autofillHints = viewNode.autofillHints
+            if (autofillId != null && viewNode.autofillType == View.AUTOFILL_TYPE_TEXT) {
+                val autofillHints = viewNode.autofillHints
 
-            when {
-                autofillHints?.isNotEmpty() == true && parseViewNodeByAutofillHints(viewNode, autofillId, autofillHints.toList(), result) -> {
-                    return true
-                }
-                parseViewNodeByHtmlAttributes(viewNode, autofillId, result) -> {
-                    return true
-                }
-                parseViewNodeByAndroidInput(viewNode, autofillId, result) -> {
-                    return true
+                when {
+                    autofillHints?.isNotEmpty() == true && parseViewNodeByAutofillHints(viewNode, autofillId, autofillHints.toList(), result) -> {
+                        return true
+                    }
+                    parseViewNodeByHtmlAttributes(viewNode, autofillId, result) -> {
+                        return true
+                    }
+                    parseViewNodeByAndroidInput(viewNode, autofillId, result) -> {
+                        return true
+                    }
                 }
             }
 
