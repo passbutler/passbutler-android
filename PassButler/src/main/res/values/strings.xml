@@ -6,6 +6,11 @@
     <string name="general_okay">OK</string>
     <string name="general_cancel">Abbrechen</string>
 
+    <!-- Autofill -->
+
+    <string name="autofill_remote_view_label_username">%1$s</string>
+    <string name="autofill_remote_view_label_password">Passwort für „%1$s“</string>
+
     <!-- Form validation -->
 
     <string name="form_serverurl_validation_error_empty">Server URL nicht ausgefüllt</string>
