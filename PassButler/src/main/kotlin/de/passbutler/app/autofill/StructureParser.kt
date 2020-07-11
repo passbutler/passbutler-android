@@ -32,8 +32,8 @@ class StructureParser(private val assistStructure: AssistStructure) {
         }
 
         // If no explicit username field was found, use the guessed username field
-        if (result.usernameId == null && result.passwordId != null && result.usernameCandidate != null) {
-            result.usernameId = result.usernameCandidate
+        if (result.usernameId == null && result.passwordId != null && result.usernameIdCandidate != null) {
+            result.usernameId = result.usernameIdCandidate
         }
 
         return result.takeIf { it.usernameId != null && it.passwordId != null }
@@ -124,7 +124,7 @@ class StructureParser(private val assistStructure: AssistStructure) {
                         }
                         HTML_ATTRIBUTES_USERNAME_CANDIDATE.containsIgnoreCase(tagAttributeValue) -> {
                             Logger.debug("The autofill id '$autofillId' was detected as username candidate.")
-                            result.usernameCandidate = autofillId
+                            result.usernameIdCandidate = autofillId
                         }
                         HTML_ATTRIBUTES_PASSWORD.containsIgnoreCase(tagAttributeValue) -> {
                             Logger.debug("The autofill id '$autofillId' was detected as password.")
@@ -153,7 +153,7 @@ class StructureParser(private val assistStructure: AssistStructure) {
                 }
                 INPUT_TYPES_USERNAME_CANDIDATE.containsInputType(viewNodeInputType) -> {
                     Logger.debug("The autofill id '$autofillId' was detected as username candidate.")
-                    result.usernameCandidate = autofillId
+                    result.usernameIdCandidate = autofillId
                     false
                 }
                 INPUT_TYPES_PASSWORD.containsInputType(viewNodeInputType) -> {
@@ -175,16 +175,41 @@ class StructureParser(private val assistStructure: AssistStructure) {
         }
     }
 
-    // TODO: Do not override values if any was already set
-    data class Result(
-        var applicationId: String? = null,
-        var webDomain: String? = null,
+    class Result {
+        var applicationId: String? = null
 
-        var usernameId: AutofillId? = null,
-        var usernameCandidate: AutofillId? = null,
+        var webDomain: String? = null
+            set(value) {
+                // Only apply value if still unset
+                if (field == null) {
+                    field = value
+                }
+            }
+
+        var usernameId: AutofillId? = null
+            set(value) {
+                // Only apply value if still unset
+                if (field == null) {
+                    field = value
+                }
+            }
+
+        var usernameIdCandidate: AutofillId? = null
+            set(value) {
+                // Only apply value if still unset
+                if (field == null) {
+                    field = value
+                }
+            }
 
         var passwordId: AutofillId? = null
-    )
+            set(value) {
+                // Only apply value if still unset
+                if (field == null) {
+                    field = value
+                }
+            }
+    }
 
     companion object {
         private val AUTOFILL_USERNAME_HINTS = listOf(
