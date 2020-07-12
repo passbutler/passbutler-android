@@ -15,6 +15,9 @@ import org.tinylog.kotlin.Logger
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 class PassButlerAutofillService : AutofillService() {
+
+    // TODO: More security measures (package verification etc.)
+
     override fun onFillRequest(request: FillRequest, cancellationSignal: CancellationSignal, callback: FillCallback) {
         Logger.debug("The autofill service was requested.")
 
@@ -41,6 +44,7 @@ class PassButlerAutofillService : AutofillService() {
     }
 
     override fun onSaveRequest(request: SaveRequest, callback: SaveCallback) {
+        // TODO: Implement
         Logger.debug("The autofill service does not support save requests!")
         callback.onFailure(null)
     }
