@@ -8,7 +8,9 @@ import android.content.IntentSender
 import android.os.Bundle
 import android.service.autofill.Dataset
 import android.service.autofill.FillResponse
+import android.service.autofill.SaveInfo
 import android.view.View
+import android.view.autofill.AutofillId
 import android.view.autofill.AutofillManager
 import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
@@ -38,11 +40,63 @@ class SimpleAuthActivity : Activity() {
             receivedIntent.getParcelableExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_PASSWORD_ID)
         )
 
-        val autofillResponse = createAutofillResponse(this, structureParserResult)
+        val autofillResponse = createAutofillResponse(structureParserResult)
         responseIntent.putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, autofillResponse)
 
         setResult(RESULT_OK, responseIntent)
         finish()
+    }
+
+    private fun createAutofillResponse(structureParserResult: StructureParser.Result): FillResponse {
+        val autofillResponse = FillResponse.Builder()
+
+        for (i in 1..AUTOFILL_ENTRIES_MAXIMUM) {
+            val unlockedDataset: Dataset = createDataset(structureParserResult)
+            autofillResponse.addDataset(unlockedDataset)
+        }
+
+        var saveInfo = SaveInfo.SAVE_DATA_TYPE_GENERIC
+        val requiredIds = mutableListOf<AutofillId>()
+
+        if (structureParserResult.usernameId != null) {
+            saveInfo = saveInfo or SaveInfo.SAVE_DATA_TYPE_USERNAME
+            requiredIds.add(structureParserResult.usernameId)
+        }
+
+        if (structureParserResult.passwordId != null) {
+            saveInfo = saveInfo or SaveInfo.SAVE_DATA_TYPE_PASSWORD
+            requiredIds.add(structureParserResult.passwordId)
+        }
+
+        autofillResponse.setSaveInfo(
+            SaveInfo.Builder(saveInfo, requiredIds.toTypedArray()).build()
+        )
+
+        return autofillResponse.build()
+    }
+
+    private fun createDataset(structureParserResult: StructureParser.Result): Dataset {
+        // TODO: Remove
+        val username = "foobar"
+        val password = "1234"
+
+        val usernamePresentation = RemoteViews(packageName, R.layout.list_item_autofill_entry)
+        usernamePresentation.setTextViewText(R.id.textView_autofill_entry_item, getString(R.string.autofill_remote_view_label_username, username))
+
+        val passwordPresentation = RemoteViews(packageName, R.layout.list_item_autofill_entry)
+        passwordPresentation.setTextViewText(R.id.textView_autofill_entry_item, getString(R.string.autofill_remote_view_label_password, username))
+
+        val datasetBuilder = Dataset.Builder()
+
+        structureParserResult.usernameId?.let { autofillId ->
+            datasetBuilder.setValue(autofillId, AutofillValue.forText(username), usernamePresentation)
+        }
+
+        structureParserResult.passwordId?.let { autofillId ->
+            datasetBuilder.setValue(autofillId, AutofillValue.forText(password), passwordPresentation)
+        }
+
+        return datasetBuilder.build()
     }
 
     private fun onNo() {
@@ -72,59 +126,6 @@ class SimpleAuthActivity : Activity() {
             }
 
             return PendingIntent.getActivity(context, ++pendingIntentId, authenticateActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT).intentSender
-        }
-
-        fun createAutofillResponse(
-            context: Context,
-            structureParserResult: StructureParser.Result
-        ): FillResponse {
-            val autofillResponse = FillResponse.Builder()
-
-            for (i in 1..AUTOFILL_ENTRIES_MAXIMUM) {
-                val unlockedDataset: Dataset = createDataset(context, structureParserResult)
-                autofillResponse.addDataset(unlockedDataset)
-            }
-
-            // 2.Add save info
-//            val ids: Collection<AutofillId> = fields.values()
-//            val requiredIds = arrayOfNulls<AutofillId>(ids.size)
-//            ids.toArray<AutofillId>(requiredIds)
-//
-//            response.setSaveInfo( // We're simple, so we're generic
-//                SaveInfo.Builder(SaveInfo.SAVE_DATA_TYPE_GENERIC, requiredIds).build()
-//            )
-
-            // 3.Profit!
-            return autofillResponse.build()
-        }
-
-        private fun createDataset(
-            context: Context,
-            structureParserResult: StructureParser.Result
-        ): Dataset {
-            val packageName = context.packageName
-
-            // TODO: Remove
-            val username = "foobar"
-            val password = "1234"
-
-            val usernamePresentation = RemoteViews(packageName, R.layout.list_item_autofill_entry)
-            usernamePresentation.setTextViewText(R.id.textView_autofill_entry_item, context.getString(R.string.autofill_remote_view_label_username, username))
-
-            val passwordPresentation = RemoteViews(packageName, R.layout.list_item_autofill_entry)
-            passwordPresentation.setTextViewText(R.id.textView_autofill_entry_item, context.getString(R.string.autofill_remote_view_label_password, username))
-
-            val datasetBuilder = Dataset.Builder()
-
-            structureParserResult.usernameId?.let { autofillId ->
-                datasetBuilder.setValue(autofillId, AutofillValue.forText(username), usernamePresentation)
-            }
-
-            structureParserResult.passwordId?.let { autofillId ->
-                datasetBuilder.setValue(autofillId, AutofillValue.forText(password), passwordPresentation)
-            }
-
-            return datasetBuilder.build()
         }
     }
 }
