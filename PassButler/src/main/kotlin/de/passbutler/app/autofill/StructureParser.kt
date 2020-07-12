@@ -2,11 +2,13 @@ package de.passbutler.app.autofill
 
 import android.app.assist.AssistStructure
 import android.os.Build
+import android.os.Parcelable
 import android.text.InputType
 import android.view.View
 import android.view.ViewStructure
 import android.view.autofill.AutofillId
 import androidx.annotation.RequiresApi
+import kotlinx.android.parcel.Parcelize
 import org.tinylog.kotlin.Logger
 import java.util.*
 
@@ -216,7 +218,8 @@ class StructureParser(private val assistStructure: AssistStructure) {
             }
     }
 
-    data class Result(val applicationId: String?, val webDomain: String?, val usernameId: AutofillId?, val passwordId: AutofillId?)
+    @Parcelize
+    data class Result(val applicationId: String?, val webDomain: String?, val usernameId: AutofillId?, val passwordId: AutofillId?) : Parcelable
 
     companion object {
         private val AUTOFILL_USERNAME_HINTS = listOf(
