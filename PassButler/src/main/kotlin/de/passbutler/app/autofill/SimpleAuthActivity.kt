@@ -31,18 +31,17 @@ class SimpleAuthActivity : Activity() {
         //  1. authenticate if needed
         //  2. check if `applicationId` or `webDomain` could be found to show a) selection or b) send result back
 
-        val structureParserResult = receivedIntent.getParcelableExtra<StructureParser.Result>(INTENT_EXTRA_STRUCTURE_PARSER_RESULT)
+        val structureParserResult = StructureParser.Result(
+            receivedIntent.getStringExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_APPLICATION_ID),
+            receivedIntent.getStringExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_WEB_DOMAIN),
+            receivedIntent.getParcelableExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_USERNAME_ID),
+            receivedIntent.getParcelableExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_PASSWORD_ID)
+        )
 
-        val intentResult = if (structureParserResult != null) {
-            val autofillResponse = createAutofillResponse(this, structureParserResult)
-            responseIntent.putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, autofillResponse)
+        val autofillResponse = createAutofillResponse(this, structureParserResult)
+        responseIntent.putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, autofillResponse)
 
-            RESULT_OK
-        } else {
-            RESULT_CANCELED
-        }
-
-        setResult(intentResult, responseIntent)
+        setResult(RESULT_OK, responseIntent)
         finish()
     }
 
@@ -55,7 +54,10 @@ class SimpleAuthActivity : Activity() {
         var pendingIntentId = 0
             private set
 
-        private const val INTENT_EXTRA_STRUCTURE_PARSER_RESULT = "INTENT_EXTRA_STRUCTURE_PARSER_RESULT"
+        private const val INTENT_EXTRA_STRUCTURE_PARSER_RESULT_APPLICATION_ID = "INTENT_EXTRA_STRUCTURE_PARSER_RESULT_APPLICATION_ID"
+        private const val INTENT_EXTRA_STRUCTURE_PARSER_RESULT_WEB_DOMAIN = "INTENT_EXTRA_STRUCTURE_PARSER_RESULT_WEB_DOMAIN"
+        private const val INTENT_EXTRA_STRUCTURE_PARSER_RESULT_USERNAME_ID = "INTENT_EXTRA_STRUCTURE_PARSER_RESULT_USERNAME_ID"
+        private const val INTENT_EXTRA_STRUCTURE_PARSER_RESULT_PASSWORD_ID = "INTENT_EXTRA_STRUCTURE_PARSER_RESULT_PASSWORD_ID"
         private const val AUTOFILL_ENTRIES_MAXIMUM = 5
 
         fun createAuthenticationIntentSender(
@@ -63,7 +65,10 @@ class SimpleAuthActivity : Activity() {
             structureParserResult: StructureParser.Result
         ): IntentSender {
             val authenticateActivityIntent = Intent(context, SimpleAuthActivity::class.java).apply {
-                putExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT, structureParserResult)
+                putExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_APPLICATION_ID, structureParserResult.applicationId)
+                putExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_WEB_DOMAIN, structureParserResult.webDomain)
+                putExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_USERNAME_ID, structureParserResult.usernameId)
+                putExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_PASSWORD_ID, structureParserResult.passwordId)
             }
 
             return PendingIntent.getActivity(context, ++pendingIntentId, authenticateActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT).intentSender
