@@ -33,6 +33,10 @@ class SimpleAuthActivity : Activity() {
         val myIntent = intent
         val replyIntent = Intent()
 
+        // TODO:
+        //  1. authenticate if needed
+        //  2. check if `applicationId` or `webDomain` could be found to show a) selection or b) send result back
+
         val hints = myIntent.getStringArrayExtra(EXTRA_HINTS)
         val ids = myIntent.getParcelableArrayExtra(EXTRA_IDS)
 
@@ -69,12 +73,12 @@ class SimpleAuthActivity : Activity() {
             hints: Array<String>,
             ids: Array<AutofillId>
         ): IntentSender {
-            val intent = Intent(context, SimpleAuthActivity::class.java).apply {
+            val authenticateActivityIntent = Intent(context, SimpleAuthActivity::class.java).apply {
                 putExtra(EXTRA_HINTS, hints)
                 putExtra(EXTRA_IDS, ids)
             }
 
-            return PendingIntent.getActivity(context, ++sPendingIntentId, intent, PendingIntent.FLAG_CANCEL_CURRENT).intentSender
+            return PendingIntent.getActivity(context, ++sPendingIntentId, authenticateActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT).intentSender
         }
 
         fun createAutofillResponse(

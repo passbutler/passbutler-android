@@ -176,6 +176,7 @@ class StructureParser(private val assistStructure: AssistStructure) {
         }
     }
 
+    // TODO: Change to InternalResult and expose only immutable data class
     class Result {
         var applicationId: String? = null
 
