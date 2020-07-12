@@ -34,7 +34,13 @@ class RootViewModel : UserViewModelUsingViewModel() {
 
     suspend fun restoreLoggedInUser() {
         registerLoggedInUserResultObserver()
-        userManager.restoreLoggedInUser()
+
+        val wasRestored = userManager.restoreLoggedInUser()
+
+        // If the logged-in user was already restored, trigger the observers manually to initialize the view
+        if (!wasRestored) {
+            userManager.loggedInUserResult.notifyChange()
+        }
     }
 
     private fun registerLoggedInUserResultObserver() {
