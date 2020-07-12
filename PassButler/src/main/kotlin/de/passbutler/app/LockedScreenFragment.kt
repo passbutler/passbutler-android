@@ -204,7 +204,8 @@ class LockedScreenFragment : BaseFragment() {
     }
 
     override fun onHandleBackPress(): Boolean {
-        // Do not allow pop fragment via backpress
+        // Do not allow pop fragment via backpress - instead finish the activity
+        requireActivity().finish()
         return true
     }
 
