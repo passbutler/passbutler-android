@@ -41,7 +41,6 @@ class SimpleAuthActivity : Activity() {
             val hints = myIntent.getStringArrayExtra(EXTRA_HINTS)
             val ids = myIntent.getParcelableArrayExtra(EXTRA_IDS)
 
-
             val size = hints.size
             val fields = ArrayMap<String, AutofillId>(size)
 
@@ -49,13 +48,7 @@ class SimpleAuthActivity : Activity() {
                 fields[hints[i]] = ids[i] as AutofillId
             }
 
-
-
-
-            val shouldAuthenticateDatasets = myIntent.getBooleanExtra(EXTRA_AUTH_DATASETS, false)
-
-
-            val response = createAutofillResponse(this, fields, 1, shouldAuthenticateDatasets)
+            val response = createAutofillResponse(this, fields, AUTOFILL_ENTRIES_MAXIMUM)
             replyIntent.putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, response)
         }
 
@@ -72,8 +65,9 @@ class SimpleAuthActivity : Activity() {
         private const val EXTRA_DATASET = "dataset"
         private const val EXTRA_HINTS = "hints"
         private const val EXTRA_IDS = "ids"
-        private const val EXTRA_AUTH_DATASETS = "auth_datasets"
         private var sPendingIntentId = 0
+
+        private const val AUTOFILL_ENTRIES_MAXIMUM = 5
 
         fun newIntentSenderForDataset(
             context: Context,
@@ -83,8 +77,7 @@ class SimpleAuthActivity : Activity() {
                 context = context,
                 dataset = dataset,
                 hints = null,
-                ids = null,
-                authenticateDatasets = false
+                ids = null
             )
         }
 
@@ -94,15 +87,13 @@ class SimpleAuthActivity : Activity() {
         fun newIntentSenderForResponse(
             context: Context,
             hints: Array<String>,
-            ids: Array<AutofillId>,
-            authenticateDatasets: Boolean
+            ids: Array<AutofillId>
         ): IntentSender {
             return newIntentSender(
                 context = context,
                 dataset = null,
                 hints = hints,
-                ids = ids,
-                authenticateDatasets = authenticateDatasets
+                ids = ids
             )
         }
 
@@ -110,8 +101,7 @@ class SimpleAuthActivity : Activity() {
             context: Context,
             dataset: Dataset?,
             hints: Array<String>?,
-            ids: Array<AutofillId>?,
-            authenticateDatasets: Boolean
+            ids: Array<AutofillId>?
         ): IntentSender {
             val intent = Intent(context, SimpleAuthActivity::class.java)
 
@@ -120,7 +110,6 @@ class SimpleAuthActivity : Activity() {
             } else {
                 intent.putExtra(EXTRA_HINTS, hints)
                 intent.putExtra(EXTRA_IDS, ids)
-                intent.putExtra(EXTRA_AUTH_DATASETS, authenticateDatasets)
             }
 
             return PendingIntent.getActivity(
@@ -132,8 +121,7 @@ class SimpleAuthActivity : Activity() {
         fun createAutofillResponse(
             context: Context,
             fields: ArrayMap<String, AutofillId>,
-            numDatasets: Int,
-            authenticateDatasets: Boolean
+            numDatasets: Int
         ): FillResponse {
             val packageName = context.packageName
             val response = FillResponse.Builder()
@@ -141,23 +129,7 @@ class SimpleAuthActivity : Activity() {
             // 1.Add the dynamic datasets
             for (i in 1..numDatasets) {
                 val unlockedDataset: Dataset = newUnlockedDataset(fields, packageName, i)
-
-                if (authenticateDatasets) {
-                    val lockedDataset = Dataset.Builder()
-
-                    for ((hint, id) in fields.entries) {
-                        val value = "$i-$hint"
-
-                        val authentication = newIntentSenderForDataset(context, unlockedDataset)
-                        val presentation: RemoteViews = newDatasetPresentation(packageName, "Tap to auth $value")
-
-                        lockedDataset.setValue(id, null, presentation)
-                            .setAuthentication(authentication)
-                    }
-                    response.addDataset(lockedDataset.build())
-                } else {
-                    response.addDataset(unlockedDataset)
-                }
+                response.addDataset(unlockedDataset)
             }
 
             // 2.Add save info

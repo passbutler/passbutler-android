@@ -38,11 +38,9 @@ class PassButlerAutofillService : AutofillService() {
             if (allAutoFillIds.isNotEmpty()) {
                 val responseBuilder = FillResponse.Builder()
 
-
-                val authenticateDatasets = true
                 val allAutoFillHintsArray = allAutoFillHints.toTypedArray()
                 val allAutoFillIdsArray = allAutoFillIds.toTypedArray()
-                val authenticationIntentSender = SimpleAuthActivity.newIntentSenderForResponse(this, allAutoFillHintsArray, allAutoFillIdsArray, authenticateDatasets);
+                val authenticationIntentSender = SimpleAuthActivity.newIntentSenderForResponse(this, allAutoFillHintsArray, allAutoFillIdsArray);
 
                 val webDomain = parsedStructureResult.webDomain
                 val applicationId = parsedStructureResult.applicationId
