@@ -18,29 +18,26 @@ class PassButlerAutofillService : AutofillService() {
     override fun onFillRequest(request: FillRequest, cancellationSignal: CancellationSignal, callback: FillCallback) {
         Logger.debug("The autofill service was requested.")
 
-        val parsedStructureResult = request.fillContexts.lastOrNull()?.structure?.let { lastAssistStructure ->
+        val structureParserResult = request.fillContexts.lastOrNull()?.structure?.let { lastAssistStructure ->
             val parsedStructure = StructureParser(lastAssistStructure)
             parsedStructure.parse()
         }
 
-        val fillResponse = if (parsedStructureResult != null) {
-            val allAutoFillIds = listOfNotNull(
-                parsedStructureResult.usernameId,
-                parsedStructureResult.passwordId
-            )
+        val fillResponse = if (structureParserResult != null) {
+            val serviceContext = this
+            val responseBuilder = FillResponse.Builder().apply {
+                val allAutoFillIds = arrayOf(
+                    structureParserResult.usernameId,
+                    structureParserResult.passwordId
+                )
 
-            if (allAutoFillIds.isNotEmpty()) {
-                val responseBuilder = FillResponse.Builder()
-
-                val allAutoFillIdsArray = allAutoFillIds.toTypedArray()
-                val authenticationIntentSender = SimpleAuthActivity.createAuthenticationIntentSender(this, parsedStructureResult)
+                val authenticationIntentSender = SimpleAuthActivity.createAuthenticationIntentSender(serviceContext, structureParserResult)
                 val remoteViews = RemoteViews(packageName, R.layout.list_item_autofill_unlock)
 
-                responseBuilder.setAuthentication(allAutoFillIdsArray, authenticationIntentSender, remoteViews)
-                responseBuilder.build()
-            } else {
-                null
+                setAuthentication(allAutoFillIds, authenticationIntentSender, remoteViews)
             }
+
+            responseBuilder.build()
         } else {
             Logger.debug("The autofill request could not be fulfilled.")
             null

@@ -37,8 +37,11 @@ class StructureParser(private val assistStructure: AssistStructure) {
             internalResult.usernameId = internalResult.usernameIdCandidate
         }
 
-        return if (internalResult.usernameId != null && internalResult.passwordId != null) {
-            Result(internalResult.applicationId, internalResult.webDomain, internalResult.usernameId, internalResult.passwordId)
+        val usernameId = internalResult.usernameId
+        val passwordId = internalResult.passwordId
+
+        return if (usernameId != null && passwordId != null) {
+            Result(internalResult.applicationId, internalResult.webDomain, usernameId, passwordId)
         } else {
             null
         }
@@ -216,7 +219,7 @@ class StructureParser(private val assistStructure: AssistStructure) {
             }
     }
 
-    data class Result(val applicationId: String?, val webDomain: String?, val usernameId: AutofillId?, val passwordId: AutofillId?)
+    data class Result(val applicationId: String?, val webDomain: String?, val usernameId: AutofillId, val passwordId: AutofillId)
 
     companion object {
         private val AUTOFILL_USERNAME_HINTS = listOf(
