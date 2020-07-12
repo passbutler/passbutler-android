@@ -16,6 +16,7 @@ import org.tinylog.kotlin.Logger
 @RequiresApi(api = Build.VERSION_CODES.O)
 class PassButlerAutofillService : AutofillService() {
 
+    // TODO: Check if user is logged-in
     // TODO: More security measures (package verification etc.)
 
     override fun onFillRequest(request: FillRequest, cancellationSignal: CancellationSignal, callback: FillCallback) {
