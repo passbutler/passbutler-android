@@ -19,12 +19,18 @@
         <activity
             android:name="de.passbutler.app.MainActivity"
             android:label="@string/app_name"
+            android:taskAffinity=".MainActivity"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="de.passbutler.app.autofill.SimpleAuthActivity"
+            android:label="@string/autofill_authentication_activity_name"
+            android:taskAffinity=".autofill.SimpleAuthActivity" />
 
         <service
             android:name="de.passbutler.app.autofill.PassButlerAutofillService"

@@ -3,13 +3,11 @@ package de.passbutler.app.autofill
 import android.os.Build
 import android.os.CancellationSignal
 import android.service.autofill.AutofillService
-import android.service.autofill.Dataset
 import android.service.autofill.FillCallback
 import android.service.autofill.FillRequest
 import android.service.autofill.FillResponse
 import android.service.autofill.SaveCallback
 import android.service.autofill.SaveRequest
-import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
 import androidx.annotation.RequiresApi
 import de.passbutler.app.R
@@ -26,29 +24,51 @@ class PassButlerAutofillService : AutofillService() {
         }
 
         val fillResponse = if (parsedStructureResult != null) {
-            // TODO: Remove hardcoded values
-            val (username: String, password: String) = UserData("test", "1234")
 
-            val usernamePresentation = RemoteViews(packageName, R.layout.list_item_autofill_entry)
-            usernamePresentation.setTextViewText(R.id.textView_autofill_entry_item, getString(R.string.autofill_remote_view_label_username, username))
+            val allAutoFillHints = listOfNotNull(
+                parsedStructureResult.usernameId?.let { "usernameId" },
+                parsedStructureResult.passwordId?.let { "passwordId" }
+            )
 
-            val passwordPresentation = RemoteViews(packageName, R.layout.list_item_autofill_entry)
-            passwordPresentation.setTextViewText(R.id.textView_autofill_entry_item, getString(R.string.autofill_remote_view_label_password, username))
+            val allAutoFillIds = listOfNotNull(
+                parsedStructureResult.usernameId,
+                parsedStructureResult.passwordId
+            )
 
-            val datasetBuilder = Dataset.Builder()
+            if (allAutoFillIds.isNotEmpty()) {
+                val responseBuilder = FillResponse.Builder()
 
-            parsedStructureResult.usernameId?.let { autofillId ->
-                datasetBuilder.setValue(autofillId, AutofillValue.forText(username), usernamePresentation)
+
+                val authenticateDatasets = true
+                val allAutoFillHintsArray = allAutoFillHints.toTypedArray()
+                val allAutoFillIdsArray = allAutoFillIds.toTypedArray()
+                val authenticationIntentSender = SimpleAuthActivity.newIntentSenderForResponse(this, allAutoFillHintsArray, allAutoFillIdsArray, authenticateDatasets);
+
+                val webDomain = parsedStructureResult.webDomain
+                val applicationId = parsedStructureResult.applicationId
+
+                val remoteViews = when {
+                    webDomain?.isNotBlank() == true -> {
+                        RemoteViews(packageName, R.layout.list_item_autofill_unlock).apply {
+                            setTextViewText(R.id.textView_autofill_unlock_item, webDomain)
+                        }
+                    }
+                    applicationId?.isNotBlank() == true -> {
+                        RemoteViews(packageName, R.layout.list_item_autofill_unlock).apply {
+                            setTextViewText(R.id.textView_autofill_unlock_item, applicationId)
+                        }
+                    }
+                    else -> {
+                        // TODO: Branch needed?
+                        null
+                    }
+                }
+
+                responseBuilder.setAuthentication(allAutoFillIdsArray, authenticationIntentSender, remoteViews)
+                responseBuilder.build()
+            } else {
+                null
             }
-
-            parsedStructureResult.passwordId?.let { autofillId ->
-                datasetBuilder.setValue(autofillId, AutofillValue.forText(password), passwordPresentation)
-            }
-
-            FillResponse.Builder()
-                .addDataset(datasetBuilder.build())
-                .build()
-
         } else {
             Logger.debug("The autofill request could not be fulfilled.")
             null
@@ -70,5 +90,3 @@ class PassButlerAutofillService : AutofillService() {
         Logger.debug("The autofill service was disconnected.")
     }
 }
-
-data class UserData(var username: String, var password: String)
