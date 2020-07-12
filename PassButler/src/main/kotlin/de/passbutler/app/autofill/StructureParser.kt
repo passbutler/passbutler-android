@@ -18,31 +18,35 @@ import java.util.*
 class StructureParser(private val assistStructure: AssistStructure) {
 
     fun parse(): Result? {
-        val result = Result()
+        val internalResult = InternalResult()
 
         for (i in 0 until assistStructure.windowNodeCount) {
             val windowNode = assistStructure.getWindowNodeAt(i)
 
             val applicationId = windowNode.title.toString().split("/").firstOrNull()
             Logger.debug("Received application id '$applicationId'.")
-            result.applicationId = applicationId
+            internalResult.applicationId = applicationId
 
-            if (parseViewNode(windowNode.rootViewNode, result)) {
+            if (parseViewNode(windowNode.rootViewNode, internalResult)) {
                 break
             }
         }
 
         // If no explicit username field was found, use the guessed username field
-        if (result.usernameId == null && result.passwordId != null && result.usernameIdCandidate != null) {
-            result.usernameId = result.usernameIdCandidate
+        if (internalResult.usernameId == null && internalResult.passwordId != null && internalResult.usernameIdCandidate != null) {
+            internalResult.usernameId = internalResult.usernameIdCandidate
         }
 
-        return result.takeIf { it.usernameId != null && it.passwordId != null }
+        return if (internalResult.usernameId != null && internalResult.passwordId != null) {
+            Result(internalResult.applicationId, internalResult.webDomain, internalResult.usernameId, internalResult.passwordId)
+        } else {
+            null
+        }
     }
 
-    private fun parseViewNode(viewNode: AssistStructure.ViewNode, result: Result): Boolean {
+    private fun parseViewNode(viewNode: AssistStructure.ViewNode, internalResult: InternalResult): Boolean {
         viewNode.webDomain?.let {
-            result.webDomain = it
+            internalResult.webDomain = it
             Logger.debug("Received web domain '$it'.")
         }
 
@@ -54,20 +58,20 @@ class StructureParser(private val assistStructure: AssistStructure) {
                 val autofillHints = viewNode.autofillHints
 
                 when {
-                    autofillHints?.isNotEmpty() == true && parseViewNodeByAutofillHints(viewNode, autofillId, autofillHints.toList(), result) -> {
+                    autofillHints?.isNotEmpty() == true && parseViewNodeByAutofillHints(viewNode, autofillId, autofillHints.toList(), internalResult) -> {
                         return true
                     }
-                    parseViewNodeByHtmlAttributes(viewNode, autofillId, result) -> {
+                    parseViewNodeByHtmlAttributes(viewNode, autofillId, internalResult) -> {
                         return true
                     }
-                    parseViewNodeByAndroidInput(viewNode, autofillId, result) -> {
+                    parseViewNodeByAndroidInput(viewNode, autofillId, internalResult) -> {
                         return true
                     }
                 }
             }
 
             for (i in 0 until viewNode.childCount) {
-                if (parseViewNode(viewNode.getChildAt(i), result)) {
+                if (parseViewNode(viewNode.getChildAt(i), internalResult)) {
                     return true
                 }
             }
@@ -76,22 +80,22 @@ class StructureParser(private val assistStructure: AssistStructure) {
         return false
     }
 
-    private fun parseViewNodeByAutofillHints(viewNode: AssistStructure.ViewNode, autofillId: AutofillId, autofillHints: List<String>, result: Result): Boolean {
+    private fun parseViewNodeByAutofillHints(viewNode: AssistStructure.ViewNode, autofillId: AutofillId, autofillHints: List<String>, internalResult: InternalResult): Boolean {
         autofillHints.forEach { autofillHint ->
             when {
                 AUTOFILL_USERNAME_HINTS.containsIgnoreCase(autofillHint) -> {
                     Logger.debug("The autofill id '$autofillId' was detected as username.")
-                    result.usernameId = autofillId
+                    internalResult.usernameId = autofillId
                 }
                 AUTOFILL_HINTS_PASSWORD.containsIgnoreCase(autofillHint) || autofillHint.contains("password", true) -> {
                     Logger.debug("The autofill id '$autofillId' was detected as password.")
-                    result.passwordId = autofillId
+                    internalResult.passwordId = autofillId
 
                     return true
                 }
                 AUTOFILL_AUTOCOMPLETE_IGNORE_HINTS.containsIgnoreCase(autofillHint) -> {
                     Logger.debug("The autofill id '$autofillId' was detected with 'autocomplete' setting.")
-                    return parseViewNodeByHtmlAttributes(viewNode, autofillId, result)
+                    return parseViewNodeByHtmlAttributes(viewNode, autofillId, internalResult)
                 }
                 else -> {
                     Logger.info("The autofill id '$autofillId' was detected as unknown autofill hint!")
@@ -102,7 +106,7 @@ class StructureParser(private val assistStructure: AssistStructure) {
         return false
     }
 
-    private fun parseViewNodeByHtmlAttributes(viewNode: AssistStructure.ViewNode, autofillId: AutofillId, result: Result): Boolean {
+    private fun parseViewNodeByHtmlAttributes(viewNode: AssistStructure.ViewNode, autofillId: AutofillId, internalResult: InternalResult): Boolean {
         val viewNodeHtmlInfo = viewNode.htmlInfo
 
         // Only process `input` HTML tags
@@ -122,15 +126,15 @@ class StructureParser(private val assistStructure: AssistStructure) {
                     when {
                         HTML_ATTRIBUTES_USERNAME.containsIgnoreCase(tagAttributeValue) -> {
                             Logger.debug("The autofill id '$autofillId' was detected as username.")
-                            result.usernameId = autofillId
+                            internalResult.usernameId = autofillId
                         }
                         HTML_ATTRIBUTES_USERNAME_CANDIDATE.containsIgnoreCase(tagAttributeValue) -> {
                             Logger.debug("The autofill id '$autofillId' was detected as username candidate.")
-                            result.usernameIdCandidate = autofillId
+                            internalResult.usernameIdCandidate = autofillId
                         }
                         HTML_ATTRIBUTES_PASSWORD.containsIgnoreCase(tagAttributeValue) -> {
                             Logger.debug("The autofill id '$autofillId' was detected as password.")
-                            result.passwordId = autofillId
+                            internalResult.passwordId = autofillId
 
                             return true
                         }
@@ -141,7 +145,7 @@ class StructureParser(private val assistStructure: AssistStructure) {
         return false
     }
 
-    private fun parseViewNodeByAndroidInput(viewNode: AssistStructure.ViewNode, autofillId: AutofillId, result: Result): Boolean {
+    private fun parseViewNodeByAndroidInput(viewNode: AssistStructure.ViewNode, autofillId: AutofillId, internalResult: InternalResult): Boolean {
         val viewNodeInputType = viewNode.inputType
 
         // Only process text input views
@@ -149,17 +153,17 @@ class StructureParser(private val assistStructure: AssistStructure) {
             when {
                 INPUT_TYPES_USERNAME.containsInputType(viewNodeInputType) -> {
                     Logger.debug("The autofill id '$autofillId' was detected as username.")
-                    result.usernameId = autofillId
+                    internalResult.usernameId = autofillId
                     false
                 }
                 INPUT_TYPES_USERNAME_CANDIDATE.containsInputType(viewNodeInputType) -> {
                     Logger.debug("The autofill id '$autofillId' was detected as username candidate.")
-                    result.usernameIdCandidate = autofillId
+                    internalResult.usernameIdCandidate = autofillId
                     false
                 }
                 INPUT_TYPES_PASSWORD.containsInputType(viewNodeInputType) -> {
                     Logger.debug("The autofill id '$autofillId' was detected as password.")
-                    result.passwordId = autofillId
+                    internalResult.passwordId = autofillId
                     true
                 }
                 INPUT_TYPES_IGNORED.containsInputType(viewNodeInputType) -> {
@@ -176,8 +180,7 @@ class StructureParser(private val assistStructure: AssistStructure) {
         }
     }
 
-    // TODO: Change to InternalResult and expose only immutable data class
-    class Result {
+    private class InternalResult {
         var applicationId: String? = null
 
         var webDomain: String? = null
@@ -212,6 +215,8 @@ class StructureParser(private val assistStructure: AssistStructure) {
                 }
             }
     }
+
+    data class Result(val applicationId: String?, val webDomain: String?, val usernameId: AutofillId?, val passwordId: AutofillId?)
 
     companion object {
         private val AUTOFILL_USERNAME_HINTS = listOf(
