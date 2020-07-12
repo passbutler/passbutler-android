@@ -38,29 +38,12 @@ class PassButlerAutofillService : AutofillService() {
             if (allAutoFillIds.isNotEmpty()) {
                 val responseBuilder = FillResponse.Builder()
 
+                // TODO: Pass parsedStructureResult to Intent
                 val allAutoFillHintsArray = allAutoFillHints.toTypedArray()
                 val allAutoFillIdsArray = allAutoFillIds.toTypedArray()
-                val authenticationIntentSender = SimpleAuthActivity.newIntentSenderForResponse(this, allAutoFillHintsArray, allAutoFillIdsArray);
+                val authenticationIntentSender = SimpleAuthActivity.createAuthenticationIntentSender(this, allAutoFillHintsArray, allAutoFillIdsArray);
 
-                val webDomain = parsedStructureResult.webDomain
-                val applicationId = parsedStructureResult.applicationId
-
-                val remoteViews = when {
-                    webDomain?.isNotBlank() == true -> {
-                        RemoteViews(packageName, R.layout.list_item_autofill_unlock).apply {
-                            setTextViewText(R.id.textView_autofill_unlock_item, webDomain)
-                        }
-                    }
-                    applicationId?.isNotBlank() == true -> {
-                        RemoteViews(packageName, R.layout.list_item_autofill_unlock).apply {
-                            setTextViewText(R.id.textView_autofill_unlock_item, applicationId)
-                        }
-                    }
-                    else -> {
-                        // TODO: Branch needed?
-                        null
-                    }
-                }
+                val remoteViews = RemoteViews(packageName, R.layout.list_item_autofill_unlock)
 
                 responseBuilder.setAuthentication(allAutoFillIdsArray, authenticationIntentSender, remoteViews)
                 responseBuilder.build()

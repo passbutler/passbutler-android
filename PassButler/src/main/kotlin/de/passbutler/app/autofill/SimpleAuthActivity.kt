@@ -33,24 +33,18 @@ class SimpleAuthActivity : Activity() {
         val myIntent = intent
         val replyIntent = Intent()
 
-        val dataset = myIntent.getParcelableExtra<Dataset>(EXTRA_DATASET)
+        val hints = myIntent.getStringArrayExtra(EXTRA_HINTS)
+        val ids = myIntent.getParcelableArrayExtra(EXTRA_IDS)
 
-        if (dataset != null) {
-            replyIntent.putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, dataset)
-        } else {
-            val hints = myIntent.getStringArrayExtra(EXTRA_HINTS)
-            val ids = myIntent.getParcelableArrayExtra(EXTRA_IDS)
+        val size = hints.size
+        val fields = ArrayMap<String, AutofillId>(size)
 
-            val size = hints.size
-            val fields = ArrayMap<String, AutofillId>(size)
-
-            for (i in 0 until size) {
-                fields[hints[i]] = ids[i] as AutofillId
-            }
-
-            val response = createAutofillResponse(this, fields, AUTOFILL_ENTRIES_MAXIMUM)
-            replyIntent.putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, response)
+        for (i in 0 until size) {
+            fields[hints[i]] = ids[i] as AutofillId
         }
+
+        val autofillResponse = createAutofillResponse(this, fields, AUTOFILL_ENTRIES_MAXIMUM)
+        replyIntent.putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, autofillResponse)
 
         setResult(RESULT_OK, replyIntent)
         finish()
@@ -62,60 +56,25 @@ class SimpleAuthActivity : Activity() {
     }
 
     companion object {
-        private const val EXTRA_DATASET = "dataset"
+        var sPendingIntentId = 0
+            private set
+
         private const val EXTRA_HINTS = "hints"
         private const val EXTRA_IDS = "ids"
-        private var sPendingIntentId = 0
 
         private const val AUTOFILL_ENTRIES_MAXIMUM = 5
 
-        fun newIntentSenderForDataset(
-            context: Context,
-            dataset: Dataset
-        ): IntentSender {
-            return newIntentSender(
-                context = context,
-                dataset = dataset,
-                hints = null,
-                ids = null
-            )
-        }
-
-        /**
-         * Creates intent to get response back to the autofill service.
-         */
-        fun newIntentSenderForResponse(
+        fun createAuthenticationIntentSender(
             context: Context,
             hints: Array<String>,
             ids: Array<AutofillId>
         ): IntentSender {
-            return newIntentSender(
-                context = context,
-                dataset = null,
-                hints = hints,
-                ids = ids
-            )
-        }
-
-        private fun newIntentSender(
-            context: Context,
-            dataset: Dataset?,
-            hints: Array<String>?,
-            ids: Array<AutofillId>?
-        ): IntentSender {
-            val intent = Intent(context, SimpleAuthActivity::class.java)
-
-            if (dataset != null) {
-                intent.putExtra(EXTRA_DATASET, dataset)
-            } else {
-                intent.putExtra(EXTRA_HINTS, hints)
-                intent.putExtra(EXTRA_IDS, ids)
+            val intent = Intent(context, SimpleAuthActivity::class.java).apply {
+                putExtra(EXTRA_HINTS, hints)
+                putExtra(EXTRA_IDS, ids)
             }
 
-            return PendingIntent.getActivity(
-                context, ++sPendingIntentId, intent,
-                PendingIntent.FLAG_CANCEL_CURRENT
-            ).intentSender
+            return PendingIntent.getActivity(context, ++sPendingIntentId, intent, PendingIntent.FLAG_CANCEL_CURRENT).intentSender
         }
 
         fun createAutofillResponse(
@@ -124,12 +83,13 @@ class SimpleAuthActivity : Activity() {
             numDatasets: Int
         ): FillResponse {
             val packageName = context.packageName
-            val response = FillResponse.Builder()
+
+            val autofillResponse = FillResponse.Builder()
 
             // 1.Add the dynamic datasets
             for (i in 1..numDatasets) {
                 val unlockedDataset: Dataset = newUnlockedDataset(fields, packageName, i)
-                response.addDataset(unlockedDataset)
+                autofillResponse.addDataset(unlockedDataset)
             }
 
             // 2.Add save info
@@ -142,16 +102,7 @@ class SimpleAuthActivity : Activity() {
 //            )
 
             // 3.Profit!
-            return response.build()
-        }
-
-        private fun newDatasetPresentation(
-            packageName: String,
-            text: CharSequence
-        ): RemoteViews {
-            return RemoteViews(packageName, R.layout.list_item_autofill_entry).apply {
-                setTextViewText(R.id.textView_autofill_entry_item, text)
-            }
+            return autofillResponse.build()
         }
 
         private fun newUnlockedDataset(
@@ -170,6 +121,15 @@ class SimpleAuthActivity : Activity() {
                 dataset.setValue(id, AutofillValue.forText(value), presentation)
             }
             return dataset.build()
+        }
+
+        private fun newDatasetPresentation(
+            packageName: String,
+            text: CharSequence
+        ): RemoteViews {
+            return RemoteViews(packageName, R.layout.list_item_autofill_entry).apply {
+                setTextViewText(R.id.textView_autofill_entry_item, text)
+            }
         }
     }
 }
