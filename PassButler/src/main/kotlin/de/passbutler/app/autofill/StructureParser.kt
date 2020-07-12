@@ -37,14 +37,7 @@ class StructureParser(private val assistStructure: AssistStructure) {
             internalResult.usernameId = internalResult.usernameIdCandidate
         }
 
-        val usernameId = internalResult.usernameId
-        val passwordId = internalResult.passwordId
-
-        return if (usernameId != null && passwordId != null) {
-            Result(internalResult.applicationId, internalResult.webDomain, usernameId, passwordId)
-        } else {
-            null
-        }
+        return Result.create(internalResult.applicationId, internalResult.webDomain, internalResult.usernameId, internalResult.passwordId)
     }
 
     private fun parseViewNode(viewNode: AssistStructure.ViewNode, internalResult: InternalResult): Boolean {
@@ -219,7 +212,26 @@ class StructureParser(private val assistStructure: AssistStructure) {
             }
     }
 
-    data class Result(val applicationId: String?, val webDomain: String?, val usernameId: AutofillId, val passwordId: AutofillId)
+    sealed class Result(val applicationId: String?, val webDomain: String?, val passwordId: AutofillId) {
+        class UsernameWithPassword(applicationId: String?, webDomain: String?, val usernameId: AutofillId, passwordId: AutofillId) : Result(applicationId, webDomain, passwordId)
+        class PasswordOnly(applicationId: String?, webDomain: String?, passwordId: AutofillId) : Result(applicationId, webDomain, passwordId)
+
+        val allAutofillIds
+            get() = listOfNotNull(
+                (this as? UsernameWithPassword)?.usernameId,
+                (this as? UsernameWithPassword)?.passwordId ?: (this as? PasswordOnly)?.passwordId
+            )
+
+        companion object {
+            fun create(applicationId: String?, webDomain: String?, usernameId: AutofillId?, passwordId: AutofillId?): Result? {
+                return when {
+                    usernameId != null && passwordId != null -> UsernameWithPassword(applicationId, webDomain, usernameId, passwordId)
+                    passwordId != null -> PasswordOnly(applicationId, webDomain, passwordId)
+                    else -> null
+                }
+            }
+        }
+    }
 
     companion object {
         private val AUTOFILL_USERNAME_HINTS = listOf(

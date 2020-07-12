@@ -26,15 +26,9 @@ class PassButlerAutofillService : AutofillService() {
         val fillResponse = if (structureParserResult != null) {
             val serviceContext = this
             val responseBuilder = FillResponse.Builder().apply {
-                val allAutoFillIds = arrayOf(
-                    structureParserResult.usernameId,
-                    structureParserResult.passwordId
-                )
-
                 val authenticationIntentSender = SimpleAuthActivity.createAuthenticationIntentSender(serviceContext, structureParserResult)
                 val remoteViews = RemoteViews(packageName, R.layout.list_item_autofill_unlock)
-
-                setAuthentication(allAutoFillIds, authenticationIntentSender, remoteViews)
+                setAuthentication(structureParserResult.allAutofillIds.toTypedArray(), authenticationIntentSender, remoteViews)
             }
 
             responseBuilder.build()
