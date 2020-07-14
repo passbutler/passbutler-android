@@ -12,6 +12,7 @@ import de.passbutler.common.base.Success
 import de.passbutler.common.base.resultOrThrowException
 import de.passbutler.common.base.toUTF8String
 import de.passbutler.common.database.models.UserType
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -58,7 +59,8 @@ class RootViewModel : UserViewModelUsingViewModel() {
 
         if (decryptSensibleDataResult is Success && loggedInUserViewModel.userType == UserType.REMOTE) {
             // Restore webservices asynchronously to avoid slow network is blocking unlock progress
-            viewModelScope.launch {
+            // Do not use `viewModelScope` here because otherwise the job will be cancelled if `LockedScreenFragment` is destroyed
+            GlobalScope.launch {
                 userManager.restoreWebservices(masterPassword)
             }
         }
