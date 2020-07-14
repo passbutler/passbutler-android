@@ -75,7 +75,7 @@ class OverviewFragment : BaseFragment() {
         adapter?.submitList(newItemViewModels)
 
         val showEmptyScreen = newItemViewModels.isEmpty()
-        binding?.layoutOverviewContent?.groupEmptyScreenViews?.visible = showEmptyScreen
+        binding?.layoutOverviewContent?.layoutEmptyScreen?.root?.visible = showEmptyScreen
     }
 
     private val webservicesInitializedObserver: BindableObserver<Webservices?> = {

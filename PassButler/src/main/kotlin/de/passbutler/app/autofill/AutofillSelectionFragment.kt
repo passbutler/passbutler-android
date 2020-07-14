@@ -51,12 +51,11 @@ class AutofillSelectionFragment : BaseFragment() {
         if (relevantItemViewModels.isNotEmpty()) {
             autofillMainActivity.itemWasSelected(relevantItemViewModels)
         } else {
-            // TODO: Use simpler layout
-            val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? AutofillSelectionItemAdapter
+            val adapter = binding?.recyclerViewItemList?.adapter as? AutofillSelectionItemAdapter
             adapter?.submitList(newItemViewModels)
 
             val showEmptyScreen = newItemViewModels.isEmpty()
-            binding?.layoutOverviewContent?.groupEmptyScreenViews?.visible = showEmptyScreen
+            binding?.layoutEmptyScreen?.root?.visible = showEmptyScreen
         }
     }
 
@@ -81,7 +80,7 @@ class AutofillSelectionFragment : BaseFragment() {
     }
 
     private fun setupEntryList(binding: FragmentAutofillSelectionBinding) {
-        binding.layoutOverviewContent.recyclerViewItemList.apply {
+        binding.recyclerViewItemList.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = AutofillSelectionItemAdapter(autofillMainActivity)
         }
