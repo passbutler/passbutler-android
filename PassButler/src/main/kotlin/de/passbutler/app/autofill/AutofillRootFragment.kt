@@ -13,6 +13,7 @@ class AutofillRootFragment : AbstractRootFragment() {
         if (!isFragmentShown(OverviewFragment::class.java)) {
             Logger.debug("Show logged-in state")
 
+            // Disabled transition because the fragment stack is always cold initialised
             showFragmentAsFirstScreen(
                 fragment = AutofillSelectionFragment.newInstance(),
                 transitionType = TransitionType.NONE
@@ -28,7 +29,7 @@ class AutofillRootFragment : AbstractRootFragment() {
         if (!isFragmentShown(LockedScreenFragment::class.java)) {
             Logger.debug("Show locked screen state")
 
-            // The debounce check must be disabled because on app initialisation the fragment stack is artificially created
+            // Disabled transition and debounce check because the fragment stack is always cold initialised
             showFragment(
                 fragment = LockedScreenFragment.newInstance(),
                 debounce = false,
