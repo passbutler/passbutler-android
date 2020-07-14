@@ -16,12 +16,12 @@ import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 import java.lang.ref.WeakReference
 
-class RootFragment : BaseFragment() {
+abstract class AbstractRootFragment : BaseFragment() {
 
     val viewModel by userViewModelUsingViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
-    private var viewWasInitialized = false
+    protected var viewWasInitialized = false
 
     private val rootScreenStateObserver = Observer<RootViewModel.RootScreenState?> {
         showRootScreen()
@@ -81,7 +81,14 @@ class RootFragment : BaseFragment() {
         viewWasInitialized = true
     }
 
-    private fun showLoggedInState() {
+    abstract fun showLoggedInState()
+    abstract fun showLoggedOutState()
+    abstract fun showLockedScreen()
+}
+
+class RootFragment : AbstractRootFragment() {
+
+    override fun showLoggedInState() {
         if (!isFragmentShown(OverviewFragment::class.java)) {
             Logger.debug("Show logged-in state")
 
@@ -96,7 +103,7 @@ class RootFragment : BaseFragment() {
         }
     }
 
-    private fun showLoggedOutState() {
+    override fun showLoggedOutState() {
         if (!isFragmentShown(LoginFragment::class.java)) {
             Logger.debug("Show logged-out state")
 
@@ -111,7 +118,7 @@ class RootFragment : BaseFragment() {
         }
     }
 
-    private fun showLockedScreen() {
+    override fun showLockedScreen() {
         if (!isFragmentShown(LockedScreenFragment::class.java)) {
             Logger.debug("Show locked screen state")
 

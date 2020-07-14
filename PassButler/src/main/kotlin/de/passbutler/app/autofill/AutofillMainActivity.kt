@@ -9,29 +9,42 @@ import android.os.Bundle
 import android.service.autofill.Dataset
 import android.service.autofill.FillResponse
 import android.service.autofill.SaveInfo
-import android.view.View
 import android.view.autofill.AutofillId
 import android.view.autofill.AutofillManager
 import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
+import androidx.appcompat.app.AppCompatActivity
+import de.passbutler.app.ItemViewModel
 import de.passbutler.app.R
+import de.passbutler.app.ui.FragmentPresenter
 
-class SimpleAuthActivity : Activity() {
+class AutofillMainActivity : AppCompatActivity() {
+
+    var rootFragment: AutofillRootFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.simple_service_auth_activity)
-        findViewById<View>(R.id.yes).setOnClickListener { onYes() }
-        findViewById<View>(R.id.no).setOnClickListener { onNo() }
+        setContentView(R.layout.activity_autofill_main)
+
+        val autofillRootFragmentTag = FragmentPresenter.getFragmentTag(AutofillRootFragment::class.java)
+        rootFragment = supportFragmentManager.findFragmentByTag(autofillRootFragmentTag) as? AutofillRootFragment
+
+        if (rootFragment == null) {
+            rootFragment = AutofillRootFragment.newInstance().also {
+                val fragmentTransaction = supportFragmentManager.beginTransaction()
+                fragmentTransaction.replace(R.id.frameLayout_activity_autofill_main_content_container, it, autofillRootFragmentTag)
+                fragmentTransaction.commit()
+            }
+        }
     }
 
-    private fun onYes() {
+    fun itemWasSelected(itemViewModel: ItemViewModel) {
+        sendAutofillResponseIntent(itemViewModel)
+    }
+
+    private fun sendAutofillResponseIntent(itemViewModel: ItemViewModel) {
         val receivedIntent = intent
         val responseIntent = Intent()
-
-        // TODO:
-        //  1. authenticate if needed
-        //  2. check if `applicationId` or `webDomain` could be found to show a) selection or b) send result back
 
         val structureParserResult = StructureParser.Result.create(
             receivedIntent.getStringExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_APPLICATION_ID),
@@ -41,48 +54,35 @@ class SimpleAuthActivity : Activity() {
         )
 
         val intentResult = if (structureParserResult != null) {
-            val autofillResponse = createAutofillResponse(structureParserResult)
+            val autofillResponse = createAutofillResponse(structureParserResult, itemViewModel)
             responseIntent.putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, autofillResponse)
 
-            RESULT_OK
+            Activity.RESULT_OK
         } else {
-            RESULT_CANCELED
+            Activity.RESULT_CANCELED
         }
 
         setResult(intentResult, responseIntent)
         finish()
     }
 
-    private fun createAutofillResponse(structureParserResult: StructureParser.Result): FillResponse {
-        val autofillResponse = FillResponse.Builder()
+    private fun createAutofillResponse(structureParserResult: StructureParser.Result, itemViewModel: ItemViewModel): FillResponse {
+        val autofillResponseBuilder = FillResponse.Builder()
 
-        for (i in 1..AUTOFILL_ENTRIES_MAXIMUM) {
-            val unlockedDataset: Dataset = createDataset(structureParserResult)
-            autofillResponse.addDataset(unlockedDataset)
-        }
+        val dataset: Dataset = createDataset(structureParserResult, itemViewModel)
+        autofillResponseBuilder.addDataset(dataset)
 
-        var saveInfo = SaveInfo.SAVE_DATA_TYPE_GENERIC
-        val requiredIds = mutableListOf<AutofillId>()
+        val saveInfo = createSaveInfo(structureParserResult)
+        autofillResponseBuilder.setSaveInfo(saveInfo)
 
-        if (structureParserResult is StructureParser.Result.UsernameWithPassword) {
-            saveInfo = saveInfo or SaveInfo.SAVE_DATA_TYPE_USERNAME
-            requiredIds.add(structureParserResult.usernameId)
-        }
-
-        saveInfo = saveInfo or SaveInfo.SAVE_DATA_TYPE_PASSWORD
-        requiredIds.add(structureParserResult.passwordId)
-
-        autofillResponse.setSaveInfo(
-            SaveInfo.Builder(saveInfo, requiredIds.toTypedArray()).build()
-        )
-
-        return autofillResponse.build()
+        return autofillResponseBuilder.build()
     }
 
-    private fun createDataset(structureParserResult: StructureParser.Result): Dataset {
-        // TODO: Remove
-        val username = "foobar"
-        val password = "1234"
+    private fun createDataset(structureParserResult: StructureParser.Result, itemViewModel: ItemViewModel): Dataset {
+        val itemData = itemViewModel.itemData ?: throw IllegalStateException("The item data is null despite it was used in autofill!")
+
+        val username = itemData.username
+        val password = itemData.password
 
         val datasetBuilder = Dataset.Builder().apply {
             if (structureParserResult is StructureParser.Result.UsernameWithPassword) {
@@ -101,9 +101,19 @@ class SimpleAuthActivity : Activity() {
         return datasetBuilder.build()
     }
 
-    private fun onNo() {
-        setResult(RESULT_CANCELED)
-        finish()
+    private fun createSaveInfo(structureParserResult: StructureParser.Result): SaveInfo {
+        var saveInfoType = SaveInfo.SAVE_DATA_TYPE_GENERIC
+        val saveInfoAutofillIds = mutableListOf<AutofillId>()
+
+        if (structureParserResult is StructureParser.Result.UsernameWithPassword) {
+            saveInfoType = saveInfoType or SaveInfo.SAVE_DATA_TYPE_USERNAME
+            saveInfoAutofillIds.add(structureParserResult.usernameId)
+        }
+
+        saveInfoType = saveInfoType or SaveInfo.SAVE_DATA_TYPE_PASSWORD
+        saveInfoAutofillIds.add(structureParserResult.passwordId)
+
+        return SaveInfo.Builder(saveInfoType, saveInfoAutofillIds.toTypedArray()).build()
     }
 
     companion object {
@@ -114,13 +124,12 @@ class SimpleAuthActivity : Activity() {
         private const val INTENT_EXTRA_STRUCTURE_PARSER_RESULT_WEB_DOMAIN = "INTENT_EXTRA_STRUCTURE_PARSER_RESULT_WEB_DOMAIN"
         private const val INTENT_EXTRA_STRUCTURE_PARSER_RESULT_USERNAME_ID = "INTENT_EXTRA_STRUCTURE_PARSER_RESULT_USERNAME_ID"
         private const val INTENT_EXTRA_STRUCTURE_PARSER_RESULT_PASSWORD_ID = "INTENT_EXTRA_STRUCTURE_PARSER_RESULT_PASSWORD_ID"
-        private const val AUTOFILL_ENTRIES_MAXIMUM = 5
 
         fun createAuthenticationIntentSender(
             context: Context,
             structureParserResult: StructureParser.Result
         ): IntentSender {
-            val authenticateActivityIntent = Intent(context, SimpleAuthActivity::class.java).apply {
+            val authenticateActivityIntent = Intent(context, AutofillMainActivity::class.java).apply {
                 putExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_APPLICATION_ID, structureParserResult.applicationId)
                 putExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_WEB_DOMAIN, structureParserResult.webDomain)
                 putExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_USERNAME_ID, (structureParserResult as? StructureParser.Result.UsernameWithPassword)?.usernameId)
@@ -131,3 +140,4 @@ class SimpleAuthActivity : Activity() {
         }
     }
 }
+
