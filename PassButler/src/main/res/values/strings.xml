@@ -15,6 +15,9 @@
     <string name="autofill_remote_view_label_username">%1$s</string>
     <string name="autofill_remote_view_label_password">Passwort für „%1$s“</string>
 
+    <string name="autofill_selection_title">Pass Butler</string>
+    <string name="autofill_selection_subtitle">Automatisch ausfüllen: %1$s</string>
+
     <!-- Form validation -->
 
     <string name="form_serverurl_validation_error_empty">Server URL nicht ausgefüllt</string>

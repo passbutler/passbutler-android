@@ -17,13 +17,28 @@ import androidx.appcompat.app.AppCompatActivity
 import de.passbutler.app.ItemViewModel
 import de.passbutler.app.R
 import de.passbutler.app.ui.FragmentPresenter
+import de.passbutler.app.unlockedItemData
+import org.tinylog.kotlin.Logger
 
 class AutofillMainActivity : AppCompatActivity() {
 
     var rootFragment: AutofillRootFragment? = null
 
+    lateinit var structureParserResult: StructureParser.Result
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val receivedStructureParserResult = createStructureParserResult()
+
+        if (receivedStructureParserResult != null) {
+            structureParserResult = receivedStructureParserResult
+        } else {
+            Logger.warn("The necessary StructureParser.Result could not be created from received intent!")
+            setResult(Activity.RESULT_CANCELED)
+            finish()
+        }
+
         setContentView(R.layout.activity_autofill_main)
 
         val autofillRootFragmentTag = FragmentPresenter.getFragmentTag(AutofillRootFragment::class.java)
@@ -38,39 +53,40 @@ class AutofillMainActivity : AppCompatActivity() {
         }
     }
 
-    fun itemWasSelected(itemViewModel: ItemViewModel) {
-        sendAutofillResponseIntent(itemViewModel)
-    }
-
-    private fun sendAutofillResponseIntent(itemViewModel: ItemViewModel) {
+    private fun createStructureParserResult(): StructureParser.Result? {
         val receivedIntent = intent
-        val responseIntent = Intent()
-
-        val structureParserResult = StructureParser.Result.create(
+        return StructureParser.Result.create(
             receivedIntent.getStringExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_APPLICATION_ID),
             receivedIntent.getStringExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_WEB_DOMAIN),
             receivedIntent.getParcelableExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_USERNAME_ID),
             receivedIntent.getParcelableExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_PASSWORD_ID)
         )
+    }
 
-        val intentResult = if (structureParserResult != null) {
-            val autofillResponse = createAutofillResponse(structureParserResult, itemViewModel)
-            responseIntent.putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, autofillResponse)
+    fun itemWasSelected(itemViewModels: List<ItemViewModel>) {
+        sendAutofillResponseIntent(itemViewModels)
+    }
 
-            Activity.RESULT_OK
-        } else {
-            Activity.RESULT_CANCELED
-        }
+    private fun sendAutofillResponseIntent(itemViewModels: List<ItemViewModel>) {
+        val responseIntent = Intent()
+        val structureParserResult = structureParserResult
 
-        setResult(intentResult, responseIntent)
+        val autofillResponse = createAutofillResponse(structureParserResult, itemViewModels)
+        responseIntent.putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, autofillResponse)
+
+        setResult(Activity.RESULT_OK, responseIntent)
         finish()
     }
 
-    private fun createAutofillResponse(structureParserResult: StructureParser.Result, itemViewModel: ItemViewModel): FillResponse {
+    private fun createAutofillResponse(structureParserResult: StructureParser.Result, itemViewModels: List<ItemViewModel>): FillResponse {
         val autofillResponseBuilder = FillResponse.Builder()
 
-        val dataset: Dataset = createDataset(structureParserResult, itemViewModel)
-        autofillResponseBuilder.addDataset(dataset)
+        itemViewModels
+            .take(AUTOFILL_ENTRIES_MAXIMUM)
+            .forEach { itemViewModel ->
+                val dataset: Dataset = createDataset(structureParserResult, itemViewModel)
+                autofillResponseBuilder.addDataset(dataset)
+            }
 
         val saveInfo = createSaveInfo(structureParserResult)
         autofillResponseBuilder.setSaveInfo(saveInfo)
@@ -79,21 +95,22 @@ class AutofillMainActivity : AppCompatActivity() {
     }
 
     private fun createDataset(structureParserResult: StructureParser.Result, itemViewModel: ItemViewModel): Dataset {
-        val itemData = itemViewModel.itemData ?: throw IllegalStateException("The item data is null despite it was used in autofill!")
+        val itemData = itemViewModel.unlockedItemData
 
+        val title = itemData.title
         val username = itemData.username
         val password = itemData.password
 
         val datasetBuilder = Dataset.Builder().apply {
             if (structureParserResult is StructureParser.Result.UsernameWithPassword) {
                 val usernamePresentation = RemoteViews(packageName, R.layout.list_item_autofill_entry)
-                usernamePresentation.setTextViewText(R.id.textView_autofill_entry_item, getString(R.string.autofill_remote_view_label_username, username))
+                usernamePresentation.setTextViewText(R.id.textView_autofill_entry_item, getString(R.string.autofill_remote_view_label_username, title))
 
                 setValue(structureParserResult.usernameId, AutofillValue.forText(username), usernamePresentation)
             }
 
             val passwordPresentation = RemoteViews(packageName, R.layout.list_item_autofill_entry)
-            passwordPresentation.setTextViewText(R.id.textView_autofill_entry_item, getString(R.string.autofill_remote_view_label_password, username))
+            passwordPresentation.setTextViewText(R.id.textView_autofill_entry_item, getString(R.string.autofill_remote_view_label_password, title))
 
             setValue(structureParserResult.passwordId, AutofillValue.forText(password), passwordPresentation)
         }
@@ -124,6 +141,8 @@ class AutofillMainActivity : AppCompatActivity() {
         private const val INTENT_EXTRA_STRUCTURE_PARSER_RESULT_WEB_DOMAIN = "INTENT_EXTRA_STRUCTURE_PARSER_RESULT_WEB_DOMAIN"
         private const val INTENT_EXTRA_STRUCTURE_PARSER_RESULT_USERNAME_ID = "INTENT_EXTRA_STRUCTURE_PARSER_RESULT_USERNAME_ID"
         private const val INTENT_EXTRA_STRUCTURE_PARSER_RESULT_PASSWORD_ID = "INTENT_EXTRA_STRUCTURE_PARSER_RESULT_PASSWORD_ID"
+
+        private const val AUTOFILL_ENTRIES_MAXIMUM = 5
 
         fun createAuthenticationIntentSender(
             context: Context,

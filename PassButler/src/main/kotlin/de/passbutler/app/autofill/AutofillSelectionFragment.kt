@@ -16,10 +16,10 @@ import de.passbutler.app.base.observe
 import de.passbutler.app.databinding.FragmentAutofillSelectionBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
 import de.passbutler.app.ui.BaseFragment
-import de.passbutler.app.ui.FragmentPresenting
 import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.visible
+import de.passbutler.app.unlockedItemData
 import org.tinylog.kotlin.Logger
 
 class AutofillSelectionFragment : BaseFragment() {
@@ -29,15 +29,35 @@ class AutofillSelectionFragment : BaseFragment() {
 
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
+    private val autofillMainActivity
+        get() = requireActivity() as AutofillMainActivity
+
+    private val structureParserResult
+        get() = autofillMainActivity.structureParserResult
+
+    private val autofillTarget
+        get() = structureParserResult.webDomain ?: structureParserResult.applicationId
+
     private var binding: FragmentAutofillSelectionBinding? = null
 
     private val itemViewModelsObserver = Observer<List<ItemViewModel>> { newUnfilteredItemViewModels ->
-        val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? AutofillSelectionItemAdapter
         val newItemViewModels = newUnfilteredItemViewModels.filter { !it.deleted }
-        adapter?.submitList(newItemViewModels)
+        val relevantItemViewModels = newItemViewModels.filter {
+            val autofillTarget = autofillTarget
+            autofillTarget != null && it.unlockedItemData.url.contains(autofillTarget)
+        }
 
-        val showEmptyScreen = newItemViewModels.isEmpty()
-        binding?.layoutOverviewContent?.groupEmptyScreenViews?.visible = showEmptyScreen
+        // TODO: Allow manual selection
+        if (relevantItemViewModels.isNotEmpty()) {
+            autofillMainActivity.itemWasSelected(relevantItemViewModels)
+        } else {
+            // TODO: Use simpler layout
+            val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? AutofillSelectionItemAdapter
+            adapter?.submitList(newItemViewModels)
+
+            val showEmptyScreen = newItemViewModels.isEmpty()
+            binding?.layoutOverviewContent?.groupEmptyScreenViews?.visible = showEmptyScreen
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -53,15 +73,17 @@ class AutofillSelectionFragment : BaseFragment() {
 
     private fun setupToolBar(binding: FragmentAutofillSelectionBinding) {
         binding.toolbar.apply {
-            // TODO: Custom title?
-            title = getString(R.string.app_name)
+            title = getString(R.string.autofill_selection_title)
+            subtitle = autofillTarget?.let {
+                getString(R.string.autofill_selection_subtitle, it)
+            }
         }
     }
 
     private fun setupEntryList(binding: FragmentAutofillSelectionBinding) {
         binding.layoutOverviewContent.recyclerViewItemList.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = AutofillSelectionItemAdapter(requireActivity() as AutofillMainActivity)
+            adapter = AutofillSelectionItemAdapter(autofillMainActivity)
         }
     }
 
@@ -105,7 +127,7 @@ class AutofillSelectionItemAdapter(
                 textViewSubtitle.text = itemViewModel.subtitle
 
                 root.setOnClickListener {
-                    autofillMainActivity.itemWasSelected(itemViewModel)
+                    autofillMainActivity.itemWasSelected(listOf(itemViewModel))
                 }
             }
         }
