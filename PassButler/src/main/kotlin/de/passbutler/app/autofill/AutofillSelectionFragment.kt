@@ -47,7 +47,6 @@ class AutofillSelectionFragment : BaseFragment() {
             autofillTarget != null && it.unlockedItemData.url.contains(autofillTarget)
         }
 
-        // TODO: Allow manual selection
         if (relevantItemViewModels.isNotEmpty()) {
             autofillMainActivity.itemWasSelected(relevantItemViewModels)
         } else {
