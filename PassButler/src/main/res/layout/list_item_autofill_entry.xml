@@ -5,6 +5,8 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
+    <!-- TODO: Improve layout -->
+
     <!-- Do not use theme attributes here because they won't work! -->
     <TextView
         android:id="@+id/textView_autofill_entry_item"

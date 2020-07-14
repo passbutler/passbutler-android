@@ -5,6 +5,8 @@
     android:background="@color/pointRed"
     android:orientation="vertical">
 
+    <!-- TODO: Improve layout -->
+
     <!-- Do not use theme attributes here because they won't work! -->
     <TextView
         android:id="@+id/textView_autofill_unlock_item"
