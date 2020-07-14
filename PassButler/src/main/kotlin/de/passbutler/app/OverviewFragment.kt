@@ -91,9 +91,13 @@ class OverviewFragment : BaseFragment() {
             setupEntryList(binding)
         }
 
-        viewModel.loggedInUserViewModel?.username?.observe(viewLifecycleOwner, true, usernameObserver)
-        viewModel.loggedInUserViewModel?.loggedInStateStorage?.addObserver(viewLifecycleOwner.lifecycleScope, true, loggedInStateStorageObserver)
-        viewModel.loggedInUserViewModel?.itemViewModels?.observe(viewLifecycleOwner, true, itemViewModelsObserver)
+        // TODO: It seems, sometimes the `loggedInUserViewModel` is still null at this point
+        val loggedInUserViewModel = viewModel.loggedInUserViewModel
+        Logger.debug("loggedInUserViewModel = $loggedInUserViewModel")
+
+        loggedInUserViewModel?.username?.observe(viewLifecycleOwner, true, usernameObserver)
+        loggedInUserViewModel?.loggedInStateStorage?.addObserver(viewLifecycleOwner.lifecycleScope, true, loggedInStateStorageObserver)
+        loggedInUserViewModel?.itemViewModels?.observe(viewLifecycleOwner, true, itemViewModelsObserver)
 
         return binding?.root
     }
