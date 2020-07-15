@@ -31,7 +31,7 @@ class AutofillRootFragment : AbstractRootFragment() {
 
             // Disabled transition and debounce check because the fragment stack is always cold initialised
             showFragment(
-                fragment = LockedScreenFragment.newInstance(),
+                fragment = LockedScreenFragment.newInstance(LockedScreenFragment.Mode.AutoFill),
                 debounce = false,
                 transitionType = TransitionType.NONE
             )

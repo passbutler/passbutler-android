@@ -34,6 +34,8 @@ import org.tinylog.kotlin.Logger
 
 class LockedScreenFragment : BaseFragment() {
 
+    lateinit var mode: Mode
+
     val viewModel by userViewModelUsingViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
@@ -57,6 +59,7 @@ class LockedScreenFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentLockedScreenBinding.inflate(inflater).also { binding ->
             setupDebugPresetsButton(binding)
+            setupTextViews(binding)
             setupUnlockWithPasswordButton(binding)
             setupUnlockWithBiometricsButton(binding)
 
@@ -72,6 +75,13 @@ class LockedScreenFragment : BaseFragment() {
                 binding.textInputEditTextMasterPassword.setText(DebugConstants.TEST_PASSWORD)
                 true
             }
+        }
+    }
+
+    private fun setupTextViews(binding: FragmentLockedScreenBinding) {
+        binding.textViewHeadline.text = when (mode) {
+            Mode.Normal -> getString(R.string.locked_screen_header_normal)
+            Mode.AutoFill -> getString(R.string.locked_screen_header_autofill)
         }
     }
 
@@ -239,10 +249,17 @@ class LockedScreenFragment : BaseFragment() {
         }
     }
 
+    enum class Mode {
+        Normal,
+        AutoFill
+    }
+
     companion object {
         private const val FORM_FIELD_MASTER_PASSWORD = "FORM_FIELD_MASTER_PASSWORD"
 
-        fun newInstance() = LockedScreenFragment()
+        fun newInstance(mode: Mode = Mode.Normal) = LockedScreenFragment().apply {
+            this.mode = mode
+        }
     }
 }
 

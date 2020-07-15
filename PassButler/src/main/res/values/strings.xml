@@ -65,8 +65,10 @@
 
     <!-- Locked screen -->
 
-    <string name="locked_screen_header">Pass Butler ist gesperrt</string>
-    <string name="locked_screen_description_password">Bitte entsperren Sie Pass Butler mit den folgenden Möglichkeiten:</string>
+    <string name="locked_screen_header_normal">Pass Butler ist gesperrt</string>
+    <string name="locked_screen_header_autofill">Ausfüllen mit Pass Butler</string>
+
+    <string name="locked_screen_description">Bitte entsperren Sie Pass Butler mit den folgenden Möglichkeiten:</string>
 
     <string name="locked_screen_master_password_hint">Master-Passwort</string>
 
