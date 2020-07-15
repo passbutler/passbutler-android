@@ -12,6 +12,7 @@ import android.widget.RemoteViews
 import androidx.annotation.RequiresApi
 import de.passbutler.app.R
 import de.passbutler.app.base.AbstractPassButlerApplication
+import kotlinx.coroutines.runBlocking
 import org.tinylog.kotlin.Logger
 
 @RequiresApi(api = Build.VERSION_CODES.O)
@@ -23,7 +24,9 @@ class PassButlerAutofillService : AutofillService() {
         Logger.debug("The autofill service was requested.")
 
         val userManager = AbstractPassButlerApplication.userManager
-        val isUserLoggedIn = userManager.loggedInStateStorage.value != null
+        val isUserLoggedIn = runBlocking {
+            userManager.localRepository.findLoggedInStateStorage() != null
+        }
 
         val fillResponse = if (isUserLoggedIn) {
             val structureParserResult = request.fillContexts.lastOrNull()?.structure?.let { lastAssistStructure ->
