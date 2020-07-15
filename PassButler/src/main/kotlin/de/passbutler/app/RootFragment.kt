@@ -69,6 +69,16 @@ abstract class AbstractRootFragment : BaseFragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.rootFragmentWasResumed()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.rootFragmentWasPaused()
+    }
+
     private fun showRootScreen() {
         val rootScreenState = viewModel.rootScreenState.value
         Logger.debug("Show screen state '$rootScreenState'")
@@ -133,16 +143,6 @@ class RootFragment : AbstractRootFragment() {
                 }
             )
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.rootFragmentWasResumed()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        viewModel.rootFragmentWasPaused()
     }
 
     companion object {
