@@ -34,8 +34,7 @@
             android:layout_marginStart="@dimen/marginM"
             android:layout_marginEnd="@dimen/marginM"
             android:text="@string/autofill_remote_view_label_authenticate"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-            android:textSize="15sp" />
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
     </LinearLayout>
 
