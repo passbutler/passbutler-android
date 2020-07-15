@@ -91,7 +91,6 @@ class OverviewFragment : BaseFragment() {
             setupEntryList(binding)
         }
 
-        // TODO: It seems, sometimes the `loggedInUserViewModel` is still null at this point
         val loggedInUserViewModel = viewModel.loggedInUserViewModel
         Logger.debug("loggedInUserViewModel = $loggedInUserViewModel")
 

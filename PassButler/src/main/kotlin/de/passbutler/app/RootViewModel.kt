@@ -40,7 +40,7 @@ class RootViewModel : UserViewModelUsingViewModel() {
 
         // If the logged-in user was already restored, trigger the observers manually to initialize the view
         if (!wasRestored) {
-            userManager.loggedInUserResult.notifyChange()
+            loggedInUserResultObserver.invoke(userManager.loggedInUserResult.value)
         }
     }
 
