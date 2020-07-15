@@ -2,7 +2,6 @@ package de.passbutler.app.autofill
 
 import de.passbutler.app.AbstractRootFragment
 import de.passbutler.app.LockedScreenFragment
-import de.passbutler.app.OverviewFragment
 import de.passbutler.app.ui.TransitionType
 import de.passbutler.app.ui.showFragmentAsFirstScreen
 import org.tinylog.kotlin.Logger
@@ -10,7 +9,7 @@ import org.tinylog.kotlin.Logger
 class AutofillRootFragment : AbstractRootFragment() {
 
     override fun showLoggedInState() {
-        if (!isFragmentShown(OverviewFragment::class.java)) {
+        if (!isFragmentShown(AutofillSelectionFragment::class.java)) {
             Logger.debug("Show logged-in state")
 
             // Disabled transition because the fragment stack is always cold initialised
