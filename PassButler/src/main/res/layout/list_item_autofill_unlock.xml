@@ -1,20 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Do not use theme attributes here because they won't work! -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/pointRed"
     android:orientation="vertical">
 
-    <!-- TODO: Improve layout -->
-
-    <!-- Do not use theme attributes here because they won't work! -->
-    <TextView
-        android:id="@+id/textView_autofill_unlock_item"
+    <!-- CompoundDrawable is not possible because of custom size of icon -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:padding="@dimen/marginM"
-        android:text="@string/autofill_remote_view_label_authenticate"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+        android:layout_marginTop="@dimen/marginM"
+        android:background="?android:attr/windowBackground"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        tools:ignore="UseCompoundDrawables">
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="@dimen/marginM"
+            android:src="@drawable/logo_elevated"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/textView_autofill_unlock_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/marginM"
+            android:layout_marginEnd="@dimen/marginM"
+            android:text="@string/autofill_remote_view_label_authenticate"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textSize="15sp" />
+
+    </LinearLayout>
 
 </LinearLayout>
