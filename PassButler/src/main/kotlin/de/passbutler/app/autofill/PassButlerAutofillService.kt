@@ -11,33 +11,41 @@ import android.service.autofill.SaveRequest
 import android.widget.RemoteViews
 import androidx.annotation.RequiresApi
 import de.passbutler.app.R
+import de.passbutler.app.base.AbstractPassButlerApplication
 import org.tinylog.kotlin.Logger
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 class PassButlerAutofillService : AutofillService() {
 
-    // TODO: Check if user is logged-in
     // TODO: More security measures (package verification etc.)
 
     override fun onFillRequest(request: FillRequest, cancellationSignal: CancellationSignal, callback: FillCallback) {
         Logger.debug("The autofill service was requested.")
 
-        val structureParserResult = request.fillContexts.lastOrNull()?.structure?.let { lastAssistStructure ->
-            val parsedStructure = StructureParser(lastAssistStructure)
-            parsedStructure.parse()
-        }
+        val userManager = AbstractPassButlerApplication.userManager
+        val isUserLoggedIn = userManager.loggedInStateStorage.value != null
 
-        val fillResponse = if (structureParserResult != null) {
-            val serviceContext = this
-            val responseBuilder = FillResponse.Builder().apply {
-                val authenticationIntentSender = AutofillMainActivity.createAuthenticationIntentSender(serviceContext, structureParserResult)
-                val remoteViews = RemoteViews(packageName, R.layout.list_item_autofill_unlock)
-                setAuthentication(structureParserResult.allAutofillIds.toTypedArray(), authenticationIntentSender, remoteViews)
+        val fillResponse = if (isUserLoggedIn) {
+            val structureParserResult = request.fillContexts.lastOrNull()?.structure?.let { lastAssistStructure ->
+                val parsedStructure = StructureParser(lastAssistStructure)
+                parsedStructure.parse()
             }
 
-            responseBuilder.build()
+            if (structureParserResult != null) {
+                val serviceContext = this
+                val responseBuilder = FillResponse.Builder().apply {
+                    val authenticationIntentSender = AutofillMainActivity.createAuthenticationIntentSender(serviceContext, structureParserResult)
+                    val remoteViews = RemoteViews(packageName, R.layout.list_item_autofill_unlock)
+                    setAuthentication(structureParserResult.allAutofillIds.toTypedArray(), authenticationIntentSender, remoteViews)
+                }
+
+                responseBuilder.build()
+            } else {
+                Logger.debug("The autofill request could not be fulfilled.")
+                null
+            }
         } else {
-            Logger.debug("The autofill request could not be fulfilled.")
+            Logger.debug("The user is not logged-in - ignore request!")
             null
         }
 
