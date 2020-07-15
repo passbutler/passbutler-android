@@ -20,7 +20,6 @@ import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.visible
 import de.passbutler.app.unlockedItemData
-import org.tinylog.kotlin.Logger
 
 class AutofillSelectionFragment : BaseFragment() {
 
@@ -35,26 +34,27 @@ class AutofillSelectionFragment : BaseFragment() {
     private val structureParserResult
         get() = autofillMainActivity.structureParserResult
 
-    private val autofillTarget
-        get() = structureParserResult.webDomain ?: structureParserResult.applicationId
-
     private var binding: FragmentAutofillSelectionBinding? = null
 
     private val itemViewModelsObserver = Observer<List<ItemViewModel>> { newUnfilteredItemViewModels ->
         val newItemViewModels = newUnfilteredItemViewModels.filter { !it.deleted }
-        val relevantItemViewModels = newItemViewModels.filter {
-            val autofillTarget = autofillTarget
-            autofillTarget != null && it.unlockedItemData.url.contains(autofillTarget)
-        }
+        val relevantAutoSelectItemViewModels = newItemViewModels.filterAutoSelectRelevantItems()
 
-        if (relevantItemViewModels.isNotEmpty()) {
-            autofillMainActivity.itemWasSelected(relevantItemViewModels)
+        if (relevantAutoSelectItemViewModels.isNotEmpty()) {
+            autofillMainActivity.itemWasSelected(relevantAutoSelectItemViewModels)
         } else {
             val adapter = binding?.recyclerViewItemList?.adapter as? AutofillSelectionItemAdapter
             adapter?.submitList(newItemViewModels)
 
             val showEmptyScreen = newItemViewModels.isEmpty()
             binding?.layoutEmptyScreen?.root?.visible = showEmptyScreen
+        }
+    }
+
+    private fun List<ItemViewModel>.filterAutoSelectRelevantItems(): List<ItemViewModel> {
+        return filter {
+            val autofillTarget = structureParserResult.webDomain ?: structureParserResult.applicationId
+            autofillTarget != null && it.unlockedItemData.url.contains(autofillTarget)
         }
     }
 
@@ -72,8 +72,11 @@ class AutofillSelectionFragment : BaseFragment() {
     private fun setupToolBar(binding: FragmentAutofillSelectionBinding) {
         binding.toolbar.apply {
             title = getString(R.string.autofill_selection_title)
-            subtitle = autofillTarget?.let {
-                getString(R.string.autofill_selection_subtitle, it)
+
+            subtitle = when {
+                structureParserResult.webDomain != null -> getString(R.string.autofill_selection_subtitle_website, structureParserResult.webDomain)
+                structureParserResult.applicationId != null -> getString(R.string.autofill_selection_subtitle_app, structureParserResult.applicationId)
+                else -> null
             }
         }
     }
