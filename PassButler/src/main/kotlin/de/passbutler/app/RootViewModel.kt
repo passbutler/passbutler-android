@@ -12,7 +12,6 @@ import de.passbutler.common.base.Success
 import de.passbutler.common.base.resultOrThrowException
 import de.passbutler.common.base.toUTF8String
 import de.passbutler.common.database.models.UserType
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -58,14 +57,18 @@ class RootViewModel : UserViewModelUsingViewModel() {
         val decryptSensibleDataResult = loggedInUserViewModel.decryptSensibleData(masterPassword)
 
         if (decryptSensibleDataResult is Success && loggedInUserViewModel.userType == UserType.REMOTE) {
-            // Restore webservices asynchronously to avoid slow network is blocking unlock progress
-            // Do not use `viewModelScope` here because otherwise the job will be cancelled if `LockedScreenFragment` is destroyed
-            GlobalScope.launch {
-                userManager.restoreWebservices(masterPassword)
-            }
+            restoreWebservices(loggedInUserViewModel, masterPassword)
         }
 
         return decryptSensibleDataResult
+    }
+
+    private fun restoreWebservices(loggedInUserViewModel: UserViewModel, masterPassword: String) {
+        // Restore webservices asynchronously to avoid slow network is blocking unlock progress
+        // Do not use `viewModelScope` here because otherwise the job will be cancelled if `LockedScreenFragment` is destroyed
+        loggedInUserViewModel.launch {
+            userManager.restoreWebservices(masterPassword)
+        }
     }
 
     suspend fun initializeBiometricUnlockCipher(): Result<Cipher> {
@@ -96,10 +99,7 @@ class RootViewModel : UserViewModelUsingViewModel() {
             loggedInUserViewModel.decryptSensibleData(masterPassword).resultOrThrowException()
 
             if (loggedInUserViewModel.userType == UserType.REMOTE) {
-                // Restore webservices asynchronously to avoid slow network is blocking unlock progress
-                viewModelScope.launch {
-                    userManager.restoreWebservices(masterPassword)
-                }
+                restoreWebservices(loggedInUserViewModel, masterPassword)
             }
 
             Success(Unit)
