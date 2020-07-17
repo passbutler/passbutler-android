@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Do not use theme attributes here because they won't work! -->
+<!-- Do not use theme attributes or views not listed in `RemoteViews` because it won't work! -->
 <TextView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/textView_autofill_entry_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical"
     android:padding="@dimen/marginM"
     android:textAppearance="@style/TextAppearance.AppCompat.Body1"
     tools:text="Item title"

@@ -8,12 +8,12 @@
 
     <!-- Autofill -->
 
-    <string name="autofill_authentication_activity_name">Pass Butler AutoFill</string>
+    <string name="autofill_activity_name">Ausfüllen mit Pass Butler</string>
 
-    <string name="autofill_remote_view_label_authenticate">Ausfüllen mit Pass Butler</string>
+    <string name="autofill_unlock_entry_label">Ausfüllen mit Pass Butler</string>
 
-    <string name="autofill_remote_view_label_username">%1$s</string>
-    <string name="autofill_remote_view_label_password">Passwort für „%1$s“</string>
+    <string name="autofill_entry_label_username">%1$s</string>
+    <string name="autofill_entry_label_password">Passwort für „%1$s“</string>
 
     <string name="autofill_selection_title">Ausfüllen mit Pass Butler</string>
     <string name="autofill_selection_subtitle_website">Webseite „%1$s“</string>

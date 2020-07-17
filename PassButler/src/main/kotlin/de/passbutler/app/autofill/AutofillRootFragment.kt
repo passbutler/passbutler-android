@@ -21,7 +21,7 @@ class AutofillRootFragment : AbstractRootFragment() {
     }
 
     override fun showLoggedOutState() {
-        throw IllegalStateException("The logged-out state should never happen in autofill!")
+        throw IllegalStateException("The logged-out state should never happen for autofill!")
     }
 
     override fun showLockedScreen() {

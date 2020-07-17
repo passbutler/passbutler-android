@@ -18,8 +18,16 @@ import org.tinylog.kotlin.Logger
 @RequiresApi(api = Build.VERSION_CODES.O)
 class PassButlerAutofillService : AutofillService() {
 
+    override fun onConnected() {
+        Logger.debug("The autofill service was connected.")
+    }
+
     override fun onFillRequest(request: FillRequest, cancellationSignal: CancellationSignal, callback: FillCallback) {
         Logger.debug("The autofill service was requested.")
+
+        cancellationSignal.setOnCancelListener {
+            Logger.debug("The autofill request was cancelled.")
+        }
 
         val userManager = AbstractPassButlerApplication.userManager
         val isUserLoggedIn = runBlocking {
@@ -36,8 +44,8 @@ class PassButlerAutofillService : AutofillService() {
                 val serviceContext = this
                 val responseBuilder = FillResponse.Builder().apply {
                     val authenticationIntentSender = AutofillMainActivity.createAuthenticationIntentSender(serviceContext, structureParserResult)
-                    val remoteViews = RemoteViews(packageName, R.layout.list_item_autofill_unlock)
-                    setAuthentication(structureParserResult.allAutofillIds.toTypedArray(), authenticationIntentSender, remoteViews)
+                    val authenticationEntryPresentation = RemoteViews(packageName, R.layout.list_item_autofill_unlock)
+                    setAuthentication(structureParserResult.allAutofillIds.toTypedArray(), authenticationIntentSender, authenticationEntryPresentation)
                 }
 
                 responseBuilder.build()
@@ -56,10 +64,6 @@ class PassButlerAutofillService : AutofillService() {
     override fun onSaveRequest(request: SaveRequest, callback: SaveCallback) {
         Logger.debug("The autofill service does not support save requests!")
         callback.onFailure(null)
-    }
-
-    override fun onConnected() {
-        Logger.debug("The autofill service was connected.")
     }
 
     override fun onDisconnected() {

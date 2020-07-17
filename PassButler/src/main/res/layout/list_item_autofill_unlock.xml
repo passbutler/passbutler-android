@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Do not use theme attributes here because they won't work! -->
+<!-- Do not use theme attributes or views not listed in `RemoteViews` because it won't work! -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,7 +8,7 @@
     android:background="@color/pointRed"
     android:orientation="vertical">
 
-    <!-- CompoundDrawable is not possible because of custom size of icon -->
+    <!-- A "CompoundDrawable" is not possible because of custom size of icon -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/marginM"
             android:layout_marginEnd="@dimen/marginM"
-            android:text="@string/autofill_remote_view_label_authenticate"
+            android:text="@string/autofill_unlock_entry_label"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
     </LinearLayout>

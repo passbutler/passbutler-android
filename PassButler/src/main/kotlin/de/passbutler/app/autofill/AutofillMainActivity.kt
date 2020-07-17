@@ -68,11 +68,10 @@ class AutofillMainActivity : AppCompatActivity() {
     }
 
     private fun sendAutofillResponseIntent(itemViewModels: List<ItemViewModel>) {
-        val responseIntent = Intent()
-        val structureParserResult = structureParserResult
-
-        val autofillResponse = createAutofillResponse(structureParserResult, itemViewModels)
-        responseIntent.putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, autofillResponse)
+        val responseIntent = Intent().apply {
+            val autofillResponse = createAutofillResponse(structureParserResult, itemViewModels)
+            putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, autofillResponse)
+        }
 
         setResult(Activity.RESULT_OK, responseIntent)
         finish()
@@ -84,7 +83,7 @@ class AutofillMainActivity : AppCompatActivity() {
         itemViewModels
             .take(AUTOFILL_ENTRIES_MAXIMUM)
             .forEach { itemViewModel ->
-                val dataset: Dataset = createDataset(structureParserResult, itemViewModel)
+                val dataset = createDataset(structureParserResult, itemViewModel)
                 autofillResponseBuilder.addDataset(dataset)
             }
 
@@ -103,19 +102,21 @@ class AutofillMainActivity : AppCompatActivity() {
 
         val datasetBuilder = Dataset.Builder().apply {
             if (structureParserResult is StructureParser.Result.UsernameWithPassword) {
-                val usernamePresentation = RemoteViews(packageName, R.layout.list_item_autofill_entry)
-                usernamePresentation.setTextViewText(R.id.textView_autofill_entry_item, getString(R.string.autofill_remote_view_label_username, title))
-
+                val usernamePresentation = createDatasetEntryPresentation(getString(R.string.autofill_entry_label_username, title))
                 setValue(structureParserResult.usernameId, AutofillValue.forText(username), usernamePresentation)
             }
 
-            val passwordPresentation = RemoteViews(packageName, R.layout.list_item_autofill_entry)
-            passwordPresentation.setTextViewText(R.id.textView_autofill_entry_item, getString(R.string.autofill_remote_view_label_password, title))
-
+            val passwordPresentation = createDatasetEntryPresentation(getString(R.string.autofill_entry_label_password, title))
             setValue(structureParserResult.passwordId, AutofillValue.forText(password), passwordPresentation)
         }
 
         return datasetBuilder.build()
+    }
+
+    private fun createDatasetEntryPresentation(entryTitle: String): RemoteViews {
+        return RemoteViews(packageName, R.layout.list_item_autofill_entry).apply {
+            setTextViewText(R.id.textView_autofill_entry_item, entryTitle)
+        }
     }
 
     private fun createSaveInfo(structureParserResult: StructureParser.Result): SaveInfo {
