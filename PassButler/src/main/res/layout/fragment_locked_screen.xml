@@ -55,16 +55,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="?marginM"
-                    android:text="@string/locked_screen_header"
                     android:textAlignment="center"
-                    android:textAppearance="?textAppearanceHeadline1" />
+                    android:textAppearance="?textAppearanceHeadline1"
+                    tools:text="@string/locked_screen_header_normal" />
 
                 <TextView
                     android:id="@+id/textView_description"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="?marginM"
-                    android:text="@string/locked_screen_description_password"
+                    android:text="@string/locked_screen_description"
                     android:textAlignment="center"
                     android:textAppearance="?textAppearanceBody1" />
 

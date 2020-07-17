@@ -1,6 +1,7 @@
 <component name="ProjectDictionaryState">
   <dictionary name="bastian">
     <words>
+      <w>autofill</w>
       <w>backpress</w>
       <w>backstack</w>
       <w>bindable</w>
@@ -8,6 +9,8 @@
       <w>clickability</w>
       <w>coroutine</w>
       <w>coroutines</w>
+      <w>dataset</w>
+      <w>datasets</w>
       <w>demomode</w>
       <w>deserialized</w>
       <w>discardable</w>
@@ -30,6 +33,7 @@
       <w>underlaying</w>
       <w>urandom</w>
       <w>userfacing</w>
+      <w>usernames</w>
       <w>viewmodel</w>
       <w>viewmodels</w>
       <w>werkzeug</w>

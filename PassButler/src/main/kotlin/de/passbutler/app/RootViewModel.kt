@@ -34,7 +34,13 @@ class RootViewModel : UserViewModelUsingViewModel() {
 
     suspend fun restoreLoggedInUser() {
         registerLoggedInUserResultObserver()
-        userManager.restoreLoggedInUser()
+
+        val wasRestored = userManager.restoreLoggedInUser()
+
+        // If the logged-in user was already restored, trigger the observers manually to initialize the view
+        if (!wasRestored) {
+            loggedInUserResultObserver.invoke(userManager.loggedInUserResult.value)
+        }
     }
 
     private fun registerLoggedInUserResultObserver() {
@@ -51,13 +57,18 @@ class RootViewModel : UserViewModelUsingViewModel() {
         val decryptSensibleDataResult = loggedInUserViewModel.decryptSensibleData(masterPassword)
 
         if (decryptSensibleDataResult is Success && loggedInUserViewModel.userType == UserType.REMOTE) {
-            // Restore webservices asynchronously to avoid slow network is blocking unlock progress
-            viewModelScope.launch {
-                userManager.restoreWebservices(masterPassword)
-            }
+            restoreWebservices(loggedInUserViewModel, masterPassword)
         }
 
         return decryptSensibleDataResult
+    }
+
+    private fun restoreWebservices(loggedInUserViewModel: UserViewModel, masterPassword: String) {
+        // Restore webservices asynchronously to avoid slow network is blocking unlock progress
+        // Do not use `viewModelScope` here because otherwise the job will be cancelled if `LockedScreenFragment` is destroyed
+        loggedInUserViewModel.launch {
+            userManager.restoreWebservices(masterPassword)
+        }
     }
 
     suspend fun initializeBiometricUnlockCipher(): Result<Cipher> {
@@ -88,10 +99,7 @@ class RootViewModel : UserViewModelUsingViewModel() {
             loggedInUserViewModel.decryptSensibleData(masterPassword).resultOrThrowException()
 
             if (loggedInUserViewModel.userType == UserType.REMOTE) {
-                // Restore webservices asynchronously to avoid slow network is blocking unlock progress
-                viewModelScope.launch {
-                    userManager.restoreWebservices(masterPassword)
-                }
+                restoreWebservices(loggedInUserViewModel, masterPassword)
             }
 
             Success(Unit)

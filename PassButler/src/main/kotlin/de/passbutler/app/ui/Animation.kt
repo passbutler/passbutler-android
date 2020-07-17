@@ -13,7 +13,9 @@ fun View.showFadeInOutAnimation(shouldShow: Boolean, visibilityHideMode: Visibil
     val startAlpha = if (shouldShow) 0.0f else 1.0f
     val endAlpha = if (shouldShow) 1.0f else 0.0f
 
-    animate()
+    val viewPropertyAnimator = animate()
+
+    viewPropertyAnimator
         .setDuration(FADE_ANIMATION_DURATION_MILLISECONDS)
         .alpha(endAlpha)
         .setListener(animatorListenerAdapter(
@@ -30,7 +32,8 @@ fun View.showFadeInOutAnimation(shouldShow: Boolean, visibilityHideMode: Visibil
                     visibility = visibilityHideMode.viewConstant
                 }
 
-                // TODO: Unregister listener to be sure other animations are not affecting this listener after animation end
+                // Remove this listener to avoid it is called if view is animated from other location (the `ViewPropertyAnimator` stays the same)
+                viewPropertyAnimator.setListener(null)
             }
         ))
 }

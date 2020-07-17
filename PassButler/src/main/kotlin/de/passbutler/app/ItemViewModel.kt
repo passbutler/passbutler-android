@@ -87,7 +87,7 @@ class ItemViewModel(
     }
 
     override fun createEditingViewModel(): ItemEditingViewModel {
-        val itemData = itemData ?: throw IllegalStateException("The item data is null despite a ItemEditingViewModel is created!")
+        val itemData = unlockedItemData
 
         // Pass a copy of the item key to `ItemEditingViewModel` to avoid it get cleared via reference on screen lock
         val itemKeyCopy = itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite a ItemEditingViewModel is created!")
@@ -119,6 +119,9 @@ class ItemViewModel(
         return result
     }
 }
+
+val ItemViewModel.unlockedItemData: ItemData
+    get() = itemData ?: throw IllegalStateException("The item data is null despite it was guaranteed to be unlocked!")
 
 class ItemEditingViewModel private constructor(
     private val itemModel: NonNullMutableLiveData<ItemModel>,

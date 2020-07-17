@@ -9,7 +9,7 @@ import androidx.transition.Fade
 import androidx.transition.Slide
 import androidx.transition.Transition
 import androidx.transition.TransitionSet
-import de.passbutler.app.RootFragment
+import de.passbutler.app.AbstractRootFragment
 import org.tinylog.kotlin.Logger
 import java.lang.ref.WeakReference
 
@@ -19,7 +19,7 @@ import java.lang.ref.WeakReference
  */
 class FragmentPresenter(
     private val activityWeakReference: WeakReference<Activity>,
-    private val rootFragmentWeakReference: WeakReference<RootFragment>,
+    private val rootFragmentWeakReference: WeakReference<AbstractRootFragment>,
     private val rootFragmentContainerResourceId: Int,
     private val rootFragmentProgressScreenViewResourceId: Int
 ) : FragmentPresenting {
