@@ -290,7 +290,6 @@ class ItemDetailFragment : ToolBarFragment() {
     }
 
     override fun onStop() {
-        // Always hide keyboard if fragment gets stopped
         Keyboard.hideKeyboard(context, this)
 
         super.onStop()

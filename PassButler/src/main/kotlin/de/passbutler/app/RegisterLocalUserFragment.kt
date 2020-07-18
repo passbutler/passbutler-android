@@ -78,7 +78,6 @@ class RegisterLocalUserFragment : ToolBarFragment() {
 
         when (formValidationResult) {
             is FormValidationResult.Valid -> {
-                // Remove focus and hide keyboard before unlock
                 removeFormFieldsFocus()
                 Keyboard.hideKeyboard(context, this)
 
@@ -135,7 +134,6 @@ class RegisterLocalUserFragment : ToolBarFragment() {
     }
 
     override fun onStop() {
-        // Always hide keyboard if fragment gets stopped
         Keyboard.hideKeyboard(context, this)
 
         super.onStop()
