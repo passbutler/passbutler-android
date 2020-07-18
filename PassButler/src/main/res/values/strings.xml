@@ -8,7 +8,7 @@
 
     <!-- Autofill -->
 
-    <string name="autofill_activity_name">Ausfüllen mit Pass Butler</string>
+    <string name="autofill_activity_name">AutoFill mit Pass Butler</string>
 
     <string name="autofill_unlock_entry_label">Ausfüllen mit Pass Butler</string>
 
@@ -183,12 +183,12 @@
     <string name="settings_title">Einstellungen</string>
 
     <string name="settings_hide_passwords_setting_title">Passwörter ausblenden</string>
-    <string name="settings_hide_passwords_setting_summary">Passwörter standardmäßig ausblenden, damit dritte Personen diese nicht sehen</string>
+    <string name="settings_hide_passwords_setting_summary">Passwörter standardmäßig ausblenden, damit andere Personen diese nicht sehen</string>
 
     <string name="settings_category_security_title">Sicherheit</string>
 
     <string name="settings_automatic_lock_timeout_setting_title">Automatische Sperre</string>
-    <string name="settings_automatic_lock_timeout_setting_summary">Zeitspanne nach der Pass Butler automatisch gesperrt wird, wenn sich die App im Hintergrund befindet (zur Vermeidung von unbefugtem Zugriff)</string>
+    <string name="settings_automatic_lock_timeout_setting_summary">Zeitspanne nach der Pass Butler im Hintergrund automatisch gesperrt wird. Diese Einstellung hat keinen Einfluss auf den AutoFill-Dienst!</string>
 
     <string name="settings_automatic_lock_timeout_setting_value_0s">Sofort</string>
     <string name="settings_automatic_lock_timeout_setting_value_15s">Nach 15 Sekunden</string>
