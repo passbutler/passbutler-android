@@ -289,7 +289,7 @@ class UserViewModel private constructor(
 
             val encryptedMasterPassword = EncryptedValue(encryptedMasterPasswordInitializationVector, encryptedMasterPasswordValue)
             userManager.updateLoggedInStateStorage {
-                this.encryptedMasterPassword = encryptedMasterPassword
+                it.encryptedMasterPassword = encryptedMasterPassword
             }
 
             withContext(Dispatchers.Main) {
@@ -312,7 +312,7 @@ class UserViewModel private constructor(
             Biometrics.removeKey(BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME).resultOrThrowException()
 
             userManager.updateLoggedInStateStorage {
-                encryptedMasterPassword = null
+                it.encryptedMasterPassword = null
             }
 
             withContext(Dispatchers.Main) {
