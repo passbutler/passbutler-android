@@ -18,7 +18,7 @@ import java.lang.ref.WeakReference
 
 abstract class AbstractRootFragment : BaseFragment() {
 
-    val viewModel by userViewModelUsingViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    private val viewModel by userViewModelUsingViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     protected var viewWasInitialized = false

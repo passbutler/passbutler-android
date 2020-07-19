@@ -37,7 +37,7 @@ import javax.crypto.Cipher
 class SettingsFragment : ToolBarFragment() {
 
     // Retrieve viewmodel from activity to provide nested fragment the same instance
-    val viewModel by userViewModelUsingActivityViewModels<SettingsViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    internal val viewModel by userViewModelUsingActivityViewModels<SettingsViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var settingsPreferenceFragment: SettingsPreferenceFragment? = null
@@ -238,7 +238,7 @@ class SettingsFragment : ToolBarFragment() {
 
     class SettingsPreferenceFragment : PreferenceFragmentCompat() {
 
-        val viewModel by userViewModelUsingActivityViewModels<SettingsViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+        private val viewModel by userViewModelUsingActivityViewModels<SettingsViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
         private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
         var enableBiometricUnlockPreference: SwitchPreferenceCompat? = null

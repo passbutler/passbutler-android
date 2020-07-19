@@ -24,7 +24,7 @@ import de.passbutler.common.database.RequestUnauthorizedException
 
 class LoginFragment : BaseFragment() {
 
-    val viewModel by viewModels<LoginViewModel>()
+    private val viewModel by viewModels<LoginViewModel>()
 
     private var formServerUrl: String? = null
     private var formUsername: String? = null
