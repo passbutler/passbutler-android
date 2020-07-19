@@ -44,7 +44,7 @@ class UserViewModel private constructor(
     private var protectedMasterEncryptionKey: ProtectedValue<CryptographicKey>,
     val itemEncryptionPublicKey: CryptographicKey,
     private val protectedItemEncryptionSecretKey: ProtectedValue<CryptographicKey>,
-    private val protectedSettings: ProtectedValue<UserSettings>,
+    private var protectedSettings: ProtectedValue<UserSettings>,
     masterPassword: String?
 ) : ManualCancelledCoroutineScopeViewModel() {
 
@@ -354,7 +354,7 @@ class UserViewModel private constructor(
             // Only persist if master encryption key is set (user logged-in and state unlocked)
             if (masterEncryptionKey != null) {
                 try {
-                    protectedSettings.update(masterEncryptionKey, settings).resultOrThrowException()
+                    protectedSettings = protectedSettings.update(masterEncryptionKey, settings).resultOrThrowException()
 
                     val user = createModel()
                     localRepository.updateUser(user)
