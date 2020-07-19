@@ -289,10 +289,9 @@ class ItemEditingViewModel private constructor(
     }
 
     private suspend fun saveExistingItem(itemModel: ItemModel.Existing): Result<ItemModel.Existing> {
-        val item = itemModel.item
-        val itemKey = itemModel.itemKey
-
         return try {
+            val item = itemModel.item
+            val itemKey = itemModel.itemKey
             val (updatedItem, updatedItemData) = createUpdatedItem(item, itemKey).resultOrThrowException()
             localRepository.updateItem(updatedItem)
 
@@ -304,15 +303,13 @@ class ItemEditingViewModel private constructor(
     }
 
     private suspend fun createUpdatedItem(item: Item, itemKey: ByteArray): Result<Pair<Item, ItemData>> {
-        val protectedItemData = item.data
-        val updatedItemData = createItemData()
-
         return try {
-            protectedItemData.update(itemKey, updatedItemData).resultOrThrowException()
-
+            val updatedItemData = createItemData()
+            val newProtectedItemData = item.data.update(itemKey, updatedItemData).resultOrThrowException()
             val currentDate = Date()
+
             val updatedItem = item.copy(
-                data = protectedItemData,
+                data = newProtectedItemData,
                 modified = currentDate
             )
 

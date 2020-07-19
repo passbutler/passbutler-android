@@ -14,6 +14,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
+import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceDataStore
 import androidx.preference.PreferenceFragmentCompat
@@ -36,7 +37,7 @@ import javax.crypto.Cipher
 class SettingsFragment : ToolBarFragment() {
 
     // Retrieve viewmodel from activity to provide nested fragment the same instance
-    val viewModel by userViewModelUsingActivityViewModels<SettingsViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    internal val viewModel by userViewModelUsingActivityViewModels<SettingsViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var settingsPreferenceFragment: SettingsPreferenceFragment? = null
@@ -237,7 +238,7 @@ class SettingsFragment : ToolBarFragment() {
 
     class SettingsPreferenceFragment : PreferenceFragmentCompat() {
 
-        val viewModel by userViewModelUsingActivityViewModels<SettingsViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+        private val viewModel by userViewModelUsingActivityViewModels<SettingsViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
         private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
         var enableBiometricUnlockPreference: SwitchPreferenceCompat? = null
@@ -260,6 +261,7 @@ class SettingsFragment : ToolBarFragment() {
             addAutomaticLockTimeoutSetting()
             addHidePasswordsSetting()
             addBiometricUnlockSetting()
+            addChangeMasterPasswordEntry()
         }
 
         private fun addAutomaticLockTimeoutSetting() {
@@ -299,6 +301,18 @@ class SettingsFragment : ToolBarFragment() {
             }.also {
                 preferenceScreen.addPreference(it)
             }
+        }
+
+        private fun addChangeMasterPasswordEntry() {
+            preferenceScreen.addPreference(Preference(context).apply {
+                title = getString(R.string.settings_change_master_password_setting_title)
+                summary = getString(R.string.settings_change_master_password_setting_summary)
+
+                setOnPreferenceClickListener {
+                    settingsFragment?.showFragment(ChangeMasterPasswordFragment.newInstance())
+                    true
+                }
+            })
         }
 
         private class SettingsPreferenceDataStore(settingsViewModel: SettingsViewModel) : PreferenceDataStore() {

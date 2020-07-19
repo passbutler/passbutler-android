@@ -24,7 +24,7 @@ import de.passbutler.common.database.RequestUnauthorizedException
 
 class LoginFragment : BaseFragment() {
 
-    val viewModel by viewModels<LoginViewModel>()
+    private val viewModel by viewModels<LoginViewModel>()
 
     private var formServerUrl: String? = null
     private var formUsername: String? = null
@@ -106,7 +106,6 @@ class LoginFragment : BaseFragment() {
 
         when (formValidationResult) {
             is FormValidationResult.Valid -> {
-                // Remove focus and hide keyboard before unlock
                 removeFormFieldsFocus()
                 Keyboard.hideKeyboard(context, this)
 
@@ -152,7 +151,6 @@ class LoginFragment : BaseFragment() {
     }
 
     override fun onStop() {
-        // Always hide keyboard if fragment gets stopped
         Keyboard.hideKeyboard(context, this)
 
         super.onStop()

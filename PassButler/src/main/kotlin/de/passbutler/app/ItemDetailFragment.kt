@@ -35,7 +35,7 @@ import de.passbutler.app.ui.validateForm
 
 class ItemDetailFragment : ToolBarFragment() {
 
-    val viewModel by viewModels<ItemEditingViewModel> {
+    private val viewModel by viewModels<ItemEditingViewModel> {
         val itemId = arguments?.getString(ARGUMENT_ITEM_ID)
         ItemEditingViewModelFactory(userViewModelProvidingViewModel, itemId)
     }
@@ -290,7 +290,6 @@ class ItemDetailFragment : ToolBarFragment() {
     }
 
     override fun onStop() {
-        // Always hide keyboard if fragment gets stopped
         Keyboard.hideKeyboard(context, this)
 
         super.onStop()

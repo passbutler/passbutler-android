@@ -23,7 +23,7 @@ import de.passbutler.common.database.RequestForbiddenException
 
 class RegisterLocalUserFragment : ToolBarFragment() {
 
-    val viewModel by userViewModelUsingViewModels<RegisterLocalUserViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    private val viewModel by userViewModelUsingViewModels<RegisterLocalUserViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var formServerUrl: String? = null
@@ -78,7 +78,6 @@ class RegisterLocalUserFragment : ToolBarFragment() {
 
         when (formValidationResult) {
             is FormValidationResult.Valid -> {
-                // Remove focus and hide keyboard before unlock
                 removeFormFieldsFocus()
                 Keyboard.hideKeyboard(context, this)
 
@@ -135,7 +134,6 @@ class RegisterLocalUserFragment : ToolBarFragment() {
     }
 
     override fun onStop() {
-        // Always hide keyboard if fragment gets stopped
         Keyboard.hideKeyboard(context, this)
 
         super.onStop()

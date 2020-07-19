@@ -34,9 +34,9 @@ import org.tinylog.kotlin.Logger
 
 class LockedScreenFragment : BaseFragment() {
 
-    lateinit var mode: Mode
+    var mode: Mode = Mode.Normal
 
-    val viewModel by userViewModelUsingViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    internal val viewModel by userViewModelUsingViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private val loggedInUserViewModel
@@ -96,7 +96,7 @@ class LockedScreenFragment : BaseFragment() {
             listOf(
                 FormFieldValidator(
                     binding.textInputLayoutMasterPassword, binding.textInputEditTextMasterPassword, listOf(
-                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.locked_screen_password_validation_error_empty))
+                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_master_password_validation_error_empty))
                     )
                 )
             )
@@ -104,7 +104,6 @@ class LockedScreenFragment : BaseFragment() {
 
         when (formValidationResult) {
             is FormValidationResult.Valid -> {
-                // Remove focus and hide keyboard before unlock
                 removeFormFieldsFocus()
                 Keyboard.hideKeyboard(context, this)
 
@@ -196,7 +195,6 @@ class LockedScreenFragment : BaseFragment() {
     }
 
     override fun onStop() {
-        // Always hide keyboard if fragment gets stopped
         Keyboard.hideKeyboard(context, this)
 
         super.onStop()

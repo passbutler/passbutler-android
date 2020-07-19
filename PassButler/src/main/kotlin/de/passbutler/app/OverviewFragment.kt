@@ -45,7 +45,7 @@ import org.tinylog.kotlin.Logger
 
 class OverviewFragment : BaseFragment() {
 
-    val viewModel by userViewModelUsingViewModels<OverviewViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    private val viewModel by userViewModelUsingViewModels<OverviewViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var binding: FragmentOverviewBinding? = null
