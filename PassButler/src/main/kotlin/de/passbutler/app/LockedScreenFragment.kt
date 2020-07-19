@@ -34,7 +34,7 @@ import org.tinylog.kotlin.Logger
 
 class LockedScreenFragment : BaseFragment() {
 
-    lateinit var mode: Mode
+    var mode: Mode = Mode.Normal
 
     internal val viewModel by userViewModelUsingViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
