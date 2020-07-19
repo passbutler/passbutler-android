@@ -22,6 +22,7 @@ import de.passbutler.common.crypto.models.ProtectedValue
 import de.passbutler.common.database.models.Item
 import de.passbutler.common.database.models.User
 import de.passbutler.common.database.models.UserSettings
+import de.passbutler.common.database.models.UserType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -40,7 +41,7 @@ class UserViewModel private constructor(
     private val initialUser: User,
     private var masterPasswordAuthenticationHash: String,
     private val masterKeyDerivationInformation: KeyDerivationInformation,
-    private val protectedMasterEncryptionKey: ProtectedValue<CryptographicKey>,
+    private var protectedMasterEncryptionKey: ProtectedValue<CryptographicKey>,
     val itemEncryptionPublicKey: CryptographicKey,
     private val protectedItemEncryptionSecretKey: ProtectedValue<CryptographicKey>,
     private val protectedSettings: ProtectedValue<UserSettings>,
@@ -161,7 +162,7 @@ class UserViewModel private constructor(
             val decryptedMasterEncryptionKey = protectedMasterEncryptionKey.decrypt(masterKey, CryptographicKey.Deserializer).resultOrThrowException()
             Success(decryptedMasterEncryptionKey.key)
         } catch (exception: Exception) {
-            // Wrap the thrown exception to be able to determine if this call failed (used to show concrete error string in UI)
+            // Wrap the thrown exception to be able to determine that this call failed (used to show concrete error string in UI)
             val wrappedException = DecryptMasterEncryptionKeyFailedException(exception)
             Failure(wrappedException)
         } finally {
@@ -224,25 +225,42 @@ class UserViewModel private constructor(
         return userManager.synchronize()
     }
 
-    suspend fun updateMasterPassword(newMasterPassword: String): Result<Unit> {
+    suspend fun updateMasterPassword(oldMasterPassword: String, newMasterPassword: String): Result<Unit> {
         Logger.debug("Update master password")
 
         val masterEncryptionKey = masterEncryptionKey ?: throw IllegalStateException("The master encryption key is null despite it was tried to update the master password!")
         var newMasterKey: ByteArray? = null
 
         return try {
+            // Test if master password is correct via thrown exception
+            decryptMasterEncryptionKey(oldMasterPassword).resultOrThrowException()
+
             val newLocalMasterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username.value, newMasterPassword).resultOrThrowException()
             val newServerMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(newLocalMasterPasswordAuthenticationHash).resultOrThrowException()
-            masterPasswordAuthenticationHash = newServerMasterPasswordAuthenticationHash
-
-            // TODO: Sync to remote first, only if it worked update locally because otherwise authentication will fail!
-            userManager.reinitializeAuthWebservice(newMasterPassword)
 
             newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation).resultOrThrowException()
-            protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey)).resultOrThrowException()
+            val newProtectedMasterEncryptionKey = protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey)).resultOrThrowException()
 
-            val user = createModel()
-            localRepository.updateUser(user)
+            val updatedUser = createModel().copy(
+                masterPasswordAuthenticationHash = newServerMasterPasswordAuthenticationHash,
+                masterEncryptionKey = newProtectedMasterEncryptionKey
+            )
+
+            val updateUserDetailsResult = userManager.updateUser(updatedUser)
+
+            // Throw wrapped exception to be able to determine that this call failed (used to show concrete error string in UI)
+            if (updateUserDetailsResult is Failure) {
+                throw UpdateUserFailedException(updateUserDetailsResult.throwable)
+            }
+
+            // Reinitialize webservices to apply the new master password
+            if (userType == UserType.REMOTE) {
+                userManager.reinitializeWebservices(newMasterPassword)
+            }
+
+            // Finally update the locale fields
+            masterPasswordAuthenticationHash = newServerMasterPasswordAuthenticationHash
+            protectedMasterEncryptionKey = newProtectedMasterEncryptionKey
 
             // After all mandatory changes, try to disable biometric unlock because master password re-encryption would require complex flow with biometric authentication UI
             val disableBiometricUnlockResult = disableBiometricUnlock()
@@ -464,3 +482,4 @@ class UserViewModel private constructor(
 }
 
 class DecryptMasterEncryptionKeyFailedException(cause: Exception? = null) : Exception(cause)
+class UpdateUserFailedException(cause: Throwable? = null) : Exception(cause)

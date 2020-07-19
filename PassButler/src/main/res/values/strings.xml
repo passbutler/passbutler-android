@@ -228,6 +228,7 @@
     <string name="change_master_password_successful_message">Änderung erfolgreich</string>
 
     <string name="change_master_password_failed_wrong_master_password_title">Aktuelles Master-Passwort ist nicht korrekt</string>
+    <string name="change_master_password_failed_update_user_failed_title">Änderung hat nicht geklappt: Prüfen Sie die Erreichbarkeit Ihres Pass Butler-Servers</string>
     <string name="change_master_password_failed_general_title">Änderung hat nicht geklappt</string>
 
     <string name="change_master_password_old_master_password_validation_error_empty">Aktuelles Master-Passwort nicht ausgefüllt</string>

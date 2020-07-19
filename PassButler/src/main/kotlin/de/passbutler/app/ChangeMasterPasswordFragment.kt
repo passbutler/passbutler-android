@@ -104,6 +104,7 @@ class ChangeMasterPasswordFragment : ToolBarFragment() {
             handleFailure = {
                 val errorStringResourceId = when (it) {
                     is DecryptMasterEncryptionKeyFailedException -> R.string.change_master_password_failed_wrong_master_password_title
+                    is UpdateUserFailedException -> R.string.change_master_password_failed_update_user_failed_title
                     else -> R.string.change_master_password_failed_general_title
                 }
 
