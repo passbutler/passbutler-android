@@ -39,7 +39,7 @@ class ChangeMasterPasswordFragment : ToolBarFragment() {
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentChangeMasterPasswordBinding.inflate(inflater).also { binding ->
-            setupRegisterButton(binding)
+            setupChangeButton(binding)
 
             applyRestoredViewStates(binding)
         }
@@ -47,7 +47,7 @@ class ChangeMasterPasswordFragment : ToolBarFragment() {
         return binding?.root
     }
 
-    private fun setupRegisterButton(binding: FragmentChangeMasterPasswordBinding) {
+    private fun setupChangeButton(binding: FragmentChangeMasterPasswordBinding) {
         binding.buttonChange.setOnClickListener {
             registerClicked(binding)
         }
