@@ -234,6 +234,7 @@
 
     <string name="change_master_password_old_master_password_validation_error_empty">Aktuelles Master-Passwort nicht ausgefüllt</string>
     <string name="change_master_password_new_master_password_validation_error_empty">Neues Master-Passwort nicht ausgefüllt</string>
+    <string name="change_master_password_new_master_password_validation_error_equal">Neues Master-Passwort ist gleich dem aktuellen</string>
     <string name="change_master_password_new_master_password_confirm_validation_error_different">Neues Master-Passwort stimmt nicht überein</string>
 
 </resources>

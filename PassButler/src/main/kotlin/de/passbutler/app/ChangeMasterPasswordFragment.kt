@@ -73,9 +73,17 @@ class ChangeMasterPasswordFragment : ToolBarFragment() {
                     )
                 ),
                 FormFieldValidator(
+                    binding.textInputLayoutNewMasterPassword, binding.textInputEditTextNewMasterPassword, listOf(
+                        FormFieldValidator.Rule(
+                            { binding.textInputEditTextOldMasterPassword.text?.toString() == it },
+                            getString(R.string.change_master_password_new_master_password_validation_error_equal)
+                        )
+                    )
+                ),
+                FormFieldValidator(
                     binding.textInputLayoutNewMasterPasswordConfirm, binding.textInputEditTextNewMasterPasswordConfirm, listOf(
                         FormFieldValidator.Rule(
-                            { binding.textInputEditTextNewMasterPassword.text.toString() != it },
+                            { binding.textInputEditTextNewMasterPassword.text?.toString() != it },
                             getString(R.string.change_master_password_new_master_password_confirm_validation_error_different)
                         )
                     )
