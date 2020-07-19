@@ -55,11 +55,11 @@ class ChangeMasterPasswordFragment : ToolBarFragment() {
 
     private fun setupChangeButton(binding: FragmentChangeMasterPasswordBinding) {
         binding.buttonChange.setOnClickListener {
-            registerClicked(binding)
+            changeClicked(binding)
         }
     }
 
-    private fun registerClicked(binding: FragmentChangeMasterPasswordBinding) {
+    private fun changeClicked(binding: FragmentChangeMasterPasswordBinding) {
         val formValidationResult = validateForm(
             listOfNotNull(
                 FormFieldValidator(

@@ -246,11 +246,11 @@ class UserViewModel private constructor(
                 masterEncryptionKey = newProtectedMasterEncryptionKey
             )
 
-            val updateUserDetailsResult = userManager.updateUser(updatedUser)
+            val updateUserResult = userManager.updateUser(updatedUser)
 
             // Throw wrapped exception to be able to determine that this call failed (used to show concrete error string in UI)
-            if (updateUserDetailsResult is Failure) {
-                throw UpdateUserFailedException(updateUserDetailsResult.throwable)
+            if (updateUserResult is Failure) {
+                throw UpdateUserFailedException(updateUserResult.throwable)
             }
 
             // Reinitialize webservices to apply the new master password
