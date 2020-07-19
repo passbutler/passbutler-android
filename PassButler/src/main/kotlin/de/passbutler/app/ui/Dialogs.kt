@@ -1,6 +1,7 @@
 package de.passbutler.app.ui
 
 import android.text.InputType
+import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.EditText
@@ -19,6 +20,7 @@ fun BaseFragment.showEditTextDialog(title: String?, positiveClickListener: (Edit
                 marginStart = resources.getDimensionPixelSize(R.dimen.dialogSpacingHorizontal)
                 marginEnd = resources.getDimensionPixelSize(R.dimen.dialogSpacingHorizontal)
             }
+            importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
         }
 
         val editTextContainer = FrameLayout(fragmentContext).also {
