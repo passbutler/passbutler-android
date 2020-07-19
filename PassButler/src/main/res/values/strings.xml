@@ -209,4 +209,29 @@
     <string name="settings_disable_biometric_unlock_failed_general_title">Deaktivierung hat nicht geklappt</string>
     <string name="settings_disable_biometric_unlock_successful_message">Biometrisches Entsperren wurde deaktiviert</string>
 
+    <string name="settings_change_master_password_setting_title">Master-Passwort ändern</string>
+    <string name="settings_change_master_password_setting_summary">Klicken Sie hier, um Ihr Master-Passwort zu ändern</string>
+
+    <!-- Change master password -->
+
+    <string name="change_master_password_title">Master-Passwort ändern</string>
+
+    <string name="change_master_password_header">Master-Passwort ändern</string>
+    <string name="change_master_password_description">Das Master-Passwort sichert alle Ihre Passwörter ab. Sie können es hier ändern. Falls Sie auf einem Pass Butler-Server registriert sind, muss dieser für die Änderung erreichbar sein!</string>
+
+    <string name="change_master_password_old_master_password_hint">Aktuelles Master-Passwort</string>
+    <string name="change_master_password_new_master_password_hint">Neues Master-Passwort</string>
+    <string name="change_master_password_new_master_password_confirm_hint">Neues Master-Passwort (Bestätigung)</string>
+
+    <string name="change_master_password_button_text">Ändern</string>
+
+    <string name="change_master_password_successful_message">Änderung erfolgreich</string>
+
+    <string name="change_master_password_failed_wrong_master_password_title">Aktuelles Master-Passwort ist nicht korrekt</string>
+    <string name="change_master_password_failed_general_title">Änderung hat nicht geklappt</string>
+
+    <string name="change_master_password_old_master_password_validation_error_empty">Aktuelles Master-Passwort nicht ausgefüllt</string>
+    <string name="change_master_password_new_master_password_validation_error_empty">Neues Master-Passwort nicht ausgefüllt</string>
+    <string name="change_master_password_new_master_password_confirm_validation_error_different">Neues Master-Passwort stimmt nicht überein</string>
+
 </resources>
