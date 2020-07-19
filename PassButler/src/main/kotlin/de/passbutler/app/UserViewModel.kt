@@ -37,7 +37,7 @@ import javax.crypto.Cipher
  */
 class UserViewModel private constructor(
     private val userManager: UserManager,
-    private val user: User,
+    private val initialUser: User,
     private var masterPasswordAuthenticationHash: String,
     private val masterKeyDerivationInformation: KeyDerivationInformation,
     private val protectedMasterEncryptionKey: ProtectedValue<CryptographicKey>,
@@ -65,10 +65,8 @@ class UserViewModel private constructor(
     val webservices
         get() = userManager.webservices
 
-    val id
-        get() = user.id
-
-    val username = NonNullMutableLiveData(user.username)
+    val id = initialUser.id
+    val username = NonNullMutableLiveData(initialUser.username)
 
     val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
 
@@ -351,7 +349,7 @@ class UserViewModel private constructor(
 
     private fun createModel(): User {
         // Only update fields that are allowed to modify (server reject changes on non-allowed field anyway)
-        return user.copy(
+        return initialUser.copy(
             username = username.value,
             masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
             masterKeyDerivationInformation = masterKeyDerivationInformation,
