@@ -218,6 +218,7 @@
 
     <string name="change_master_password_header">Master-Passwort ändern</string>
     <string name="change_master_password_description">Das Master-Passwort sichert alle Ihre Passwörter ab. Sie können es hier ändern. Falls Sie auf einem Pass Butler-Server registriert sind, muss dieser für die Änderung erreichbar sein!</string>
+    <string name="change_master_password_disable_biometric_hint">Hinweis: Durch die Änderung wird das biometrische Entsperren deaktiviert und Sie müssen es erneut aktivieren!</string>
 
     <string name="change_master_password_old_master_password_hint">Aktuelles Master-Passwort</string>
     <string name="change_master_password_new_master_password_hint">Neues Master-Passwort</string>

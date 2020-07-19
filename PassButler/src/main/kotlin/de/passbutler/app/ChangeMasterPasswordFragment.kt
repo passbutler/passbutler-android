@@ -15,6 +15,7 @@ import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showShortFeedback
 import de.passbutler.app.ui.validateForm
+import de.passbutler.app.ui.visible
 
 class ChangeMasterPasswordFragment : ToolBarFragment() {
 
@@ -39,12 +40,17 @@ class ChangeMasterPasswordFragment : ToolBarFragment() {
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentChangeMasterPasswordBinding.inflate(inflater).also { binding ->
+            setupTextViews(binding)
             setupChangeButton(binding)
 
             applyRestoredViewStates(binding)
         }
 
         return binding?.root
+    }
+
+    private fun setupTextViews(binding: FragmentChangeMasterPasswordBinding) {
+        binding.textViewSubheaderDisableBiometricHint.visible = viewModel.loggedInUserViewModel?.biometricUnlockEnabled?.value ?: false
     }
 
     private fun setupChangeButton(binding: FragmentChangeMasterPasswordBinding) {
