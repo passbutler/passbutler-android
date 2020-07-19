@@ -19,18 +19,12 @@
     <string name="autofill_selection_subtitle_website">Webseite „%1$s“</string>
     <string name="autofill_selection_subtitle_app">App „%1$s“</string>
 
-    <!-- Form validation -->
+    <!-- General form validation -->
 
     <string name="form_serverurl_validation_error_empty">Server URL nicht ausgefüllt</string>
     <string name="form_serverurl_validation_error_invalid">Server URL nicht gültig</string>
     <string name="form_serverurl_validation_error_invalid_scheme">Server URL muss mit „https://“ beginnen</string>
     <string name="form_master_password_validation_error_empty">Master-Passwort nicht ausgefüllt</string>
-
-    <string name="login_username_validation_error_empty">Benutzername nicht ausgefüllt</string>
-
-    <string name="locked_screen_password_validation_error_empty">Master-Passwort nicht ausgefüllt</string>
-
-    <string name="itemdetail_title_validation_error_empty">Titel nicht ausgefüllt</string>
 
     <!-- Login -->
 
@@ -44,6 +38,8 @@
 
     <string name="login_failed_general_title">Anmeldung hat nicht geklappt</string>
     <string name="login_failed_unauthorized_title">Anmeldedaten vermutlich nicht korrekt</string>
+
+    <string name="login_username_validation_error_empty">Benutzername nicht ausgefüllt</string>
 
     <!-- Register local user -->
 
@@ -155,6 +151,8 @@
 
     <string name="itemdetail_delete_successful_message">Löschen erfolgreich</string>
     <string name="itemdetail_delete_failed_general_title">Löschen hat nicht geklappt</string>
+
+    <string name="itemdetail_title_validation_error_empty">Titel nicht ausgefüllt</string>
 
     <!-- Item authorizations detail -->
 

@@ -96,7 +96,7 @@ class LockedScreenFragment : BaseFragment() {
             listOf(
                 FormFieldValidator(
                     binding.textInputLayoutMasterPassword, binding.textInputEditTextMasterPassword, listOf(
-                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.locked_screen_password_validation_error_empty))
+                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_master_password_validation_error_empty))
                     )
                 )
             )
