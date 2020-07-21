@@ -23,14 +23,17 @@ import de.passbutler.common.database.models.Item
 import de.passbutler.common.database.models.User
 import de.passbutler.common.database.models.UserSettings
 import de.passbutler.common.database.models.UserType
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 import java.util.*
 import javax.crypto.Cipher
+import kotlin.coroutines.CoroutineContext
 
 /**
  * This viewmodel is held by `UserViewModelProvidingViewModel` end contains the business logic for logged-in user.
@@ -46,7 +49,12 @@ class UserViewModel private constructor(
     private val protectedItemEncryptionSecretKey: ProtectedValue<CryptographicKey>,
     private var protectedSettings: ProtectedValue<UserSettings>,
     masterPassword: String?
-) : ManualCancelledCoroutineScopeViewModel() {
+) : CoroutineScope {
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO + coroutineJob
+
+    private val coroutineJob = SupervisorJob()
 
     val localRepository
         get() = userManager.localRepository
@@ -124,6 +132,11 @@ class UserViewModel private constructor(
                 }
             }
         }
+    }
+
+    fun cancelJobs() {
+        Logger.debug("Cancel the coroutine job...")
+        coroutineJob.cancel()
     }
 
     fun createNewItemEditingViewModel(): ItemEditingViewModel {
@@ -441,6 +454,7 @@ class UserViewModel private constructor(
         return newItemViewModels
     }
 
+    // TODO: Check warning
     private suspend fun decryptItemViewModels(itemViewModels: List<ItemViewModel>): List<ItemViewModel> {
         val itemEncryptionSecretKey = itemEncryptionSecretKey ?: throw IllegalStateException("The item encryption key is null despite item decryption was started!")
 
