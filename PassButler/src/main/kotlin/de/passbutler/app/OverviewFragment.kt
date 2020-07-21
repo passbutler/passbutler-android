@@ -72,9 +72,11 @@ class OverviewFragment : BaseFragment() {
         Logger.debug("newItemViewModels.size = ${newItemViewModels.size}")
 
         val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemAdapter
-        adapter?.submitList(newItemViewModels)
 
-        val showEmptyScreen = newItemViewModels.isEmpty()
+        val newItemViewModelEntries = newItemViewModels.map { ItemViewModelEntry(it) }
+        adapter?.submitList(newItemViewModelEntries)
+
+        val showEmptyScreen = newItemViewModelEntries.isEmpty()
         binding?.layoutOverviewContent?.layoutEmptyScreen?.root?.visible = showEmptyScreen
     }
 
@@ -346,7 +348,7 @@ class ItemAdapter(private val fragmentPresenter: FragmentPresenting) : ListAdapt
     }
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
-        (getItem(position) as? ItemViewModel)?.let { item ->
+        (getItem(position) as? ItemViewModelEntry)?.let { item ->
             holder.apply {
                 itemView.tag = item
                 bind(item)
@@ -359,13 +361,13 @@ class ItemAdapter(private val fragmentPresenter: FragmentPresenting) : ListAdapt
         private val fragmentPresenter: FragmentPresenting
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(itemViewModel: ItemViewModel) {
+        fun bind(itemViewModelEntry: ItemViewModelEntry) {
             binding.apply {
-                textViewTitle.text = itemViewModel.title.value
-                textViewSubtitle.text = itemViewModel.subtitle
+                textViewTitle.text = itemViewModelEntry.itemViewModel.title.value
+                textViewSubtitle.text = itemViewModelEntry.itemViewModel.subtitle
 
                 root.setOnClickListener {
-                    fragmentPresenter.showFragment(ItemDetailFragment.newInstance(itemViewModel.id))
+                    fragmentPresenter.showFragment(ItemDetailFragment.newInstance(itemViewModelEntry.itemViewModel.id))
                 }
             }
         }

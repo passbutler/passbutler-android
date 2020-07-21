@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import de.passbutler.app.ItemViewModel
+import de.passbutler.app.ItemViewModelEntry
 import de.passbutler.app.R
 import de.passbutler.app.UserViewModelProvidingViewModel
 import de.passbutler.app.base.observe
@@ -44,9 +45,11 @@ class AutofillSelectionFragment : BaseFragment() {
             autofillMainActivity.itemWasSelected(relevantAutoSelectItemViewModels)
         } else {
             val adapter = binding?.recyclerViewItemList?.adapter as? AutofillSelectionItemAdapter
-            adapter?.submitList(newItemViewModels)
 
-            val showEmptyScreen = newItemViewModels.isEmpty()
+            val newItemViewModelEntries = newItemViewModels.map { ItemViewModelEntry(it) }
+            adapter?.submitList(newItemViewModelEntries)
+
+            val showEmptyScreen = newItemViewModelEntries.isEmpty()
             binding?.layoutEmptyScreen?.root?.visible = showEmptyScreen
         }
     }
@@ -109,7 +112,7 @@ class AutofillSelectionItemAdapter(
     }
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
-        (getItem(position) as? ItemViewModel)?.let { item ->
+        (getItem(position) as? ItemViewModelEntry)?.let { item ->
             holder.apply {
                 itemView.tag = item
                 bind(item)
@@ -122,13 +125,13 @@ class AutofillSelectionItemAdapter(
         private val autofillMainActivity: AutofillMainActivity
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(itemViewModel: ItemViewModel) {
+        fun bind(itemViewModelEntry: ItemViewModelEntry) {
             binding.apply {
-                textViewTitle.text = itemViewModel.title.value
-                textViewSubtitle.text = itemViewModel.subtitle
+                textViewTitle.text = itemViewModelEntry.itemViewModel.title.value
+                textViewSubtitle.text = itemViewModelEntry.itemViewModel.subtitle
 
                 root.setOnClickListener {
-                    autofillMainActivity.itemWasSelected(listOf(itemViewModel))
+                    autofillMainActivity.itemWasSelected(listOf(itemViewModelEntry.itemViewModel))
                 }
             }
         }
