@@ -26,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 import java.util.*
@@ -437,40 +438,41 @@ class UserViewModel private constructor(
         return newItemViewModels
     }
 
-    // TODO: Check warning
     private suspend fun decryptItemViewModels(itemViewModels: List<ItemViewModel>): List<ItemViewModel> {
         val itemEncryptionSecretKey = itemEncryptionSecretKey ?: throw IllegalStateException("The item encryption key is null despite item decryption was started!")
 
-        return itemViewModels
-            .map { itemViewModel ->
-                // Start parallel decryption
-                itemViewModel to async {
-                    // Only decrypt if not already decrypted
-                    if (itemViewModel.itemData == null) {
-                        val itemDecryptionResult = itemViewModel.decryptSensibleData(itemEncryptionSecretKey)
+        return coroutineScope {
+            itemViewModels
+                .map { itemViewModel ->
+                    // Start parallel decryption
+                    itemViewModel to async {
+                        // Only decrypt if not already decrypted
+                        if (itemViewModel.itemData == null) {
+                            val itemDecryptionResult = itemViewModel.decryptSensibleData(itemEncryptionSecretKey)
 
-                        when (itemDecryptionResult) {
-                            is Success -> Logger.debug("The item viewmodel '${itemViewModel.id}' was decrypted successfully")
-                            is Failure -> Logger.warn(itemDecryptionResult.throwable, "The item viewmodel '${itemViewModel.id}' could not be decrypted")
+                            when (itemDecryptionResult) {
+                                is Success -> Logger.debug("The item viewmodel '${itemViewModel.id}' was decrypted successfully")
+                                is Failure -> Logger.warn(itemDecryptionResult.throwable, "The item viewmodel '${itemViewModel.id}' could not be decrypted")
+                            }
+
+                            itemDecryptionResult
+                        } else {
+                            Logger.debug("The item viewmodel '${itemViewModel.id}' is already decrypted")
+                            Success(Unit)
                         }
-
-                        itemDecryptionResult
-                    } else {
-                        Logger.debug("The item viewmodel '${itemViewModel.id}' is already decrypted")
-                        Success(Unit)
                     }
                 }
-            }
-            .mapNotNull {
-                // Await results afterwards
-                val itemViewModel = it.first
-                val itemDecryptionResult = it.second.await()
+                .mapNotNull {
+                    // Await results afterwards
+                    val itemViewModel = it.first
+                    val itemDecryptionResult = it.second.await()
 
-                when (itemDecryptionResult) {
-                    is Success -> itemViewModel
-                    is Failure -> null
+                    when (itemDecryptionResult) {
+                        is Success -> itemViewModel
+                        is Failure -> null
+                    }
                 }
-            }
+        }
     }
 
     companion object {
