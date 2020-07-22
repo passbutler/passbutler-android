@@ -66,6 +66,9 @@ class ItemAuthorizationsDetailViewModel(
                 it.isReadAllowed.addObserver(null, false, itemAuthorizationViewModelsModifiedObserver)
                 it.isWriteAllowed.addObserver(null, false, itemAuthorizationViewModelsModifiedObserver)
             }
+
+            // Notify bindable to be sure view is triggered after re-initialization
+            anyItemAuthorizationWasModified.notifyChange()
         } else {
             Logger.warn("The ItemViewModel for id = $itemId was not found!")
         }
