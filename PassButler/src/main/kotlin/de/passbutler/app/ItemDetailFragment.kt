@@ -11,19 +11,16 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.textfield.TextInputLayout
-import de.passbutler.app.base.DependentNonNullValueGetterLiveData
-import de.passbutler.app.base.DependentOptionalValueGetterLiveData
+import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.base.bindEnabled
 import de.passbutler.app.base.bindInput
 import de.passbutler.app.base.bindTextAndVisibility
 import de.passbutler.app.base.bindVisibility
 import de.passbutler.app.base.formattedDateTime
 import de.passbutler.app.base.launchRequestSending
-import de.passbutler.app.base.observe
 import de.passbutler.app.databinding.FragmentItemdetailBinding
 import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
@@ -32,6 +29,8 @@ import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.validateForm
+import de.passbutler.common.base.BindableObserver
+import de.passbutler.common.base.DependentValueGetterBindable
 
 class ItemDetailFragment : ToolBarFragment() {
 
@@ -53,7 +52,7 @@ class ItemDetailFragment : ToolBarFragment() {
     private var binding: FragmentItemdetailBinding? = null
 
     private val itemAuthorizationDescription by lazy {
-        DependentOptionalValueGetterLiveData(viewModel.isItemAuthorizationAllowed, viewModel.isItemModificationAllowed, viewModel.ownerUsername, viewModel.itemAuthorizationModifiedDate) {
+        DependentValueGetterBindable(viewModel.isItemAuthorizationAllowed, viewModel.isItemModificationAllowed, viewModel.ownerUsername, viewModel.itemAuthorizationModifiedDate) {
             val itemOwnerUsername = viewModel.ownerUsername.value
             val itemAuthorizationModifiedDate = viewModel.itemAuthorizationModifiedDate.value?.formattedDateTime
 
@@ -75,7 +74,7 @@ class ItemDetailFragment : ToolBarFragment() {
     }
 
     private val isItemModified by lazy {
-        DependentNonNullValueGetterLiveData(
+        DependentValueGetterBindable(
             viewModel.title,
             viewModel.username,
             viewModel.password,
@@ -92,11 +91,11 @@ class ItemDetailFragment : ToolBarFragment() {
         }
     }
 
-    private val isItemModifiedObserver = Observer<Boolean> {
+    private val isItemModifiedObserver: BindableObserver<Boolean> = {
         updateToolbarMenuItems()
     }
 
-    private val isNewItemObserver = Observer<Boolean> {
+    private val isNewItemObserver: BindableObserver<Boolean> = {
         updateToolbarTitle()
         updateToolbarMenuItems()
     }
@@ -186,8 +185,8 @@ class ItemDetailFragment : ToolBarFragment() {
             applyRestoredViewStates(binding)
         }
 
-        isItemModified.observe(viewLifecycleOwner, true, isItemModifiedObserver)
-        viewModel.isNewItem.observe(viewLifecycleOwner, isNewItemObserver)
+        isItemModified.addLifecycleObserver(viewLifecycleOwner, true, isItemModifiedObserver)
+        viewModel.isNewItem.addLifecycleObserver(viewLifecycleOwner, false, isNewItemObserver)
 
         return binding?.root
     }

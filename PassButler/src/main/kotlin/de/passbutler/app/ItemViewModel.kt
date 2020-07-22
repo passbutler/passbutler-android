@@ -1,16 +1,15 @@
 package de.passbutler.app
 
 import androidx.lifecycle.ViewModel
-import de.passbutler.app.base.DependentNonNullValueGetterLiveData
-import de.passbutler.app.base.DependentOptionalValueGetterLiveData
-import de.passbutler.app.base.NonNullDiscardableMutableLiveData
-import de.passbutler.app.base.NonNullMutableLiveData
-import de.passbutler.app.base.OptionalValueGetterLiveData
 import de.passbutler.app.base.viewmodels.EditableViewModel
 import de.passbutler.app.base.viewmodels.EditingViewModel
+import de.passbutler.common.base.DependentValueGetterBindable
+import de.passbutler.common.base.DiscardableMutableBindable
 import de.passbutler.common.base.Failure
+import de.passbutler.common.base.MutableBindable
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
+import de.passbutler.common.base.ValueGetterBindable
 import de.passbutler.common.base.clear
 import de.passbutler.common.base.resultOrThrowException
 import de.passbutler.common.crypto.EncryptionAlgorithm
@@ -37,7 +36,8 @@ class ItemViewModel(
     val id
         get() = item.id
 
-    val title = OptionalValueGetterLiveData {
+    // TODO: Bindable needed
+    val title = ValueGetterBindable {
         itemData?.title
     }
 
@@ -64,6 +64,7 @@ class ItemViewModel(
             val decryptedItemData = item.data.decrypt(decryptedItemKey, ItemData.Deserializer).resultOrThrowException()
             itemData = decryptedItemData
 
+            // TODO: All `withContext(Dispatchers.Main)` needed?
             withContext(Dispatchers.Main) {
                 // Notify `itemData` dependent observables
                 title.notifyChange()
@@ -120,7 +121,7 @@ val ItemViewModel.unlockedItemData: ItemData
     get() = itemData ?: throw IllegalStateException("The item data is null despite it was guaranteed to be unlocked!")
 
 class ItemEditingViewModel private constructor(
-    private val itemModel: NonNullMutableLiveData<ItemModel>,
+    private val itemModel: MutableBindable<ItemModel>,
     private val loggedInUserViewModel: UserViewModel,
     private val localRepository: LocalRepository
 ) : ViewModel(), EditingViewModel {
@@ -134,42 +135,42 @@ class ItemEditingViewModel private constructor(
             return loggedInUserViewModel.userType == UserType.REMOTE
         }
 
-    val isNewItem = DependentNonNullValueGetterLiveData(itemModel) {
+    val isNewItem = DependentValueGetterBindable(itemModel) {
         itemModel.value is ItemModel.New
     }
 
-    val isItemModificationAllowed = DependentNonNullValueGetterLiveData(itemModel) {
+    val isItemModificationAllowed = DependentValueGetterBindable(itemModel) {
         itemModel.value.asExistingOrNull()?.itemAuthorization?.readOnly?.not() ?: true
     }
 
-    val itemAuthorizationModifiedDate = DependentOptionalValueGetterLiveData(itemModel) {
+    val itemAuthorizationModifiedDate = DependentValueGetterBindable(itemModel) {
         itemModel.value.asExistingOrNull()?.itemAuthorization?.modified
     }
 
-    val isItemAuthorizationAllowed = DependentNonNullValueGetterLiveData(itemModel) {
+    val isItemAuthorizationAllowed = DependentValueGetterBindable(itemModel) {
         // Checks if the item is owned by logged-in user
         itemModel.value.asExistingOrNull()?.item?.userId == loggedInUserViewModel.id
     }
 
-    val id = DependentOptionalValueGetterLiveData(itemModel) {
+    val id = DependentValueGetterBindable(itemModel) {
         itemModel.value.asExistingOrNull()?.item?.id
     }
 
-    val title = NonNullDiscardableMutableLiveData(initialItemData?.title ?: "")
-    val username = NonNullDiscardableMutableLiveData(initialItemData?.username ?: "")
-    val password = NonNullDiscardableMutableLiveData(initialItemData?.password ?: "")
-    val url = NonNullDiscardableMutableLiveData(initialItemData?.url ?: "")
-    val notes = NonNullDiscardableMutableLiveData(initialItemData?.notes ?: "")
+    val title = DiscardableMutableBindable(initialItemData?.title ?: "")
+    val username = DiscardableMutableBindable(initialItemData?.username ?: "")
+    val password = DiscardableMutableBindable(initialItemData?.password ?: "")
+    val url = DiscardableMutableBindable(initialItemData?.url ?: "")
+    val notes = DiscardableMutableBindable(initialItemData?.notes ?: "")
 
-    val ownerUsername = DependentOptionalValueGetterLiveData(itemModel) {
+    val ownerUsername = DependentValueGetterBindable(itemModel) {
         itemModel.value.asExistingOrNull()?.itemOwnerUsername
     }
 
-    val modified = DependentOptionalValueGetterLiveData(itemModel) {
+    val modified = DependentValueGetterBindable(itemModel) {
         itemModel.value.asExistingOrNull()?.item?.modified
     }
 
-    val created = DependentOptionalValueGetterLiveData(itemModel) {
+    val created = DependentValueGetterBindable(itemModel) {
         itemModel.value.asExistingOrNull()?.item?.created
     }
 
@@ -181,7 +182,7 @@ class ItemEditingViewModel private constructor(
         loggedInUserViewModel: UserViewModel,
         localRepository: LocalRepository
     ) : this(
-        NonNullMutableLiveData(initialItemModel),
+        MutableBindable(initialItemModel),
         loggedInUserViewModel,
         localRepository
     )

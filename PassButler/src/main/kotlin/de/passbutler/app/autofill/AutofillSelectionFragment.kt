@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -13,7 +12,7 @@ import de.passbutler.app.ItemViewModel
 import de.passbutler.app.ItemViewModelEntry
 import de.passbutler.app.R
 import de.passbutler.app.UserViewModelProvidingViewModel
-import de.passbutler.app.base.observe
+import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.databinding.FragmentAutofillSelectionBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
 import de.passbutler.app.ui.BaseFragment
@@ -21,6 +20,7 @@ import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.visible
 import de.passbutler.app.unlockedItemData
+import de.passbutler.common.base.BindableObserver
 
 class AutofillSelectionFragment : BaseFragment() {
 
@@ -37,7 +37,7 @@ class AutofillSelectionFragment : BaseFragment() {
 
     private var binding: FragmentAutofillSelectionBinding? = null
 
-    private val itemViewModelsObserver = Observer<List<ItemViewModel>> { newUnfilteredItemViewModels ->
+    private val itemViewModelsObserver: BindableObserver<List<ItemViewModel>> = { newUnfilteredItemViewModels ->
         val newItemViewModels = newUnfilteredItemViewModels.filter { !it.deleted }
         val relevantAutoSelectItemViewModels = newItemViewModels.filterAutoSelectRelevantItems()
 
@@ -67,7 +67,7 @@ class AutofillSelectionFragment : BaseFragment() {
             setupEntryList(binding)
         }
 
-        loggedInUserViewModel?.itemViewModels?.observe(viewLifecycleOwner, true, itemViewModelsObserver)
+        loggedInUserViewModel?.itemViewModels?.addLifecycleObserver(viewLifecycleOwner, true, itemViewModelsObserver)
 
         return binding?.root
     }

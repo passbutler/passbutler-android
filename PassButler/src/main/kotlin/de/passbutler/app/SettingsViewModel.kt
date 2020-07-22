@@ -1,10 +1,10 @@
 package de.passbutler.app
 
-import de.passbutler.app.base.NonNullValueGetterLiveData
 import de.passbutler.app.crypto.Biometrics
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
+import de.passbutler.common.base.ValueGetterBindable
 import de.passbutler.common.base.resultOrThrowException
 import javax.crypto.Cipher
 
@@ -37,7 +37,7 @@ class SettingsViewModel : UserViewModelUsingViewModel() {
             loggedInUserViewModel?.hidePasswordsEnabled?.value = value
         }
 
-    val biometricUnlockEnabled: NonNullValueGetterLiveData<Boolean>?
+    val biometricUnlockEnabled: ValueGetterBindable<Boolean>?
         get() = loggedInUserViewModel?.biometricUnlockEnabled
 
     val biometricUnlockEnabledSetting: Boolean

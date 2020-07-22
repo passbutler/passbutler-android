@@ -1,15 +1,13 @@
 package de.passbutler.app
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
-import de.passbutler.app.base.NonNullMutableLiveData
-import de.passbutler.app.base.NonNullValueGetterLiveData
-import de.passbutler.app.base.viewmodels.ManualCancelledCoroutineScopeViewModel
 import de.passbutler.app.crypto.Biometrics
 import de.passbutler.common.UserManager
+import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.Failure
+import de.passbutler.common.base.MutableBindable
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
+import de.passbutler.common.base.ValueGetterBindable
 import de.passbutler.common.base.addSignal
 import de.passbutler.common.base.clear
 import de.passbutler.common.base.resultOrThrowException
@@ -35,10 +33,6 @@ import java.util.*
 import javax.crypto.Cipher
 import kotlin.coroutines.CoroutineContext
 
-/**
- * This viewmodel is held by `UserViewModelProvidingViewModel` end contains the business logic for logged-in user.
- * The method `cancelJobs()` is manually called by `UserViewModelProvidingViewModel`.
- */
 class UserViewModel private constructor(
     private val userManager: UserManager,
     private val initialUser: User,
@@ -75,18 +69,18 @@ class UserViewModel private constructor(
         get() = userManager.webservices
 
     val id = initialUser.id
-    val username = NonNullMutableLiveData(initialUser.username)
+    val username = MutableBindable(initialUser.username)
 
-    val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
+    val itemViewModels = MutableBindable<List<ItemViewModel>>(emptyList())
 
-    val automaticLockTimeout = MutableLiveData<Int?>()
-    val hidePasswordsEnabled = MutableLiveData<Boolean?>()
+    val automaticLockTimeout = MutableBindable<Int?>(null)
+    val hidePasswordsEnabled = MutableBindable<Boolean?>(null)
 
-    val biometricUnlockAvailable = NonNullValueGetterLiveData {
+    val biometricUnlockAvailable = ValueGetterBindable {
         Biometrics.isHardwareCapable && Biometrics.isKeyguardSecure && Biometrics.hasEnrolledBiometrics
     }
 
-    val biometricUnlockEnabled = NonNullValueGetterLiveData {
+    val biometricUnlockEnabled = ValueGetterBindable {
         biometricUnlockAvailable.value && encryptedMasterPassword != null
     }
 
@@ -96,8 +90,8 @@ class UserViewModel private constructor(
 
     private var itemViewModelsUpdateJob: Job? = null
 
-    private val automaticLockTimeoutChangedObserver = Observer<Int?> { applyUserSettings() }
-    private val hidePasswordsEnabledChangedObserver = Observer<Boolean?> { applyUserSettings() }
+    private val automaticLockTimeoutChangedObserver: BindableObserver<Int?> = { applyUserSettings() }
+    private val hidePasswordsEnabledChangedObserver: BindableObserver<Boolean?> = { applyUserSettings() }
 
     private var masterEncryptionKey: ByteArray? = null
     private var itemEncryptionSecretKey: ByteArray? = null
@@ -187,18 +181,16 @@ class UserViewModel private constructor(
         userManager.itemsOrItemAuthorizationsChanged.addSignal(updateItemViewModelsSignal, true)
     }
 
-    private suspend fun registerUserSettingObservers(decryptedSettings: UserSettings) {
-        withContext(Dispatchers.Main) {
-            automaticLockTimeout.value = decryptedSettings.automaticLockTimeout
-            hidePasswordsEnabled.value = decryptedSettings.hidePasswords
+    private fun registerUserSettingObservers(decryptedSettings: UserSettings) {
+        automaticLockTimeout.value = decryptedSettings.automaticLockTimeout
+        hidePasswordsEnabled.value = decryptedSettings.hidePasswords
 
-            // Register observers after field initialisations to avoid initial observer calls (but actually `LiveData` notifies observer nevertheless)
-            automaticLockTimeout.observeForever(automaticLockTimeoutChangedObserver)
-            hidePasswordsEnabled.observeForever(hidePasswordsEnabledChangedObserver)
-        }
+        // Register observers after field initialisations to avoid initial observer calls
+        automaticLockTimeout.addObserver(null, false, automaticLockTimeoutChangedObserver)
+        hidePasswordsEnabled.addObserver(null, false, hidePasswordsEnabledChangedObserver)
     }
 
-    suspend fun clearSensibleData() {
+    fun clearSensibleData() {
         Logger.debug("Clear sensible data")
 
         // Be sure all observers that uses crypto resources cleared afterwards are unregistered first
@@ -223,15 +215,13 @@ class UserViewModel private constructor(
         itemViewModelsUpdateJob?.cancel()
     }
 
-    private suspend fun unregisterUserSettingObservers() {
-        withContext(Dispatchers.Main) {
-            // Unregister observers before setting field reset to avoid unnecessary observer calls
-            automaticLockTimeout.removeObserver(automaticLockTimeoutChangedObserver)
-            hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
+    private fun unregisterUserSettingObservers() {
+        // Unregister observers before setting field reset to avoid unnecessary observer calls
+        automaticLockTimeout.removeObserver(automaticLockTimeoutChangedObserver)
+        hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
 
-            automaticLockTimeout.value = null
-            hidePasswordsEnabled.value = null
-        }
+        automaticLockTimeout.value = null
+        hidePasswordsEnabled.value = null
     }
 
     suspend fun synchronizeData(): Result<Unit> {

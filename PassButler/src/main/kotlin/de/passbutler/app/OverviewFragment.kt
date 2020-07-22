@@ -12,14 +12,13 @@ import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
+import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.base.launchRequestSending
-import de.passbutler.app.base.observe
 import de.passbutler.app.base.relativeDateTime
 import de.passbutler.app.databinding.FragmentOverviewBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
@@ -56,7 +55,7 @@ class OverviewFragment : BaseFragment() {
     private var updateToolbarJob: Job? = null
     private var synchronizeDataRequestSendingJob: Job? = null
 
-    private val usernameObserver = Observer<String> {
+    private val usernameObserver: BindableObserver<String> = {
         updateNavigationHeaderSubtitleView()
     }
 
@@ -66,7 +65,7 @@ class OverviewFragment : BaseFragment() {
         updateSwipeRefreshLayout()
     }
 
-    private val itemViewModelsObserver = Observer<List<ItemViewModel>> { newUnfilteredItemViewModels ->
+    private val itemViewModelsObserver: BindableObserver<List<ItemViewModel>> = { newUnfilteredItemViewModels ->
         // Only show non-deleted items
         val newItemViewModels = newUnfilteredItemViewModels.filter { !it.deleted }
         Logger.debug("newItemViewModels.size = ${newItemViewModels.size}")
@@ -96,9 +95,9 @@ class OverviewFragment : BaseFragment() {
         val loggedInUserViewModel = viewModel.loggedInUserViewModel
         Logger.debug("loggedInUserViewModel = $loggedInUserViewModel")
 
-        loggedInUserViewModel?.username?.observe(viewLifecycleOwner, true, usernameObserver)
-        loggedInUserViewModel?.loggedInStateStorage?.addObserver(viewLifecycleOwner.lifecycleScope, true, loggedInStateStorageObserver)
-        loggedInUserViewModel?.itemViewModels?.observe(viewLifecycleOwner, true, itemViewModelsObserver)
+        loggedInUserViewModel?.username?.addLifecycleObserver(viewLifecycleOwner, true, usernameObserver)
+        loggedInUserViewModel?.loggedInStateStorage?.addLifecycleObserver(viewLifecycleOwner, true, loggedInStateStorageObserver)
+        loggedInUserViewModel?.itemViewModels?.addLifecycleObserver(viewLifecycleOwner, true, itemViewModelsObserver)
 
         return binding?.root
     }
@@ -252,8 +251,6 @@ class OverviewFragment : BaseFragment() {
         binding = null
         navigationHeaderSubtitleView = null
         navigationHeaderUserTypeView = null
-
-        viewModel.loggedInUserViewModel?.loggedInStateStorage?.removeObserver(loggedInStateStorageObserver)
 
         super.onDestroyView()
     }

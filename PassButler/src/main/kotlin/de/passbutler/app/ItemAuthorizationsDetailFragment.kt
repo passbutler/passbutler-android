@@ -8,13 +8,13 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentItemAuthorizationsDetailBinding
 import de.passbutler.app.databinding.ListItemAuthorizationEntryBinding
@@ -23,6 +23,7 @@ import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
+import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.addAllIfNotNull
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
@@ -39,14 +40,14 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment() {
     private var toolbarMenuSaveItem: MenuItem? = null
     private var binding: FragmentItemAuthorizationsDetailBinding? = null
 
-    private val itemAuthorizationsObserver = Observer<List<ItemAuthorizationViewModel>> { newItemAuthorizationViewModels ->
+    private val itemAuthorizationsObserver: BindableObserver<List<ItemAuthorizationViewModel>> = { newItemAuthorizationViewModels ->
         Logger.debug("newItemAuthorizationViewModels.size = ${newItemAuthorizationViewModels.size}")
 
         val adapter = binding?.recyclerViewItemAuthorizations?.adapter as? ItemAuthorizationsAdapter
         adapter?.submitList(newItemAuthorizationViewModels)
     }
 
-    private val anyItemAuthorizationWasModifiedObserver = Observer<Boolean> {
+    private val anyItemAuthorizationWasModifiedObserver: BindableObserver<Boolean> = {
         updateToolbarMenuItems()
     }
 
@@ -89,7 +90,7 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment() {
             setupItemAuthorizationsList(binding)
         }
 
-        viewModel.anyItemAuthorizationWasModified.observe(viewLifecycleOwner, anyItemAuthorizationWasModifiedObserver)
+        viewModel.anyItemAuthorizationWasModified.addLifecycleObserver(viewLifecycleOwner, false, anyItemAuthorizationWasModifiedObserver)
 
         return binding?.root
     }
@@ -105,7 +106,7 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment() {
             addItemDecoration(dividerItemDecoration)
         }
 
-        viewModel.itemAuthorizationViewModels.observe(viewLifecycleOwner, itemAuthorizationsObserver)
+        viewModel.itemAuthorizationViewModels.addLifecycleObserver(viewLifecycleOwner, false, itemAuthorizationsObserver)
 
         launch {
             viewModel.initializeItemAuthorizationViewModels()

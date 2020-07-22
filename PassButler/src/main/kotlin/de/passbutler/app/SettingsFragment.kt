@@ -11,7 +11,6 @@ import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
@@ -19,6 +18,7 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceDataStore
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
+import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.crypto.BiometricAuthenticationCallbackExecutor
 import de.passbutler.app.databinding.FragmentSettingsBinding
@@ -27,6 +27,7 @@ import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showEditTextDialog
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showInformation
+import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Success
 import kotlinx.coroutines.Dispatchers
@@ -44,7 +45,7 @@ class SettingsFragment : ToolBarFragment() {
     private var biometricPrompt: BiometricPrompt? = null
     internal var masterPasswordInputDialog: AlertDialog? = null
 
-    private val biometricUnlockEnabledObserver = Observer<Boolean> { newValue ->
+    private val biometricUnlockEnabledObserver: BindableObserver<Boolean> = { newValue ->
         settingsPreferenceFragment?.enableBiometricUnlockPreference?.isChecked = newValue
     }
 
@@ -69,7 +70,7 @@ class SettingsFragment : ToolBarFragment() {
             it.settingsFragment = this
         }
 
-        viewModel.biometricUnlockEnabled?.observe(viewLifecycleOwner, biometricUnlockEnabledObserver)
+        viewModel.biometricUnlockEnabled?.addLifecycleObserver(viewLifecycleOwner, false, biometricUnlockEnabledObserver)
 
         return binding.root
     }

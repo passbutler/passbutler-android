@@ -6,12 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
+import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.databinding.FragmentRootBinding
 import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.FragmentPresenter
 import de.passbutler.app.ui.TransitionType
 import de.passbutler.app.ui.showFragmentAsFirstScreen
+import de.passbutler.common.base.BindableObserver
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 import java.lang.ref.WeakReference
@@ -23,11 +24,11 @@ abstract class AbstractRootFragment : BaseFragment() {
 
     protected var viewWasInitialized = false
 
-    private val rootScreenStateObserver = Observer<RootViewModel.RootScreenState?> {
+    private val rootScreenStateObserver: BindableObserver<RootViewModel.RootScreenState?> = {
         showRootScreen()
     }
 
-    private val lockScreenStateObserver = Observer<RootViewModel.LockScreenState?> { newLockScreenState ->
+    private val lockScreenStateObserver: BindableObserver<RootViewModel.LockScreenState?> = { newLockScreenState ->
         if (newLockScreenState == RootViewModel.LockScreenState.Locked) {
             showLockedScreen()
         }
@@ -58,8 +59,8 @@ abstract class AbstractRootFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = FragmentRootBinding.inflate(inflater)
 
-        viewModel.rootScreenState.observe(viewLifecycleOwner, rootScreenStateObserver)
-        viewModel.lockScreenState.observe(viewLifecycleOwner, lockScreenStateObserver)
+        viewModel.rootScreenState.addLifecycleObserver(viewLifecycleOwner, false, rootScreenStateObserver)
+        viewModel.lockScreenState.addLifecycleObserver(viewLifecycleOwner, false, lockScreenStateObserver)
 
         // Try to restore logged-in user after the observers were added
         launch {
