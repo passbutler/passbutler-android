@@ -9,7 +9,6 @@ import de.passbutler.common.base.Failure
 import de.passbutler.common.base.MutableBindable
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
-import de.passbutler.common.base.ValueGetterBindable
 import de.passbutler.common.base.clear
 import de.passbutler.common.base.resultOrThrowException
 import de.passbutler.common.crypto.EncryptionAlgorithm
@@ -36,10 +35,8 @@ class ItemViewModel(
     val id
         get() = item.id
 
-    // TODO: Bindable needed
-    val title = ValueGetterBindable {
-        itemData?.title
-    }
+    val title
+        get() = itemData?.title
 
     val subtitle
         get() = item.id
@@ -63,12 +60,6 @@ class ItemViewModel(
 
             val decryptedItemData = item.data.decrypt(decryptedItemKey, ItemData.Deserializer).resultOrThrowException()
             itemData = decryptedItemData
-
-            // TODO: All `withContext(Dispatchers.Main)` needed?
-            withContext(Dispatchers.Main) {
-                // Notify `itemData` dependent observables
-                title.notifyChange()
-            }
 
             Success(Unit)
         } catch (exception: Exception) {

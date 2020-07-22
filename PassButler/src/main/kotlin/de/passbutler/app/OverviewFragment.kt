@@ -360,7 +360,7 @@ class ItemAdapter(private val fragmentPresenter: FragmentPresenting) : ListAdapt
 
         fun bind(itemViewModelEntry: ItemViewModelEntry) {
             binding.apply {
-                textViewTitle.text = itemViewModelEntry.itemViewModel.title.value
+                textViewTitle.text = itemViewModelEntry.itemViewModel.title
                 textViewSubtitle.text = itemViewModelEntry.itemViewModel.subtitle
 
                 root.setOnClickListener {
