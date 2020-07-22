@@ -47,10 +47,6 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment() {
         adapter?.submitList(newItemAuthorizationViewModels)
     }
 
-    private val anyItemAuthorizationWasModifiedObserver: BindableObserver<Boolean> = {
-        updateToolbarMenuItems()
-    }
-
     override fun getToolBarTitle(): String {
         return getString(R.string.itemauthorizations_title)
     }
@@ -59,8 +55,6 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment() {
         toolbar.inflateMenu(R.menu.item_authorizations_detail_menu)
 
         toolbarMenuSaveItem = toolbar.menu.findItem(R.id.item_authorizations_detail_menu_item_save)
-
-        updateToolbarMenuItems()
 
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -71,10 +65,6 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment() {
                 else -> false
             }
         }
-    }
-
-    private fun updateToolbarMenuItems() {
-        toolbarMenuSaveItem?.isEnabled = viewModel.anyItemAuthorizationWasModified.value
     }
 
     private fun saveClicked() {
@@ -90,7 +80,9 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment() {
             setupItemAuthorizationsList(binding)
         }
 
-        viewModel.anyItemAuthorizationWasModified.addLifecycleObserver(viewLifecycleOwner, false, anyItemAuthorizationWasModifiedObserver)
+        viewModel.anyItemAuthorizationWasModified.addLifecycleObserver(viewLifecycleOwner, true) {
+            toolbarMenuSaveItem?.isEnabled = it
+        }
 
         return binding?.root
     }

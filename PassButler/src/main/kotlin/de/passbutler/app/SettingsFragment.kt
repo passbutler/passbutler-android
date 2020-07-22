@@ -27,7 +27,6 @@ import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showEditTextDialog
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showInformation
-import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Success
 import kotlinx.coroutines.Dispatchers
@@ -44,10 +43,6 @@ class SettingsFragment : ToolBarFragment() {
     private var settingsPreferenceFragment: SettingsPreferenceFragment? = null
     private var biometricPrompt: BiometricPrompt? = null
     internal var masterPasswordInputDialog: AlertDialog? = null
-
-    private val biometricUnlockEnabledObserver: BindableObserver<Boolean> = { newValue ->
-        settingsPreferenceFragment?.enableBiometricUnlockPreference?.isChecked = newValue
-    }
 
     private val biometricCallbackExecutor by lazy {
         BiometricAuthenticationCallbackExecutor(this, Dispatchers.Main)
@@ -70,7 +65,9 @@ class SettingsFragment : ToolBarFragment() {
             it.settingsFragment = this
         }
 
-        viewModel.biometricUnlockEnabled?.addLifecycleObserver(viewLifecycleOwner, false, biometricUnlockEnabledObserver)
+        viewModel.biometricUnlockEnabled?.addLifecycleObserver(viewLifecycleOwner, false) {
+            settingsPreferenceFragment?.enableBiometricUnlockPreference?.isChecked = it
+        }
 
         return binding.root
     }

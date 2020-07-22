@@ -29,7 +29,6 @@ import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.validateForm
-import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.DependentValueGetterBindable
 
 class ItemDetailFragment : ToolBarFragment() {
@@ -91,15 +90,6 @@ class ItemDetailFragment : ToolBarFragment() {
         }
     }
 
-    private val isItemModifiedObserver: BindableObserver<Boolean> = {
-        updateToolbarMenuItems()
-    }
-
-    private val isNewItemObserver: BindableObserver<Boolean> = {
-        updateToolbarTitle()
-        updateToolbarMenuItems()
-    }
-
     override fun getToolBarTitle(): String {
         return if (viewModel.isNewItem.value) {
             getString(R.string.itemdetail_title_new)
@@ -120,8 +110,6 @@ class ItemDetailFragment : ToolBarFragment() {
 
         toolbarMenuSaveItem = toolbar.menu.findItem(R.id.item_detail_menu_item_save)
 
-        updateToolbarMenuItems()
-
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.item_detail_menu_item_save -> {
@@ -131,11 +119,6 @@ class ItemDetailFragment : ToolBarFragment() {
                 else -> false
             }
         }
-    }
-
-    private fun updateToolbarMenuItems() {
-        toolbarMenuSaveItem?.isVisible = viewModel.isItemModificationAllowed.value
-        toolbarMenuSaveItem?.isEnabled = isItemModified.value
     }
 
     private fun saveClicked() {
@@ -185,8 +168,14 @@ class ItemDetailFragment : ToolBarFragment() {
             applyRestoredViewStates(binding)
         }
 
-        isItemModified.addLifecycleObserver(viewLifecycleOwner, true, isItemModifiedObserver)
-        viewModel.isNewItem.addLifecycleObserver(viewLifecycleOwner, false, isNewItemObserver)
+        isItemModified.addLifecycleObserver(viewLifecycleOwner, false) {
+            updateToolbarMenuItems()
+        }
+
+        viewModel.isNewItem.addLifecycleObserver(viewLifecycleOwner, true) {
+            updateToolbarTitle()
+            updateToolbarMenuItems()
+        }
 
         return binding?.root
     }
@@ -286,6 +275,11 @@ class ItemDetailFragment : ToolBarFragment() {
         formPassword?.let { binding.textInputEditTextPassword.setText(it) }
         formUrl?.let { binding.textInputEditTextUrl.setText(it) }
         formNotes?.let { binding.textInputEditTextNotes.setText(it) }
+    }
+
+    private fun updateToolbarMenuItems() {
+        toolbarMenuSaveItem?.isVisible = viewModel.isItemModificationAllowed.value
+        toolbarMenuSaveItem?.isEnabled = isItemModified.value
     }
 
     override fun onStop() {

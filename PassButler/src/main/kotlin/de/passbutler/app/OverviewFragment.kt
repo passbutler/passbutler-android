@@ -55,16 +55,6 @@ class OverviewFragment : BaseFragment() {
     private var updateToolbarJob: Job? = null
     private var synchronizeDataRequestSendingJob: Job? = null
 
-    private val usernameObserver: BindableObserver<String> = {
-        updateNavigationHeaderSubtitleView()
-    }
-
-    private val loggedInStateStorageObserver: BindableObserver<LoggedInStateStorage?> = {
-        updateToolbarSubtitle()
-        updateNavigationHeaderUserTypeView()
-        updateSwipeRefreshLayout()
-    }
-
     private val itemViewModelsObserver: BindableObserver<List<ItemViewModel>> = { newUnfilteredItemViewModels ->
         // Only show non-deleted items
         val newItemViewModels = newUnfilteredItemViewModels.filter { !it.deleted }
@@ -95,8 +85,16 @@ class OverviewFragment : BaseFragment() {
         val loggedInUserViewModel = viewModel.loggedInUserViewModel
         Logger.debug("loggedInUserViewModel = $loggedInUserViewModel")
 
-        loggedInUserViewModel?.username?.addLifecycleObserver(viewLifecycleOwner, true, usernameObserver)
-        loggedInUserViewModel?.loggedInStateStorage?.addLifecycleObserver(viewLifecycleOwner, true, loggedInStateStorageObserver)
+        loggedInUserViewModel?.username?.addLifecycleObserver(viewLifecycleOwner, true) {
+            navigationHeaderSubtitleView?.text = it
+        }
+
+        loggedInUserViewModel?.loggedInStateStorage?.addLifecycleObserver(viewLifecycleOwner, true) {
+            updateToolbarSubtitle()
+            updateNavigationHeaderUserTypeView()
+            updateSwipeRefreshLayout()
+        }
+
         loggedInUserViewModel?.itemViewModels?.addLifecycleObserver(viewLifecycleOwner, true, itemViewModelsObserver)
 
         return binding?.root
@@ -141,30 +139,6 @@ class OverviewFragment : BaseFragment() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-
-        viewModel.loggedInUserViewModel?.webservices?.addObserver(viewLifecycleOwner.lifecycleScope, true, webservicesInitializedObserver)
-
-        updateToolbarJob?.cancel()
-        updateToolbarJob = launch {
-            while (isActive) {
-                Logger.debug("Update relative time in toolbar subtitle")
-
-                // Update relative time in toolbar every minute
-                updateToolbarSubtitle()
-                delay(DateUtils.MINUTE_IN_MILLIS)
-            }
-        }
-    }
-
-    override fun onStop() {
-        viewModel.loggedInUserViewModel?.webservices?.removeObserver(webservicesInitializedObserver)
-        updateToolbarJob?.cancel()
-
-        super.onStop()
-    }
-
     private fun updateToolbarSubtitle() {
         binding?.toolbar?.apply {
             subtitle = if (viewModel.loggedInUserViewModel?.userType == UserType.REMOTE) {
@@ -175,10 +149,6 @@ class OverviewFragment : BaseFragment() {
                 null
             }
         }
-    }
-
-    private fun updateNavigationHeaderSubtitleView() {
-        navigationHeaderSubtitleView?.text = viewModel.loggedInUserViewModel?.username?.value
     }
 
     private fun updateNavigationHeaderUserTypeView() {
@@ -245,6 +215,30 @@ class OverviewFragment : BaseFragment() {
         } else {
             Logger.debug("The synchronize data request is already running - skip call")
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        viewModel.loggedInUserViewModel?.webservices?.addObserver(viewLifecycleOwner.lifecycleScope, true, webservicesInitializedObserver)
+
+        updateToolbarJob?.cancel()
+        updateToolbarJob = launch {
+            while (isActive) {
+                Logger.debug("Update relative time in toolbar subtitle")
+
+                // Update relative time in toolbar every minute
+                updateToolbarSubtitle()
+                delay(DateUtils.MINUTE_IN_MILLIS)
+            }
+        }
+    }
+
+    override fun onStop() {
+        viewModel.loggedInUserViewModel?.webservices?.removeObserver(webservicesInitializedObserver)
+        updateToolbarJob?.cancel()
+
+        super.onStop()
     }
 
     override fun onDestroyView() {
