@@ -19,8 +19,6 @@ import de.passbutler.common.crypto.models.ProtectedValue
 import de.passbutler.common.database.LocalRepository
 import de.passbutler.common.database.models.Item
 import de.passbutler.common.database.models.ItemAuthorization
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 import java.util.*
 
@@ -55,21 +53,18 @@ class ItemAuthorizationsDetailViewModel(
 
             val existingItemAuthorizationViewModels = createExistingItemAuthorizationViewModels(item)
             val provisionalItemAuthorizationViewModels = createProvisionalItemAuthorizationViewModels(existingItemAuthorizationViewModels, item, itemKeyCopy)
-
             val newItemAuthorizations = existingItemAuthorizationViewModels + provisionalItemAuthorizationViewModels
 
-            withContext(Dispatchers.Main) {
-                _itemAuthorizationViewModels.value.forEach {
-                    it.isReadAllowed.removeObserver(itemAuthorizationViewModelsModifiedObserver)
-                    it.isWriteAllowed.removeObserver(itemAuthorizationViewModelsModifiedObserver)
-                }
+            _itemAuthorizationViewModels.value.forEach {
+                it.isReadAllowed.removeObserver(itemAuthorizationViewModelsModifiedObserver)
+                it.isWriteAllowed.removeObserver(itemAuthorizationViewModelsModifiedObserver)
+            }
 
-                _itemAuthorizationViewModels.value = newItemAuthorizations
+            _itemAuthorizationViewModels.value = newItemAuthorizations
 
-                _itemAuthorizationViewModels.value.forEach {
-                    it.isReadAllowed.addObserver(null, false, itemAuthorizationViewModelsModifiedObserver)
-                    it.isWriteAllowed.addObserver(null, false, itemAuthorizationViewModelsModifiedObserver)
-                }
+            _itemAuthorizationViewModels.value.forEach {
+                it.isReadAllowed.addObserver(null, false, itemAuthorizationViewModelsModifiedObserver)
+                it.isWriteAllowed.addObserver(null, false, itemAuthorizationViewModelsModifiedObserver)
             }
         } else {
             Logger.warn("The ItemViewModel for id = $itemId was not found!")

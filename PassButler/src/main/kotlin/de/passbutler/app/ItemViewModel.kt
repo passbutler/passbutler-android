@@ -19,8 +19,6 @@ import de.passbutler.common.database.models.Item
 import de.passbutler.common.database.models.ItemAuthorization
 import de.passbutler.common.database.models.ItemData
 import de.passbutler.common.database.models.UserType
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 import java.util.*
 
@@ -195,10 +193,8 @@ class ItemEditingViewModel private constructor(
 
         return when (saveResult) {
             is Success -> {
-                withContext(Dispatchers.Main) {
-                    itemModel.value = saveResult.result
-                    commitChangesAsInitialValue()
-                }
+                itemModel.value = saveResult.result
+                commitChangesAsInitialValue()
 
                 Success(Unit)
             }

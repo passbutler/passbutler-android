@@ -27,7 +27,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 import java.util.*
 import javax.crypto.Cipher
@@ -289,15 +288,13 @@ class UserViewModel private constructor(
 
             val encryptedMasterPasswordInitializationVector = initializedSetupBiometricUnlockCipher.iv
             val encryptedMasterPasswordValue = Biometrics.encryptData(initializedSetupBiometricUnlockCipher, masterPassword.toByteArray()).resultOrThrowException()
-
             val encryptedMasterPassword = EncryptedValue(encryptedMasterPasswordInitializationVector, encryptedMasterPasswordValue)
+
             userManager.updateLoggedInStateStorage {
                 it.encryptedMasterPassword = encryptedMasterPassword
             }
 
-            withContext(Dispatchers.Main) {
-                biometricUnlockEnabled.notifyChange()
-            }
+            biometricUnlockEnabled.notifyChange()
 
             Success(Unit)
         } catch (exception: Exception) {
@@ -318,9 +315,7 @@ class UserViewModel private constructor(
                 it.encryptedMasterPassword = null
             }
 
-            withContext(Dispatchers.Main) {
-                biometricUnlockEnabled.notifyChange()
-            }
+            biometricUnlockEnabled.notifyChange()
 
             Success(Unit)
         } catch (exception: Exception) {
@@ -387,10 +382,8 @@ class UserViewModel private constructor(
             val updatedItemViewModels = createItemViewModels(newItems)
             val decryptedItemViewModels = decryptItemViewModels(updatedItemViewModels)
 
-            withContext(Dispatchers.Main) {
-                Logger.debug("Update item viewmodels: itemViewModels.size = ${decryptedItemViewModels.size}")
-                itemViewModels.value = decryptedItemViewModels
-            }
+            Logger.debug("Update item viewmodels: itemViewModels.size = ${decryptedItemViewModels.size}")
+            itemViewModels.value = decryptedItemViewModels
         }
     }
 
