@@ -10,17 +10,19 @@ import de.passbutler.common.base.BindableObserver
 fun <T> Bindable<T>.addLifecycleObserver(lifecycleOwner: LifecycleOwner, notifyOnRegister: Boolean, observer: BindableObserver<T>) {
     addObserver(lifecycleOwner.lifecycleScope, notifyOnRegister, observer)
 
-    // TODO: Unregister state observer?
-    lifecycleOwner.lifecycle.addObserver(DestroyedStateLifecycleEventObserver {
+    lifecycleOwner.lifecycle.addObserver(DestroyedStateLifecycleEventObserver { self ->
         // Unregister observer of `Bindable`
         removeObserver(observer)
+
+        // Unregister lifecycle observer itself
+        lifecycleOwner.lifecycle.removeObserver(self)
     })
 }
 
-class DestroyedStateLifecycleEventObserver(private val destroyedStateCallback: () -> Unit) : LifecycleEventObserver {
+class DestroyedStateLifecycleEventObserver(private val destroyedStateCallback: (DestroyedStateLifecycleEventObserver) -> Unit) : LifecycleEventObserver {
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         if (source.lifecycle.currentState == Lifecycle.State.DESTROYED) {
-            destroyedStateCallback()
+            destroyedStateCallback(this)
         }
     }
 }
