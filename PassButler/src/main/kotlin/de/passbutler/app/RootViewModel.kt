@@ -54,13 +54,20 @@ class RootViewModel : UserViewModelUsingViewModel() {
 
     suspend fun unlockScreenWithPassword(masterPassword: String): Result<Unit> {
         val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
-        val decryptSensibleDataResult = loggedInUserViewModel.decryptSensibleData(masterPassword)
 
-        if (decryptSensibleDataResult is Success && loggedInUserViewModel.userType == UserType.REMOTE) {
-            restoreWebservices(loggedInUserViewModel, masterPassword)
+        return try {
+            loggedInUserViewModel.decryptSensibleData(masterPassword).resultOrThrowException()
+
+            if (loggedInUserViewModel.userType == UserType.REMOTE) {
+                restoreWebservices(loggedInUserViewModel, masterPassword)
+            }
+
+            lockScreenState.value = LockScreenState.Unlocked
+
+            Success(Unit)
+        } catch (exception: Exception) {
+            Failure(exception)
         }
-
-        return decryptSensibleDataResult
     }
 
     private fun restoreWebservices(loggedInUserViewModel: UserViewModel, masterPassword: String) {
@@ -101,6 +108,8 @@ class RootViewModel : UserViewModelUsingViewModel() {
             if (loggedInUserViewModel.userType == UserType.REMOTE) {
                 restoreWebservices(loggedInUserViewModel, masterPassword)
             }
+
+            lockScreenState.value = LockScreenState.Unlocked
 
             Success(Unit)
         } catch (exception: Exception) {
