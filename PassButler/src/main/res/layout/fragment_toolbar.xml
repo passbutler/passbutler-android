@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!-- Use `android:transitionGroup="true"` to be sure all views are animated simultaneously in transitions -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,19 +10,13 @@
     android:transitionGroup="true">
 
     <!-- Use a theme overlay to be sure the contained view colors are inverted (toolbar title, burger menu) -->
-    <com.google.android.material.appbar.AppBarLayout
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:subtitle="Subtitle"
-            tools:title="Title" />
-
-    </com.google.android.material.appbar.AppBarLayout>
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+        tools:subtitle="Subtitle"
+        tools:title="Title" />
 
     <!-- Add explicit background to hide underlaying fragments, also made container clickable to avoid touch-through underlaying fragments -->
     <FrameLayout
