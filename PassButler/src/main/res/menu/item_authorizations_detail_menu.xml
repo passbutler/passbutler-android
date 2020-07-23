@@ -5,7 +5,6 @@
     <item
         android:id="@+id/item_authorizations_detail_menu_item_save"
         android:icon="@drawable/icon_done_24dp"
-        android:orderInCategory="2"
         android:title="@string/itemauthorizations_save_button_title"
         app:iconTint="?colorControlNormal"
         app:showAsAction="always" />
