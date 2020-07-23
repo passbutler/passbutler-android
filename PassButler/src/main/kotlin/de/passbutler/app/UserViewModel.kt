@@ -330,22 +330,25 @@ class UserViewModel private constructor(
     }
 
     private fun applyUserSettings() {
+        Logger.debug("applyUserSettings()")
+
         val automaticLockTimeoutValue = automaticLockTimeout.value
         val hidePasswordsEnabledValue = hidePasswordsEnabled.value
 
         if (automaticLockTimeoutValue != null && hidePasswordsEnabledValue != null) {
             val updatedSettings = UserSettings(automaticLockTimeoutValue, hidePasswordsEnabledValue)
 
-            // Only persist settings if changed and not uninitialized
-            if (updatedSettings != settings && settings != null) {
+            // Only persist settings if changed
+            if (updatedSettings != settings) {
                 persistUserSettings(updatedSettings)
+                settings = updatedSettings
             }
-
-            settings = updatedSettings
         }
     }
 
     private fun persistUserSettings(settings: UserSettings) {
+        Logger.debug("persistUserSettings()")
+
         persistUserSettingsJob?.cancel()
         persistUserSettingsJob = launch {
             val masterEncryptionKey = masterEncryptionKey
