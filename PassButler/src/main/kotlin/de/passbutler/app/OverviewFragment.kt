@@ -34,7 +34,6 @@ import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.visible
 import de.passbutler.common.Webservices
 import de.passbutler.common.base.BindableObserver
-import de.passbutler.common.database.models.LoggedInStateStorage
 import de.passbutler.common.database.models.UserType
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
