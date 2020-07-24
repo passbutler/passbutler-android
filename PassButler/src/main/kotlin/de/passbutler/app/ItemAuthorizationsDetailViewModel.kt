@@ -1,16 +1,16 @@
 package de.passbutler.app
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
-import de.passbutler.app.base.NonNullDiscardableMutableLiveData
-import de.passbutler.app.base.NonNullMutableLiveData
-import de.passbutler.app.base.NonNullValueGetterLiveData
 import de.passbutler.app.base.viewmodels.EditingViewModel
 import de.passbutler.app.ui.ListItemIdentifiable
+import de.passbutler.common.base.Bindable
+import de.passbutler.common.base.BindableObserver
+import de.passbutler.common.base.DiscardableMutableBindable
 import de.passbutler.common.base.Failure
+import de.passbutler.common.base.MutableBindable
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
+import de.passbutler.common.base.ValueGetterBindable
 import de.passbutler.common.base.contains
 import de.passbutler.common.base.resultOrThrowException
 import de.passbutler.common.crypto.EncryptionAlgorithm
@@ -19,8 +19,6 @@ import de.passbutler.common.crypto.models.ProtectedValue
 import de.passbutler.common.database.LocalRepository
 import de.passbutler.common.database.models.Item
 import de.passbutler.common.database.models.ItemAuthorization
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 import java.util.*
 
@@ -30,16 +28,16 @@ class ItemAuthorizationsDetailViewModel(
     private val localRepository: LocalRepository
 ) : ViewModel(), EditingViewModel {
 
-    val itemAuthorizationViewModels: LiveData<List<ItemAuthorizationViewModel>>
+    val itemAuthorizationViewModels: Bindable<List<ItemAuthorizationViewModel>>
         get() = _itemAuthorizationViewModels
 
-    private val _itemAuthorizationViewModels = NonNullMutableLiveData<List<ItemAuthorizationViewModel>>(emptyList())
+    private val _itemAuthorizationViewModels = MutableBindable<List<ItemAuthorizationViewModel>>(emptyList())
 
-    val anyItemAuthorizationWasModified = NonNullValueGetterLiveData {
+    val anyItemAuthorizationWasModified = ValueGetterBindable {
         _itemAuthorizationViewModels.value.any { it.isReadAllowed.isModified || it.isWriteAllowed.isModified }
     }
 
-    private val itemAuthorizationViewModelsModifiedObserver = Observer<Boolean> {
+    private val itemAuthorizationViewModelsModifiedObserver: BindableObserver<Boolean> = {
         anyItemAuthorizationWasModified.notifyChange()
     }
 
@@ -55,22 +53,22 @@ class ItemAuthorizationsDetailViewModel(
 
             val existingItemAuthorizationViewModels = createExistingItemAuthorizationViewModels(item)
             val provisionalItemAuthorizationViewModels = createProvisionalItemAuthorizationViewModels(existingItemAuthorizationViewModels, item, itemKeyCopy)
-
             val newItemAuthorizations = existingItemAuthorizationViewModels + provisionalItemAuthorizationViewModels
 
-            withContext(Dispatchers.Main) {
-                _itemAuthorizationViewModels.value.forEach {
-                    it.isReadAllowed.removeObserver(itemAuthorizationViewModelsModifiedObserver)
-                    it.isWriteAllowed.removeObserver(itemAuthorizationViewModelsModifiedObserver)
-                }
-
-                _itemAuthorizationViewModels.value = newItemAuthorizations
-
-                _itemAuthorizationViewModels.value.forEach {
-                    it.isReadAllowed.observeForever(itemAuthorizationViewModelsModifiedObserver)
-                    it.isWriteAllowed.observeForever(itemAuthorizationViewModelsModifiedObserver)
-                }
+            _itemAuthorizationViewModels.value.forEach {
+                it.isReadAllowed.removeObserver(itemAuthorizationViewModelsModifiedObserver)
+                it.isWriteAllowed.removeObserver(itemAuthorizationViewModelsModifiedObserver)
             }
+
+            _itemAuthorizationViewModels.value = newItemAuthorizations
+
+            _itemAuthorizationViewModels.value.forEach {
+                it.isReadAllowed.addObserver(null, false, itemAuthorizationViewModelsModifiedObserver)
+                it.isWriteAllowed.addObserver(null, false, itemAuthorizationViewModelsModifiedObserver)
+            }
+
+            // Notify bindable to be sure view is triggered after re-initialization
+            anyItemAuthorizationWasModified.notifyChange()
         } else {
             Logger.warn("The ItemViewModel for id = $itemId was not found!")
         }
@@ -227,8 +225,8 @@ class ItemAuthorizationViewModel(val itemAuthorizationModel: ItemAuthorizationMo
             is ItemAuthorizationModel.Existing -> itemAuthorizationModel.username
         }
 
-    val isReadAllowed = NonNullDiscardableMutableLiveData(determineInitialIsReadAllowed())
-    val isWriteAllowed = NonNullDiscardableMutableLiveData(determineInitialIsWriteAllowed())
+    val isReadAllowed = DiscardableMutableBindable(determineInitialIsReadAllowed())
+    val isWriteAllowed = DiscardableMutableBindable(determineInitialIsWriteAllowed())
 
     private fun determineInitialIsReadAllowed(): Boolean {
         return when (itemAuthorizationModel) {

@@ -1,15 +1,13 @@
 package de.passbutler.app
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
-import de.passbutler.app.base.NonNullMutableLiveData
-import de.passbutler.app.base.NonNullValueGetterLiveData
-import de.passbutler.app.base.viewmodels.ManualCancelledCoroutineScopeViewModel
 import de.passbutler.app.crypto.Biometrics
 import de.passbutler.common.UserManager
+import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.Failure
+import de.passbutler.common.base.MutableBindable
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
+import de.passbutler.common.base.ValueGetterBindable
 import de.passbutler.common.base.addSignal
 import de.passbutler.common.base.clear
 import de.passbutler.common.base.resultOrThrowException
@@ -23,19 +21,18 @@ import de.passbutler.common.database.models.Item
 import de.passbutler.common.database.models.User
 import de.passbutler.common.database.models.UserSettings
 import de.passbutler.common.database.models.UserType
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 import java.util.*
 import javax.crypto.Cipher
+import kotlin.coroutines.CoroutineContext
 
-/**
- * This viewmodel is held by `UserViewModelProvidingViewModel` end contains the business logic for logged-in user.
- * The method `cancelJobs()` is manually called by `UserViewModelProvidingViewModel`.
- */
 class UserViewModel private constructor(
     private val userManager: UserManager,
     private val initialUser: User,
@@ -46,7 +43,12 @@ class UserViewModel private constructor(
     private val protectedItemEncryptionSecretKey: ProtectedValue<CryptographicKey>,
     private var protectedSettings: ProtectedValue<UserSettings>,
     masterPassword: String?
-) : ManualCancelledCoroutineScopeViewModel() {
+) : CoroutineScope {
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO + coroutineJob
+
+    private val coroutineJob = SupervisorJob()
 
     val localRepository
         get() = userManager.localRepository
@@ -67,18 +69,18 @@ class UserViewModel private constructor(
         get() = userManager.webservices
 
     val id = initialUser.id
-    val username = NonNullMutableLiveData(initialUser.username)
+    val username = MutableBindable(initialUser.username)
 
-    val itemViewModels = NonNullMutableLiveData<List<ItemViewModel>>(emptyList())
+    val itemViewModels = MutableBindable<List<ItemViewModel>>(emptyList())
 
-    val automaticLockTimeout = MutableLiveData<Int?>()
-    val hidePasswordsEnabled = MutableLiveData<Boolean?>()
+    val automaticLockTimeout = MutableBindable<Int?>(null)
+    val hidePasswordsEnabled = MutableBindable<Boolean?>(null)
 
-    val biometricUnlockAvailable = NonNullValueGetterLiveData {
+    val biometricUnlockAvailable = ValueGetterBindable {
         Biometrics.isHardwareCapable && Biometrics.isKeyguardSecure && Biometrics.hasEnrolledBiometrics
     }
 
-    val biometricUnlockEnabled = NonNullValueGetterLiveData {
+    val biometricUnlockEnabled = ValueGetterBindable {
         biometricUnlockAvailable.value && encryptedMasterPassword != null
     }
 
@@ -88,8 +90,8 @@ class UserViewModel private constructor(
 
     private var itemViewModelsUpdateJob: Job? = null
 
-    private val automaticLockTimeoutChangedObserver = Observer<Int?> { applyUserSettings() }
-    private val hidePasswordsEnabledChangedObserver = Observer<Boolean?> { applyUserSettings() }
+    private val automaticLockTimeoutChangedObserver: BindableObserver<Int?> = { applyUserSettings() }
+    private val hidePasswordsEnabledChangedObserver: BindableObserver<Boolean?> = { applyUserSettings() }
 
     private var masterEncryptionKey: ByteArray? = null
     private var itemEncryptionSecretKey: ByteArray? = null
@@ -124,6 +126,11 @@ class UserViewModel private constructor(
                 }
             }
         }
+    }
+
+    fun cancelJobs() {
+        Logger.debug("Cancel the coroutine job...")
+        coroutineJob.cancel()
     }
 
     fun createNewItemEditingViewModel(): ItemEditingViewModel {
@@ -174,18 +181,16 @@ class UserViewModel private constructor(
         userManager.itemsOrItemAuthorizationsChanged.addSignal(updateItemViewModelsSignal, true)
     }
 
-    private suspend fun registerUserSettingObservers(decryptedSettings: UserSettings) {
-        withContext(Dispatchers.Main) {
-            automaticLockTimeout.value = decryptedSettings.automaticLockTimeout
-            hidePasswordsEnabled.value = decryptedSettings.hidePasswords
+    private fun registerUserSettingObservers(decryptedSettings: UserSettings) {
+        automaticLockTimeout.value = decryptedSettings.automaticLockTimeout
+        hidePasswordsEnabled.value = decryptedSettings.hidePasswords
 
-            // Register observers after field initialisations to avoid initial observer calls (but actually `LiveData` notifies observer nevertheless)
-            automaticLockTimeout.observeForever(automaticLockTimeoutChangedObserver)
-            hidePasswordsEnabled.observeForever(hidePasswordsEnabledChangedObserver)
-        }
+        // Register observers after field initialisations to avoid initial observer calls
+        automaticLockTimeout.addObserver(null, false, automaticLockTimeoutChangedObserver)
+        hidePasswordsEnabled.addObserver(null, false, hidePasswordsEnabledChangedObserver)
     }
 
-    suspend fun clearSensibleData() {
+    fun clearSensibleData() {
         Logger.debug("Clear sensible data")
 
         // Be sure all observers that uses crypto resources cleared afterwards are unregistered first
@@ -210,15 +215,13 @@ class UserViewModel private constructor(
         itemViewModelsUpdateJob?.cancel()
     }
 
-    private suspend fun unregisterUserSettingObservers() {
-        withContext(Dispatchers.Main) {
-            // Unregister observers before setting field reset to avoid unnecessary observer calls
-            automaticLockTimeout.removeObserver(automaticLockTimeoutChangedObserver)
-            hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
+    private fun unregisterUserSettingObservers() {
+        // Unregister observers before setting field reset to avoid unnecessary observer calls
+        automaticLockTimeout.removeObserver(automaticLockTimeoutChangedObserver)
+        hidePasswordsEnabled.removeObserver(hidePasswordsEnabledChangedObserver)
 
-            automaticLockTimeout.value = null
-            hidePasswordsEnabled.value = null
-        }
+        automaticLockTimeout.value = null
+        hidePasswordsEnabled.value = null
     }
 
     suspend fun synchronizeData(): Result<Unit> {
@@ -286,15 +289,13 @@ class UserViewModel private constructor(
 
             val encryptedMasterPasswordInitializationVector = initializedSetupBiometricUnlockCipher.iv
             val encryptedMasterPasswordValue = Biometrics.encryptData(initializedSetupBiometricUnlockCipher, masterPassword.toByteArray()).resultOrThrowException()
-
             val encryptedMasterPassword = EncryptedValue(encryptedMasterPasswordInitializationVector, encryptedMasterPasswordValue)
+
             userManager.updateLoggedInStateStorage {
                 it.encryptedMasterPassword = encryptedMasterPassword
             }
 
-            withContext(Dispatchers.Main) {
-                biometricUnlockEnabled.notifyChange()
-            }
+            biometricUnlockEnabled.notifyChange()
 
             Success(Unit)
         } catch (exception: Exception) {
@@ -315,9 +316,7 @@ class UserViewModel private constructor(
                 it.encryptedMasterPassword = null
             }
 
-            withContext(Dispatchers.Main) {
-                biometricUnlockEnabled.notifyChange()
-            }
+            biometricUnlockEnabled.notifyChange()
 
             Success(Unit)
         } catch (exception: Exception) {
@@ -331,22 +330,25 @@ class UserViewModel private constructor(
     }
 
     private fun applyUserSettings() {
+        Logger.debug("applyUserSettings()")
+
         val automaticLockTimeoutValue = automaticLockTimeout.value
         val hidePasswordsEnabledValue = hidePasswordsEnabled.value
 
         if (automaticLockTimeoutValue != null && hidePasswordsEnabledValue != null) {
             val updatedSettings = UserSettings(automaticLockTimeoutValue, hidePasswordsEnabledValue)
 
-            // Only persist settings if changed and not uninitialized
-            if (updatedSettings != settings && settings != null) {
+            // Only persist settings if changed
+            if (updatedSettings != settings) {
                 persistUserSettings(updatedSettings)
+                settings = updatedSettings
             }
-
-            settings = updatedSettings
         }
     }
 
     private fun persistUserSettings(settings: UserSettings) {
+        Logger.debug("persistUserSettings()")
+
         persistUserSettingsJob?.cancel()
         persistUserSettingsJob = launch {
             val masterEncryptionKey = masterEncryptionKey
@@ -384,10 +386,8 @@ class UserViewModel private constructor(
             val updatedItemViewModels = createItemViewModels(newItems)
             val decryptedItemViewModels = decryptItemViewModels(updatedItemViewModels)
 
-            withContext(Dispatchers.Main) {
-                Logger.debug("Update item viewmodels: itemViewModels.size = ${decryptedItemViewModels.size}")
-                itemViewModels.value = decryptedItemViewModels
-            }
+            Logger.debug("Update item viewmodels: itemViewModels.size = ${decryptedItemViewModels.size}")
+            itemViewModels.value = decryptedItemViewModels
         }
     }
 
@@ -444,36 +444,38 @@ class UserViewModel private constructor(
     private suspend fun decryptItemViewModels(itemViewModels: List<ItemViewModel>): List<ItemViewModel> {
         val itemEncryptionSecretKey = itemEncryptionSecretKey ?: throw IllegalStateException("The item encryption key is null despite item decryption was started!")
 
-        return itemViewModels
-            .map { itemViewModel ->
-                // Start parallel decryption
-                itemViewModel to async {
-                    // Only decrypt if not already decrypted
-                    if (itemViewModel.itemData == null) {
-                        val itemDecryptionResult = itemViewModel.decryptSensibleData(itemEncryptionSecretKey)
+        return coroutineScope {
+            itemViewModels
+                .map { itemViewModel ->
+                    // Start parallel decryption
+                    itemViewModel to async {
+                        // Only decrypt if not already decrypted
+                        if (itemViewModel.itemData == null) {
+                            val itemDecryptionResult = itemViewModel.decryptSensibleData(itemEncryptionSecretKey)
 
-                        when (itemDecryptionResult) {
-                            is Success -> Logger.debug("The item viewmodel '${itemViewModel.id}' was decrypted successfully")
-                            is Failure -> Logger.warn(itemDecryptionResult.throwable, "The item viewmodel '${itemViewModel.id}' could not be decrypted")
+                            when (itemDecryptionResult) {
+                                is Success -> Logger.debug("The item viewmodel '${itemViewModel.id}' was decrypted successfully")
+                                is Failure -> Logger.warn(itemDecryptionResult.throwable, "The item viewmodel '${itemViewModel.id}' could not be decrypted")
+                            }
+
+                            itemDecryptionResult
+                        } else {
+                            Logger.debug("The item viewmodel '${itemViewModel.id}' is already decrypted")
+                            Success(Unit)
                         }
-
-                        itemDecryptionResult
-                    } else {
-                        Logger.debug("The item viewmodel '${itemViewModel.id}' is already decrypted")
-                        Success(Unit)
                     }
                 }
-            }
-            .mapNotNull {
-                // Await results afterwards
-                val itemViewModel = it.first
-                val itemDecryptionResult = it.second.await()
+                .mapNotNull {
+                    // Await results afterwards
+                    val itemViewModel = it.first
+                    val itemDecryptionResult = it.second.await()
 
-                when (itemDecryptionResult) {
-                    is Success -> itemViewModel
-                    is Failure -> null
+                    when (itemDecryptionResult) {
+                        is Success -> itemViewModel
+                        is Failure -> null
+                    }
                 }
-            }
+        }
     }
 
     companion object {

@@ -5,14 +5,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import de.passbutler.app.ItemViewModel
+import de.passbutler.app.ItemViewModelEntry
 import de.passbutler.app.R
 import de.passbutler.app.UserViewModelProvidingViewModel
-import de.passbutler.app.base.observe
+import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.databinding.FragmentAutofillSelectionBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
 import de.passbutler.app.ui.BaseFragment
@@ -20,6 +20,7 @@ import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.visible
 import de.passbutler.app.unlockedItemData
+import de.passbutler.common.base.BindableObserver
 
 class AutofillSelectionFragment : BaseFragment() {
 
@@ -36,7 +37,7 @@ class AutofillSelectionFragment : BaseFragment() {
 
     private var binding: FragmentAutofillSelectionBinding? = null
 
-    private val itemViewModelsObserver = Observer<List<ItemViewModel>> { newUnfilteredItemViewModels ->
+    private val itemViewModelsObserver: BindableObserver<List<ItemViewModel>> = { newUnfilteredItemViewModels ->
         val newItemViewModels = newUnfilteredItemViewModels.filter { !it.deleted }
         val relevantAutoSelectItemViewModels = newItemViewModels.filterAutoSelectRelevantItems()
 
@@ -44,9 +45,11 @@ class AutofillSelectionFragment : BaseFragment() {
             autofillMainActivity.itemWasSelected(relevantAutoSelectItemViewModels)
         } else {
             val adapter = binding?.recyclerViewItemList?.adapter as? AutofillSelectionItemAdapter
-            adapter?.submitList(newItemViewModels)
 
-            val showEmptyScreen = newItemViewModels.isEmpty()
+            val newItemViewModelEntries = newItemViewModels.map { ItemViewModelEntry(it) }
+            adapter?.submitList(newItemViewModelEntries)
+
+            val showEmptyScreen = newItemViewModelEntries.isEmpty()
             binding?.layoutEmptyScreen?.root?.visible = showEmptyScreen
         }
     }
@@ -64,7 +67,7 @@ class AutofillSelectionFragment : BaseFragment() {
             setupEntryList(binding)
         }
 
-        loggedInUserViewModel?.itemViewModels?.observe(viewLifecycleOwner, true, itemViewModelsObserver)
+        loggedInUserViewModel?.itemViewModels?.addLifecycleObserver(viewLifecycleOwner, true, itemViewModelsObserver)
 
         return binding?.root
     }
@@ -109,7 +112,7 @@ class AutofillSelectionItemAdapter(
     }
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
-        (getItem(position) as? ItemViewModel)?.let { item ->
+        (getItem(position) as? ItemViewModelEntry)?.let { item ->
             holder.apply {
                 itemView.tag = item
                 bind(item)
@@ -122,13 +125,13 @@ class AutofillSelectionItemAdapter(
         private val autofillMainActivity: AutofillMainActivity
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(itemViewModel: ItemViewModel) {
+        fun bind(itemViewModelEntry: ItemViewModelEntry) {
             binding.apply {
-                textViewTitle.text = itemViewModel.title.value
-                textViewSubtitle.text = itemViewModel.subtitle
+                textViewTitle.text = itemViewModelEntry.itemViewModel.title
+                textViewSubtitle.text = itemViewModelEntry.itemViewModel.subtitle
 
                 root.setOnClickListener {
-                    autofillMainActivity.itemWasSelected(listOf(itemViewModel))
+                    autofillMainActivity.itemWasSelected(listOf(itemViewModelEntry.itemViewModel))
                 }
             }
         }

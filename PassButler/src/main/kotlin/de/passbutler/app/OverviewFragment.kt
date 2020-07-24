@@ -12,14 +12,13 @@ import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
+import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.base.launchRequestSending
-import de.passbutler.app.base.observe
 import de.passbutler.app.base.relativeDateTime
 import de.passbutler.app.databinding.FragmentOverviewBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
@@ -35,7 +34,6 @@ import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.visible
 import de.passbutler.common.Webservices
 import de.passbutler.common.base.BindableObserver
-import de.passbutler.common.database.models.LoggedInStateStorage
 import de.passbutler.common.database.models.UserType
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -56,25 +54,17 @@ class OverviewFragment : BaseFragment() {
     private var updateToolbarJob: Job? = null
     private var synchronizeDataRequestSendingJob: Job? = null
 
-    private val usernameObserver = Observer<String> {
-        updateNavigationHeaderSubtitleView()
-    }
-
-    private val loggedInStateStorageObserver: BindableObserver<LoggedInStateStorage?> = {
-        updateToolbarSubtitle()
-        updateNavigationHeaderUserTypeView()
-        updateSwipeRefreshLayout()
-    }
-
-    private val itemViewModelsObserver = Observer<List<ItemViewModel>> { newUnfilteredItemViewModels ->
+    private val itemViewModelsObserver: BindableObserver<List<ItemViewModel>> = { newUnfilteredItemViewModels ->
         // Only show non-deleted items
         val newItemViewModels = newUnfilteredItemViewModels.filter { !it.deleted }
         Logger.debug("newItemViewModels.size = ${newItemViewModels.size}")
 
         val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemAdapter
-        adapter?.submitList(newItemViewModels)
 
-        val showEmptyScreen = newItemViewModels.isEmpty()
+        val newItemViewModelEntries = newItemViewModels.map { ItemViewModelEntry(it) }
+        adapter?.submitList(newItemViewModelEntries)
+
+        val showEmptyScreen = newItemViewModelEntries.isEmpty()
         binding?.layoutOverviewContent?.layoutEmptyScreen?.root?.visible = showEmptyScreen
     }
 
@@ -94,9 +84,17 @@ class OverviewFragment : BaseFragment() {
         val loggedInUserViewModel = viewModel.loggedInUserViewModel
         Logger.debug("loggedInUserViewModel = $loggedInUserViewModel")
 
-        loggedInUserViewModel?.username?.observe(viewLifecycleOwner, true, usernameObserver)
-        loggedInUserViewModel?.loggedInStateStorage?.addObserver(viewLifecycleOwner.lifecycleScope, true, loggedInStateStorageObserver)
-        loggedInUserViewModel?.itemViewModels?.observe(viewLifecycleOwner, true, itemViewModelsObserver)
+        loggedInUserViewModel?.username?.addLifecycleObserver(viewLifecycleOwner, true) {
+            navigationHeaderSubtitleView?.text = it
+        }
+
+        loggedInUserViewModel?.loggedInStateStorage?.addLifecycleObserver(viewLifecycleOwner, true) {
+            updateToolbarSubtitle()
+            updateNavigationHeaderUserTypeView()
+            updateSwipeRefreshLayout()
+        }
+
+        loggedInUserViewModel?.itemViewModels?.addLifecycleObserver(viewLifecycleOwner, true, itemViewModelsObserver)
 
         return binding?.root
     }
@@ -140,30 +138,6 @@ class OverviewFragment : BaseFragment() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-
-        viewModel.loggedInUserViewModel?.webservices?.addObserver(viewLifecycleOwner.lifecycleScope, true, webservicesInitializedObserver)
-
-        updateToolbarJob?.cancel()
-        updateToolbarJob = launch {
-            while (isActive) {
-                Logger.debug("Update relative time in toolbar subtitle")
-
-                // Update relative time in toolbar every minute
-                updateToolbarSubtitle()
-                delay(DateUtils.MINUTE_IN_MILLIS)
-            }
-        }
-    }
-
-    override fun onStop() {
-        viewModel.loggedInUserViewModel?.webservices?.removeObserver(webservicesInitializedObserver)
-        updateToolbarJob?.cancel()
-
-        super.onStop()
-    }
-
     private fun updateToolbarSubtitle() {
         binding?.toolbar?.apply {
             subtitle = if (viewModel.loggedInUserViewModel?.userType == UserType.REMOTE) {
@@ -174,10 +148,6 @@ class OverviewFragment : BaseFragment() {
                 null
             }
         }
-    }
-
-    private fun updateNavigationHeaderSubtitleView() {
-        navigationHeaderSubtitleView?.text = viewModel.loggedInUserViewModel?.username?.value
     }
 
     private fun updateNavigationHeaderUserTypeView() {
@@ -246,12 +216,34 @@ class OverviewFragment : BaseFragment() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+
+        viewModel.loggedInUserViewModel?.webservices?.addObserver(viewLifecycleOwner.lifecycleScope, true, webservicesInitializedObserver)
+
+        updateToolbarJob?.cancel()
+        updateToolbarJob = launch {
+            while (isActive) {
+                Logger.debug("Update relative time in toolbar subtitle")
+
+                // Update relative time in toolbar every minute
+                updateToolbarSubtitle()
+                delay(DateUtils.MINUTE_IN_MILLIS)
+            }
+        }
+    }
+
+    override fun onStop() {
+        viewModel.loggedInUserViewModel?.webservices?.removeObserver(webservicesInitializedObserver)
+        updateToolbarJob?.cancel()
+
+        super.onStop()
+    }
+
     override fun onDestroyView() {
         binding = null
         navigationHeaderSubtitleView = null
         navigationHeaderUserTypeView = null
-
-        viewModel.loggedInUserViewModel?.loggedInStateStorage?.removeObserver(loggedInStateStorageObserver)
 
         super.onDestroyView()
     }
@@ -346,7 +338,7 @@ class ItemAdapter(private val fragmentPresenter: FragmentPresenting) : ListAdapt
     }
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
-        (getItem(position) as? ItemViewModel)?.let { item ->
+        (getItem(position) as? ItemViewModelEntry)?.let { item ->
             holder.apply {
                 itemView.tag = item
                 bind(item)
@@ -359,13 +351,13 @@ class ItemAdapter(private val fragmentPresenter: FragmentPresenting) : ListAdapt
         private val fragmentPresenter: FragmentPresenting
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(itemViewModel: ItemViewModel) {
+        fun bind(itemViewModelEntry: ItemViewModelEntry) {
             binding.apply {
-                textViewTitle.text = itemViewModel.title.value
-                textViewSubtitle.text = itemViewModel.subtitle
+                textViewTitle.text = itemViewModelEntry.itemViewModel.title
+                textViewSubtitle.text = itemViewModelEntry.itemViewModel.subtitle
 
                 root.setOnClickListener {
-                    fragmentPresenter.showFragment(ItemDetailFragment.newInstance(itemViewModel.id))
+                    fragmentPresenter.showFragment(ItemDetailFragment.newInstance(itemViewModelEntry.itemViewModel.id))
                 }
             }
         }

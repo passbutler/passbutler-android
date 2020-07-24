@@ -1,12 +1,12 @@
 package de.passbutler.app
 
 import android.text.format.DateUtils
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import de.passbutler.app.crypto.Biometrics
 import de.passbutler.common.LoggedInUserResult
 import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.Failure
+import de.passbutler.common.base.MutableBindable
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
 import de.passbutler.common.base.resultOrThrowException
@@ -20,8 +20,8 @@ import javax.crypto.Cipher
 
 class RootViewModel : UserViewModelUsingViewModel() {
 
-    val rootScreenState = MutableLiveData<RootScreenState?>()
-    val lockScreenState = MutableLiveData<LockScreenState?>()
+    val rootScreenState = MutableBindable<RootScreenState?>(null)
+    val lockScreenState = MutableBindable<LockScreenState?>(null)
 
     private val loggedInUserResultObserver = LoggedInUserResultObserver()
 
@@ -54,13 +54,20 @@ class RootViewModel : UserViewModelUsingViewModel() {
 
     suspend fun unlockScreenWithPassword(masterPassword: String): Result<Unit> {
         val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
-        val decryptSensibleDataResult = loggedInUserViewModel.decryptSensibleData(masterPassword)
 
-        if (decryptSensibleDataResult is Success && loggedInUserViewModel.userType == UserType.REMOTE) {
-            restoreWebservices(loggedInUserViewModel, masterPassword)
+        return try {
+            loggedInUserViewModel.decryptSensibleData(masterPassword).resultOrThrowException()
+
+            if (loggedInUserViewModel.userType == UserType.REMOTE) {
+                restoreWebservices(loggedInUserViewModel, masterPassword)
+            }
+
+            lockScreenState.value = LockScreenState.Unlocked
+
+            Success(Unit)
+        } catch (exception: Exception) {
+            Failure(exception)
         }
-
-        return decryptSensibleDataResult
     }
 
     private fun restoreWebservices(loggedInUserViewModel: UserViewModel, masterPassword: String) {
@@ -101,6 +108,8 @@ class RootViewModel : UserViewModelUsingViewModel() {
             if (loggedInUserViewModel.userType == UserType.REMOTE) {
                 restoreWebservices(loggedInUserViewModel, masterPassword)
             }
+
+            lockScreenState.value = LockScreenState.Unlocked
 
             Success(Unit)
         } catch (exception: Exception) {

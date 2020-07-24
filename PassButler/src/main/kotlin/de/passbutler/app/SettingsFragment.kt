@@ -11,7 +11,6 @@ import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
@@ -19,6 +18,7 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceDataStore
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
+import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.crypto.BiometricAuthenticationCallbackExecutor
 import de.passbutler.app.databinding.FragmentSettingsBinding
@@ -44,10 +44,6 @@ class SettingsFragment : ToolBarFragment() {
     private var biometricPrompt: BiometricPrompt? = null
     internal var masterPasswordInputDialog: AlertDialog? = null
 
-    private val biometricUnlockEnabledObserver = Observer<Boolean> { newValue ->
-        settingsPreferenceFragment?.enableBiometricUnlockPreference?.isChecked = newValue
-    }
-
     private val biometricCallbackExecutor by lazy {
         BiometricAuthenticationCallbackExecutor(this, Dispatchers.Main)
     }
@@ -69,7 +65,9 @@ class SettingsFragment : ToolBarFragment() {
             it.settingsFragment = this
         }
 
-        viewModel.biometricUnlockEnabled?.observe(viewLifecycleOwner, biometricUnlockEnabledObserver)
+        viewModel.biometricUnlockEnabled?.addLifecycleObserver(viewLifecycleOwner, false) {
+            settingsPreferenceFragment?.enableBiometricUnlockPreference?.isChecked = it
+        }
 
         return binding.root
     }
