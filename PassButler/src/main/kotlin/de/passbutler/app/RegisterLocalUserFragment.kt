@@ -18,6 +18,7 @@ import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showShortFeedback
 import de.passbutler.app.ui.validateForm
+import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.base.BuildType
 import de.passbutler.common.database.RequestForbiddenException
 

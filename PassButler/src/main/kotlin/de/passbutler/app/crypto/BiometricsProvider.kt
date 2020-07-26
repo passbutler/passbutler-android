@@ -4,14 +4,12 @@ import android.app.KeyguardManager
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import android.security.keystore.KeyProperties.BLOCK_MODE_GCM
-import android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE
-import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
 import androidx.biometric.BiometricManager
 import de.passbutler.app.base.AbstractPassButlerApplication
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
+import de.passbutler.common.crypto.BiometricsProviding
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,12 +26,13 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
-object Biometrics {
+@Suppress("BlockingMethodInNonBlockingContext")
+class BiometricsProvider : BiometricsProviding {
 
-    private const val AES_KEY_BIT_SIZE = 256
-    private const val GCM_AUTHENTICATION_TAG_BIT_SIZE = 128
+    override val isBiometricAvailable: Boolean
+        get() = isHardwareCapable && isKeyguardSecure && hasEnrolledBiometrics
 
-    val isHardwareCapable: Boolean
+    private val isHardwareCapable: Boolean
         get() {
             val biometricManager = BiometricManager.from(applicationContext)
             val isHardwareSupportedConstants = listOf(BiometricManager.BIOMETRIC_SUCCESS, BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED)
@@ -42,13 +41,13 @@ object Biometrics {
             return isHardwareSupportedConstants.contains(canAuthenticateResult)
         }
 
-    val isKeyguardSecure: Boolean
+    private val isKeyguardSecure: Boolean
         get() {
             val keyguardManager = applicationContext.getSystemService(KeyguardManager::class.java)
             return keyguardManager?.isKeyguardSecure ?: false
         }
 
-    val hasEnrolledBiometrics: Boolean
+    private val hasEnrolledBiometrics: Boolean
         get() {
             val biometricManager = BiometricManager.from(applicationContext)
             return biometricManager.canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS
@@ -64,18 +63,19 @@ object Biometrics {
 
     // Throws `NoSuchAlgorithmException` and `NoSuchProviderException`
     private val androidKeyGenerator by lazy {
-        KeyGenerator.getInstance(KEY_ALGORITHM_AES, "AndroidKeyStore")
+        KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
     }
 
-    fun obtainKeyInstance(): Result<Cipher> {
+
+    override fun obtainKeyInstance(): Result<Cipher> {
         return try {
-            Success(Cipher.getInstance("$KEY_ALGORITHM_AES/${BLOCK_MODE_GCM}/${ENCRYPTION_PADDING_NONE}"))
+            Success(Cipher.getInstance("${KeyProperties.KEY_ALGORITHM_AES}/${KeyProperties.BLOCK_MODE_GCM}/${KeyProperties.ENCRYPTION_PADDING_NONE}"))
         } catch (exception: Exception) {
             Failure(exception)
         }
     }
 
-    suspend fun generateKey(keyName: String): Result<Unit> {
+    override suspend fun generateKey(keyName: String): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
                 initializeAndroidKeyStore()
@@ -84,8 +84,8 @@ object Biometrics {
                 val keyUsagePurposes = KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
                 val keyParameterBuilder = KeyGenParameterSpec.Builder(keyName, keyUsagePurposes)
                     .setKeySize(AES_KEY_BIT_SIZE)
-                    .setBlockModes(BLOCK_MODE_GCM)
-                    .setEncryptionPaddings(ENCRYPTION_PADDING_NONE)
+                    .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                     // Do not allow non random IV
                     .setRandomizedEncryptionRequired(true)
                     // Biometric authentication is enforced before key usage:
@@ -110,7 +110,7 @@ object Biometrics {
         }
     }
 
-    suspend fun initializeKeyForEncryption(keyName: String, encryptionCipher: Cipher): Result<Unit> {
+    override suspend fun initializeKeyForEncryption(keyName: String, encryptionCipher: Cipher): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
                 initializeAndroidKeyStore()
@@ -125,7 +125,7 @@ object Biometrics {
         }
     }
 
-    suspend fun initializeKeyForDecryption(keyName: String, decryptionCipher: Cipher, initializationVector: ByteArray): Result<Unit> {
+    override suspend fun initializeKeyForDecryption(keyName: String, decryptionCipher: Cipher, initializationVector: ByteArray): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
                 initializeAndroidKeyStore()
@@ -140,7 +140,7 @@ object Biometrics {
         }
     }
 
-    suspend fun encryptData(encryptionCipher: Cipher, data: ByteArray): Result<ByteArray> {
+    override suspend fun encryptData(encryptionCipher: Cipher, data: ByteArray): Result<ByteArray> {
         return withContext(Dispatchers.Default) {
             try {
                 Success(encryptionCipher.doFinal(data))
@@ -150,7 +150,7 @@ object Biometrics {
         }
     }
 
-    suspend fun decryptData(decryptionCipher: Cipher, data: ByteArray): Result<ByteArray> {
+    override suspend fun decryptData(decryptionCipher: Cipher, data: ByteArray): Result<ByteArray> {
         return withContext(Dispatchers.Default) {
             try {
                 Success(decryptionCipher.doFinal(data))
@@ -160,7 +160,7 @@ object Biometrics {
         }
     }
 
-    suspend fun removeKey(keyName: String): Result<Unit> {
+    override suspend fun removeKey(keyName: String): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
                 initializeAndroidKeyStore()
@@ -177,6 +177,11 @@ object Biometrics {
     private fun initializeAndroidKeyStore() {
         val loadKeyStoreParameter = null
         androidKeyStore.load(loadKeyStoreParameter)
+    }
+
+    companion object {
+        private const val AES_KEY_BIT_SIZE = 256
+        private const val GCM_AUTHENTICATION_TAG_BIT_SIZE = 128
     }
 }
 

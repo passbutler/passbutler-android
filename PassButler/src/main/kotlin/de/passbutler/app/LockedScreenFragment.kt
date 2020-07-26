@@ -23,6 +23,7 @@ import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.validateForm
+import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.base.BuildType
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
@@ -190,8 +191,8 @@ class LockedScreenFragment : BaseFragment() {
         super.onResume()
 
         // The states may changed when user had the app in the background
-        userViewModelProvidingViewModel.loggedInUserViewModel?.biometricUnlockAvailable?.notifyChange()
-        userViewModelProvidingViewModel.loggedInUserViewModel?.biometricUnlockEnabled?.notifyChange()
+        loggedInUserViewModel?.biometricUnlockAvailable?.notifyChange()
+        loggedInUserViewModel?.biometricUnlockEnabled?.notifyChange()
     }
 
     override fun onStop() {

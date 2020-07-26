@@ -23,7 +23,6 @@ import de.passbutler.app.base.relativeDateTime
 import de.passbutler.app.databinding.FragmentOverviewBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
 import de.passbutler.app.ui.BaseFragment
-import de.passbutler.app.ui.FragmentPresenting
 import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.VisibilityHideMode
@@ -32,6 +31,7 @@ import de.passbutler.app.ui.showFadeInOutAnimation
 import de.passbutler.app.ui.showFragmentModally
 import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.visible
+import de.passbutler.common.ItemViewModel
 import de.passbutler.common.Webservices
 import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.database.models.UserType
@@ -59,12 +59,12 @@ class OverviewFragment : BaseFragment() {
         val newItemViewModels = newUnfilteredItemViewModels.filter { !it.deleted }
         Logger.debug("newItemViewModels.size = ${newItemViewModels.size}")
 
-        val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemAdapter
+        val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemEntryAdapter
 
-        val newItemViewModelEntries = newItemViewModels.map { ItemViewModelEntry(it) }
-        adapter?.submitList(newItemViewModelEntries)
+        val newItemEntries = newItemViewModels.map { ItemEntry(it) }
+        adapter?.submitList(newItemEntries)
 
-        val showEmptyScreen = newItemViewModelEntries.isEmpty()
+        val showEmptyScreen = newItemEntries.isEmpty()
         binding?.layoutOverviewContent?.layoutEmptyScreen?.root?.visible = showEmptyScreen
     }
 
@@ -130,7 +130,9 @@ class OverviewFragment : BaseFragment() {
     private fun setupEntryList(binding: FragmentOverviewBinding) {
         binding.layoutOverviewContent.recyclerViewItemList.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = ItemAdapter(this@OverviewFragment)
+            adapter = ItemEntryAdapter { entry ->
+                showFragment(ItemDetailFragment.newInstance(entry.itemViewModel.id))
+            }
         }
 
         binding.layoutOverviewContent.floatingActionButtonAddEntry.setOnClickListener {
@@ -330,15 +332,20 @@ class OverviewFragment : BaseFragment() {
     }
 }
 
-class ItemAdapter(private val fragmentPresenter: FragmentPresenting) : ListAdapter<ListItemIdentifiable, ItemAdapter.ItemViewHolder>(ListItemIdentifiableDiffCallback()) {
+class ItemEntry(val itemViewModel: ItemViewModel): ListItemIdentifiable {
+    override val listItemId: String
+        get() = itemViewModel.id
+}
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
+class ItemEntryAdapter(private val entryClickedCallback: (ItemEntry) -> Unit) : ListAdapter<ListItemIdentifiable, ItemEntryAdapter.ItemEntryViewHolder>(ListItemIdentifiableDiffCallback()) {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemEntryViewHolder {
         val binding = ListItemEntryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ItemViewHolder(binding, fragmentPresenter)
+        return ItemEntryViewHolder(binding, entryClickedCallback)
     }
 
-    override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
-        (getItem(position) as? ItemViewModelEntry)?.let { item ->
+    override fun onBindViewHolder(holder: ItemEntryViewHolder, position: Int) {
+        (getItem(position) as? ItemEntry)?.let { item ->
             holder.apply {
                 itemView.tag = item
                 bind(item)
@@ -346,18 +353,18 @@ class ItemAdapter(private val fragmentPresenter: FragmentPresenting) : ListAdapt
         }
     }
 
-    class ItemViewHolder(
+    class ItemEntryViewHolder(
         private val binding: ListItemEntryBinding,
-        private val fragmentPresenter: FragmentPresenting
+        private val entryClickedCallback: (ItemEntry) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(itemViewModelEntry: ItemViewModelEntry) {
+        fun bind(entry: ItemEntry) {
             binding.apply {
-                textViewTitle.text = itemViewModelEntry.itemViewModel.title
-                textViewSubtitle.text = itemViewModelEntry.itemViewModel.subtitle
+                textViewTitle.text = entry.itemViewModel.title
+                textViewSubtitle.text = entry.itemViewModel.subtitle
 
                 root.setOnClickListener {
-                    fragmentPresenter.showFragment(ItemDetailFragment.newInstance(itemViewModelEntry.itemViewModel.id))
+                    entryClickedCallback.invoke(entry)
                 }
             }
         }

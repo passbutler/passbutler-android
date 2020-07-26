@@ -29,14 +29,18 @@ import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.validateForm
+import de.passbutler.common.ItemEditingViewModel
 import de.passbutler.common.base.DependentValueGetterBindable
 
 class ItemDetailFragment : ToolBarFragment() {
 
-    private val viewModel by viewModels<ItemEditingViewModel> {
+    private val viewModelWrapper by viewModels<ItemEditingViewModelWrapper> {
         val itemId = arguments?.getString(ARGUMENT_ITEM_ID)
         ItemEditingViewModelFactory(userViewModelProvidingViewModel, itemId)
     }
+
+    private val viewModel
+        get() = viewModelWrapper.itemEditingViewModel
 
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
@@ -320,6 +324,8 @@ class ItemDetailFragment : ToolBarFragment() {
     }
 }
 
+class ItemEditingViewModelWrapper(val itemEditingViewModel: ItemEditingViewModel) : ViewModel()
+
 class ItemEditingViewModelFactory(
     private val userViewModelProvidingViewModel: UserViewModelProvidingViewModel,
     private val itemId: String?
@@ -330,7 +336,8 @@ class ItemEditingViewModelFactory(
         val loggedInUserViewModel = userViewModelProvidingViewModel.loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
         val itemEditingViewModel = loggedInUserViewModel.itemViewModels.value.find { itemViewModel -> itemViewModel.id == itemId }?.createEditingViewModel()
             ?: loggedInUserViewModel.createNewItemEditingViewModel()
+        val itemEditingViewModelWrapper = ItemEditingViewModelWrapper(itemEditingViewModel)
 
-        return (itemEditingViewModel as T)
+        return (itemEditingViewModelWrapper as T)
     }
 }

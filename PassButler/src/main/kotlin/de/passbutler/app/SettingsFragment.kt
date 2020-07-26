@@ -27,6 +27,7 @@ import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showEditTextDialog
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showInformation
+import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Success
 import kotlinx.coroutines.Dispatchers

@@ -23,6 +23,8 @@ import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
+import de.passbutler.common.ItemAuthorizationEditingViewModel
+import de.passbutler.common.ItemAuthorizationsDetailViewModel
 import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.addAllIfNotNull
 import kotlinx.coroutines.launch
@@ -30,21 +32,25 @@ import org.tinylog.kotlin.Logger
 
 class ItemAuthorizationsDetailFragment : ToolBarFragment() {
 
-    private val viewModel by viewModels<ItemAuthorizationsDetailViewModel> {
+    private val viewModelWrapper by viewModels<ItemAuthorizationsDetailViewModelWrapper> {
         val itemId = arguments?.getString(ARGUMENT_ITEM_ID) ?: throw IllegalArgumentException("The given item id is null!")
         ItemAuthorizationsDetailViewModelFactory(userViewModelProvidingViewModel, itemId)
     }
+
+    private val viewModel
+        get() = viewModelWrapper.itemAuthorizationsDetailViewModel
 
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var toolbarMenuSaveItem: MenuItem? = null
     private var binding: FragmentItemAuthorizationsDetailBinding? = null
 
-    private val itemAuthorizationsObserver: BindableObserver<List<ItemAuthorizationViewModel>> = { newItemAuthorizationViewModels ->
-        Logger.debug("newItemAuthorizationViewModels.size = ${newItemAuthorizationViewModels.size}")
+    private val itemAuthorizationsObserver: BindableObserver<List<ItemAuthorizationEditingViewModel>> = { newItemAuthorizationEditingViewModels ->
+        Logger.debug("newItemAuthorizationEditingViewModels.size = ${newItemAuthorizationEditingViewModels.size}")
 
+        val newItemAuthorizationEntries = newItemAuthorizationEditingViewModels.map { ItemAuthorizationEntry(it) }
         val adapter = binding?.recyclerViewItemAuthorizations?.adapter as? ItemAuthorizationsAdapter
-        adapter?.submitList(newItemAuthorizationViewModels)
+        adapter?.submitList(newItemAuthorizationEntries)
     }
 
     override fun getToolBarTitle(): String {
@@ -80,7 +86,7 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment() {
             setupItemAuthorizationsList(binding)
         }
 
-        viewModel.anyItemAuthorizationWasModified.addLifecycleObserver(viewLifecycleOwner, true) {
+        viewModel.anyItemAuthorizationEditingViewModelModified.addLifecycleObserver(viewLifecycleOwner, true) {
             toolbarMenuSaveItem?.isEnabled = it
         }
 
@@ -98,10 +104,10 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment() {
             addItemDecoration(dividerItemDecoration)
         }
 
-        viewModel.itemAuthorizationViewModels.addLifecycleObserver(viewLifecycleOwner, false, itemAuthorizationsObserver)
+        viewModel.itemAuthorizationEditingViewModels.addLifecycleObserver(viewLifecycleOwner, false, itemAuthorizationsObserver)
 
         launch {
-            viewModel.initializeItemAuthorizationViewModels()
+            viewModel.initializeItemAuthorizationEditingViewModels()
         }
     }
 
@@ -155,7 +161,7 @@ class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView
                 // No need to update static header
             }
             is ItemAuthorizationViewHolder -> {
-                (getItem(position) as? ItemAuthorizationViewModel)?.let { item ->
+                (getItem(position) as? ItemAuthorizationEntry)?.let { item ->
                     holder.apply {
                         itemView.tag = item
                         bind(item)
@@ -177,21 +183,21 @@ class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView
         private val binding: ListItemAuthorizationEntryBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(itemAuthorizationViewModel: ItemAuthorizationViewModel) {
-            bindTitle(binding, itemAuthorizationViewModel)
-            bindReadSwitch(binding, itemAuthorizationViewModel)
-            bindWriteSwitch(binding, itemAuthorizationViewModel)
+        fun bind(entry: ItemAuthorizationEntry) {
+            bindTitle(binding, entry)
+            bindReadSwitch(binding, entry)
+            bindWriteSwitch(binding, entry)
         }
 
-        private fun bindTitle(binding: ListItemAuthorizationEntryBinding, itemAuthorizationViewModel: ItemAuthorizationViewModel) {
-            binding.textViewTitle.text = itemAuthorizationViewModel.username
+        private fun bindTitle(binding: ListItemAuthorizationEntryBinding, entry: ItemAuthorizationEntry) {
+            binding.textViewTitle.text = entry.itemAuthorizationEditingViewModel.username
         }
 
-        private fun bindReadSwitch(binding: ListItemAuthorizationEntryBinding, itemAuthorizationViewModel: ItemAuthorizationViewModel) {
+        private fun bindReadSwitch(binding: ListItemAuthorizationEntryBinding, entry: ItemAuthorizationEntry) {
             binding.apply {
-                switchRead.isChecked = itemAuthorizationViewModel.isReadAllowed.value
+                switchRead.isChecked = entry.itemAuthorizationEditingViewModel.isReadAllowed.value
                 switchRead.setOnCheckedChangeListener { _, isChecked ->
-                    itemAuthorizationViewModel.isReadAllowed.value = isChecked
+                    entry.itemAuthorizationEditingViewModel.isReadAllowed.value = isChecked
 
                     // If no read access is given, write access is meaningless
                     if (!isChecked) {
@@ -201,11 +207,11 @@ class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView
             }
         }
 
-        private fun bindWriteSwitch(binding: ListItemAuthorizationEntryBinding, itemAuthorizationViewModel: ItemAuthorizationViewModel) {
+        private fun bindWriteSwitch(binding: ListItemAuthorizationEntryBinding, entry: ItemAuthorizationEntry) {
             binding.apply {
-                switchWrite.isChecked = itemAuthorizationViewModel.isWriteAllowed.value
+                switchWrite.isChecked = entry.itemAuthorizationEditingViewModel.isWriteAllowed.value
                 switchWrite.setOnCheckedChangeListener { _, isChecked ->
-                    itemAuthorizationViewModel.isWriteAllowed.value = isChecked
+                    entry.itemAuthorizationEditingViewModel.isWriteAllowed.value = isChecked
 
                     // If write access is given, read access is implied
                     if (isChecked) {
@@ -222,6 +228,18 @@ class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView
     }
 }
 
+class ItemAuthorizationEntry(val itemAuthorizationEditingViewModel: ItemAuthorizationEditingViewModel) : ListItemIdentifiable {
+    override val listItemId: String
+        get() = when (itemAuthorizationModel) {
+            is ItemAuthorizationEditingViewModel.ItemAuthorizationModel.Provisional -> itemAuthorizationModel.itemAuthorizationId
+            is ItemAuthorizationEditingViewModel.ItemAuthorizationModel.Existing -> itemAuthorizationModel.itemAuthorization.id
+        }
+
+    private val itemAuthorizationModel = itemAuthorizationEditingViewModel.itemAuthorizationModel
+}
+
+class ItemAuthorizationsDetailViewModelWrapper(val itemAuthorizationsDetailViewModel: ItemAuthorizationsDetailViewModel) : ViewModel()
+
 class ItemAuthorizationsDetailViewModelFactory(
     private val userViewModelProvidingViewModel: UserViewModelProvidingViewModel,
     private val itemId: String
@@ -231,7 +249,8 @@ class ItemAuthorizationsDetailViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val loggedInUserViewModel = userViewModelProvidingViewModel.loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
         val itemAuthorizationsDetailViewModel = ItemAuthorizationsDetailViewModel(itemId, loggedInUserViewModel, loggedInUserViewModel.localRepository)
+        val itemAuthorizationsDetailViewModelWrapper = ItemAuthorizationsDetailViewModelWrapper(itemAuthorizationsDetailViewModel)
 
-        return (itemAuthorizationsDetailViewModel as T)
+        return (itemAuthorizationsDetailViewModelWrapper as T)
     }
 }

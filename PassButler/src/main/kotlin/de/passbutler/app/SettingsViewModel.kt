@@ -1,6 +1,6 @@
 package de.passbutler.app
 
-import de.passbutler.app.crypto.Biometrics
+import de.passbutler.common.UserViewModel
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
@@ -44,9 +44,12 @@ class SettingsViewModel : UserViewModelUsingViewModel() {
         get() = biometricUnlockEnabled?.value ?: false
 
     suspend fun initializeSetupBiometricUnlockCipher(): Result<Cipher> {
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
+
         return try {
-            val biometricUnlockCipher = Biometrics.obtainKeyInstance().resultOrThrowException()
-            Biometrics.initializeKeyForEncryption(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, biometricUnlockCipher).resultOrThrowException()
+            val biometricsProvider = loggedInUserViewModel.biometricsProvider
+            val biometricUnlockCipher = biometricsProvider.obtainKeyInstance().resultOrThrowException()
+            biometricsProvider.initializeKeyForEncryption(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, biometricUnlockCipher).resultOrThrowException()
 
             Success(biometricUnlockCipher)
         } catch (exception: Exception) {
@@ -55,7 +58,8 @@ class SettingsViewModel : UserViewModelUsingViewModel() {
     }
 
     suspend fun generateBiometricUnlockKey(): Result<Unit> {
-        return Biometrics.generateKey(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
+        return loggedInUserViewModel.biometricsProvider.generateKey(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME)
     }
 
     suspend fun enableBiometricUnlock(initializedSetupBiometricUnlockCipher: Cipher, masterPassword: String): Result<Unit> {
