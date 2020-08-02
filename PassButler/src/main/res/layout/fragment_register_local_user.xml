@@ -67,6 +67,27 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayout_invitation_code"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="?marginM"
+            android:layout_marginEnd="?marginM"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textInputLayout_serverurl">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputEditText_invitation_code"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/register_local_user_invitation_code_hint"
+                android:imeOptions="actionUnspecified"
+                android:importantForAutofill="no"
+                android:inputType="textCapCharacters" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textInputLayout_master_password"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -75,7 +96,7 @@
             app:endIconMode="password_toggle"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textInputLayout_serverurl">
+            app:layout_constraintTop_toBottomOf="@+id/textInputLayout_invitation_code">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/textInputEditText_master_password"
