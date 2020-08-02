@@ -34,13 +34,13 @@ import de.passbutler.common.base.DependentValueGetterBindable
 
 class ItemDetailFragment : ToolBarFragment() {
 
+    private val viewModel
+        get() = viewModelWrapper.itemEditingViewModel
+
     private val viewModelWrapper by viewModels<ItemEditingViewModelWrapper> {
         val itemId = arguments?.getString(ARGUMENT_ITEM_ID)
         ItemEditingViewModelFactory(userViewModelProvidingViewModel, itemId)
     }
-
-    private val viewModel
-        get() = viewModelWrapper.itemEditingViewModel
 
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
