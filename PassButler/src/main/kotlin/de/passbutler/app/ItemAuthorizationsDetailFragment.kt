@@ -86,7 +86,7 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment() {
             setupItemAuthorizationsList(binding)
         }
 
-        viewModel.anyItemAuthorizationEditingViewModelModified.addLifecycleObserver(viewLifecycleOwner, true) {
+        viewModel.itemAuthorizationEditingViewModelsModified.addLifecycleObserver(viewLifecycleOwner, true) {
             toolbarMenuSaveItem?.isEnabled = it
         }
 
