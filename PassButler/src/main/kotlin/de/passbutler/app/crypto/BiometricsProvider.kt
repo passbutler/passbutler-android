@@ -3,7 +3,11 @@ package de.passbutler.app.crypto
 import android.app.KeyguardManager
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties
+import android.security.keystore.KeyProperties.BLOCK_MODE_GCM
+import android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE
+import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
+import android.security.keystore.KeyProperties.PURPOSE_DECRYPT
+import android.security.keystore.KeyProperties.PURPOSE_ENCRYPT
 import androidx.biometric.BiometricManager
 import de.passbutler.app.base.AbstractPassButlerApplication
 import de.passbutler.common.base.Failure
@@ -63,13 +67,13 @@ class BiometricsProvider : BiometricsProviding {
 
     // Throws `NoSuchAlgorithmException` and `NoSuchProviderException`
     private val androidKeyGenerator by lazy {
-        KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
+        KeyGenerator.getInstance(KEY_ALGORITHM_AES, "AndroidKeyStore")
     }
 
 
     override fun obtainKeyInstance(): Result<Cipher> {
         return try {
-            Success(Cipher.getInstance("${KeyProperties.KEY_ALGORITHM_AES}/${KeyProperties.BLOCK_MODE_GCM}/${KeyProperties.ENCRYPTION_PADDING_NONE}"))
+            Success(Cipher.getInstance("${KEY_ALGORITHM_AES}/${BLOCK_MODE_GCM}/${ENCRYPTION_PADDING_NONE}"))
         } catch (exception: Exception) {
             Failure(exception)
         }
@@ -81,11 +85,11 @@ class BiometricsProvider : BiometricsProviding {
                 initializeAndroidKeyStore()
 
                 // The key must only be used for encryption and decryption
-                val keyUsagePurposes = KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                val keyUsagePurposes = PURPOSE_ENCRYPT or PURPOSE_DECRYPT
                 val keyParameterBuilder = KeyGenParameterSpec.Builder(keyName, keyUsagePurposes)
                     .setKeySize(AES_KEY_BIT_SIZE)
-                    .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                    .setBlockModes(BLOCK_MODE_GCM)
+                    .setEncryptionPaddings(ENCRYPTION_PADDING_NONE)
                     // Do not allow non random IV
                     .setRandomizedEncryptionRequired(true)
                     // Biometric authentication is enforced before key usage:
