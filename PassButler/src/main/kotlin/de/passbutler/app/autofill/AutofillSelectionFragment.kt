@@ -12,6 +12,7 @@ import de.passbutler.app.R
 import de.passbutler.app.UserViewModelProvidingViewModel
 import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.databinding.FragmentAutofillSelectionBinding
+import de.passbutler.app.sorted
 import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.visible
 import de.passbutler.common.ItemViewModel
@@ -42,7 +43,10 @@ class AutofillSelectionFragment : BaseFragment() {
         } else {
             val adapter = binding?.recyclerViewItemList?.adapter as? ItemEntryAdapter
 
-            val newItemEntries = newItemViewModels.map { ItemEntry(it) }
+            val newItemEntries = newItemViewModels
+                .map { ItemEntry(it) }
+                .sorted()
+
             adapter?.submitList(newItemEntries)
 
             val showEmptyScreen = newItemEntries.isEmpty()

@@ -61,7 +61,10 @@ class OverviewFragment : BaseFragment() {
 
         val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemEntryAdapter
 
-        val newItemEntries = newItemViewModels.map { ItemEntry(it) }
+        val newItemEntries = newItemViewModels
+            .map { ItemEntry(it) }
+            .sorted()
+
         adapter?.submitList(newItemEntries)
 
         val showEmptyScreen = newItemEntries.isEmpty()
@@ -332,11 +335,6 @@ class OverviewFragment : BaseFragment() {
     }
 }
 
-class ItemEntry(val itemViewModel: ItemViewModel): ListItemIdentifiable {
-    override val listItemId: String
-        get() = itemViewModel.id
-}
-
 class ItemEntryAdapter(private val entryClickedCallback: (ItemEntry) -> Unit) : ListAdapter<ListItemIdentifiable, ItemEntryAdapter.ItemEntryViewHolder>(ListItemIdentifiableDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemEntryViewHolder {
@@ -369,4 +367,13 @@ class ItemEntryAdapter(private val entryClickedCallback: (ItemEntry) -> Unit) : 
             }
         }
     }
+}
+
+class ItemEntry(val itemViewModel: ItemViewModel) : ListItemIdentifiable {
+    override val listItemId: String
+        get() = itemViewModel.id
+}
+
+fun List<ItemEntry>.sorted(): List<ItemEntry> {
+    return sortedBy { it.itemViewModel.title }
 }

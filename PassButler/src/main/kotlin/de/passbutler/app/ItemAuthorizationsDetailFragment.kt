@@ -48,7 +48,10 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment() {
     private val itemAuthorizationsObserver: BindableObserver<List<ItemAuthorizationEditingViewModel>> = { newItemAuthorizationEditingViewModels ->
         Logger.debug("newItemAuthorizationEditingViewModels.size = ${newItemAuthorizationEditingViewModels.size}")
 
-        val newItemAuthorizationEntries = newItemAuthorizationEditingViewModels.map { ItemAuthorizationEntry(it) }
+        val newItemAuthorizationEntries = newItemAuthorizationEditingViewModels
+            .map { ItemAuthorizationEntry(it) }
+            .sorted()
+
         val adapter = binding?.recyclerViewItemAuthorizations?.adapter as? ItemAuthorizationsAdapter
         adapter?.submitList(newItemAuthorizationEntries)
     }
@@ -236,6 +239,10 @@ class ItemAuthorizationEntry(val itemAuthorizationEditingViewModel: ItemAuthoriz
         }
 
     private val itemAuthorizationModel = itemAuthorizationEditingViewModel.itemAuthorizationModel
+}
+
+fun List<ItemAuthorizationEntry>.sorted(): List<ItemAuthorizationEntry> {
+    return sortedBy { it.itemAuthorizationEditingViewModel.username }
 }
 
 class ItemAuthorizationsDetailViewModelWrapper(val itemAuthorizationsDetailViewModel: ItemAuthorizationsDetailViewModel) : ViewModel()
