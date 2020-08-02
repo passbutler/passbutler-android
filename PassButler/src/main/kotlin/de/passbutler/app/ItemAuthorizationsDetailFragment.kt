@@ -32,13 +32,13 @@ import org.tinylog.kotlin.Logger
 
 class ItemAuthorizationsDetailFragment : ToolBarFragment() {
 
+    private val viewModel
+        get() = viewModelWrapper.itemAuthorizationsDetailViewModel
+
     private val viewModelWrapper by viewModels<ItemAuthorizationsDetailViewModelWrapper> {
         val itemId = arguments?.getString(ARGUMENT_ITEM_ID) ?: throw IllegalArgumentException("The given item id is null!")
         ItemAuthorizationsDetailViewModelFactory(userViewModelProvidingViewModel, itemId)
     }
-
-    private val viewModel
-        get() = viewModelWrapper.itemAuthorizationsDetailViewModel
 
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
