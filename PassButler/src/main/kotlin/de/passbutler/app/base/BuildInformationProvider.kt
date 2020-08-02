@@ -11,4 +11,7 @@ object BuildInformationProvider : BuildInformationProviding {
             "release" -> BuildType.Release
             else -> BuildType.Other
         }
+
+    override val applicationIdentification: String
+        get() = "${BuildConfig.APPLICATION_ID} ${BuildConfig.VERSION_NAME}-${BuildConfig.VERSION_CODE}"
 }
