@@ -6,21 +6,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
-import de.passbutler.app.ItemViewModel
-import de.passbutler.app.ItemViewModelEntry
+import de.passbutler.app.ItemEntry
+import de.passbutler.app.ItemEntryAdapter
 import de.passbutler.app.R
 import de.passbutler.app.UserViewModelProvidingViewModel
 import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.databinding.FragmentAutofillSelectionBinding
-import de.passbutler.app.databinding.ListItemEntryBinding
+import de.passbutler.app.sorted
 import de.passbutler.app.ui.BaseFragment
-import de.passbutler.app.ui.ListItemIdentifiable
-import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.visible
-import de.passbutler.app.unlockedItemData
+import de.passbutler.common.ItemViewModel
 import de.passbutler.common.base.BindableObserver
+import de.passbutler.common.unlockedItemData
 
 class AutofillSelectionFragment : BaseFragment() {
 
@@ -44,12 +41,15 @@ class AutofillSelectionFragment : BaseFragment() {
         if (relevantAutoSelectItemViewModels.isNotEmpty()) {
             autofillMainActivity.itemWasSelected(relevantAutoSelectItemViewModels)
         } else {
-            val adapter = binding?.recyclerViewItemList?.adapter as? AutofillSelectionItemAdapter
+            val adapter = binding?.recyclerViewItemList?.adapter as? ItemEntryAdapter
 
-            val newItemViewModelEntries = newItemViewModels.map { ItemViewModelEntry(it) }
-            adapter?.submitList(newItemViewModelEntries)
+            val newItemEntries = newItemViewModels
+                .map { ItemEntry(it) }
+                .sorted()
 
-            val showEmptyScreen = newItemViewModelEntries.isEmpty()
+            adapter?.submitList(newItemEntries)
+
+            val showEmptyScreen = newItemEntries.isEmpty()
             binding?.layoutEmptyScreen?.root?.visible = showEmptyScreen
         }
     }
@@ -87,7 +87,9 @@ class AutofillSelectionFragment : BaseFragment() {
     private fun setupEntryList(binding: FragmentAutofillSelectionBinding) {
         binding.recyclerViewItemList.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = AutofillSelectionItemAdapter(autofillMainActivity)
+            adapter = ItemEntryAdapter { entry ->
+                autofillMainActivity.itemWasSelected(listOf(entry.itemViewModel))
+            }
         }
     }
 
@@ -99,41 +101,5 @@ class AutofillSelectionFragment : BaseFragment() {
 
     companion object {
         fun newInstance() = AutofillSelectionFragment()
-    }
-}
-
-class AutofillSelectionItemAdapter(
-    private val autofillMainActivity: AutofillMainActivity
-) : ListAdapter<ListItemIdentifiable, AutofillSelectionItemAdapter.ItemViewHolder>(ListItemIdentifiableDiffCallback()) {
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val binding = ListItemEntryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ItemViewHolder(binding, autofillMainActivity)
-    }
-
-    override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
-        (getItem(position) as? ItemViewModelEntry)?.let { item ->
-            holder.apply {
-                itemView.tag = item
-                bind(item)
-            }
-        }
-    }
-
-    class ItemViewHolder(
-        private val binding: ListItemEntryBinding,
-        private val autofillMainActivity: AutofillMainActivity
-    ) : RecyclerView.ViewHolder(binding.root) {
-
-        fun bind(itemViewModelEntry: ItemViewModelEntry) {
-            binding.apply {
-                textViewTitle.text = itemViewModelEntry.itemViewModel.title
-                textViewSubtitle.text = itemViewModelEntry.itemViewModel.subtitle
-
-                root.setOnClickListener {
-                    autofillMainActivity.itemWasSelected(listOf(itemViewModelEntry.itemViewModel))
-                }
-            }
-        }
     }
 }

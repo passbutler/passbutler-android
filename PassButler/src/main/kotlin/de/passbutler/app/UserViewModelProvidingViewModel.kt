@@ -8,8 +8,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import de.passbutler.app.base.AbstractPassButlerApplication
+import de.passbutler.app.crypto.BiometricsProvider
 import de.passbutler.common.LoggedInUserResult
 import de.passbutler.common.UserManager
+import de.passbutler.common.UserViewModel
 import de.passbutler.common.base.BindableObserver
 import kotlinx.coroutines.launch
 
@@ -42,13 +44,15 @@ class UserViewModelProvidingViewModel : ViewModel() {
     }
 
     private inner class LoggedInUserResultObserver : BindableObserver<LoggedInUserResult?> {
+        private val biometricsProvider = BiometricsProvider()
+
         override fun invoke(loggedInUserResult: LoggedInUserResult?) {
             when (loggedInUserResult) {
                 is LoggedInUserResult.LoggedIn.PerformedLogin -> {
-                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.loggedInUser, loggedInUserResult.masterPassword)
+                    loggedInUserViewModel = UserViewModel(userManager, biometricsProvider, loggedInUserResult.loggedInUser, loggedInUserResult.masterPassword)
                 }
                 is LoggedInUserResult.LoggedIn.RestoredLogin -> {
-                    loggedInUserViewModel = UserViewModel(userManager, loggedInUserResult.loggedInUser, null)
+                    loggedInUserViewModel = UserViewModel(userManager, biometricsProvider, loggedInUserResult.loggedInUser, null)
                 }
                 is LoggedInUserResult.LoggedOut -> {
                     // Finally clear crypto resources and reset related jobs

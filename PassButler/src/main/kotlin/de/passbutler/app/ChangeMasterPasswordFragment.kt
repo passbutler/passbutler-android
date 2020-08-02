@@ -16,6 +16,8 @@ import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showShortFeedback
 import de.passbutler.app.ui.validateForm
 import de.passbutler.app.ui.visible
+import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
+import de.passbutler.common.UpdateUserFailedException
 
 class ChangeMasterPasswordFragment : ToolBarFragment() {
 

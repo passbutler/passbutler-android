@@ -14,10 +14,10 @@ import android.view.autofill.AutofillManager
 import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
-import de.passbutler.app.ItemViewModel
 import de.passbutler.app.R
 import de.passbutler.app.ui.FragmentPresenter
-import de.passbutler.app.unlockedItemData
+import de.passbutler.common.ItemViewModel
+import de.passbutler.common.unlockedItemData
 import org.tinylog.kotlin.Logger
 
 class AutofillMainActivity : AppCompatActivity() {

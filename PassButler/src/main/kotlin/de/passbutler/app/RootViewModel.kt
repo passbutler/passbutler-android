@@ -2,8 +2,8 @@ package de.passbutler.app
 
 import android.text.format.DateUtils
 import androidx.lifecycle.viewModelScope
-import de.passbutler.app.crypto.Biometrics
 import de.passbutler.common.LoggedInUserResult
+import de.passbutler.common.UserViewModel
 import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.MutableBindable
@@ -79,18 +79,20 @@ class RootViewModel : UserViewModelUsingViewModel() {
     }
 
     suspend fun initializeBiometricUnlockCipher(): Result<Cipher> {
-        val encryptedMasterPasswordInitializationVector = loggedInUserViewModel?.encryptedMasterPassword?.initializationVector
+        val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
+        val encryptedMasterPasswordInitializationVector = loggedInUserViewModel.encryptedMasterPassword?.initializationVector
             ?: throw IllegalStateException("The encrypted master key initialization vector was not found, despite biometric unlock was tried!")
 
         return try {
-            val biometricUnlockCipher = Biometrics.obtainKeyInstance().resultOrThrowException()
-            Biometrics.initializeKeyForDecryption(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, biometricUnlockCipher, encryptedMasterPasswordInitializationVector)
+            val biometricsProvider = loggedInUserViewModel.biometricsProvider
+            val biometricUnlockCipher = biometricsProvider.obtainKeyInstance().resultOrThrowException()
+            biometricsProvider.initializeKeyForDecryption(UserViewModel.BIOMETRIC_MASTER_PASSWORD_ENCRYPTION_KEY_NAME, biometricUnlockCipher, encryptedMasterPasswordInitializationVector)
                 .resultOrThrowException()
 
             Success(biometricUnlockCipher)
         } catch (exception: Exception) {
             Logger.warn("The biometric authentication failed because key could not be initialized - disable biometric unlock")
-            loggedInUserViewModel?.disableBiometricUnlock()
+            loggedInUserViewModel.disableBiometricUnlock()
 
             Failure(exception)
         }
@@ -102,7 +104,7 @@ class RootViewModel : UserViewModelUsingViewModel() {
             ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
 
         return try {
-            val masterPassword = Biometrics.decryptData(initializedBiometricUnlockCipher, encryptedMasterPassword).resultOrThrowException().toUTF8String()
+            val masterPassword = loggedInUserViewModel.biometricsProvider.decryptData(initializedBiometricUnlockCipher, encryptedMasterPassword).resultOrThrowException().toUTF8String()
             loggedInUserViewModel.decryptSensibleData(masterPassword).resultOrThrowException()
 
             if (loggedInUserViewModel.userType == UserType.REMOTE) {
