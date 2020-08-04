@@ -28,6 +28,7 @@ class RegisterLocalUserFragment : ToolBarFragment() {
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var formServerUrl: String? = null
+    private var formInvitationCode: String? = null
     private var formMasterPassword: String? = null
 
     private var binding: FragmentRegisterLocalUserBinding? = null
@@ -36,6 +37,7 @@ class RegisterLocalUserFragment : ToolBarFragment() {
         super.onCreate(savedInstanceState)
 
         formServerUrl = savedInstanceState?.getString(FORM_FIELD_SERVERURL)
+        formInvitationCode = savedInstanceState?.getString(FORM_FIELD_INVITATION_CODE)
         formMasterPassword = savedInstanceState?.getString(FORM_FIELD_MASTER_PASSWORD)
     }
 
@@ -70,6 +72,11 @@ class RegisterLocalUserFragment : ToolBarFragment() {
                     )
                 ),
                 FormFieldValidator(
+                    binding.textInputLayoutInvitationCode, binding.textInputEditTextInvitationCode, listOf(
+                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.register_local_user_invitation_code_validation_error_empty))
+                    )
+                ),
+                FormFieldValidator(
                     binding.textInputLayoutMasterPassword, binding.textInputEditTextMasterPassword, listOf(
                         FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_master_password_validation_error_empty))
                     )
@@ -83,10 +90,11 @@ class RegisterLocalUserFragment : ToolBarFragment() {
                 Keyboard.hideKeyboard(context, this)
 
                 val serverUrl = binding.textInputEditTextServerurl.text?.toString()
+                val invitationCode = binding.textInputEditTextInvitationCode.text?.toString()
                 val masterPassword = binding.textInputEditTextMasterPassword.text?.toString()
 
-                if (serverUrl != null && masterPassword != null) {
-                    registerUser(serverUrl, masterPassword)
+                if (serverUrl != null && invitationCode != null && masterPassword != null) {
+                    registerUser(serverUrl, invitationCode, masterPassword)
                 }
             }
             is FormValidationResult.Invalid -> {
@@ -95,7 +103,7 @@ class RegisterLocalUserFragment : ToolBarFragment() {
         }
     }
 
-    private fun registerUser(serverUrl: String, masterPassword: String) {
+    private fun registerUser(serverUrl: String, invitationCode: String, masterPassword: String) {
         launchRequestSending(
             handleSuccess = {
                 showShortFeedback(getString(R.string.register_local_user_successful_message))
@@ -111,7 +119,7 @@ class RegisterLocalUserFragment : ToolBarFragment() {
                 showError(getString(errorStringResourceId))
             }
         ) {
-            viewModel.registerLocalUser(serverUrl, masterPassword)
+            viewModel.registerLocalUser(serverUrl, invitationCode, masterPassword)
         }
     }
 
@@ -123,6 +131,7 @@ class RegisterLocalUserFragment : ToolBarFragment() {
         if (BuildInformationProvider.buildType == BuildType.Debug) {
             binding.textViewHeader.setOnLongClickListener {
                 binding.textInputEditTextServerurl.setText(DebugConstants.TEST_SERVERURL)
+                binding.textInputEditTextInvitationCode.setText(DebugConstants.TEST_INVITATION_CODE)
                 binding.textInputEditTextMasterPassword.setText(DebugConstants.TEST_PASSWORD)
                 true
             }
@@ -131,6 +140,7 @@ class RegisterLocalUserFragment : ToolBarFragment() {
 
     private fun applyRestoredViewStates(binding: FragmentRegisterLocalUserBinding) {
         formServerUrl?.let { binding.textInputEditTextServerurl.setText(it) }
+        formInvitationCode?.let { binding.textInputEditTextInvitationCode.setText(it) }
         formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
     }
 
@@ -142,6 +152,7 @@ class RegisterLocalUserFragment : ToolBarFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString(FORM_FIELD_SERVERURL, binding?.textInputEditTextServerurl?.text?.toString())
+        outState.putString(FORM_FIELD_INVITATION_CODE, binding?.textInputEditTextInvitationCode?.text?.toString())
         outState.putString(FORM_FIELD_MASTER_PASSWORD, binding?.textInputEditTextMasterPassword?.text?.toString())
 
         super.onSaveInstanceState(outState)
@@ -154,6 +165,7 @@ class RegisterLocalUserFragment : ToolBarFragment() {
 
     companion object {
         private const val FORM_FIELD_SERVERURL = "FORM_FIELD_SERVERURL"
+        private const val FORM_FIELD_INVITATION_CODE = "FORM_FIELD_INVITATION_CODE"
         private const val FORM_FIELD_MASTER_PASSWORD = "FORM_FIELD_MASTER_PASSWORD"
 
         fun newInstance() = RegisterLocalUserFragment()

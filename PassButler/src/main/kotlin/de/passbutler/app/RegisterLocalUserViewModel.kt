@@ -4,7 +4,7 @@ import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 
 class RegisterLocalUserViewModel : UserViewModelUsingViewModel() {
-    suspend fun registerLocalUser(serverUrlString: String, masterPassword: String): Result<Unit> {
+    suspend fun registerLocalUser(serverUrlString: String, invitationCode: String, masterPassword: String): Result<Unit> {
         val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
 
         // Check the given master password locally to avoid the auth webservice is initialized with non-working authentication
@@ -13,7 +13,7 @@ class RegisterLocalUserViewModel : UserViewModelUsingViewModel() {
         return if (masterPasswordTestResult is Failure) {
             masterPasswordTestResult
         } else {
-            userManager.registerLocalUser(serverUrlString, masterPassword)
+            userManager.registerLocalUser(serverUrlString, invitationCode, masterPassword)
         }
     }
 }

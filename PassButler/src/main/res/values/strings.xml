@@ -36,28 +36,32 @@
 
     <string name="login_button_text">Anmelden</string>
 
+    <string name="login_username_validation_error_empty">Benutzername nicht ausgefüllt</string>
+
     <string name="login_failed_general_title">Anmeldung hat nicht geklappt</string>
     <string name="login_failed_unauthorized_title">Anmeldedaten vermutlich nicht korrekt</string>
 
-    <string name="login_username_validation_error_empty">Benutzername nicht ausgefüllt</string>
 
     <!-- Register local user -->
 
     <string name="register_local_user_title">Benutzerkonto registrieren</string>
 
     <string name="register_local_user_header">Benutzerkonto registrieren</string>
-    <string name="register_local_user_description">Wenn Sie Ihre Passwörter zwischen mehreren Geräten synchronisieren möchten, können Sie es auf einem Pass Butler-Server registrieren.\n\nWichtig: Die Registrierung muss dafür auf dem Server aktiviert werden und der Benutzername darf noch nicht vergeben sein!</string>
+    <string name="register_local_user_description">Wenn Sie Ihre Passwörter zwischen mehreren Geräten synchronisieren möchten, können Sie es auf einem Pass Butler-Server registrieren.\n\nFolgende Bedingungen müssen erfüllt sein:\n\u2022 Registrierung auf Server aktiviert\n\u2022 Einladungs-Code von Server vorhanden\n\u2022 Benutzername nicht vergeben</string>
 
     <string name="register_local_user_serverurl_hint">Server URL</string>
+    <string name="register_local_user_invitation_code_hint">Einladungs-Code</string>
     <string name="register_local_user_master_password_hint">Master-Passwort</string>
 
     <string name="register_local_user_button_text">Registrieren</string>
+
+    <string name="register_local_user_invitation_code_validation_error_empty">Einladungs-Code nicht ausgefüllt</string>
 
     <string name="register_local_user_successful_message">Registrierung erfolgreich</string>
 
     <string name="register_local_user_failed_wrong_master_password_title">Master-Passwort ist nicht korrekt</string>
     <string name="register_local_user_failed_general_title">Registrierung hat nicht geklappt</string>
-    <string name="register_local_user_failed_forbidden_title">Registrierung auf Server nicht erlaubt oder Benutzerkonto ist bereits vorhanden</string>
+    <string name="register_local_user_failed_forbidden_title">Registrierung wurde von Server verweigert</string>
 
     <!-- Locked screen -->
 
@@ -147,12 +151,12 @@
 
     <string name="itemdetail_save_button_title">Speichern</string>
 
+    <string name="itemdetail_title_validation_error_empty">Titel nicht ausgefüllt</string>
+
     <string name="itemdetail_save_failed_general_title">Speichern hat nicht geklappt</string>
 
     <string name="itemdetail_delete_successful_message">Löschen erfolgreich</string>
     <string name="itemdetail_delete_failed_general_title">Löschen hat nicht geklappt</string>
-
-    <string name="itemdetail_title_validation_error_empty">Titel nicht ausgefüllt</string>
 
     <!-- Item authorizations detail -->
 
@@ -224,6 +228,11 @@
     <string name="change_master_password_new_master_password_hint">Neues Master-Passwort</string>
     <string name="change_master_password_new_master_password_confirm_hint">Neues Master-Passwort (Bestätigung)</string>
 
+    <string name="change_master_password_old_master_password_validation_error_empty">Aktuelles Master-Passwort nicht ausgefüllt</string>
+    <string name="change_master_password_new_master_password_validation_error_empty">Neues Master-Passwort nicht ausgefüllt</string>
+    <string name="change_master_password_new_master_password_validation_error_equal">Neues Master-Passwort ist gleich dem aktuellen</string>
+    <string name="change_master_password_new_master_password_confirm_validation_error_different">Neues Master-Passwort stimmt nicht überein</string>
+
     <string name="change_master_password_button_text">Ändern</string>
 
     <string name="change_master_password_successful_message">Änderung erfolgreich</string>
@@ -231,10 +240,5 @@
     <string name="change_master_password_failed_wrong_master_password_title">Aktuelles Master-Passwort ist nicht korrekt</string>
     <string name="change_master_password_failed_update_user_failed_title">Änderung hat nicht geklappt: Prüfen Sie die Erreichbarkeit Ihres Pass Butler-Servers</string>
     <string name="change_master_password_failed_general_title">Änderung hat nicht geklappt</string>
-
-    <string name="change_master_password_old_master_password_validation_error_empty">Aktuelles Master-Passwort nicht ausgefüllt</string>
-    <string name="change_master_password_new_master_password_validation_error_empty">Neues Master-Passwort nicht ausgefüllt</string>
-    <string name="change_master_password_new_master_password_validation_error_equal">Neues Master-Passwort ist gleich dem aktuellen</string>
-    <string name="change_master_password_new_master_password_confirm_validation_error_different">Neues Master-Passwort stimmt nicht überein</string>
 
 </resources>
