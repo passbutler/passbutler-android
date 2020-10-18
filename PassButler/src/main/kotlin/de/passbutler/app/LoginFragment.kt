@@ -1,7 +1,6 @@
 package de.passbutler.app
 
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -85,20 +84,20 @@ class LoginFragment : BaseFragment() {
             listOfNotNull(
                 FormFieldValidator(
                     binding.textInputLayoutServerurl, binding.textInputEditTextServerurl, listOfNotNull(
-                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_serverurl_validation_error_empty)),
-                        FormFieldValidator.Rule({ !URLUtil.isValidUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid)),
+                        FormFieldValidator.Rule({ it.isNullOrEmpty() }, getString(R.string.form_serverurl_validation_error_empty)),
+                        FormFieldValidator.Rule({ !URLUtil.isNetworkUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid)),
                         FormFieldValidator.Rule({ !URLUtil.isHttpsUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid_scheme))
                             .takeIf { BuildInformationProvider.buildType == BuildType.Release }
                     )
                 ).takeIf { !isLocalLogin },
                 FormFieldValidator(
                     binding.textInputLayoutUsername, binding.textInputEditTextUsername, listOf(
-                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_username_validation_error_empty))
+                        FormFieldValidator.Rule({ it.isNullOrEmpty() }, getString(R.string.login_username_validation_error_empty))
                     )
                 ),
                 FormFieldValidator(
                     binding.textInputLayoutMasterPassword, binding.textInputEditTextMasterPassword, listOf(
-                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_master_password_validation_error_empty))
+                        FormFieldValidator.Rule({ it.isNullOrEmpty() }, getString(R.string.form_master_password_validation_error_empty))
                     )
                 )
             )

@@ -1,7 +1,6 @@
 package de.passbutler.app
 
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -66,12 +65,12 @@ class ChangeMasterPasswordFragment : ToolBarFragment() {
             listOfNotNull(
                 FormFieldValidator(
                     binding.textInputLayoutOldMasterPassword, binding.textInputEditTextOldMasterPassword, listOf(
-                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.change_master_password_old_master_password_validation_error_empty))
+                        FormFieldValidator.Rule({ it.isNullOrEmpty() }, getString(R.string.change_master_password_old_master_password_validation_error_empty))
                     )
                 ),
                 FormFieldValidator(
                     binding.textInputLayoutNewMasterPassword, binding.textInputEditTextNewMasterPassword, listOf(
-                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.change_master_password_new_master_password_validation_error_empty))
+                        FormFieldValidator.Rule({ it.isNullOrEmpty() }, getString(R.string.change_master_password_new_master_password_validation_error_empty))
                     )
                 ),
                 FormFieldValidator(

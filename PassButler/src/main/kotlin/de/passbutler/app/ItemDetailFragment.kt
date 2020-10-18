@@ -3,7 +3,6 @@ package de.passbutler.app
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.InputType
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -15,10 +14,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.textfield.TextInputLayout
 import de.passbutler.app.base.addLifecycleObserver
-import de.passbutler.app.ui.bindEnabled
-import de.passbutler.app.ui.bindInput
-import de.passbutler.app.ui.bindTextAndVisibility
-import de.passbutler.app.ui.bindVisibility
 import de.passbutler.app.base.formattedDateTime
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentItemdetailBinding
@@ -26,6 +21,10 @@ import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ToolBarFragment
+import de.passbutler.app.ui.bindEnabled
+import de.passbutler.app.ui.bindInput
+import de.passbutler.app.ui.bindTextAndVisibility
+import de.passbutler.app.ui.bindVisibility
 import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.validateForm
@@ -131,7 +130,7 @@ class ItemDetailFragment : ToolBarFragment() {
                 listOfNotNull(
                     FormFieldValidator(
                         binding.textInputLayoutTitle, binding.textInputEditTextTitle, listOf(
-                            FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.itemdetail_title_validation_error_empty))
+                            FormFieldValidator.Rule({ it.isNullOrEmpty() }, getString(R.string.itemdetail_title_validation_error_empty))
                         )
                     )
                 )
