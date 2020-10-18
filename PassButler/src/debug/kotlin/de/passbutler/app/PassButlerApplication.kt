@@ -73,7 +73,7 @@ class PassButlerApplication : AbstractPassButlerApplication() {
 
         return StringBuilder().apply {
             appendln("--------------------------------------------------------------------------------")
-            appendln("App:         ${applicationContext.packageName} $versionName-$versionCode (build on $formattedBuildTime from $gitShortHash)")
+            appendln("App:         ${BuildConfig.APPLICATION_ID} $versionName-$versionCode (build on $formattedBuildTime from $gitShortHash)")
             appendln("Android:     ${Build.VERSION.RELEASE} / API ${Build.VERSION.SDK_INT} (${Build.VERSION.INCREMENTAL}, ${Build.VERSION.CODENAME})")
             appendln("Brand:       ${Build.BRAND}")
             appendln("Model:       ${Build.MODEL}")
