@@ -12,8 +12,8 @@ import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.activityViewModels
 import de.passbutler.app.base.BuildInformationProvider
 import de.passbutler.app.base.DebugConstants
-import de.passbutler.app.base.bindEnabled
-import de.passbutler.app.base.bindVisibility
+import de.passbutler.app.ui.bindEnabled
+import de.passbutler.app.ui.bindVisibility
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.crypto.BiometricAuthenticationCallbackExecutor
 import de.passbutler.app.databinding.FragmentLockedScreenBinding

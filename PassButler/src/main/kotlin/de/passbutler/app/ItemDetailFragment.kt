@@ -15,10 +15,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.textfield.TextInputLayout
 import de.passbutler.app.base.addLifecycleObserver
-import de.passbutler.app.base.bindEnabled
-import de.passbutler.app.base.bindInput
-import de.passbutler.app.base.bindTextAndVisibility
-import de.passbutler.app.base.bindVisibility
+import de.passbutler.app.ui.bindEnabled
+import de.passbutler.app.ui.bindInput
+import de.passbutler.app.ui.bindTextAndVisibility
+import de.passbutler.app.ui.bindVisibility
 import de.passbutler.app.base.formattedDateTime
 import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentItemdetailBinding
