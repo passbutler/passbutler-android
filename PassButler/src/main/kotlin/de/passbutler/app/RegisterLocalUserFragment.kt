@@ -16,7 +16,7 @@ import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
-import de.passbutler.app.ui.showShortFeedback
+import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.base.BuildType
@@ -106,7 +106,7 @@ class RegisterLocalUserFragment : ToolBarFragment() {
     private fun registerUser(serverUrl: String, invitationCode: String, masterPassword: String) {
         launchRequestSending(
             handleSuccess = {
-                showShortFeedback(getString(R.string.register_local_user_successful_message))
+                showInformation(getString(R.string.register_local_user_successful_message))
                 popBackstack()
             },
             handleFailure = {

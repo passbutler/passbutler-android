@@ -13,7 +13,7 @@ import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.showError
-import de.passbutler.app.ui.showShortFeedback
+import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.validateForm
 import de.passbutler.app.ui.visible
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
@@ -114,7 +114,7 @@ class ChangeMasterPasswordFragment : ToolBarFragment() {
     private fun changeMasterPassword(oldMasterPassword: String, newMasterPassword: String) {
         launchRequestSending(
             handleSuccess = {
-                showShortFeedback(getString(R.string.change_master_password_successful_message))
+                showInformation(getString(R.string.change_master_password_successful_message))
                 popBackstack()
             },
             handleFailure = {
