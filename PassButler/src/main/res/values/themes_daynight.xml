@@ -22,6 +22,9 @@
 
         <!-- Material colors: -->
 
+        <!-- Used for semi-transparent backgrounds of e.g. progress screen: -->
+        <item name="scrimBackground">@color/whiteMediumTransparent</item>
+
         <!-- Used to be drawn on views to tint text/icons: -->
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorOnSecondary">@color/white</item>

@@ -16,6 +16,9 @@
     <color name="transparent">#00000000</color>
 
     <color name="whiteMedium">#FAFAFA</color>
+    <color name="whiteMediumTransparent">#80FAFAFA</color>
+
     <color name="greyMedium">#313131</color>
+    <color name="greyMediumTransparent">#80313131</color>
 
 </resources>

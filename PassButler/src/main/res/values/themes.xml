@@ -29,11 +29,6 @@
         <item name="marginL">@dimen/marginL</item>
         <item name="marginXL">@dimen/marginXL</item>
 
-        <!-- Material colors: -->
-
-        <!-- Used for semi-transparent backgrounds of e.g. progress screen: -->
-        <item name="scrimBackground">@color/color_background_transparent</item>
-
     </style>
 
 </resources>
