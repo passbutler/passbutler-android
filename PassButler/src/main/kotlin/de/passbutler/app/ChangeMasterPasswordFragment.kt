@@ -5,20 +5,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentChangeMasterPasswordBinding
 import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ToolBarFragment
-import de.passbutler.app.ui.showError
-import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.validateForm
 import de.passbutler.app.ui.visible
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.UpdateUserFailedException
+import de.passbutler.common.ui.RequestSending
+import de.passbutler.common.ui.launchRequestSending
 
-class ChangeMasterPasswordFragment : ToolBarFragment() {
+class ChangeMasterPasswordFragment : ToolBarFragment(), RequestSending {
 
     private val viewModel by userViewModelUsingViewModels<ChangeMasterPasswordViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()

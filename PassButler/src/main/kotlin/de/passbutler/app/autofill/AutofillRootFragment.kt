@@ -2,8 +2,8 @@ package de.passbutler.app.autofill
 
 import de.passbutler.app.AbstractRootFragment
 import de.passbutler.app.LockedScreenFragment
-import de.passbutler.app.ui.TransitionType
 import de.passbutler.app.ui.showFragmentAsFirstScreen
+import de.passbutler.common.ui.TransitionType
 import org.tinylog.kotlin.Logger
 
 class AutofillRootFragment : AbstractRootFragment() {

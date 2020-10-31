@@ -15,7 +15,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.textfield.TextInputLayout
 import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.base.formattedDateTime
-import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentItemdetailBinding
 import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
@@ -25,13 +24,13 @@ import de.passbutler.app.ui.bindEnabled
 import de.passbutler.app.ui.bindInput
 import de.passbutler.app.ui.bindTextAndVisibility
 import de.passbutler.app.ui.bindVisibility
-import de.passbutler.app.ui.showError
-import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.ItemEditingViewModel
 import de.passbutler.common.base.DependentValueGetterBindable
+import de.passbutler.common.ui.RequestSending
+import de.passbutler.common.ui.launchRequestSending
 
-class ItemDetailFragment : ToolBarFragment() {
+class ItemDetailFragment : ToolBarFragment(), RequestSending {
 
     private val viewModel
         get() = viewModelWrapper.itemEditingViewModel

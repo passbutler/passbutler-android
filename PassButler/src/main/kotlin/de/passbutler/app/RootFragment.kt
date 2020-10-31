@@ -9,10 +9,10 @@ import androidx.fragment.app.activityViewModels
 import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.databinding.FragmentRootBinding
 import de.passbutler.app.ui.BaseFragment
-import de.passbutler.app.ui.FragmentPresenter
-import de.passbutler.app.ui.TransitionType
+import de.passbutler.app.ui.UIPresenter
 import de.passbutler.app.ui.showFragmentAsFirstScreen
 import de.passbutler.common.base.BindableObserver
+import de.passbutler.common.ui.TransitionType
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 import java.lang.ref.WeakReference
@@ -42,7 +42,7 @@ abstract class AbstractRootFragment : BaseFragment() {
 
             val contentContainerResourceId = R.id.frameLayout_fragment_root_content_container
             val progressScreenViewResourceId = R.id.frameLayout_progress_container
-            fragmentPresentingDelegate = FragmentPresenter(
+            uiPresentingDelegate = UIPresenter(
                 WeakReference(it),
                 WeakReference(this),
                 contentContainerResourceId,

@@ -19,23 +19,22 @@ import androidx.preference.PreferenceDataStore
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import de.passbutler.app.base.addLifecycleObserver
-import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.crypto.BiometricAuthenticationCallbackExecutor
 import de.passbutler.app.databinding.FragmentSettingsBinding
-import de.passbutler.app.ui.FragmentPresenter
 import de.passbutler.app.ui.ToolBarFragment
+import de.passbutler.app.ui.UIPresenter
 import de.passbutler.app.ui.showEditTextDialog
-import de.passbutler.app.ui.showError
-import de.passbutler.app.ui.showInformation
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Success
+import de.passbutler.common.ui.RequestSending
+import de.passbutler.common.ui.launchRequestSending
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 import javax.crypto.Cipher
 
-class SettingsFragment : ToolBarFragment() {
+class SettingsFragment : ToolBarFragment(), RequestSending {
 
     // Retrieve viewmodel from activity to provide nested fragment the same instance
     internal val viewModel by userViewModelUsingActivityViewModels<SettingsViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
@@ -54,7 +53,7 @@ class SettingsFragment : ToolBarFragment() {
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = FragmentSettingsBinding.inflate(inflater)
 
-        val settingsPreferenceFragmentTag = FragmentPresenter.getFragmentTag(SettingsPreferenceFragment::class.java)
+        val settingsPreferenceFragmentTag = UIPresenter.getFragmentTag(SettingsPreferenceFragment::class.java)
         settingsPreferenceFragment = ((childFragmentManager.findFragmentByTag(settingsPreferenceFragmentTag) as? SettingsPreferenceFragment) ?: run {
             SettingsPreferenceFragment.newInstance().also { newSettingsPreferenceFragment ->
                 childFragmentManager

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.appcompat.widget.Toolbar
 import de.passbutler.app.R
+import de.passbutler.common.ui.TransitionType
 
 abstract class ToolBarFragment : BaseFragment() {
 

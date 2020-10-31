@@ -8,20 +8,20 @@ import android.webkit.URLUtil
 import androidx.fragment.app.viewModels
 import de.passbutler.app.base.BuildInformationProvider
 import de.passbutler.app.base.DebugConstants
-import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentLoginBinding
 import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.VisibilityHideMode
-import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showFadeInOutAnimation
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.base.BuildType
 import de.passbutler.common.database.RequestUnauthorizedException
+import de.passbutler.common.ui.RequestSending
+import de.passbutler.common.ui.launchRequestSending
 
-class LoginFragment : BaseFragment() {
+class LoginFragment : BaseFragment(), RequestSending {
 
     private val viewModel by viewModels<LoginViewModel>()
 

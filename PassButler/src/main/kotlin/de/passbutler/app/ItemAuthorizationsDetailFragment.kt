@@ -15,22 +15,22 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import de.passbutler.app.base.addLifecycleObserver
-import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentItemAuthorizationsDetailBinding
 import de.passbutler.app.databinding.ListItemAuthorizationEntryBinding
 import de.passbutler.app.databinding.ListItemAuthorizationHeaderBinding
 import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.ToolBarFragment
-import de.passbutler.app.ui.showError
 import de.passbutler.common.ItemAuthorizationEditingViewModel
 import de.passbutler.common.ItemAuthorizationsDetailViewModel
 import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.addAllIfNotNull
+import de.passbutler.common.ui.RequestSending
+import de.passbutler.common.ui.launchRequestSending
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 
-class ItemAuthorizationsDetailFragment : ToolBarFragment() {
+class ItemAuthorizationsDetailFragment : ToolBarFragment(), RequestSending {
 
     private val viewModel
         get() = viewModelWrapper.itemAuthorizationsDetailViewModel

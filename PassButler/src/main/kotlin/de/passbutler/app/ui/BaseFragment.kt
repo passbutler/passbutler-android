@@ -3,15 +3,15 @@ package de.passbutler.app.ui
 import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import com.google.android.material.snackbar.Snackbar
 import de.passbutler.app.MainActivity
 import de.passbutler.app.RootFragment
+import de.passbutler.common.ui.TransitionType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlin.coroutines.CoroutineContext
 
-open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPressedListener, CoroutineScope {
+open class BaseFragment : Fragment(), UIPresenting, MainActivity.OnBackPressedListener, CoroutineScope {
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + coroutineJob
@@ -19,7 +19,7 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
     private val coroutineJob = SupervisorJob()
 
     var transitionType = TransitionType.NONE
-    var fragmentPresentingDelegate: FragmentPresenter? = null
+    var uiPresentingDelegate: UIPresenting? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -37,13 +37,13 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
         if (savedInstanceState != null) {
             if (this !is RootFragment) {
                 // Restore fragment presenting delegate from `RootFragment` on configuration changes
-                (activity as? MainActivity)?.rootFragment?.fragmentPresentingDelegate?.let {
-                    fragmentPresentingDelegate = it
+                (activity as? MainActivity)?.rootFragment?.uiPresentingDelegate?.let {
+                    uiPresentingDelegate = it
                 }
             }
 
             // Re-apply fragment transition after configuration change
-            FragmentPresenter.applyTransitionToFragment(this)
+            UIPresenter.applyTransitionToFragment(this)
         }
     }
 
@@ -53,27 +53,35 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
     }
 
     override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean, debounce: Boolean, transitionType: TransitionType) {
-        fragmentPresentingDelegate?.showFragment(fragment, replaceFragment, addToBackstack, debounce, transitionType)
+        uiPresentingDelegate?.showFragment(fragment, replaceFragment, addToBackstack, debounce, transitionType)
     }
 
     override fun <T : Fragment> isFragmentShown(fragmentClass: Class<T>): Boolean {
-        return fragmentPresentingDelegate?.isFragmentShown(fragmentClass) ?: false
+        return uiPresentingDelegate?.isFragmentShown(fragmentClass) ?: false
     }
 
     override fun popBackstack() {
-        fragmentPresentingDelegate?.popBackstack()
+        uiPresentingDelegate?.popBackstack()
     }
 
     override fun backstackCount(): Int {
-        return fragmentPresentingDelegate?.backstackCount() ?: 0
+        return uiPresentingDelegate?.backstackCount() ?: 0
     }
 
     override fun showProgress() {
-        fragmentPresentingDelegate?.showProgress()
+        uiPresentingDelegate?.showProgress()
     }
 
     override fun hideProgress() {
-        fragmentPresentingDelegate?.hideProgress()
+        uiPresentingDelegate?.hideProgress()
+    }
+
+    override fun showInformation(message: String) {
+        uiPresentingDelegate?.showInformation(message)
+    }
+
+    override fun showError(message: String) {
+        uiPresentingDelegate?.showError(message)
     }
 
     /**
@@ -89,14 +97,4 @@ open class BaseFragment : Fragment(), FragmentPresenting, MainActivity.OnBackPre
             false
         }
     }
-}
-
-fun BaseFragment.showInformation(message: String) {
-    view?.let {
-        Snackbar.make(it, message, Snackbar.LENGTH_SHORT).show()
-    }
-}
-
-fun BaseFragment.showError(errorMessage: String) {
-    showInformation(errorMessage)
 }

@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import de.passbutler.app.base.addLifecycleObserver
-import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.base.relativeDateTime
 import de.passbutler.app.databinding.FragmentOverviewBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
@@ -26,22 +25,22 @@ import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.VisibilityHideMode
-import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showFadeInOutAnimation
 import de.passbutler.app.ui.showFragmentModally
-import de.passbutler.app.ui.showInformation
 import de.passbutler.app.ui.visible
 import de.passbutler.common.ItemViewModel
 import de.passbutler.common.Webservices
 import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.database.models.UserType
+import de.passbutler.common.ui.RequestSending
+import de.passbutler.common.ui.launchRequestSending
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 
-class OverviewFragment : BaseFragment() {
+class OverviewFragment : BaseFragment(), RequestSending {
 
     private val viewModel by userViewModelUsingViewModels<OverviewViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()

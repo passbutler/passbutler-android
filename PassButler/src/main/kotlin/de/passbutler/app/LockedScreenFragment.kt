@@ -11,7 +11,6 @@ import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.activityViewModels
 import de.passbutler.app.base.BuildInformationProvider
 import de.passbutler.app.base.DebugConstants
-import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.crypto.BiometricAuthenticationCallbackExecutor
 import de.passbutler.app.databinding.FragmentLockedScreenBinding
 import de.passbutler.app.ui.BaseFragment
@@ -20,19 +19,20 @@ import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.bindEnabled
 import de.passbutler.app.ui.bindVisibility
-import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.base.BuildType
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
+import de.passbutler.common.ui.RequestSending
+import de.passbutler.common.ui.launchRequestSending
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 
-class LockedScreenFragment : BaseFragment() {
+class LockedScreenFragment : BaseFragment(), RequestSending {
 
     var mode: Mode = Mode.Normal
 
