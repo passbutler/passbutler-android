@@ -91,14 +91,14 @@
                     android:id="@+id/button_unlock_password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="?marginS"
+                    android:layout_marginTop="?marginXS"
                     android:text="@string/locked_screen_button_password_text" />
 
                 <TextView
                     android:id="@+id/textView_unlock_method_divider"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="?marginS"
+                    android:layout_marginTop="?marginXS"
                     android:gravity="center_horizontal"
                     android:text="@string/locked_screen_method_dividing_text" />
 
@@ -106,14 +106,14 @@
                     android:id="@+id/button_unlock_biometric"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="?marginS"
+                    android:layout_marginTop="?marginXS"
                     android:text="@string/locked_screen_button_biometric_text" />
 
                 <TextView
                     android:id="@+id/textView_button_unlock_biometric_disabled_hint"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="?marginS"
+                    android:layout_marginTop="?marginXS"
                     android:text="@string/locked_screen_button_biometric_disabled_hint_text"
                     android:textAlignment="center"
                     android:textAppearance="?textAppearanceCaption" />

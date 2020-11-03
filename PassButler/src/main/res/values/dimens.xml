@@ -8,8 +8,8 @@
 
     <!-- Semantic spacings: -->
 
-    <dimen name="marginXS">2dp</dimen>
-    <dimen name="marginS">4dp</dimen>
+    <dimen name="marginXS">4dp</dimen>
+    <dimen name="marginS">8dp</dimen>
     <dimen name="marginM">16dp</dimen>
     <dimen name="marginL">32dp</dimen>
     <dimen name="marginXL">48dp</dimen>
