@@ -12,6 +12,8 @@ import androidx.transition.TransitionSet
 import com.google.android.material.snackbar.Snackbar
 import de.passbutler.app.AbstractRootFragment
 import de.passbutler.common.ui.DebouncedUIPresenting
+import de.passbutler.common.ui.FADE_TRANSITION_DURATION
+import de.passbutler.common.ui.SLIDE_TRANSITION_DURATION
 import de.passbutler.common.ui.TransitionType
 import org.tinylog.kotlin.Logger
 import java.lang.ref.WeakReference
@@ -177,38 +179,43 @@ private fun TransitionType.createFragmentTransition(): FragmentTransition? {
 }
 
 private fun createHorizontalSlideInTransition(): Transition {
-    val transitionSet = createTransitionSetWithDefaultInterpolator()
-    transitionSet.addTransition(Slide(Gravity.END))
-    return transitionSet
+    return createTransitionSetWithDefaultInterpolator().apply {
+        addTransition(Slide(Gravity.END))
+        duration = SLIDE_TRANSITION_DURATION.toMillis()
+    }
 }
 
 private fun createHorizontalSlideOutTransition(): Transition {
-    val transitionSet = createTransitionSetWithDefaultInterpolator()
-    transitionSet.addTransition(Slide(Gravity.START))
-    return transitionSet
+    return createTransitionSetWithDefaultInterpolator().apply {
+        addTransition(Slide(Gravity.START))
+        duration = SLIDE_TRANSITION_DURATION.toMillis()
+    }
 }
 
 private fun createVerticalSlideInTransition(): Transition {
-    val transitionSet = createTransitionSetWithDefaultInterpolator()
-    transitionSet.addTransition(Slide(Gravity.BOTTOM))
-    return transitionSet
+    return createTransitionSetWithDefaultInterpolator().apply {
+        addTransition(Slide(Gravity.BOTTOM))
+        duration = SLIDE_TRANSITION_DURATION.toMillis()
+    }
 }
 
 private fun createVerticalSlideOutTransition(): Transition {
-    val transitionSet = createTransitionSetWithDefaultInterpolator()
-    transitionSet.addTransition(Slide(Gravity.TOP))
-    return transitionSet
+    return createTransitionSetWithDefaultInterpolator().apply {
+        addTransition(Slide(Gravity.TOP))
+        duration = SLIDE_TRANSITION_DURATION.toMillis()
+    }
 }
 
 private fun createFadeInOutTransition(): Transition {
-    val transitionSet = createTransitionSetWithDefaultInterpolator()
-    transitionSet.addTransition(Fade(Fade.IN))
-    transitionSet.addTransition(Fade(Fade.OUT))
-    return transitionSet
+    return createTransitionSetWithDefaultInterpolator().apply {
+        addTransition(Fade(Fade.IN))
+        addTransition(Fade(Fade.OUT))
+        duration = FADE_TRANSITION_DURATION.toMillis()
+    }
 }
 
 private fun createTransitionSetWithDefaultInterpolator(): TransitionSet {
-    val transitionSet = TransitionSet()
-    transitionSet.interpolator = FastOutSlowInInterpolator()
-    return transitionSet
+    return TransitionSet().apply {
+        interpolator = FastOutSlowInInterpolator()
+    }
 }
