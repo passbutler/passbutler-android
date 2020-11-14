@@ -20,6 +20,9 @@
         <!-- Used for e.g. setting sections, checkbox, switches, progress: -->
         <item name="colorAccent">@color/pointRed</item>
 
+        <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:textColorSecondary">@color/blackTransparent</item>
+
         <!-- Material colors: -->
 
         <!-- Used for semi-transparent backgrounds of e.g. progress screen: -->
