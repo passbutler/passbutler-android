@@ -90,10 +90,6 @@ dependencies {
 
     implementation("androidx.fragment:fragment-ktx:1.2.5")
 
-    // Since no Java 8 is used this makes no sense
-    //noinspection LifecycleAnnotationProcessorWithJava8
-    kapt("androidx.lifecycle:lifecycle-compiler:2.2.0")
-
     // Android Biometrics framework
     implementation("androidx.biometric:biometric:1.0.1")
 
