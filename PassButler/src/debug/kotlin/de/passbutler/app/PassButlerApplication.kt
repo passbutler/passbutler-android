@@ -3,12 +3,13 @@ package de.passbutler.app
 import android.os.Build
 import android.os.StrictMode
 import de.passbutler.app.base.AbstractPassButlerApplication
-import de.passbutler.app.base.formattedDateTime
+import de.passbutler.common.base.formattedDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.tinylog.configuration.Configuration
 import org.tinylog.kotlin.Logger
+import java.time.Instant
 import java.util.*
 
 class PassButlerApplication : AbstractPassButlerApplication() {
@@ -68,7 +69,7 @@ class PassButlerApplication : AbstractPassButlerApplication() {
     private fun createLoggingHeader(): String {
         val versionName = BuildConfig.VERSION_NAME
         val versionCode = BuildConfig.VERSION_CODE
-        val formattedBuildTime = BuildConfig.BUILD_TIME.formattedDateTime
+        val formattedBuildTime = Instant.ofEpochMilli(BuildConfig.BUILD_TIMESTAMP).formattedDateTime
         val gitShortHash = BuildConfig.BUILD_REVISION_HASH
 
         return buildString {

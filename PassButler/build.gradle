@@ -50,7 +50,7 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         // Added custom build fields
-        buildConfigField "java.util.Date", "BUILD_TIME", "new java.util.Date(" + System.currentTimeMillis() + "L)"
+        buildConfigField "Long", "BUILD_TIMESTAMP", System.currentTimeMillis() + "L"
         buildConfigField "String", "BUILD_REVISION_HASH", "\"" + gitCommitHashShort() + "\""
     }
 
