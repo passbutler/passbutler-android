@@ -2,7 +2,6 @@ plugins {
     id("com.android.application")
 
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.kapt")
 
     id("de.mannodermaus.android-junit5")
 }
