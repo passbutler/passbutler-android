@@ -57,7 +57,7 @@ abstract class AbstractRootFragment : BaseFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val binding = FragmentRootBinding.inflate(inflater)
+        val binding = FragmentRootBinding.inflate(inflater, container, false)
 
         viewModel.rootScreenState.addLifecycleObserver(viewLifecycleOwner, false, rootScreenStateObserver)
         viewModel.lockScreenState.addLifecycleObserver(viewLifecycleOwner, false, lockScreenStateObserver)

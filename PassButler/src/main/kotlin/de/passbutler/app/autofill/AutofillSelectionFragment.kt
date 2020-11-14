@@ -62,7 +62,7 @@ class AutofillSelectionFragment : BaseFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentAutofillSelectionBinding.inflate(inflater).also { binding ->
+        binding = FragmentAutofillSelectionBinding.inflate(inflater, container, false).also { binding ->
             setupToolBar(binding)
             setupEntryList(binding)
         }

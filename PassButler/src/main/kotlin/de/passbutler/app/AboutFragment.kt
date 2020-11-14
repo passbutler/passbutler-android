@@ -14,7 +14,7 @@ class AboutFragment : ToolBarFragment() {
     override fun getToolBarTitle() = getString(R.string.about_title)
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val binding = FragmentAboutBinding.inflate(inflater)
+        val binding = FragmentAboutBinding.inflate(inflater, container, false)
 
         binding.textViewSubheader.also { subHeader ->
             val versionName = BuildConfig.VERSION_NAME

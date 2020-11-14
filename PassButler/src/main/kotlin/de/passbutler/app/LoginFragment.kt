@@ -42,7 +42,7 @@ class LoginFragment : BaseFragment(), RequestSending {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentLoginBinding.inflate(inflater).also { binding ->
+        binding = FragmentLoginBinding.inflate(inflater, container, false).also { binding ->
             setupDebugPresetsButton(binding)
             setupLocalLoginCheckbox(binding)
             setupLoginButton(binding)

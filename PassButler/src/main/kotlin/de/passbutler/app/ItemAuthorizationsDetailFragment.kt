@@ -85,7 +85,7 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment(), RequestSending {
     }
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentItemAuthorizationsDetailBinding.inflate(inflater).also { binding ->
+        binding = FragmentItemAuthorizationsDetailBinding.inflate(inflater, container, false).also { binding ->
             setupItemAuthorizationsList(binding)
         }
 

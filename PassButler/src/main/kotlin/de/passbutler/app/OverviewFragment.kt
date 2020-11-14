@@ -77,7 +77,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentOverviewBinding.inflate(inflater).also { binding ->
+        binding = FragmentOverviewBinding.inflate(inflater, container, false).also { binding ->
             setupToolBar(binding)
             setupDrawerLayout(binding)
             setupEntryList(binding)

@@ -39,7 +39,7 @@ class ChangeMasterPasswordFragment : ToolBarFragment(), RequestSending {
     override fun getToolBarTitle() = getString(R.string.change_master_password_title)
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentChangeMasterPasswordBinding.inflate(inflater).also { binding ->
+        binding = FragmentChangeMasterPasswordBinding.inflate(inflater, container, false).also { binding ->
             setupTextViews(binding)
             setupChangeButton(binding)
 

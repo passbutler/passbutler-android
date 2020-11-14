@@ -57,7 +57,7 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentLockedScreenBinding.inflate(inflater).also { binding ->
+        binding = FragmentLockedScreenBinding.inflate(inflater, container, false).also { binding ->
             setupDebugPresetsButton(binding)
             setupTextViews(binding)
             setupUnlockWithPasswordButton(binding)

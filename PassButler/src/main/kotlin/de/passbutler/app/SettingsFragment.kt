@@ -51,7 +51,7 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
     override fun getToolBarTitle() = getString(R.string.settings_title)
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val binding = FragmentSettingsBinding.inflate(inflater)
+        val binding = FragmentSettingsBinding.inflate(inflater, container, false)
 
         val settingsPreferenceFragmentTag = UIPresenter.getFragmentTag(SettingsPreferenceFragment::class.java)
         settingsPreferenceFragment = ((childFragmentManager.findFragmentByTag(settingsPreferenceFragmentTag) as? SettingsPreferenceFragment) ?: run {

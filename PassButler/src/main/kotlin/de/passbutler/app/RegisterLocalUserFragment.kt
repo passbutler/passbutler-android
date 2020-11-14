@@ -42,7 +42,7 @@ class RegisterLocalUserFragment : ToolBarFragment(), RequestSending {
     override fun getToolBarTitle() = getString(R.string.register_local_user_title)
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentRegisterLocalUserBinding.inflate(inflater).also { binding ->
+        binding = FragmentRegisterLocalUserBinding.inflate(inflater, container, false).also { binding ->
             setupRegisterButton(binding)
             setupDebugPresetsButton(binding)
 

@@ -157,7 +157,7 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
     }
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentItemdetailBinding.inflate(inflater).also { binding ->
+        binding = FragmentItemdetailBinding.inflate(inflater, container, false).also { binding ->
             setupItemFields(binding)
             setupItemAuthorizationsSection(binding)
             setupInformationView(binding)
