@@ -58,7 +58,7 @@ dependencies {
 
     // Kotlin
     val kotlinVersion = "1.4.10"
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     // Kotlin Coroutines for Android
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1")
