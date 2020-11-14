@@ -71,7 +71,7 @@ class PassButlerApplication : AbstractPassButlerApplication() {
         val formattedBuildTime = BuildConfig.BUILD_TIME.formattedDateTime
         val gitShortHash = BuildConfig.BUILD_REVISION_HASH
 
-        return StringBuilder().apply {
+        return buildString {
             appendln("--------------------------------------------------------------------------------")
             appendln("App:         ${BuildConfig.APPLICATION_ID} $versionName-$versionCode (build on $formattedBuildTime from $gitShortHash)")
             appendln("Android:     ${Build.VERSION.RELEASE} / API ${Build.VERSION.SDK_INT} (${Build.VERSION.INCREMENTAL}, ${Build.VERSION.CODENAME})")
@@ -84,7 +84,7 @@ class PassButlerApplication : AbstractPassButlerApplication() {
             appendln("Hardware:    ${Build.HARDWARE}")
             appendln("Locale:      ${Locale.getDefault()}")
             appendln("--------------------------------------------------------------------------------")
-        }.toString()
+        }
     }
 }
 
