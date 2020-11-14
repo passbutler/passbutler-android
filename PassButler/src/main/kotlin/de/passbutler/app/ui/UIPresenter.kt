@@ -23,6 +23,7 @@ import java.time.Instant
  * Provides implementation of fragment management used by the one-activity app concept.
  * This delegate is delegated in `BaseFragment` and provided in the `AbstractRootFragment`.
  */
+// TODO: Weak refs should not be needed
 class UIPresenter(
     private val activityWeakReference: WeakReference<Activity>,
     private val rootFragmentWeakReference: WeakReference<AbstractRootFragment>,
