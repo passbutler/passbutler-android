@@ -73,18 +73,18 @@ class PassButlerApplication : AbstractPassButlerApplication() {
         val gitShortHash = BuildConfig.BUILD_REVISION_HASH
 
         return buildString {
-            appendln("--------------------------------------------------------------------------------")
-            appendln("App:         ${BuildConfig.APPLICATION_ID} $versionName-$versionCode (build on $formattedBuildTime from $gitShortHash)")
-            appendln("Android:     ${Build.VERSION.RELEASE} / API ${Build.VERSION.SDK_INT} (${Build.VERSION.INCREMENTAL}, ${Build.VERSION.CODENAME})")
-            appendln("Brand:       ${Build.BRAND}")
-            appendln("Model:       ${Build.MODEL}")
-            appendln("Product:     ${Build.PRODUCT}")
-            appendln("Device:      ${Build.DEVICE}")
-            appendln("Fingerprint: ${Build.FINGERPRINT}")
-            appendln("Tags:        ${Build.TAGS}")
-            appendln("Hardware:    ${Build.HARDWARE}")
-            appendln("Locale:      ${Locale.getDefault()}")
-            appendln("--------------------------------------------------------------------------------")
+            appendLine("--------------------------------------------------------------------------------")
+            appendLine("App:         ${BuildConfig.APPLICATION_ID} $versionName-$versionCode (build on $formattedBuildTime from $gitShortHash)")
+            appendLine("Android:     ${Build.VERSION.RELEASE} / API ${Build.VERSION.SDK_INT} (${Build.VERSION.INCREMENTAL}, ${Build.VERSION.CODENAME})")
+            appendLine("Brand:       ${Build.BRAND}")
+            appendLine("Model:       ${Build.MODEL}")
+            appendLine("Product:     ${Build.PRODUCT}")
+            appendLine("Device:      ${Build.DEVICE}")
+            appendLine("Fingerprint: ${Build.FINGERPRINT}")
+            appendLine("Tags:        ${Build.TAGS}")
+            appendLine("Hardware:    ${Build.HARDWARE}")
+            appendLine("Locale:      ${Locale.getDefault()}")
+            appendLine("--------------------------------------------------------------------------------")
         }
     }
 }

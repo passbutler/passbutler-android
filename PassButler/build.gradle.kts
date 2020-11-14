@@ -59,28 +59,28 @@ dependencies {
     implementation(project(":PassButlerCommon"))
 
     // Kotlin
-    val kotlinVersion = "1.3.72"
+    val kotlinVersion = "1.4.10"
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion")
 
     // Kotlin Coroutines for Android
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.7")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1")
 
     // TinyLog logger
-    val tinylogVersion = "2.1.2"
+    val tinylogVersion = "2.2.0"
     implementation("org.tinylog:tinylog-api-kotlin:$tinylogVersion")
     implementation("org.tinylog:tinylog-impl:$tinylogVersion")
 
     // SQLDelight
-    implementation("com.squareup.sqldelight:android-driver:1.4.0")
+    implementation("com.squareup.sqldelight:android-driver:1.4.4")
 
     // Google Material theme/components
-    implementation("com.google.android.material:material:1.2.0-beta01")
+    implementation("com.google.android.material:material:1.2.1")
 
     // Android widgets
-    implementation("androidx.appcompat:appcompat:1.1.0")
+    implementation("androidx.appcompat:appcompat:1.2.0")
     implementation("androidx.recyclerview:recyclerview:1.1.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.0.0-beta8")
+    implementation("androidx.constraintlayout:constraintlayout:2.0.4")
 
     // Android Lifecycle and ViewModel components
     val lifecycleVersion = "2.2.0"
@@ -101,13 +101,13 @@ dependencies {
     implementation("androidx.preference:preference:1.1.1")
 
     // JUnit 5
-    val junitVersion = "5.6.2"
+    val junitVersion = "5.7.0"
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
     // Mockk.io
-    testImplementation("io.mockk:mockk:1.10.0")
+    testImplementation("io.mockk:mockk:1.10.2")
 }
 
 fun gitCommitCount(): Int {
