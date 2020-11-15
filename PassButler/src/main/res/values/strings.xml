@@ -41,7 +41,6 @@
     <string name="login_failed_general_title">Anmeldung hat nicht geklappt</string>
     <string name="login_failed_unauthorized_title">Anmeldedaten vermutlich nicht korrekt</string>
 
-
     <!-- Register local user -->
 
     <string name="register_local_user_title">Benutzerkonto registrieren</string>
