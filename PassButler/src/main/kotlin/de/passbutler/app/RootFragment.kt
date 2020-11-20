@@ -105,6 +105,7 @@ class RootFragment : AbstractRootFragment() {
 
             showFragmentAsFirstScreen(
                 fragment = OverviewFragment.newInstance(),
+                userTriggered = false,
                 transitionType = if (viewWasInitialized) {
                     TransitionType.SLIDE
                 } else {
@@ -120,6 +121,7 @@ class RootFragment : AbstractRootFragment() {
 
             showFragmentAsFirstScreen(
                 fragment = LoginFragment.newInstance(),
+                userTriggered = false,
                 transitionType = if (viewWasInitialized) {
                     TransitionType.SLIDE
                 } else {

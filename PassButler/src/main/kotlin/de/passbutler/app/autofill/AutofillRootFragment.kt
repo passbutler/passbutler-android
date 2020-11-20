@@ -15,6 +15,7 @@ class AutofillRootFragment : AbstractRootFragment() {
             // Disabled transition because the fragment stack is always cold initialised
             showFragmentAsFirstScreen(
                 fragment = AutofillSelectionFragment.newInstance(),
+                userTriggered = false,
                 transitionType = TransitionType.NONE
             )
         }

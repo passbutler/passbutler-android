@@ -14,8 +14,8 @@ interface UIPresenting : ProgressPresenting, BannerPresenting {
     fun backstackCount(): Int
 }
 
-fun UIPresenting.showFragmentAsFirstScreen(fragment: Fragment, transitionType: TransitionType = TransitionType.SLIDE) {
-    showFragment(fragment, replaceFragment = true, addToBackstack = false, transitionType = transitionType)
+fun UIPresenting.showFragmentAsFirstScreen(fragment: Fragment, userTriggered: Boolean = true, transitionType: TransitionType = TransitionType.SLIDE) {
+    showFragment(fragment, replaceFragment = true, addToBackstack = false, userTriggered = userTriggered, transitionType = transitionType)
 }
 
 fun UIPresenting.showFragmentModally(fragment: Fragment) {
