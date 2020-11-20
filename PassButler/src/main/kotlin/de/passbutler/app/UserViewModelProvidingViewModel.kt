@@ -6,14 +6,12 @@ import androidx.fragment.app.createViewModelLazy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.viewModelScope
 import de.passbutler.app.base.AbstractPassButlerApplication
 import de.passbutler.app.crypto.BiometricsProvider
 import de.passbutler.common.LoggedInUserResult
 import de.passbutler.common.UserManager
 import de.passbutler.common.UserViewModel
 import de.passbutler.common.base.BindableObserver
-import kotlinx.coroutines.launch
 
 class UserViewModelProvidingViewModel : ViewModel() {
 
@@ -36,7 +34,7 @@ class UserViewModelProvidingViewModel : ViewModel() {
 
     private fun registerLoggedInUserResultObserver() {
         // Initially notify observer to be sure, the `loggedInUserViewModel` is restored immediately
-        userManager.loggedInUserResult.addObserver(viewModelScope, true, loggedInUserResultObserver)
+        userManager.loggedInUserResult.addObserver(null, true, loggedInUserResultObserver)
     }
 
     private fun unregisterLoggedInUserResultObserver() {
@@ -56,11 +54,9 @@ class UserViewModelProvidingViewModel : ViewModel() {
                 }
                 is LoggedInUserResult.LoggedOut -> {
                     // Finally clear crypto resources and reset related jobs
-                    viewModelScope.launch {
-                        loggedInUserViewModel?.clearSensibleData()
-                        loggedInUserViewModel?.cancelJobs()
-                        loggedInUserViewModel = null
-                    }
+                    loggedInUserViewModel?.clearSensibleData()
+                    loggedInUserViewModel?.cancelJobs()
+                    loggedInUserViewModel = null
                 }
             }
         }
