@@ -136,7 +136,7 @@ class RootFragment : AbstractRootFragment() {
             // The debounce check must be disabled because on app initialisation the fragment stack is artificially created
             showFragment(
                 fragment = LockedScreenFragment.newInstance(),
-                debounce = false,
+                userTriggered = false,
                 transitionType = if (viewWasInitialized) {
                     TransitionType.FADE
                 } else {

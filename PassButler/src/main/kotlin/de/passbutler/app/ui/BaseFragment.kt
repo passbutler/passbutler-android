@@ -52,8 +52,8 @@ open class BaseFragment : Fragment(), UIPresenting, MainActivity.OnBackPressedLi
         super.onDestroy()
     }
 
-    override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean, debounce: Boolean, transitionType: TransitionType) {
-        uiPresentingDelegate?.showFragment(fragment, replaceFragment, addToBackstack, debounce, transitionType)
+    override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean, userTriggered: Boolean, transitionType: TransitionType) {
+        uiPresentingDelegate?.showFragment(fragment, replaceFragment, addToBackstack, userTriggered, transitionType)
     }
 
     override fun <T : Fragment> isFragmentShown(fragmentClass: Class<T>): Boolean {

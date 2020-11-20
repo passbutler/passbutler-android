@@ -6,7 +6,7 @@ import de.passbutler.common.ui.ProgressPresenting
 import de.passbutler.common.ui.TransitionType
 
 interface UIPresenting : ProgressPresenting, BannerPresenting {
-    fun showFragment(fragment: Fragment, replaceFragment: Boolean = false, addToBackstack: Boolean = true, debounce: Boolean = true, transitionType: TransitionType = TransitionType.SLIDE)
+    fun showFragment(fragment: Fragment, replaceFragment: Boolean = false, addToBackstack: Boolean = true, userTriggered: Boolean = true, transitionType: TransitionType = TransitionType.SLIDE)
 
     fun <T : Fragment> isFragmentShown(fragmentClass: Class<T>): Boolean
 

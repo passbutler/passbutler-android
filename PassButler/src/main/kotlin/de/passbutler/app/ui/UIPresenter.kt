@@ -54,8 +54,8 @@ class UIPresenter(
     private val rootFragmentProgressScreenView
         get() = rootFragment?.view?.findViewById<FrameLayout>(rootFragmentProgressScreenViewResourceId)
 
-    override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean, debounce: Boolean, transitionType: TransitionType) {
-        val debouncedViewTransactionEnsured = ensureDebouncedViewTransaction().takeIf { debounce } ?: true
+    override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean, userTriggered: Boolean, transitionType: TransitionType) {
+        val debouncedViewTransactionEnsured = ensureDebouncedViewTransaction().takeIf { userTriggered } ?: true
 
         if (activity.isNotFinished) {
             if (debouncedViewTransactionEnsured) {
