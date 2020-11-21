@@ -11,11 +11,12 @@ abstract class AbstractPassButlerApplication : Application() {
     @Suppress("RemoveRedundantQualifierName")
     override fun onCreate() {
         super.onCreate()
-        AbstractPassButlerApplication.applicationContext = applicationContext
-        AbstractPassButlerApplication.userManager = createUserManager()
 
         setupStrictMode()
         setupLogger()
+
+        AbstractPassButlerApplication.applicationContext = applicationContext
+        AbstractPassButlerApplication.userManager = createUserManager()
     }
 
     private fun createUserManager(): UserManager {
