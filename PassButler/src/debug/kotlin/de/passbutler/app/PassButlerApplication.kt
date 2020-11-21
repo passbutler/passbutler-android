@@ -3,6 +3,7 @@ package de.passbutler.app
 import android.os.Build
 import android.os.StrictMode
 import de.passbutler.app.base.AbstractPassButlerApplication
+import de.passbutler.common.base.LoggingConstants
 import de.passbutler.common.base.formattedDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -49,15 +50,19 @@ class PassButlerApplication : AbstractPassButlerApplication() {
     }
 
     private fun createLoggerConfiguration(): Map<String, String> {
+        val consoleLogFormat = "{class-name}.{method}() [{thread}]: {message}"
+        val fileLogFormat = LoggingConstants.LOG_FORMAT_FILE
+        val logFilePath = "${applicationContext.cacheDir.path}/passbutler-debug.log"
+
         return mapOf(
             "writer1" to "logcat",
             "writer1.level" to "trace",
-            "writer1.format" to "{class-name}.{method}() [{thread}]: {message}",
+            "writer1.format" to consoleLogFormat,
 
             "writer2" to "file",
             "writer2.level" to "debug",
-            "writer2.format" to "{date} {level} {class-name}.{method}() [{thread}]: {message}",
-            "writer2.file" to "${applicationContext.cacheDir.path}/passbutler-debug.log",
+            "writer2.format" to fileLogFormat,
+            "writer2.file" to logFilePath,
             "writer2.charset" to "UTF-8",
             "writer2.append" to "true",
             "writer2.buffered" to "true",
