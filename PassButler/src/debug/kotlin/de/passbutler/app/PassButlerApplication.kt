@@ -5,9 +5,6 @@ import android.os.StrictMode
 import de.passbutler.app.base.AbstractPassButlerApplication
 import de.passbutler.common.base.LoggingConstants
 import de.passbutler.common.base.formattedDateTime
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.tinylog.configuration.Configuration
 import org.tinylog.kotlin.Logger
 import java.time.Instant
@@ -15,38 +12,13 @@ import java.util.*
 
 class PassButlerApplication : AbstractPassButlerApplication() {
 
-    override fun setupStrictMode() {
-        val threadPolicy = StrictMode.ThreadPolicy.Builder()
-            .detectAll()
-            .penaltyLog()
-            .build()
-
-        val vmPolicy = StrictMode.VmPolicy.Builder()
-            .detectActivityLeaks()
-            .detectLeakedClosableObjects()
-            .detectLeakedSqlLiteObjects()
-            .detectLeakedRegistrationObjects()
-            .detectFileUriExposure()
-            .penaltyLog()
-            .build()
-
-        StrictMode.setThreadPolicy(threadPolicy)
-        StrictMode.setVmPolicy(vmPolicy)
-    }
-
     override fun setupLogger() {
         Thread.setDefaultUncaughtExceptionHandler(UncaughtExceptionHandler())
 
-        /*
-         * Initialize Tinylog on IO to avoid disk read violations: despite it has `writingthread = true`,
-         * the configuration and first write is done on calling thread.
-         */
-        GlobalScope.launch(Dispatchers.IO) {
-            Configuration.replace(createLoggerConfiguration())
+        Configuration.replace(createLoggerConfiguration())
 
-            val loggingHeader = createLoggingHeader()
-            Logger.debug("Started Pass Butler\n$loggingHeader")
-        }
+        val loggingHeader = createLoggingHeader()
+        Logger.debug("Started Pass Butler\n$loggingHeader")
     }
 
     private fun createLoggerConfiguration(): Map<String, String> {
@@ -91,6 +63,25 @@ class PassButlerApplication : AbstractPassButlerApplication() {
             appendLine("Locale:      ${Locale.getDefault()}")
             appendLine("--------------------------------------------------------------------------------")
         }
+    }
+
+    override fun setupStrictMode() {
+        val threadPolicy = StrictMode.ThreadPolicy.Builder()
+            .detectAll()
+            .penaltyLog()
+            .build()
+
+        val vmPolicy = StrictMode.VmPolicy.Builder()
+            .detectActivityLeaks()
+            .detectLeakedClosableObjects()
+            .detectLeakedSqlLiteObjects()
+            .detectLeakedRegistrationObjects()
+            .detectFileUriExposure()
+            .penaltyLog()
+            .build()
+
+        StrictMode.setThreadPolicy(threadPolicy)
+        StrictMode.setVmPolicy(vmPolicy)
     }
 }
 

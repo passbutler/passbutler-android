@@ -12,8 +12,8 @@ abstract class AbstractPassButlerApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        setupStrictMode()
         setupLogger()
+        setupStrictMode()
 
         AbstractPassButlerApplication.applicationContext = applicationContext
         AbstractPassButlerApplication.userManager = createUserManager()
@@ -27,8 +27,8 @@ abstract class AbstractPassButlerApplication : Application() {
         return UserManager(localRepository, BuildInformationProvider)
     }
 
-    abstract fun setupStrictMode()
     abstract fun setupLogger()
+    abstract fun setupStrictMode()
 
     companion object {
         lateinit var applicationContext: Context
