@@ -20,7 +20,7 @@ class UserViewModelProvidingViewModel : ViewModel() {
     var loggedInUserViewModel: UserViewModel? = null
         private set
 
-    val userManager
+    private val userManager
         get() = AbstractPassButlerApplication.userManager
 
     private val biometricsProvider = BiometricsProvider()
@@ -89,9 +89,6 @@ abstract class UserViewModelUsingViewModel : ViewModel() {
 
     val loggedInUserViewModel: UserViewModel?
         get() = userViewModelProvidingViewModel.loggedInUserViewModel
-
-    val userManager: UserManager
-        get() = userViewModelProvidingViewModel.userManager
 }
 
 @MainThread

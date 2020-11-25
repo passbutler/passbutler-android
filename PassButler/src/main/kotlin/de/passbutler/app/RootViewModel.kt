@@ -69,7 +69,7 @@ class RootViewModel : UserViewModelUsingViewModel() {
             loggedInUserViewModel.decryptSensibleData(masterPassword).resultOrThrowException()
 
             if (loggedInUserViewModel.userType == UserType.REMOTE) {
-                restoreWebservices(loggedInUserViewModel, masterPassword)
+                loggedInUserViewModel.restoreWebservices(masterPassword)
             }
 
             _lockScreenState.value = LockScreenState.Unlocked
@@ -77,14 +77,6 @@ class RootViewModel : UserViewModelUsingViewModel() {
             Success(Unit)
         } catch (exception: Exception) {
             Failure(exception)
-        }
-    }
-
-    private fun restoreWebservices(loggedInUserViewModel: UserViewModel, masterPassword: String) {
-        // Restore webservices asynchronously to avoid slow network is blocking unlock progress
-        // Do not use `viewModelScope` here because otherwise the job will be cancelled if `LockedScreenFragment` is destroyed
-        loggedInUserViewModel.launch {
-            userManager.restoreWebservices(masterPassword)
         }
     }
 
@@ -118,7 +110,7 @@ class RootViewModel : UserViewModelUsingViewModel() {
             loggedInUserViewModel.decryptSensibleData(masterPassword).resultOrThrowException()
 
             if (loggedInUserViewModel.userType == UserType.REMOTE) {
-                restoreWebservices(loggedInUserViewModel, masterPassword)
+                loggedInUserViewModel.restoreWebservices(masterPassword)
             }
 
             _lockScreenState.value = LockScreenState.Unlocked
