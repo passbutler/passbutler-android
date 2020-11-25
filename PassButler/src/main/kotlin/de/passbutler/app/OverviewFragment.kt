@@ -43,6 +43,7 @@ import org.tinylog.kotlin.Logger
 class OverviewFragment : BaseFragment(), RequestSending {
 
     private val viewModel by userViewModelUsingViewModels<OverviewViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    private val rootViewModel by userViewModelUsingActivityViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var binding: FragmentOverviewBinding? = null
@@ -266,7 +267,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
             handleFailure = { showError(getString(R.string.overview_logout_failed_title)) },
             isCancellable = false
         ) {
-            viewModel.logoutUser()
+            rootViewModel.closeVault()
         }
     }
 

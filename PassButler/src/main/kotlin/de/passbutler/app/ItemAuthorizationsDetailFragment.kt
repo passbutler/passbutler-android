@@ -23,6 +23,7 @@ import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.common.ItemAuthorizationEditingViewModel
 import de.passbutler.common.ItemAuthorizationsDetailViewModel
+import de.passbutler.common.LoggedInUserViewModelUninitializedException
 import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.addAllIfNotNull
 import de.passbutler.common.ui.RequestSending

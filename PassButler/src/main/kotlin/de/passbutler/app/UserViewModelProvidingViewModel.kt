@@ -8,10 +8,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import de.passbutler.app.base.AbstractPassButlerApplication
 import de.passbutler.app.crypto.BiometricsProvider
-import de.passbutler.common.LoggedInUserResult
 import de.passbutler.common.UserManager
 import de.passbutler.common.UserViewModel
-import de.passbutler.common.base.BindableObserver
+import de.passbutler.common.base.Failure
+import de.passbutler.common.base.Result
+import de.passbutler.common.base.Success
+import org.tinylog.kotlin.Logger
 
 class UserViewModelProvidingViewModel : ViewModel() {
 
@@ -21,49 +23,66 @@ class UserViewModelProvidingViewModel : ViewModel() {
     val userManager
         get() = AbstractPassButlerApplication.userManager
 
-    private val loggedInUserResultObserver = LoggedInUserResultObserver()
+    private val biometricsProvider = BiometricsProvider()
 
-    init {
-        registerLoggedInUserResultObserver()
+    // TODO: This must be called asap independently of `RootViewModel`
+    suspend fun restoreLoggedInUser(): Result<Unit> {
+        val restoreResult = userManager.restoreLoggedInUser()
+
+        return when (restoreResult) {
+            is Success -> {
+                val loggedInUserResult = restoreResult.result
+                loggedInUserViewModel = UserViewModel(userManager, biometricsProvider, loggedInUserResult.loggedInUser)
+
+                Success(Unit)
+            }
+            is Failure -> Failure(restoreResult.throwable)
+        }
     }
 
-    override fun onCleared() {
-        unregisterLoggedInUserResultObserver()
-        super.onCleared()
-    }
+    suspend fun loginUser(serverUrlString: String?, username: String, masterPassword: String): Result<Unit> {
+        val loginResult = when (serverUrlString) {
+            null -> userManager.loginLocalUser(username, masterPassword)
+            else -> userManager.loginRemoteUser(username, masterPassword, serverUrlString)
+        }
 
-    private fun registerLoggedInUserResultObserver() {
-        // Initially notify observer to be sure, the `loggedInUserViewModel` is restored immediately
-        userManager.loggedInUserResult.addObserver(null, true, loggedInUserResultObserver)
-    }
+        return when (loginResult) {
+            is Success -> {
+                val loggedInUserResult = loginResult.result
+                val newLoggedInUserViewModel = UserViewModel(userManager, biometricsProvider, loggedInUserResult.loggedInUser)
 
-    private fun unregisterLoggedInUserResultObserver() {
-        userManager.loggedInUserResult.removeObserver(loggedInUserResultObserver)
-    }
+                val decryptSensibleDataResult = newLoggedInUserViewModel.decryptSensibleData(masterPassword)
 
-    private inner class LoggedInUserResultObserver : BindableObserver<LoggedInUserResult?> {
-        private val biometricsProvider = BiometricsProvider()
-
-        override fun invoke(loggedInUserResult: LoggedInUserResult?) {
-            when (loggedInUserResult) {
-                is LoggedInUserResult.LoggedIn.PerformedLogin -> {
-                    loggedInUserViewModel = UserViewModel(userManager, biometricsProvider, loggedInUserResult.loggedInUser, loggedInUserResult.masterPassword)
-                }
-                is LoggedInUserResult.LoggedIn.RestoredLogin -> {
-                    loggedInUserViewModel = UserViewModel(userManager, biometricsProvider, loggedInUserResult.loggedInUser, null)
-                }
-                is LoggedInUserResult.LoggedOut -> {
-                    // Finally clear crypto resources and reset related jobs
-                    loggedInUserViewModel?.clearSensibleData()
-                    loggedInUserViewModel?.cancelJobs()
-                    loggedInUserViewModel = null
+                when (decryptSensibleDataResult) {
+                    is Success -> {
+                        loggedInUserViewModel = newLoggedInUserViewModel
+                        Success(Unit)
+                    }
+                    is Failure -> {
+                        Logger.warn(decryptSensibleDataResult.throwable, "The initial unlock of the resources after login failed!")
+                        Failure(decryptSensibleDataResult.throwable)
+                    }
                 }
             }
+            is Failure -> Failure(loginResult.throwable)
+        }
+    }
+
+    suspend fun logoutUser(): Result<Unit> {
+        val logoutResult = userManager.logoutUser(UserManager.LogoutBehaviour.ClearDatabase)
+
+        return when (logoutResult) {
+            is Success -> {
+                loggedInUserViewModel?.clearSensibleData()
+                loggedInUserViewModel?.cancelJobs()
+                loggedInUserViewModel = null
+
+                Success(Unit)
+            }
+            is Failure -> Failure(logoutResult.throwable)
         }
     }
 }
-
-object LoggedInUserViewModelUninitializedException : IllegalStateException("The logged-in UserViewModel is null!")
 
 abstract class UserViewModelUsingViewModel : ViewModel() {
     lateinit var userViewModelProvidingViewModel: UserViewModelProvidingViewModel

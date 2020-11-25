@@ -25,6 +25,7 @@ import de.passbutler.app.ui.bindTextAndVisibility
 import de.passbutler.app.ui.bindVisibility
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.ItemEditingViewModel
+import de.passbutler.common.LoggedInUserViewModelUninitializedException
 import de.passbutler.common.base.DependentValueGetterBindable
 import de.passbutler.common.base.formattedDateTime
 import de.passbutler.common.ui.RequestSending

@@ -111,7 +111,7 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
 
                 if (masterPassword != null) {
                     launchUnlockRequestSending {
-                        viewModel.unlockScreenWithPassword(masterPassword)
+                        viewModel.unlockVaultWithPassword(masterPassword)
                     }
                 }
             }
@@ -234,7 +234,7 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
 
             if (initializedBiometricUnlockCipher != null) {
                 launchUnlockRequestSending {
-                    viewModel.unlockScreenWithBiometrics(initializedBiometricUnlockCipher)
+                    viewModel.unlockVaultWithBiometrics(initializedBiometricUnlockCipher)
                 }
             } else {
                 showError(getString(R.string.locked_screen_biometrics_unlock_failed_general_title))

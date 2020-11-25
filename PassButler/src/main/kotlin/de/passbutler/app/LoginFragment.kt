@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import de.passbutler.app.base.BuildInformationProvider
 import de.passbutler.app.base.DebugConstants
 import de.passbutler.app.databinding.FragmentLoginBinding
@@ -23,7 +23,8 @@ import de.passbutler.common.ui.launchRequestSending
 
 class LoginFragment : BaseFragment(), RequestSending {
 
-    private val viewModel by viewModels<LoginViewModel>()
+    private val viewModel by userViewModelUsingActivityViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var formServerUrl: String? = null
     private var formUsername: String? = null
@@ -138,7 +139,7 @@ class LoginFragment : BaseFragment(), RequestSending {
             },
             isCancellable = false
         ) {
-            viewModel.loginUser(serverUrl, username, masterPassword)
+            viewModel.loginVault(serverUrl, username, masterPassword)
         }
     }
 

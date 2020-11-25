@@ -2,9 +2,9 @@ package de.passbutler.app
 
 import android.text.format.DateUtils
 import androidx.lifecycle.viewModelScope
-import de.passbutler.common.LoggedInUserResult
+import de.passbutler.common.LoggedInUserViewModelUninitializedException
 import de.passbutler.common.UserViewModel
-import de.passbutler.common.base.BindableObserver
+import de.passbutler.common.base.Bindable
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.MutableBindable
 import de.passbutler.common.base.Result
@@ -20,39 +20,49 @@ import javax.crypto.Cipher
 
 class RootViewModel : UserViewModelUsingViewModel() {
 
-    val rootScreenState = MutableBindable<RootScreenState?>(null)
-    val lockScreenState = MutableBindable<LockScreenState?>(null)
+    val rootScreenState: Bindable<RootScreenState?>
+        get() = _rootScreenState
 
-    private val loggedInUserResultObserver = LoggedInUserResultObserver()
+    val lockScreenState: Bindable<LockScreenState?>
+        get() = _lockScreenState
+
+    private val _rootScreenState = MutableBindable<RootScreenState?>(null)
+    private val _lockScreenState = MutableBindable<LockScreenState?>(null)
 
     private var lockScreenTimerJob: Job? = null
 
-    override fun onCleared() {
-        unregisterLoggedInUserResultObserver()
-        super.onCleared()
-    }
-
     suspend fun restoreLoggedInUser() {
-        registerLoggedInUserResultObserver()
+        Logger.debug("Try to restore logged-in user")
 
-        val wasRestored = userManager.restoreLoggedInUser()
+        val restoreResult = userViewModelProvidingViewModel.restoreLoggedInUser()
 
-        // If the logged-in user was already restored, trigger the observers manually to initialize the view
-        if (!wasRestored) {
-            loggedInUserResultObserver.invoke(userManager.loggedInUserResult.value)
+        when (restoreResult) {
+            is Success -> {
+                _rootScreenState.value = RootScreenState.LoggedIn
+                _lockScreenState.value = LockScreenState.Locked
+            }
+            is Failure -> {
+                Logger.debug("No logged-in user found")
+                _rootScreenState.value = RootScreenState.LoggedOut
+                _lockScreenState.value = null
+            }
         }
     }
 
-    private fun registerLoggedInUserResultObserver() {
-        // Only notify observer if result was changed triggered by `restoreLoggedInUser()` call
-        userManager.loggedInUserResult.addObserver(viewModelScope, false, loggedInUserResultObserver)
+    suspend fun loginVault(serverUrlString: String?, username: String, masterPassword: String): Result<Unit> {
+        val loginResult = userViewModelProvidingViewModel.loginUser(serverUrlString, username, masterPassword)
+
+        return when (loginResult) {
+            is Success -> {
+                _rootScreenState.value = RootScreenState.LoggedIn
+                _lockScreenState.value = LockScreenState.Unlocked
+                Success(Unit)
+            }
+            is Failure -> Failure(loginResult.throwable)
+        }
     }
 
-    private fun unregisterLoggedInUserResultObserver() {
-        userManager.loggedInUserResult.removeObserver(loggedInUserResultObserver)
-    }
-
-    suspend fun unlockScreenWithPassword(masterPassword: String): Result<Unit> {
+    suspend fun unlockVaultWithPassword(masterPassword: String): Result<Unit> {
         val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
 
         return try {
@@ -62,7 +72,7 @@ class RootViewModel : UserViewModelUsingViewModel() {
                 restoreWebservices(loggedInUserViewModel, masterPassword)
             }
 
-            lockScreenState.value = LockScreenState.Unlocked
+            _lockScreenState.value = LockScreenState.Unlocked
 
             Success(Unit)
         } catch (exception: Exception) {
@@ -98,7 +108,7 @@ class RootViewModel : UserViewModelUsingViewModel() {
         }
     }
 
-    suspend fun unlockScreenWithBiometrics(initializedBiometricUnlockCipher: Cipher): Result<Unit> {
+    suspend fun unlockVaultWithBiometrics(initializedBiometricUnlockCipher: Cipher): Result<Unit> {
         val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
         val encryptedMasterPassword = loggedInUserViewModel.encryptedMasterPassword?.encryptedValue
             ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
@@ -111,11 +121,24 @@ class RootViewModel : UserViewModelUsingViewModel() {
                 restoreWebservices(loggedInUserViewModel, masterPassword)
             }
 
-            lockScreenState.value = LockScreenState.Unlocked
+            _lockScreenState.value = LockScreenState.Unlocked
 
             Success(Unit)
         } catch (exception: Exception) {
             Failure(exception)
+        }
+    }
+
+    suspend fun closeVault(): Result<Unit> {
+        val logoutResult = userViewModelProvidingViewModel.logoutUser()
+
+        return when (logoutResult) {
+            is Success -> {
+                _rootScreenState.value = RootScreenState.LoggedOut
+                _lockScreenState.value = null
+                Success(Unit)
+            }
+            is Failure -> Failure(logoutResult.throwable)
         }
     }
 
@@ -140,7 +163,7 @@ class RootViewModel : UserViewModelUsingViewModel() {
                 Logger.debug("Lock screen")
 
                 // Be sure all UI is hidden behind the lock screen before clear crypto resources
-                lockScreenState.value = LockScreenState.Locked
+                _lockScreenState.value = LockScreenState.Locked
 
                 loggedInUserViewModel?.clearSensibleData()
             }
@@ -162,24 +185,5 @@ class RootViewModel : UserViewModelUsingViewModel() {
     sealed class LockScreenState {
         object Locked : LockScreenState()
         object Unlocked : LockScreenState()
-    }
-
-    private inner class LoggedInUserResultObserver : BindableObserver<LoggedInUserResult?> {
-        override fun invoke(loggedInUserResult: LoggedInUserResult?) {
-            when (loggedInUserResult) {
-                is LoggedInUserResult.LoggedIn.PerformedLogin -> {
-                    rootScreenState.value = RootScreenState.LoggedIn
-                    lockScreenState.value = LockScreenState.Unlocked
-                }
-                is LoggedInUserResult.LoggedIn.RestoredLogin -> {
-                    rootScreenState.value = RootScreenState.LoggedIn
-                    lockScreenState.value = LockScreenState.Locked
-                }
-                is LoggedInUserResult.LoggedOut -> {
-                    rootScreenState.value = RootScreenState.LoggedOut
-                    lockScreenState.value = null
-                }
-            }
-        }
     }
 }
