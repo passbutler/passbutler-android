@@ -6,6 +6,7 @@ import androidx.fragment.app.createViewModelLazy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewModelScope
 import de.passbutler.app.base.AbstractPassButlerApplication
 import de.passbutler.app.crypto.BiometricsProvider
 import de.passbutler.common.UserManager
@@ -13,6 +14,7 @@ import de.passbutler.common.UserViewModel
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
+import kotlinx.coroutines.runBlocking
 import org.tinylog.kotlin.Logger
 
 class UserViewModelProvidingViewModel : ViewModel() {
@@ -25,8 +27,14 @@ class UserViewModelProvidingViewModel : ViewModel() {
 
     private val biometricsProvider = BiometricsProvider()
 
-    // TODO: This must be called asap independently of `RootViewModel`
-    suspend fun restoreLoggedInUser(): Result<Unit> {
+    init {
+        // Need to restored in-place to provide `loggedInUserViewModel` instance immediately
+        runBlocking {
+            restoreLoggedInUser()
+        }
+    }
+
+    private suspend fun restoreLoggedInUser(): Result<Unit> {
         val restoreResult = userManager.restoreLoggedInUser()
 
         return when (restoreResult) {

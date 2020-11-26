@@ -63,9 +63,7 @@ abstract class AbstractRootFragment : BaseFragment() {
         viewModel.lockScreenState.addLifecycleObserver(viewLifecycleOwner, false, lockScreenStateObserver)
 
         // Try to restore logged-in user after the observers were added
-        launch {
-            viewModel.restoreLoggedInUser()
-        }
+        viewModel.restoreLoggedInUser()
 
         return binding.root
     }

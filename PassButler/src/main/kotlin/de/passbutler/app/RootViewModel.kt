@@ -31,21 +31,19 @@ class RootViewModel : UserViewModelUsingViewModel() {
 
     private var lockScreenTimerJob: Job? = null
 
-    suspend fun restoreLoggedInUser() {
+    fun restoreLoggedInUser() {
         Logger.debug("Try to restore logged-in user")
 
-        val restoreResult = userViewModelProvidingViewModel.restoreLoggedInUser()
+        if (userViewModelProvidingViewModel.loggedInUserViewModel != null) {
+            Logger.debug("The logged-in user was restored")
 
-        when (restoreResult) {
-            is Success -> {
-                _rootScreenState.value = RootScreenState.LoggedIn
-                _lockScreenState.value = LockScreenState.Locked
-            }
-            is Failure -> {
-                Logger.debug("No logged-in user found")
-                _rootScreenState.value = RootScreenState.LoggedOut
-                _lockScreenState.value = null
-            }
+            _rootScreenState.value = RootScreenState.LoggedIn
+            _lockScreenState.value = LockScreenState.Locked
+        } else {
+            Logger.debug("No logged-in user found")
+
+            _rootScreenState.value = RootScreenState.LoggedOut
+            _lockScreenState.value = null
         }
     }
 
