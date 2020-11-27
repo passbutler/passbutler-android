@@ -21,6 +21,7 @@ import de.passbutler.app.databinding.ListItemAuthorizationHeaderBinding
 import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.ToolBarFragment
+import de.passbutler.app.ui.visible
 import de.passbutler.common.ItemAuthorizationEditingViewModel
 import de.passbutler.common.ItemAuthorizationsDetailViewModel
 import de.passbutler.common.LoggedInUserViewModelUninitializedException
@@ -55,6 +56,9 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment(), RequestSending {
 
         val adapter = binding?.recyclerViewItemAuthorizations?.adapter as? ItemAuthorizationsAdapter
         adapter?.submitList(newItemAuthorizationEntries)
+
+        val showEmptyScreen = newItemAuthorizationEntries.isEmpty()
+        binding?.layoutEmptyScreen?.root?.visible = showEmptyScreen
     }
 
     override fun getToolBarTitle(): String {

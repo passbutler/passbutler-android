@@ -169,6 +169,9 @@
 
     <string name="itemauthorizations_save_button_title">Übernehmen</string>
 
+    <string name="itemauthorizations_empty_screen_title">Noch keine Benutzer</string>
+    <string name="itemauthorizations_empty_screen_description">Auf Ihrem Pass Butler-Server existieren außer Ihnen noch keine weiteren Benutzer mit denen Sie den Eintrag teilen können.</string>
+
     <string name="itemauthorizations_save_failed_general_title">Speichern hat nicht geklappt</string>
 
     <!-- About -->
