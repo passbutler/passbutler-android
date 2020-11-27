@@ -22,12 +22,12 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/background_mesh_polygons"
             android:tint="?colorBackgroundImageTint"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/background_mesh_polygons"
             tools:ignore="ContentDescription" />
 
         <!-- Use 0dp elevation to avoid different border color when translucent background is used -->

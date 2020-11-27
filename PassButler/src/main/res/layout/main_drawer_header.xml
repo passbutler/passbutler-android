@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!-- Use a theme overlay to be sure the text colors are inverted -->
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -29,7 +30,6 @@
         android:layout_marginStart="?marginM"
         android:layout_marginTop="?marginM"
         android:layout_marginEnd="?marginM"
-        android:tint="?colorOnPrimary"
         app:layout_constraintBottom_toTopOf="@id/textView_drawer_header_title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -37,6 +37,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed"
         app:srcCompat="@drawable/icon_account_circle_24dp"
+        app:tint="?colorOnPrimary"
         tools:ignore="ContentDescription" />
 
     <TextView
