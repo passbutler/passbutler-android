@@ -179,13 +179,13 @@
             app:layout_constraintTop_toBottomOf="@+id/textView_authorizations_description" />
 
         <TextView
-            android:id="@+id/textView_authorizations_footer"
+            android:id="@+id/textView_authorizations_footer_teaser"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="?marginM"
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
-            android:text="@string/itemdetail_authorizations_footer"
+            android:text="@string/itemdetail_authorizations_footer_teaser"
             android:textAppearance="?textAppearanceCaption"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -202,7 +202,7 @@
             android:textAppearance="?textAppearanceHeadline1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textView_authorizations_footer" />
+            app:layout_constraintTop_toBottomOf="@id/textView_authorizations_footer_teaser" />
 
         <include
             android:id="@+id/information_item_modified"

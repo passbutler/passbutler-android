@@ -227,7 +227,7 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
             }
         }
 
-        binding.textViewAuthorizationsFooter.bindVisibility(viewLifecycleOwner, viewModel.isNewItem, viewModel.isItemAuthorizationAllowed) { isNewItem, isItemAuthorizationAllowed ->
+        binding.textViewAuthorizationsFooterTeaser.bindVisibility(viewLifecycleOwner, viewModel.isNewItem, viewModel.isItemAuthorizationAllowed) { isNewItem, isItemAuthorizationAllowed ->
             !isNewItem && isItemAuthorizationAllowed && !viewModel.isItemAuthorizationAvailable
         }
 
