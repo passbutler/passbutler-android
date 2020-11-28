@@ -48,6 +48,8 @@ class RootViewModel : UserViewModelUsingViewModel() {
     }
 
     suspend fun loginVault(serverUrlString: String?, username: String, masterPassword: String): Result<Unit> {
+        Logger.debug("Login current vault")
+
         val loginResult = userViewModelProvidingViewModel.loginUser(serverUrlString, username, masterPassword)
 
         return when (loginResult) {
@@ -61,6 +63,8 @@ class RootViewModel : UserViewModelUsingViewModel() {
     }
 
     suspend fun unlockVaultWithPassword(masterPassword: String): Result<Unit> {
+        Logger.debug("Unlock current vault with password")
+
         val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
 
         return try {
@@ -79,6 +83,8 @@ class RootViewModel : UserViewModelUsingViewModel() {
     }
 
     suspend fun initializeBiometricUnlockCipher(): Result<Cipher> {
+        Logger.debug("Initialize biometric unlock cipher")
+
         val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
         val encryptedMasterPasswordInitializationVector = loggedInUserViewModel.encryptedMasterPassword?.initializationVector
             ?: throw IllegalStateException("The encrypted master key initialization vector was not found, despite biometric unlock was tried!")
@@ -99,6 +105,8 @@ class RootViewModel : UserViewModelUsingViewModel() {
     }
 
     suspend fun unlockVaultWithBiometrics(initializedBiometricUnlockCipher: Cipher): Result<Unit> {
+        Logger.debug("Unlock current vault with biometrics")
+
         val loggedInUserViewModel = loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
         val encryptedMasterPassword = loggedInUserViewModel.encryptedMasterPassword?.encryptedValue
             ?: throw IllegalStateException("The encrypted master key was not found, despite biometric unlock was tried!")
@@ -120,6 +128,8 @@ class RootViewModel : UserViewModelUsingViewModel() {
     }
 
     suspend fun closeVault(): Result<Unit> {
+        Logger.debug("Close current vault")
+
         val logoutResult = userViewModelProvidingViewModel.logoutUser()
 
         return when (logoutResult) {
