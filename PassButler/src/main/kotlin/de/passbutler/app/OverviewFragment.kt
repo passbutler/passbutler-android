@@ -22,7 +22,6 @@ import de.passbutler.app.base.relativeDateTime
 import de.passbutler.app.databinding.FragmentOverviewBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
 import de.passbutler.app.ui.BaseFragment
-import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.VisibilityHideMode
 import de.passbutler.app.ui.showFadeInOutAnimation
@@ -32,6 +31,7 @@ import de.passbutler.common.ItemViewModel
 import de.passbutler.common.Webservices
 import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.database.models.UserType
+import de.passbutler.common.ui.ListItemIdentifiable
 import de.passbutler.common.ui.RequestSending
 import de.passbutler.common.ui.launchRequestSending
 import kotlinx.coroutines.Job

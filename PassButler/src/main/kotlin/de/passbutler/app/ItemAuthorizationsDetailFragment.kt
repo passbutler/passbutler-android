@@ -18,7 +18,6 @@ import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.databinding.FragmentItemAuthorizationsDetailBinding
 import de.passbutler.app.databinding.ListItemAuthorizationEntryBinding
 import de.passbutler.app.databinding.ListItemAuthorizationHeaderBinding
-import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.visible
@@ -27,6 +26,7 @@ import de.passbutler.common.ItemAuthorizationsDetailViewModel
 import de.passbutler.common.LoggedInUserViewModelUninitializedException
 import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.addAllIfNotNull
+import de.passbutler.common.ui.ListItemIdentifiable
 import de.passbutler.common.ui.RequestSending
 import de.passbutler.common.ui.launchRequestSending
 import kotlinx.coroutines.launch

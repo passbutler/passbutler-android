@@ -2,10 +2,7 @@ package de.passbutler.app.ui
 
 import android.annotation.SuppressLint
 import androidx.recyclerview.widget.DiffUtil
-
-interface ListItemIdentifiable {
-    val listItemId: String
-}
+import de.passbutler.common.ui.ListItemIdentifiable
 
 class ListItemIdentifiableDiffCallback : DiffUtil.ItemCallback<ListItemIdentifiable>() {
     override fun areItemsTheSame(oldItem: ListItemIdentifiable, newItem: ListItemIdentifiable): Boolean {
