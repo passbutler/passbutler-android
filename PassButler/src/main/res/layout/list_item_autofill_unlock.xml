@@ -2,7 +2,6 @@
 <!-- Do not use theme attributes or views not listed in `RemoteViews` because it won't work! -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -21,11 +20,12 @@
         android:paddingBottom="10dp"
         tools:ignore="UseCompoundDrawables">
 
+        <!-- Do not use `app:srcCompat` because it won't work -->
         <ImageView
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_marginStart="@dimen/marginM"
-            app:srcCompat="@drawable/logo_elevated"
+            android:src="@drawable/logo_elevated"
             tools:ignore="ContentDescription" />
 
         <TextView
