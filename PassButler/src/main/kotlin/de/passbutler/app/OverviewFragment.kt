@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import de.passbutler.app.base.addLifecycleObserver
-import de.passbutler.app.base.relativeDateTime
+import de.passbutler.app.base.createRelativeDateFormattingTranslations
 import de.passbutler.app.databinding.FragmentOverviewBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
 import de.passbutler.app.ui.BaseFragment
@@ -30,6 +30,7 @@ import de.passbutler.app.ui.visible
 import de.passbutler.common.ItemViewModel
 import de.passbutler.common.Webservices
 import de.passbutler.common.base.BindableObserver
+import de.passbutler.common.base.formattedRelativeDateTime
 import de.passbutler.common.database.models.UserType
 import de.passbutler.common.ui.ListItemIdentifiable
 import de.passbutler.common.ui.RequestSending
@@ -147,7 +148,8 @@ class OverviewFragment : BaseFragment(), RequestSending {
         binding?.toolbar?.apply {
             subtitle = if (viewModel.loggedInUserViewModel?.userType == UserType.REMOTE) {
                 val newDate = viewModel.loggedInUserViewModel?.lastSuccessfulSyncDate
-                val formattedLastSuccessfulSync = newDate?.relativeDateTime(context) ?: getString(R.string.overview_last_sync_never)
+                val relativeDateFormattingTranslations = createRelativeDateFormattingTranslations(requireContext())
+                val formattedLastSuccessfulSync = newDate?.formattedRelativeDateTime(relativeDateFormattingTranslations) ?: getString(R.string.overview_last_sync_never)
                 getString(R.string.overview_last_sync_subtitle, formattedLastSuccessfulSync)
             } else {
                 null
