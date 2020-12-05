@@ -19,10 +19,18 @@
 
     <color name="transparent">#00000000</color>
 
-    <color name="whiteMedium">#FAFAFA</color>
-    <color name="whiteMediumTransparent">#80FAFAFA</color>
+    <color name="grey00">#FAFAFA</color>
+    <color name="grey10">#E1E1E1</color>
+    <color name="grey20">#C8C8C8</color>
+    <color name="grey30">#AFAFAF</color>
+    <color name="grey40">#969696</color>
+    <color name="grey50">#7D7D7D</color>
+    <color name="grey60">#646464</color>
+    <color name="grey70">#4B4B4B</color>
+    <color name="grey80">#323232</color>
+    <color name="grey90">#191919</color>
 
-    <color name="greyMedium">#313131</color>
-    <color name="greyMediumTransparent">#80313131</color>
+    <color name="grey00Transparent">#80FAFAFA</color>
+    <color name="grey80Transparent">#80323232</color>
 
 </resources>
