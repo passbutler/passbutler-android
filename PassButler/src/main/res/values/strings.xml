@@ -6,25 +6,25 @@
     <string name="general_okay">OK</string>
     <string name="general_cancel">Abbrechen</string>
 
-    <string name="general_since">vor %1$s %2$s</string>
+    <string name="general_relative_date_since">vor %1$s %2$s</string>
 
-    <string name="general_unit_second_one">Sekunde</string>
-    <string name="general_unit_second_other">Sekunden</string>
+    <string name="general_relative_date_unit_second_one">Sekunde</string>
+    <string name="general_relative_date_unit_second_other">Sekunden</string>
 
-    <string name="general_unit_minute_one">Minute</string>
-    <string name="general_unit_minute_other">Minuten</string>
+    <string name="general_relative_date_unit_minute_one">Minute</string>
+    <string name="general_relative_date_unit_minute_other">Minuten</string>
 
-    <string name="general_unit_hour_one">Stunde</string>
-    <string name="general_unit_hour_other">Stunden</string>
+    <string name="general_relative_date_unit_hour_one">Stunde</string>
+    <string name="general_relative_date_unit_hour_other">Stunden</string>
 
-    <string name="general_unit_day_one">Tag</string>
-    <string name="general_unit_day_other">Tage</string>
+    <string name="general_relative_date_unit_day_one">Tag</string>
+    <string name="general_relative_date_unit_day_other">Tagen</string>
 
-    <string name="general_unit_month_one">Monat</string>
-    <string name="general_unit_month_other">Monate</string>
+    <string name="general_relative_date_unit_month_one">Monat</string>
+    <string name="general_relative_date_unit_month_other">Monaten</string>
 
-    <string name="general_unit_year_one">Jahr</string>
-    <string name="general_unit_year_other">Jahre</string>
+    <string name="general_relative_date_unit_year_one">Jahr</string>
+    <string name="general_relative_date_unit_year_other">Jahren</string>
 
     <!-- Autofill -->
 
