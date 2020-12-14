@@ -206,10 +206,10 @@
 
     <string name="settings_title">Einstellungen</string>
 
+    <string name="settings_category_security_title">Sicherheit</string>
+
     <string name="settings_hide_passwords_setting_title">Passwörter ausblenden</string>
     <string name="settings_hide_passwords_setting_summary">Passwörter standardmäßig ausblenden, damit andere Personen diese nicht sehen</string>
-
-    <string name="settings_category_security_title">Sicherheit</string>
 
     <string name="settings_automatic_lock_timeout_setting_title">Automatische Sperre</string>
     <string name="settings_automatic_lock_timeout_setting_summary">Zeitspanne nach der Pass Butler im Hintergrund automatisch gesperrt wird. Diese Einstellung hat keinen Einfluss auf den AutoFill-Dienst!</string>
