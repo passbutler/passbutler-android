@@ -8,6 +8,10 @@ import com.google.android.material.textfield.TextInputEditText
 import de.passbutler.common.base.Bindable
 import de.passbutler.common.base.MutableBindable
 
+/**
+ * Visibility binders
+ */
+
 fun <T> View.bindVisibility(lifecycleOwner: LifecycleOwner, bindable: Bindable<T>, block: (T) -> Boolean) {
     bindable.addLifecycleObserver(lifecycleOwner, true) { newValue ->
         visible = block(newValue)
