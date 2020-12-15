@@ -5,7 +5,6 @@ import android.widget.TextView
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.material.textfield.TextInputEditText
-import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.common.base.Bindable
 import de.passbutler.common.base.MutableBindable
 

@@ -10,10 +10,10 @@ import de.passbutler.app.ItemEntry
 import de.passbutler.app.ItemEntryAdapter
 import de.passbutler.app.R
 import de.passbutler.app.UserViewModelProvidingViewModel
-import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.databinding.FragmentAutofillSelectionBinding
 import de.passbutler.app.sorted
 import de.passbutler.app.ui.BaseFragment
+import de.passbutler.app.ui.addLifecycleObserver
 import de.passbutler.app.ui.visible
 import de.passbutler.common.ItemViewModel
 import de.passbutler.common.base.BindableObserver

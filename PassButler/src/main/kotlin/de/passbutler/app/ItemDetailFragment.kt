@@ -13,12 +13,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.textfield.TextInputLayout
-import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.databinding.FragmentItemdetailBinding
 import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ToolBarFragment
+import de.passbutler.app.ui.addLifecycleObserver
 import de.passbutler.app.ui.bindEnabled
 import de.passbutler.app.ui.bindInput
 import de.passbutler.app.ui.bindTextAndVisibility

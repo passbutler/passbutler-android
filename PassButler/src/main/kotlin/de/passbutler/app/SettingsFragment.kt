@@ -18,11 +18,11 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceDataStore
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
-import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.crypto.BiometricAuthenticationCallbackExecutor
 import de.passbutler.app.databinding.FragmentSettingsBinding
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.UIPresenter
+import de.passbutler.app.ui.addLifecycleObserver
 import de.passbutler.app.ui.showEditTextDialog
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.base.Failure
