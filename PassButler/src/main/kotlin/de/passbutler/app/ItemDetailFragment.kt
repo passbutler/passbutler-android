@@ -25,6 +25,7 @@ import de.passbutler.app.ui.bindTextAndVisibility
 import de.passbutler.app.ui.bindVisibility
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.ItemEditingViewModel
+import de.passbutler.common.ItemEditingViewModel.Companion.NOTES_MAXIMUM_CHARACTERS
 import de.passbutler.common.LoggedInUserViewModelUninitializedException
 import de.passbutler.common.base.DependentValueGetterBindable
 import de.passbutler.common.base.formattedDateTime
@@ -195,8 +196,7 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
         binding.textInputLayoutUrl.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
         binding.textInputEditTextUrl.bindInput(viewModel.url)
 
-        binding.textInputLayoutNotes.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
-        binding.textInputEditTextNotes.bindInput(viewModel.notes)
+        setupNotesField(binding)
     }
 
     private fun setupPasswordField(binding: FragmentItemdetailBinding) {
@@ -211,6 +211,14 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
             binding.textInputEditTextPassword.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
             binding.textInputLayoutPassword.endIconMode = TextInputLayout.END_ICON_NONE
         }
+    }
+
+    private fun setupNotesField(binding: FragmentItemdetailBinding) {
+        binding.textInputLayoutNotes.isCounterEnabled = true
+        binding.textInputLayoutNotes.counterMaxLength = NOTES_MAXIMUM_CHARACTERS
+        binding.textInputLayoutNotes.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
+
+        binding.textInputEditTextNotes.bindInput(viewModel.notes)
     }
 
     private fun setupItemAuthorizationsSection(binding: FragmentItemdetailBinding) {
