@@ -3,7 +3,6 @@ package de.passbutler.app
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -233,9 +232,9 @@ class OverviewFragment : BaseFragment(), RequestSending {
             while (isActive) {
                 Logger.debug("Update relative time in toolbar subtitle")
 
-                // Update relative time in toolbar every minute
+                // Update relative time in toolbar periodically
                 updateToolbarSubtitle()
-                delay(DateUtils.MINUTE_IN_MILLIS)
+                delay(10_000)
             }
         }
     }
