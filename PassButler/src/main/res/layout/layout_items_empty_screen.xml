@@ -20,8 +20,9 @@
         android:id="@+id/textView_empty_screen_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="?marginL"
-        android:layout_marginEnd="?marginL"
+        android:layout_marginStart="?marginM"
+        android:layout_marginEnd="?marginM"
+        android:layout_marginTop="?marginS"
         android:gravity="center_horizontal"
         android:text="@string/overview_empty_screen_title"
         android:textAppearance="?textAppearanceHeadline1" />
@@ -30,9 +31,9 @@
         android:id="@+id/textView_empty_screen_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="?marginL"
+        android:layout_marginStart="?marginM"
         android:layout_marginTop="?marginS"
-        android:layout_marginEnd="?marginL"
+        android:layout_marginEnd="?marginM"
         android:gravity="center_horizontal"
         android:text="@string/overview_empty_screen_description"
         android:textAppearance="?textAppearanceBody1" />
