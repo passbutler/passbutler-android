@@ -11,7 +11,6 @@ import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
-import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
@@ -273,7 +272,7 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
         }
 
         private fun addHidePasswordsSetting() {
-            preferenceScreen.addPreference(CheckBoxPreference(context).apply {
+            preferenceScreen.addPreference(SwitchPreferenceCompat(context).apply {
                 key = SettingKey.HIDE_PASSWORDS_ENABLED.name
                 title = getString(R.string.settings_hide_passwords_setting_title)
                 summary = getString(R.string.settings_hide_passwords_setting_summary)
