@@ -10,8 +10,8 @@ import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ToolBarFragment
+import de.passbutler.app.ui.bindVisibility
 import de.passbutler.app.ui.validateForm
-import de.passbutler.app.ui.visible
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.UpdateUserFailedException
 import de.passbutler.common.ui.RequestSending
@@ -50,7 +50,9 @@ class ChangeMasterPasswordFragment : ToolBarFragment(), RequestSending {
     }
 
     private fun setupTextViews(binding: FragmentChangeMasterPasswordBinding) {
-        binding.textViewSubheaderDisableBiometricHint.visible = viewModel.loggedInUserViewModel?.biometricUnlockEnabled?.value ?: false
+        viewModel.loggedInUserViewModel?.biometricUnlockEnabled?.let { biometricUnlockEnabledBindable ->
+            binding.textViewSubheaderDisableBiometricHint.bindVisibility(viewLifecycleOwner, biometricUnlockEnabledBindable)
+        }
     }
 
     private fun setupChangeButton(binding: FragmentChangeMasterPasswordBinding) {
