@@ -104,7 +104,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
 
     private fun setupToolBar(binding: FragmentOverviewBinding) {
         binding.toolbar.apply {
-            title = getString(R.string.app_name)
+            title = getString(R.string.general_app_name)
         }
     }
 

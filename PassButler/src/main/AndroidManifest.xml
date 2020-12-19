@@ -10,7 +10,7 @@
         android:name=".PassButlerApplication"
         android:allowBackup="false"
         android:icon="@mipmap/icon_launcher"
-        android:label="@string/app_name"
+        android:label="@string/general_app_name"
         android:roundIcon="@mipmap/icon_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.PassButler.DayNight"
@@ -18,7 +18,7 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name="de.passbutler.app.MainActivity"
-            android:label="@string/app_name"
+            android:label="@string/general_app_name"
             android:taskAffinity=".MainActivity"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>

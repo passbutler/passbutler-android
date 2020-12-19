@@ -1,7 +1,8 @@
 <resources>
-    <string name="app_name">Pass Butler</string>
 
     <!-- General -->
+
+    <string name="general_app_name">Pass Butler</string>
 
     <string name="general_okay">OK</string>
     <string name="general_cancel">Abbrechen</string>
