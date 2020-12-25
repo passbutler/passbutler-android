@@ -222,6 +222,8 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
     }
 
     private fun setupItemAuthorizationsSection(binding: FragmentItemdetailBinding) {
+        binding.textViewAuthorizationsDescription.bindTextAndVisibility(viewLifecycleOwner, itemAuthorizationDescription)
+
         binding.buttonManageAuthorizations.isEnabled = viewModel.isItemAuthorizationAvailable
         binding.buttonManageAuthorizations.bindVisibility(viewLifecycleOwner, viewModel.isNewItem, viewModel.isItemAuthorizationAllowed) { isNewItem, isItemAuthorizationAllowed ->
             !isNewItem && isItemAuthorizationAllowed
@@ -238,8 +240,6 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
         binding.textViewAuthorizationsFooterTeaser.bindVisibility(viewLifecycleOwner, viewModel.isNewItem, viewModel.isItemAuthorizationAllowed) { isNewItem, isItemAuthorizationAllowed ->
             !isNewItem && isItemAuthorizationAllowed && !viewModel.isItemAuthorizationAvailable
         }
-
-        binding.textViewAuthorizationsDescription.bindTextAndVisibility(viewLifecycleOwner, itemAuthorizationDescription)
     }
 
     private fun setupInformationView(binding: FragmentItemdetailBinding) {
