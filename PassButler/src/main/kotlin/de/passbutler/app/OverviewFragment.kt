@@ -384,11 +384,11 @@ class ItemEntryAdapter(private val entryClickedCallback: (ItemEntry) -> Unit) : 
     }
 }
 
-class ItemEntry(val itemViewModel: ItemViewModel) : ListItemIdentifiable {
+class ItemEntry(val itemViewModel: ItemViewModel) : ListItemIdentifiable, Comparable<ItemEntry> {
     override val listItemId: String
         get() = itemViewModel.id
-}
 
-fun List<ItemEntry>.sorted(): List<ItemEntry> {
-    return sortedBy { it.itemViewModel.title }
+    override fun compareTo(other: ItemEntry): Int {
+        return compareValuesBy(this, other, { it.itemViewModel.title })
+    }
 }

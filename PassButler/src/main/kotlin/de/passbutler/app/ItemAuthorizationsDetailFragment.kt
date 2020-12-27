@@ -246,7 +246,7 @@ class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView
     }
 }
 
-class ItemAuthorizationEntry(val itemAuthorizationEditingViewModel: ItemAuthorizationEditingViewModel) : ListItemIdentifiable {
+class ItemAuthorizationEntry(val itemAuthorizationEditingViewModel: ItemAuthorizationEditingViewModel) : ListItemIdentifiable, Comparable<ItemAuthorizationEntry> {
     override val listItemId: String
         get() = when (itemAuthorizationModel) {
             is ItemAuthorizationEditingViewModel.ItemAuthorizationModel.Provisional -> itemAuthorizationModel.itemAuthorizationId
@@ -254,10 +254,10 @@ class ItemAuthorizationEntry(val itemAuthorizationEditingViewModel: ItemAuthoriz
         }
 
     private val itemAuthorizationModel = itemAuthorizationEditingViewModel.itemAuthorizationModel
-}
 
-fun List<ItemAuthorizationEntry>.sorted(): List<ItemAuthorizationEntry> {
-    return sortedBy { it.itemAuthorizationEditingViewModel.username }
+    override fun compareTo(other: ItemAuthorizationEntry): Int {
+        return compareValuesBy(this, other, { it.itemAuthorizationEditingViewModel.username })
+    }
 }
 
 class ItemAuthorizationsDetailViewModelFactory(
