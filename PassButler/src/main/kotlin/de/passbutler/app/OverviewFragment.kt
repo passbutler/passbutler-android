@@ -60,7 +60,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
         val newItemViewModels = newUnfilteredItemViewModels.filter { !it.deleted }
         Logger.debug("newItemViewModels.size = ${newItemViewModels.size}")
 
-        val adapter = binding?.layoutOverviewContent?.recyclerViewItemList?.adapter as? ItemEntryAdapter
+        val adapter = binding?.layoutOverviewContent?.recyclerViewItems?.adapter as? ItemEntryAdapter
 
         val newItemEntries = newItemViewModels
             .map { ItemEntry(it) }
@@ -133,7 +133,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
     }
 
     private fun setupEntryList(binding: FragmentOverviewBinding) {
-        binding.layoutOverviewContent.recyclerViewItemList.apply {
+        binding.layoutOverviewContent.recyclerViewItems.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = ItemEntryAdapter { entry ->
                 showFragment(ItemDetailFragment.newInstance(entry.itemViewModel.id))
