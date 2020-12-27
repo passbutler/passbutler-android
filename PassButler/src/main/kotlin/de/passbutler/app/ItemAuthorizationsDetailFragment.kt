@@ -100,6 +100,12 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment(), RequestSending {
             toolbarMenuSaveItem?.isEnabled = it
         }
 
+        viewModel.itemAuthorizationEditingViewModels.addLifecycleObserver(viewLifecycleOwner, false, itemAuthorizationsObserver)
+
+        launch {
+            viewModel.initializeItemAuthorizationEditingViewModels()
+        }
+
         return binding?.root
     }
 
@@ -112,12 +118,6 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment(), RequestSending {
 
             val dividerItemDecoration = DividerItemDecoration(context, linearLayoutManager.orientation)
             addItemDecoration(dividerItemDecoration)
-        }
-
-        viewModel.itemAuthorizationEditingViewModels.addLifecycleObserver(viewLifecycleOwner, false, itemAuthorizationsObserver)
-
-        launch {
-            viewModel.initializeItemAuthorizationEditingViewModels()
         }
     }
 
