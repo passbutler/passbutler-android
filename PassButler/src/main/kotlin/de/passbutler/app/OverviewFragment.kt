@@ -304,6 +304,10 @@ class OverviewFragment : BaseFragment(), RequestSending {
                     showFragmentModally(SettingsFragment.newInstance())
                     true
                 }
+                R.id.drawer_menu_item_recycle_bin -> {
+                    showFragmentModally(RecycleBinFragment.newInstance())
+                    true
+                }
                 R.id.drawer_menu_item_about -> {
                     showFragmentModally(AboutFragment.newInstance())
                     true
