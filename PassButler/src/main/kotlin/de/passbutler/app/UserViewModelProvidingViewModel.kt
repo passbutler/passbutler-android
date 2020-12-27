@@ -6,7 +6,6 @@ import androidx.fragment.app.createViewModelLazy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.viewModelScope
 import de.passbutler.app.base.AbstractPassButlerApplication
 import de.passbutler.app.crypto.BiometricsProvider
 import de.passbutler.common.UserManager
