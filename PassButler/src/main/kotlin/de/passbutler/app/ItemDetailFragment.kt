@@ -24,7 +24,6 @@ import de.passbutler.app.ui.bindInput
 import de.passbutler.app.ui.bindTextAndVisibility
 import de.passbutler.app.ui.bindVisibility
 import de.passbutler.app.ui.validateForm
-import de.passbutler.common.ItemEditingViewModel
 import de.passbutler.common.ItemEditingViewModel.Companion.NOTES_MAXIMUM_CHARACTERS
 import de.passbutler.common.LoggedInUserViewModelUninitializedException
 import de.passbutler.common.base.DependentValueGetterBindable
@@ -330,8 +329,6 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
         }
     }
 }
-
-class ItemEditingViewModelWrapper(val itemEditingViewModel: ItemEditingViewModel) : ViewModel()
 
 class ItemEditingViewModelFactory(
     private val userViewModelProvidingViewModel: UserViewModelProvidingViewModel,

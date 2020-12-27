@@ -250,8 +250,6 @@ fun List<ItemAuthorizationEntry>.sorted(): List<ItemAuthorizationEntry> {
     return sortedBy { it.itemAuthorizationEditingViewModel.username }
 }
 
-class ItemAuthorizationsDetailViewModelWrapper(val itemAuthorizationsDetailViewModel: ItemAuthorizationsDetailViewModel) : ViewModel()
-
 class ItemAuthorizationsDetailViewModelFactory(
     private val userViewModelProvidingViewModel: UserViewModelProvidingViewModel,
     private val itemId: String
