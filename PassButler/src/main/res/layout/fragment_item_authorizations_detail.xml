@@ -19,7 +19,7 @@
 
     <include
         android:id="@+id/layout_empty_screen"
-        layout="@layout/layout_item_authorizations_empty_screen"
+        layout="@layout/layout_empty_screen"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"

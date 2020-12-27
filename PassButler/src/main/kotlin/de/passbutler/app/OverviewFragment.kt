@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -82,6 +83,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
             setupToolBar(binding)
             setupDrawerLayout(binding)
             setupEntryList(binding)
+            setupEmptyScreen(binding)
         }
 
         val loggedInUserViewModel = viewModel.loggedInUserViewModel
@@ -140,6 +142,14 @@ class OverviewFragment : BaseFragment(), RequestSending {
 
         binding.layoutOverviewContent.floatingActionButtonAddEntry.setOnClickListener {
             showFragment(ItemDetailFragment.newInstance(null))
+        }
+    }
+
+    private fun setupEmptyScreen(binding: FragmentOverviewBinding) {
+        binding.layoutOverviewContent.layoutEmptyScreen.apply {
+            imageViewIcon.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.icon_list_24dp, root.context.theme))
+            textViewTitle.text = getString(R.string.overview_empty_screen_title)
+            textViewDescription.text = getString(R.string.overview_empty_screen_description)
         }
     }
 

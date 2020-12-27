@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import de.passbutler.app.ItemEntry
@@ -65,6 +66,7 @@ class AutofillSelectionFragment : BaseFragment() {
         binding = FragmentAutofillSelectionBinding.inflate(inflater, container, false).also { binding ->
             setupToolBar(binding)
             setupEntryList(binding)
+            setupEmptyScreen(binding)
         }
 
         loggedInUserViewModel?.itemViewModels?.addLifecycleObserver(viewLifecycleOwner, true, itemViewModelsObserver)
@@ -90,6 +92,14 @@ class AutofillSelectionFragment : BaseFragment() {
             adapter = ItemEntryAdapter { entry ->
                 autofillMainActivity.itemWasSelected(listOf(entry.itemViewModel))
             }
+        }
+    }
+
+    private fun setupEmptyScreen(binding: FragmentAutofillSelectionBinding) {
+        binding.layoutEmptyScreen.apply {
+            imageViewIcon.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.icon_list_24dp, root.context.theme))
+            textViewTitle.text = getString(R.string.overview_empty_screen_title)
+            textViewDescription.text = getString(R.string.overview_empty_screen_description)
         }
     }
 

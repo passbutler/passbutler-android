@@ -6,6 +6,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
@@ -92,6 +93,7 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment(), RequestSending {
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentItemAuthorizationsDetailBinding.inflate(inflater, container, false).also { binding ->
             setupItemAuthorizationsList(binding)
+            setupEmptyScreen(binding)
         }
 
         viewModel.itemAuthorizationEditingViewModelsModified.addLifecycleObserver(viewLifecycleOwner, true) {
@@ -116,6 +118,14 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment(), RequestSending {
 
         launch {
             viewModel.initializeItemAuthorizationEditingViewModels()
+        }
+    }
+
+    private fun setupEmptyScreen(binding: FragmentItemAuthorizationsDetailBinding) {
+        binding.layoutEmptyScreen.apply {
+            imageViewIcon.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.icon_account_circle_24dp, root.context.theme))
+            textViewTitle.text = getString(R.string.itemauthorizations_empty_screen_title)
+            textViewDescription.text = getString(R.string.itemauthorizations_empty_screen_description)
         }
     }
 
