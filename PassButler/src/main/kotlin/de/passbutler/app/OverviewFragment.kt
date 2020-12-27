@@ -1,9 +1,12 @@
 package de.passbutler.app
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.ContextMenu
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +27,7 @@ import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.VisibilityHideMode
 import de.passbutler.app.ui.addLifecycleObserver
+import de.passbutler.app.ui.copyToClipboard
 import de.passbutler.app.ui.showFadeInOutAnimation
 import de.passbutler.app.ui.showFragmentModally
 import de.passbutler.app.ui.visible
@@ -135,13 +139,29 @@ class OverviewFragment : BaseFragment(), RequestSending {
     private fun setupEntryList(binding: FragmentOverviewBinding) {
         binding.layoutOverviewContent.recyclerViewItems.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = ItemEntryAdapter { entry ->
-                showFragment(ItemDetailFragment.newInstance(entry.itemViewModel.id))
-            }
+            adapter = ItemEntryAdapter(
+                entryClickedCallback = { entry -> showFragment(ItemDetailFragment.newInstance(entry.itemViewModel.id)) },
+                contextMenuItemClickedCallback = { entry, contextMenuItem ->
+                    when (contextMenuItem) {
+                        ItemEntryContextMenuItem.COPY_USERNAME -> copyItemInformationToClipboard(context, entry.itemViewModel.itemData?.username)
+                        ItemEntryContextMenuItem.COPY_PASSWORD -> copyItemInformationToClipboard(context, entry.itemViewModel.itemData?.password)
+                        ItemEntryContextMenuItem.COPY_URL -> copyItemInformationToClipboard(context, entry.itemViewModel.itemData?.url)
+                    }
+                }
+            )
         }
 
         binding.layoutOverviewContent.floatingActionButtonAddEntry.setOnClickListener {
             showFragment(ItemDetailFragment.newInstance(null))
+        }
+    }
+
+    private fun copyItemInformationToClipboard(context: Context, itemInformation: String?) {
+        if (itemInformation?.isNotBlank() == true) {
+            context.copyToClipboard(itemInformation)
+            showInformation(getString(R.string.overview_item_information_clipboard_successful_message))
+        } else {
+            showError(getString(R.string.overview_item_information_clipboard_failed_empty_title))
         }
     }
 
@@ -350,11 +370,14 @@ class OverviewFragment : BaseFragment(), RequestSending {
     }
 }
 
-class ItemEntryAdapter(private val entryClickedCallback: (ItemEntry) -> Unit) : ListAdapter<ListItemIdentifiable, ItemEntryAdapter.ItemEntryViewHolder>(ListItemIdentifiableDiffCallback()) {
+class ItemEntryAdapter(
+    private val entryClickedCallback: (ItemEntry) -> Unit,
+    private val contextMenuItemClickedCallback: ((ItemEntry, ItemEntryContextMenuItem) -> Unit)? = null
+) : ListAdapter<ListItemIdentifiable, ItemEntryAdapter.ItemEntryViewHolder>(ListItemIdentifiableDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemEntryViewHolder {
         val binding = ListItemEntryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ItemEntryViewHolder(binding, entryClickedCallback)
+        return ItemEntryViewHolder(binding, entryClickedCallback, contextMenuItemClickedCallback)
     }
 
     override fun onBindViewHolder(holder: ItemEntryViewHolder, position: Int) {
@@ -368,7 +391,8 @@ class ItemEntryAdapter(private val entryClickedCallback: (ItemEntry) -> Unit) : 
 
     class ItemEntryViewHolder(
         private val binding: ListItemEntryBinding,
-        private val entryClickedCallback: (ItemEntry) -> Unit
+        private val entryClickedCallback: (ItemEntry) -> Unit,
+        private val contextMenuItemClickedCallback: ((ItemEntry, ItemEntryContextMenuItem) -> Unit)? = null
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(entry: ItemEntry) {
@@ -379,6 +403,25 @@ class ItemEntryAdapter(private val entryClickedCallback: (ItemEntry) -> Unit) : 
                 root.setOnClickListener {
                     entryClickedCallback.invoke(entry)
                 }
+
+                if (contextMenuItemClickedCallback != null) {
+                    val clickedCallback: (ItemEntryContextMenuItem) -> Unit = { contextMenuItem ->
+                        contextMenuItemClickedCallback.invoke(entry, contextMenuItem)
+                    }
+
+                    root.setOnCreateContextMenuListener { menu, _, _ ->
+                        menu.add(ItemEntryContextMenuItem.COPY_USERNAME, clickedCallback)
+                        menu.add(ItemEntryContextMenuItem.COPY_PASSWORD, clickedCallback)
+                        menu.add(ItemEntryContextMenuItem.COPY_URL, clickedCallback)
+                    }
+                }
+            }
+        }
+
+        private fun ContextMenu.add(contextMenuItem: ItemEntryContextMenuItem, clickedCallback: (ItemEntryContextMenuItem) -> Unit) {
+            add(Menu.NONE, contextMenuItem.ordinal, contextMenuItem.ordinal, contextMenuItem.titleResourceId).setOnMenuItemClickListener {
+                clickedCallback.invoke(contextMenuItem)
+                true
             }
         }
     }
@@ -391,4 +434,10 @@ class ItemEntry(val itemViewModel: ItemViewModel) : ListItemIdentifiable, Compar
     override fun compareTo(other: ItemEntry): Int {
         return compareValuesBy(this, other, { it.itemViewModel.title })
     }
+}
+
+enum class ItemEntryContextMenuItem(val titleResourceId: Int) {
+    COPY_USERNAME(R.string.overview_item_context_menu_copy_username),
+    COPY_PASSWORD(R.string.overview_item_context_menu_copy_password),
+    COPY_URL(R.string.overview_item_context_menu_copy_url),
 }

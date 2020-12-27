@@ -2,6 +2,8 @@ package de.passbutler.app.ui
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
@@ -35,6 +37,15 @@ fun Context.resolveThemeAttributeId(@AttrRes attribute: Int): Int {
     theme.resolveAttribute(attribute, typedValue, true)
 
     return typedValue.resourceId
+}
+
+fun Context.copyToClipboard(value: String) {
+    // The value seems barely used, so ignore it for now
+    val description = ""
+
+    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clipData = ClipData.newPlainText(description, value)
+    clipboard.setPrimaryClip(clipData)
 }
 
 /**

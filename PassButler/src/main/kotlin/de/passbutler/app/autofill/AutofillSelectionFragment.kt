@@ -88,9 +88,9 @@ class AutofillSelectionFragment : BaseFragment() {
     private fun setupEntryList(binding: FragmentAutofillSelectionBinding) {
         binding.recyclerViewItems.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = ItemEntryAdapter { entry ->
-                autofillMainActivity.itemWasSelected(listOf(entry.itemViewModel))
-            }
+            adapter = ItemEntryAdapter(
+                entryClickedCallback = { entry -> autofillMainActivity.itemWasSelected(listOf(entry.itemViewModel)) }
+            )
         }
     }
 
