@@ -41,7 +41,7 @@ class StructureParser(private val assistStructure: AssistStructure) {
     }
 
     private fun parseViewNode(viewNode: AssistStructure.ViewNode, internalResult: InternalResult): Boolean {
-        viewNode.webDomain?.let {
+        viewNode.webDomain?.takeIf { it.isNotEmpty() }?.let {
             internalResult.webDomain = it
             Logger.debug("Received web domain '$it'.")
         }

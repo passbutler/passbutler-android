@@ -57,7 +57,7 @@ class AutofillSelectionFragment : BaseFragment() {
     private fun List<ItemViewModel>.filterAutoSelectRelevantItems(): List<ItemViewModel> {
         return filter {
             val autofillTarget = structureParserResult.webDomain ?: structureParserResult.applicationId
-            autofillTarget != null && it.unlockedItemData.url.contains(autofillTarget)
+            autofillTarget?.isNotEmpty() == true && it.unlockedItemData.url.contains(autofillTarget)
         }
     }
 
