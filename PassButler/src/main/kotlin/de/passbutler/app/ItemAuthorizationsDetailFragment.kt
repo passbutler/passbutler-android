@@ -129,6 +129,11 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment(), RequestSending {
         }
     }
 
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
+    }
+
     companion object {
         private const val ARGUMENT_ITEM_ID = "ARGUMENT_ITEM_ID"
 

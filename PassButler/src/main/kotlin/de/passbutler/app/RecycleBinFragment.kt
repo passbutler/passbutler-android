@@ -87,6 +87,11 @@ class RecycleBinFragment : ToolBarFragment(), RequestSending {
         }
     }
 
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
+    }
+
     companion object {
         fun newInstance() = RecycleBinFragment()
     }

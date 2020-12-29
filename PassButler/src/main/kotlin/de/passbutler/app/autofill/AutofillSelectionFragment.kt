@@ -104,7 +104,6 @@ class AutofillSelectionFragment : BaseFragment() {
 
     override fun onDestroyView() {
         binding = null
-
         super.onDestroyView()
     }
 
