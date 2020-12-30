@@ -4,20 +4,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import de.passbutler.app.databinding.FragmentRecycleBinBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
+import de.passbutler.app.ui.FilterableListAdapter
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.addLifecycleObserver
+import de.passbutler.app.ui.setupWithFilterableAdapter
 import de.passbutler.app.ui.visible
 import de.passbutler.common.ItemViewModel
 import de.passbutler.common.base.BindableObserver
-import de.passbutler.common.ui.ListItemIdentifiable
 import de.passbutler.common.ui.RequestSending
 import de.passbutler.common.ui.launchRequestSending
 import org.tinylog.kotlin.Logger
@@ -27,6 +29,7 @@ class RecycleBinFragment : ToolBarFragment(), RequestSending {
     private val viewModel by userViewModelUsingViewModels<RecycleBinViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
+    private var toolbarMenuSearchView: SearchView? = null
     private var binding: FragmentRecycleBinBinding? = null
 
     private val itemViewModelsObserver: BindableObserver<List<ItemViewModel>> = { newUnfilteredItemViewModels ->
@@ -48,6 +51,14 @@ class RecycleBinFragment : ToolBarFragment(), RequestSending {
 
     override fun getToolBarTitle() = getString(R.string.recycle_bin_title)
 
+    override fun setupToolbarMenu(toolbar: Toolbar) {
+        toolbar.inflateMenu(R.menu.item_search_menu)
+
+        toolbarMenuSearchView = (toolbar.menu.findItem(R.id.item_search_menu_item_search)?.actionView as SearchView).apply {
+            queryHint = getString(R.string.general_search)
+        }
+    }
+
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentRecycleBinBinding.inflate(inflater, container, false).also { binding ->
             setupEntryList(binding)
@@ -60,12 +71,16 @@ class RecycleBinFragment : ToolBarFragment(), RequestSending {
     }
 
     private fun setupEntryList(binding: FragmentRecycleBinBinding) {
+        val listAdapter = RecycleBinItemEntryAdapter { entry ->
+            restoreItem(entry)
+        }
+
         binding.recyclerViewItems.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = RecycleBinItemEntryAdapter { entry ->
-                restoreItem(entry)
-            }
+            adapter = listAdapter
         }
+
+        toolbarMenuSearchView?.setupWithFilterableAdapter(listAdapter)
     }
 
     private fun restoreItem(entry: ItemEntry) {
@@ -97,9 +112,9 @@ class RecycleBinFragment : ToolBarFragment(), RequestSending {
     }
 }
 
-class RecycleBinItemEntryAdapter(
+private class RecycleBinItemEntryAdapter(
     private val entryRestoreCallback: (ItemEntry) -> Unit
-) : ListAdapter<ListItemIdentifiable, RecycleBinItemEntryAdapter.ItemEntryViewHolder>(ListItemIdentifiableDiffCallback()) {
+) : FilterableListAdapter<ItemEntry, RecycleBinItemEntryAdapter.ItemEntryViewHolder>(ListItemIdentifiableDiffCallback(), createItemEntryFilterPredicate()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemEntryViewHolder {
         val binding = ListItemEntryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -107,7 +122,7 @@ class RecycleBinItemEntryAdapter(
     }
 
     override fun onBindViewHolder(holder: ItemEntryViewHolder, position: Int) {
-        (getItem(position) as? ItemEntry)?.let { item ->
+        getItem(position)?.let { item ->
             holder.apply {
                 itemView.tag = item
                 bind(item)

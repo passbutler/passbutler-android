@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,6 +16,7 @@ import de.passbutler.app.UserViewModelProvidingViewModel
 import de.passbutler.app.databinding.FragmentAutofillSelectionBinding
 import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.addLifecycleObserver
+import de.passbutler.app.ui.setupWithFilterableAdapter
 import de.passbutler.app.ui.visible
 import de.passbutler.common.ItemViewModel
 import de.passbutler.common.base.BindableObserver
@@ -32,6 +35,7 @@ class AutofillSelectionFragment : BaseFragment() {
     private val structureParserResult
         get() = autofillMainActivity.structureParserResult
 
+    private var toolbarMenuSearchView: SearchView? = null
     private var binding: FragmentAutofillSelectionBinding? = null
 
     private val itemViewModelsObserver: BindableObserver<List<ItemViewModel>> = { newUnfilteredItemViewModels ->
@@ -82,16 +86,30 @@ class AutofillSelectionFragment : BaseFragment() {
                 structureParserResult.applicationId != null -> getString(R.string.autofill_selection_subtitle_app, structureParserResult.applicationId)
                 else -> null
             }
+
+            setupToolbarMenu(this)
+        }
+    }
+
+    private fun setupToolbarMenu(toolbar: Toolbar) {
+        toolbar.inflateMenu(R.menu.item_search_menu)
+
+        toolbarMenuSearchView = (toolbar.menu.findItem(R.id.item_search_menu_item_search)?.actionView as SearchView).apply {
+            queryHint = getString(R.string.general_search)
         }
     }
 
     private fun setupEntryList(binding: FragmentAutofillSelectionBinding) {
+        val listAdapter = ItemEntryAdapter(
+            entryClickedCallback = { entry -> autofillMainActivity.itemWasSelected(listOf(entry.itemViewModel)) }
+        )
+
         binding.recyclerViewItems.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = ItemEntryAdapter(
-                entryClickedCallback = { entry -> autofillMainActivity.itemWasSelected(listOf(entry.itemViewModel)) }
-            )
+            adapter = listAdapter
         }
+
+        toolbarMenuSearchView?.setupWithFilterableAdapter(listAdapter)
     }
 
     private fun setupEmptyScreen(binding: FragmentAutofillSelectionBinding) {

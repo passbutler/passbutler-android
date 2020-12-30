@@ -12,22 +12,26 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import de.passbutler.app.base.createRelativeDateFormattingTranslations
 import de.passbutler.app.databinding.FragmentOverviewBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
 import de.passbutler.app.ui.BaseFragment
+import de.passbutler.app.ui.FilterableListAdapter
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.VisibilityHideMode
 import de.passbutler.app.ui.addLifecycleObserver
+import de.passbutler.app.ui.context
 import de.passbutler.app.ui.copyToClipboard
+import de.passbutler.app.ui.setupWithFilterableAdapter
 import de.passbutler.app.ui.showFadeInOutAnimation
 import de.passbutler.app.ui.showFragmentModally
 import de.passbutler.app.ui.visible
@@ -51,6 +55,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
     private val rootViewModel by userViewModelUsingActivityViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
+    private var toolbarMenuSearchView: SearchView? = null
     private var binding: FragmentOverviewBinding? = null
     private var navigationHeaderSubtitleView: TextView? = null
     private var navigationHeaderUserTypeView: TextView? = null
@@ -111,6 +116,15 @@ class OverviewFragment : BaseFragment(), RequestSending {
     private fun setupToolBar(binding: FragmentOverviewBinding) {
         binding.toolbar.apply {
             title = getString(R.string.general_app_name)
+            setupToolbarMenu(this)
+        }
+    }
+
+    private fun setupToolbarMenu(toolbar: Toolbar) {
+        toolbar.inflateMenu(R.menu.item_search_menu)
+
+        toolbarMenuSearchView = (toolbar.menu.findItem(R.id.item_search_menu_item_search)?.actionView as SearchView).apply {
+            queryHint = getString(R.string.general_search)
         }
     }
 
@@ -137,19 +151,24 @@ class OverviewFragment : BaseFragment(), RequestSending {
     }
 
     private fun setupEntryList(binding: FragmentOverviewBinding) {
+        val viewContext = binding.context
+        val listAdapter = ItemEntryAdapter(
+            entryClickedCallback = { entry -> showFragment(ItemDetailFragment.newInstance(entry.itemViewModel.id)) },
+            contextMenuItemClickedCallback = { entry, contextMenuItem ->
+                when (contextMenuItem) {
+                    ItemEntryAdapter.ItemEntryContextMenuItem.COPY_USERNAME -> copyItemInformationToClipboard(viewContext, entry.itemViewModel.itemData?.username)
+                    ItemEntryAdapter.ItemEntryContextMenuItem.COPY_PASSWORD -> copyItemInformationToClipboard(viewContext, entry.itemViewModel.itemData?.password)
+                    ItemEntryAdapter.ItemEntryContextMenuItem.COPY_URL -> copyItemInformationToClipboard(viewContext, entry.itemViewModel.itemData?.url)
+                }
+            }
+        )
+
         binding.layoutOverviewContent.recyclerViewItems.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = ItemEntryAdapter(
-                entryClickedCallback = { entry -> showFragment(ItemDetailFragment.newInstance(entry.itemViewModel.id)) },
-                contextMenuItemClickedCallback = { entry, contextMenuItem ->
-                    when (contextMenuItem) {
-                        ItemEntryContextMenuItem.COPY_USERNAME -> copyItemInformationToClipboard(context, entry.itemViewModel.itemData?.username)
-                        ItemEntryContextMenuItem.COPY_PASSWORD -> copyItemInformationToClipboard(context, entry.itemViewModel.itemData?.password)
-                        ItemEntryContextMenuItem.COPY_URL -> copyItemInformationToClipboard(context, entry.itemViewModel.itemData?.url)
-                    }
-                }
-            )
+            adapter = listAdapter
         }
+
+        toolbarMenuSearchView?.setupWithFilterableAdapter(listAdapter)
 
         binding.layoutOverviewContent.floatingActionButtonAddEntry.setOnClickListener {
             showFragment(ItemDetailFragment.newInstance(null))
@@ -313,7 +332,6 @@ class OverviewFragment : BaseFragment(), RequestSending {
     }
 
     private inner class NavigationItemSelectedListener : NavigationView.OnNavigationItemSelectedListener {
-
         override fun onNavigationItemSelected(item: MenuItem): Boolean {
             val shouldCloseDrawer = when (item.itemId) {
                 R.id.drawer_menu_item_overview -> {
@@ -373,7 +391,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
 class ItemEntryAdapter(
     private val entryClickedCallback: (ItemEntry) -> Unit,
     private val contextMenuItemClickedCallback: ((ItemEntry, ItemEntryContextMenuItem) -> Unit)? = null
-) : ListAdapter<ListItemIdentifiable, ItemEntryAdapter.ItemEntryViewHolder>(ListItemIdentifiableDiffCallback()) {
+) : FilterableListAdapter<ItemEntry, ItemEntryAdapter.ItemEntryViewHolder>(ListItemIdentifiableDiffCallback(), createItemEntryFilterPredicate()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemEntryViewHolder {
         val binding = ListItemEntryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -381,7 +399,7 @@ class ItemEntryAdapter(
     }
 
     override fun onBindViewHolder(holder: ItemEntryViewHolder, position: Int) {
-        (getItem(position) as? ItemEntry)?.let { item ->
+        getItem(position)?.let { item ->
             holder.apply {
                 itemView.tag = item
                 bind(item)
@@ -425,6 +443,12 @@ class ItemEntryAdapter(
             }
         }
     }
+
+    enum class ItemEntryContextMenuItem(val titleResourceId: Int) {
+        COPY_USERNAME(R.string.overview_item_context_menu_copy_username),
+        COPY_PASSWORD(R.string.overview_item_context_menu_copy_password),
+        COPY_URL(R.string.overview_item_context_menu_copy_url),
+    }
 }
 
 class ItemEntry(val itemViewModel: ItemViewModel) : ListItemIdentifiable, Comparable<ItemEntry> {
@@ -436,8 +460,8 @@ class ItemEntry(val itemViewModel: ItemViewModel) : ListItemIdentifiable, Compar
     }
 }
 
-enum class ItemEntryContextMenuItem(val titleResourceId: Int) {
-    COPY_USERNAME(R.string.overview_item_context_menu_copy_username),
-    COPY_PASSWORD(R.string.overview_item_context_menu_copy_password),
-    COPY_URL(R.string.overview_item_context_menu_copy_url),
+fun createItemEntryFilterPredicate(): (String, ItemEntry) -> Boolean {
+    return { filterString: String, item: ItemEntry ->
+        item.itemViewModel.title?.contains(filterString, ignoreCase = true) ?: false
+    }
 }

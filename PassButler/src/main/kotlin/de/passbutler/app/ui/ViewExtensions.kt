@@ -10,7 +10,10 @@ import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
 import android.util.TypedValue
 import android.view.View
+import android.widget.Filterable
 import androidx.annotation.AttrRes
+import androidx.appcompat.widget.SearchView
+import androidx.viewbinding.ViewBinding
 import de.passbutler.common.ui.FADE_TRANSITION_DURATION
 
 var View.visible: Boolean
@@ -18,6 +21,9 @@ var View.visible: Boolean
     set(value) {
         visibility = if (value) View.VISIBLE else View.GONE
     }
+
+val ViewBinding.context: Context
+    get() = root.context
 
 /**
  * Returns resolved theme attribute value (e.g. `ColorInt`)
@@ -53,6 +59,25 @@ fun Context.copyToClipboard(value: String) {
  */
 fun Drawable.applyTint(color: Int) {
     colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
+}
+
+/**
+ * Adds a `OnQueryTextListener` to a `SearchView` which passes the search queries to a `RecyclerView.Adapter` with implemented `Filterable`.
+ */
+fun SearchView.setupWithFilterableAdapter(filterableAdapter: Filterable) {
+    setOnQueryTextListener(
+        object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                // Not used
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                filterableAdapter.filter?.filter(newText)
+                return false
+            }
+        }
+    )
 }
 
 /**
