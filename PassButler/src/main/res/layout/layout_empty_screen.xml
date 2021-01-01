@@ -21,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"
-        android:layout_marginTop="?marginS"
+        android:layout_marginTop="?marginM"
         android:layout_marginEnd="?marginM"
         android:gravity="center_horizontal"
         android:textAppearance="?textAppearanceHeadline1"
