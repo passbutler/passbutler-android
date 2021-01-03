@@ -17,7 +17,6 @@ interface LoggingSetupProviding {
 
 class DebugLoggingSetupProvider : LoggingSetupProviding {
     override fun setupLogging(logFilePath: String) {
-        Thread.setDefaultUncaughtExceptionHandler(UncaughtExceptionHandler())
         setupStrictMode()
 
         Configuration.replace(createLoggerConfiguration(logFilePath))
@@ -85,15 +84,6 @@ class DebugLoggingSetupProvider : LoggingSetupProviding {
             appendLine("Hardware:    ${Build.HARDWARE}")
             appendLine("Locale:      ${Locale.getDefault()}")
             appendLine("--------------------------------------------------------------------------------")
-        }
-    }
-
-    private class UncaughtExceptionHandler : Thread.UncaughtExceptionHandler {
-        private val defaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
-
-        override fun uncaughtException(t: Thread, e: Throwable) {
-            Logger.error(e, "⚠️⚠️⚠️ FATAL ⚠️⚠️⚠️")
-            defaultUncaughtExceptionHandler?.uncaughtException(t, e)
         }
     }
 }

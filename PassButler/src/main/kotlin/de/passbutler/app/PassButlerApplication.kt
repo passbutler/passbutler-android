@@ -8,17 +8,27 @@ import de.passbutler.app.base.loggingSetupProvider
 import de.passbutler.app.database.createLocalRepository
 import de.passbutler.common.UserManager
 import kotlinx.coroutines.runBlocking
+import org.tinylog.kotlin.Logger
 
 class PassButlerApplication : Application(), LoggingSetupProviding by loggingSetupProvider {
 
     override fun onCreate() {
         super.onCreate()
 
-        val logFilePath = "${applicationContext.cacheDir.path}/passbutler-debug.log"
-        setupLogging(logFilePath)
+        setupCrashHandler()
+        setupLogging()
 
         Companion.applicationContext = applicationContext
         userManager = createUserManager()
+    }
+
+    private fun setupCrashHandler() {
+        Thread.setDefaultUncaughtExceptionHandler(UncaughtExceptionHandler())
+    }
+
+    private fun setupLogging() {
+        val logFilePath = "${applicationContext.cacheDir.path}/passbutler-debug.log"
+        setupLogging(logFilePath)
     }
 
     private fun createUserManager(): UserManager {
@@ -35,5 +45,14 @@ class PassButlerApplication : Application(), LoggingSetupProviding by loggingSet
 
         lateinit var userManager: UserManager
             private set
+    }
+}
+
+private class UncaughtExceptionHandler : Thread.UncaughtExceptionHandler {
+    private val defaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+
+    override fun uncaughtException(t: Thread, e: Throwable) {
+        Logger.error(e, "⚠️⚠️⚠️ FATAL ⚠️⚠️⚠️")
+        defaultUncaughtExceptionHandler?.uncaughtException(t, e)
     }
 }
