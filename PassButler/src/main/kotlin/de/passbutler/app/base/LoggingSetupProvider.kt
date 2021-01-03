@@ -90,7 +90,14 @@ class DebugLoggingSetupProvider : LoggingSetupProviding {
 
 class ReleaseLoggingSetupProvider : LoggingSetupProviding {
     override fun setupLogging(logFilePath: String) {
-        // No logging for release build
+        Configuration.replace(createLoggerConfiguration())
+    }
+
+    private fun createLoggerConfiguration(): Map<String, String> {
+        // Disable also the default logger
+        return mapOf(
+            "writer.level" to "off",
+        )
     }
 }
 
