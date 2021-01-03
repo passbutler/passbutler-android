@@ -1,8 +1,9 @@
-package de.passbutler.app
+package de.passbutler.app.base
 
 import android.os.Build
 import android.os.StrictMode
-import de.passbutler.app.base.AbstractPassButlerApplication
+import de.passbutler.app.BuildConfig
+import de.passbutler.common.base.BuildType
 import de.passbutler.common.base.LoggingConstants
 import de.passbutler.common.base.formattedDateTime
 import org.tinylog.configuration.Configuration
@@ -10,21 +11,43 @@ import org.tinylog.kotlin.Logger
 import java.time.Instant
 import java.util.*
 
-class PassButlerApplication : AbstractPassButlerApplication() {
+interface LoggingSetupProviding {
+    fun setupLogging(logFilePath: String)
+}
 
-    override fun setupLogger() {
+class DebugLoggingSetupProvider : LoggingSetupProviding {
+    override fun setupLogging(logFilePath: String) {
         Thread.setDefaultUncaughtExceptionHandler(UncaughtExceptionHandler())
+        setupStrictMode()
 
-        Configuration.replace(createLoggerConfiguration())
+        Configuration.replace(createLoggerConfiguration(logFilePath))
 
         val loggingHeader = createLoggingHeader()
         Logger.debug("Started Pass Butler\n$loggingHeader")
     }
 
-    private fun createLoggerConfiguration(): Map<String, String> {
+    private fun setupStrictMode() {
+        val threadPolicy = StrictMode.ThreadPolicy.Builder()
+            .detectAll()
+            .penaltyLog()
+            .build()
+
+        val vmPolicy = StrictMode.VmPolicy.Builder()
+            .detectActivityLeaks()
+            .detectLeakedClosableObjects()
+            .detectLeakedSqlLiteObjects()
+            .detectLeakedRegistrationObjects()
+            .detectFileUriExposure()
+            .penaltyLog()
+            .build()
+
+        StrictMode.setThreadPolicy(threadPolicy)
+        StrictMode.setVmPolicy(vmPolicy)
+    }
+
+    private fun createLoggerConfiguration(logFilePath: String): Map<String, String> {
         val consoleLogFormat = "{class-name}.{method}() [{thread}]: {message}"
         val fileLogFormat = LoggingConstants.LOG_FORMAT_FILE
-        val logFilePath = "${applicationContext.cacheDir.path}/passbutler-debug.log"
 
         return mapOf(
             "writer1" to "logcat",
@@ -65,31 +88,24 @@ class PassButlerApplication : AbstractPassButlerApplication() {
         }
     }
 
-    override fun setupStrictMode() {
-        val threadPolicy = StrictMode.ThreadPolicy.Builder()
-            .detectAll()
-            .penaltyLog()
-            .build()
+    private class UncaughtExceptionHandler : Thread.UncaughtExceptionHandler {
+        private val defaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
 
-        val vmPolicy = StrictMode.VmPolicy.Builder()
-            .detectActivityLeaks()
-            .detectLeakedClosableObjects()
-            .detectLeakedSqlLiteObjects()
-            .detectLeakedRegistrationObjects()
-            .detectFileUriExposure()
-            .penaltyLog()
-            .build()
-
-        StrictMode.setThreadPolicy(threadPolicy)
-        StrictMode.setVmPolicy(vmPolicy)
+        override fun uncaughtException(t: Thread, e: Throwable) {
+            Logger.error(e, "⚠️⚠️⚠️ FATAL ⚠️⚠️⚠️")
+            defaultUncaughtExceptionHandler?.uncaughtException(t, e)
+        }
     }
 }
 
-private class UncaughtExceptionHandler : Thread.UncaughtExceptionHandler {
-    private val defaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
-
-    override fun uncaughtException(t: Thread, e: Throwable) {
-        Logger.error(e, "⚠️⚠️⚠️ FATAL ⚠️⚠️⚠️")
-        defaultUncaughtExceptionHandler?.uncaughtException(t, e)
+class ReleaseLoggingSetupProvider : LoggingSetupProviding {
+    override fun setupLogging(logFilePath: String) {
+        // No logging for release build
     }
+}
+
+val loggingSetupProvider = when (BuildInformationProvider.buildType) {
+    BuildType.Debug -> DebugLoggingSetupProvider()
+    BuildType.Release -> ReleaseLoggingSetupProvider()
+    BuildType.Other -> ReleaseLoggingSetupProvider()
 }

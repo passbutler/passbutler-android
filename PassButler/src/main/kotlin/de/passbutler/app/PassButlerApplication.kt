@@ -1,22 +1,24 @@
-package de.passbutler.app.base
+package de.passbutler.app
 
 import android.app.Application
 import android.content.Context
+import de.passbutler.app.base.BuildInformationProvider
+import de.passbutler.app.base.LoggingSetupProviding
+import de.passbutler.app.base.loggingSetupProvider
 import de.passbutler.app.database.createLocalRepository
 import de.passbutler.common.UserManager
 import kotlinx.coroutines.runBlocking
 
-abstract class AbstractPassButlerApplication : Application() {
+class PassButlerApplication : Application(), LoggingSetupProviding by loggingSetupProvider {
 
-    @Suppress("RemoveRedundantQualifierName")
     override fun onCreate() {
         super.onCreate()
 
-        setupLogger()
-        setupStrictMode()
+        val logFilePath = "${applicationContext.cacheDir.path}/passbutler-debug.log"
+        setupLogging(logFilePath)
 
-        AbstractPassButlerApplication.applicationContext = applicationContext
-        AbstractPassButlerApplication.userManager = createUserManager()
+        Companion.applicationContext = applicationContext
+        userManager = createUserManager()
     }
 
     private fun createUserManager(): UserManager {
@@ -27,9 +29,6 @@ abstract class AbstractPassButlerApplication : Application() {
         return UserManager(localRepository, BuildInformationProvider)
     }
 
-    abstract fun setupLogger()
-    abstract fun setupStrictMode()
-
     companion object {
         lateinit var applicationContext: Context
             private set
@@ -38,4 +37,3 @@ abstract class AbstractPassButlerApplication : Application() {
             private set
     }
 }
-

@@ -6,7 +6,6 @@ import androidx.fragment.app.createViewModelLazy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
-import de.passbutler.app.base.AbstractPassButlerApplication
 import de.passbutler.app.crypto.BiometricsProvider
 import de.passbutler.common.UserManager
 import de.passbutler.common.UserViewModel
@@ -22,7 +21,7 @@ class UserViewModelProvidingViewModel : ViewModel() {
         private set
 
     private val userManager
-        get() = AbstractPassButlerApplication.userManager
+        get() = PassButlerApplication.userManager
 
     private val biometricsProvider = BiometricsProvider()
 
