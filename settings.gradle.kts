@@ -1,4 +1,4 @@
-rootProject.name = "Pass Butler Android"
+rootProject.name = "PassButlerAndroid"
 
 pluginManagement {
     resolutionStrategy {
