@@ -56,7 +56,7 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
     private val itemAuthorizationDescription by lazy {
         DependentValueGetterBindable(viewModel.isItemAuthorizationAllowed, viewModel.isItemModificationAllowed, viewModel.ownerUsername, viewModel.itemAuthorizationModifiedDate) {
             val itemOwnerUsername = viewModel.ownerUsername.value
-            val itemAuthorizationModifiedDate = viewModel.itemAuthorizationModifiedDate.value?.formattedDateTime
+            val itemAuthorizationModifiedDate = viewModel.itemAuthorizationModifiedDate.value?.formattedDateTime()
 
             when {
                 viewModel.isItemAuthorizationAllowed.value -> getString(R.string.itemdetail_authorizations_description_owned_item)
@@ -248,12 +248,12 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
 
         binding.informationItemModified.textViewTitle.text = getString(R.string.itemdetail_modified_title)
         binding.informationItemModified.textViewValue.bindTextAndVisibility(viewLifecycleOwner, viewModel.modified) {
-            it?.formattedDateTime
+            it?.formattedDateTime()
         }
 
         binding.informationItemCreated.textViewTitle.text = getString(R.string.itemdetail_created_title)
         binding.informationItemCreated.textViewValue.bindTextAndVisibility(viewLifecycleOwner, viewModel.created) {
-            it?.formattedDateTime
+            it?.formattedDateTime()
         }
     }
 

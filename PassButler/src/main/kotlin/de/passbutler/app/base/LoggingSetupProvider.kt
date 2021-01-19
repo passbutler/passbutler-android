@@ -68,7 +68,7 @@ class DebugLoggingSetupProvider : LoggingSetupProviding {
     private fun createLoggingHeader(): String {
         val versionName = BuildConfig.VERSION_NAME
         val versionCode = BuildConfig.VERSION_CODE
-        val formattedBuildTime = Instant.ofEpochMilli(BuildConfig.BUILD_TIMESTAMP).formattedDateTime
+        val formattedBuildTime = Instant.ofEpochMilli(BuildConfig.BUILD_TIMESTAMP).formattedDateTime()
         val gitShortHash = BuildConfig.BUILD_REVISION_HASH
 
         return buildString {

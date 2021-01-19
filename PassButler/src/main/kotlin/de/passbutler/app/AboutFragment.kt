@@ -18,7 +18,7 @@ class AboutFragment : ToolBarFragment() {
 
         binding.textViewSubheader.also { subHeader ->
             val versionName = BuildConfig.VERSION_NAME
-            val formattedBuildTime = Instant.ofEpochMilli(BuildConfig.BUILD_TIMESTAMP).formattedDateTime
+            val formattedBuildTime = Instant.ofEpochMilli(BuildConfig.BUILD_TIMESTAMP).formattedDateTime()
             val gitShortHash = BuildConfig.BUILD_REVISION_HASH
 
             subHeader.text = getString(R.string.about_subheader, versionName, formattedBuildTime, gitShortHash)
