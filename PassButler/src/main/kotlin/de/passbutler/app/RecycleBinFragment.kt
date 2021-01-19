@@ -137,8 +137,8 @@ private class RecycleBinItemEntryAdapter(
 
         fun bind(entry: ItemEntry) {
             binding.apply {
-                textViewTitle.text = entry.itemViewModel.title
-                textViewSubtitle.text = entry.itemViewModel.subtitle
+                textViewTitle.text = entry.title
+                textViewSubtitle.text = entry.subtitle
 
                 root.setOnCreateContextMenuListener { menu, _, _ ->
                     menu.add(R.string.recycle_bin_item_context_menu_restore).setOnMenuItemClickListener {

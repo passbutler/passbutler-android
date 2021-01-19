@@ -415,8 +415,8 @@ class ItemEntryAdapter(
 
         fun bind(entry: ItemEntry) {
             binding.apply {
-                textViewTitle.text = entry.itemViewModel.title
-                textViewSubtitle.text = entry.itemViewModel.subtitle
+                textViewTitle.text = entry.title
+                textViewSubtitle.text = entry.subtitle
 
                 root.setOnClickListener {
                     entryClickedCallback.invoke(entry)
@@ -454,6 +454,15 @@ class ItemEntryAdapter(
 class ItemEntry(val itemViewModel: ItemViewModel) : ListItemIdentifiable, Comparable<ItemEntry> {
     override val listItemId: String
         get() = itemViewModel.id
+
+    val title
+        get() = itemViewModel.title
+
+    val subtitle
+        get() = itemViewModel.itemData?.username?.takeIf { it.isNotEmpty() } ?: applicationContext.getString(R.string.overview_item_subtitle_username_missing)
+
+    private val applicationContext
+        get() = PassButlerApplication.applicationContext
 
     override fun compareTo(other: ItemEntry): Int {
         return compareValuesBy(this, other, { it.itemViewModel.title })
