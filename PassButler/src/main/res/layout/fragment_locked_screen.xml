@@ -43,7 +43,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <!-- Set `clipToPadding` to `false` to avoid clip the elevation of the bottom button -->
-            <!-- The top padding calculates: 76dp = 120dp (half height of the logo) + marginM -->
+            <!-- The top padding calculates: logo height / 2  + marginM -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
