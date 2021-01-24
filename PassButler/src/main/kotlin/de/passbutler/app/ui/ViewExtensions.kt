@@ -5,12 +5,18 @@ import android.animation.AnimatorListenerAdapter
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.util.TypedValue
 import android.view.View
 import android.widget.Filterable
+import android.widget.TextView
 import androidx.annotation.AttrRes
 import androidx.appcompat.widget.SearchView
 import androidx.viewbinding.ViewBinding
@@ -133,4 +139,25 @@ inline fun animatorListenerAdapter(crossinline onAnimationEnd: () -> Unit, cross
             onAnimationEnd.invoke()
         }
     }
+}
+
+/**
+ * Text views
+ */
+
+fun TextView.setTextWithClickablePart(text: String, clickableTextPart: String, clickedBlock: () -> Unit) {
+    val spannableString = SpannableString(text)
+    val clickableSpan = object : ClickableSpan() {
+        override fun onClick(widget: View) {
+            clickedBlock.invoke()
+        }
+    }
+
+    val clickableTextPartIndexStart = text.indexOf(clickableTextPart)
+    val clickableTextPartEnd = clickableTextPartIndexStart + clickableTextPart.length
+    spannableString.setSpan(clickableSpan, clickableTextPartIndexStart, clickableTextPartEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+    this.text = spannableString
+    movementMethod = LinkMovementMethod.getInstance()
+    highlightColor = Color.TRANSPARENT
 }
