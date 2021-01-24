@@ -5,12 +5,12 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:4.0.2")
+        classpath("com.android.tools.build:gradle:4.1.2")
 
-        val kotlinVersion = "1.4.10"
+        val kotlinVersion = "1.4.21"
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
 
-        classpath("de.mannodermaus.gradle.plugins:android-junit5:1.6.0.0")
+        classpath("de.mannodermaus.gradle.plugins:android-junit5:1.7.0.0")
     }
 }
 
