@@ -6,7 +6,7 @@
         <!-- Android colors: -->
 
         <!-- Used for backgrounds of e.g. screen: -->
-        <item name="android:colorBackground">@color/whiteMedium</item>
+        <item name="android:colorBackground">@color/grey00</item>
 
         <!-- Used for backgrounds of e.g. button: -->
         <item name="colorPrimary">@color/wineRed</item>
@@ -20,14 +20,21 @@
         <!-- Used for e.g. setting sections, checkbox, switches, progress: -->
         <item name="colorAccent">@color/pointRed</item>
 
+        <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:textColorSecondary">@color/blackTransparent</item>
+
         <!-- Material colors: -->
 
+        <item name="colorSurface">@color/grey00</item>
+
         <!-- Used for semi-transparent backgrounds of e.g. progress screen: -->
-        <item name="scrimBackground">@color/whiteMediumTransparent</item>
+        <item name="scrimBackground">@color/grey00Transparent</item>
 
         <!-- Used to be drawn on views to tint text/icons: -->
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorOnSecondary">@color/white</item>
+
+        <item name="colorOnSurface">@color/grey80</item>
 
         <!-- Custom attributes: -->
 

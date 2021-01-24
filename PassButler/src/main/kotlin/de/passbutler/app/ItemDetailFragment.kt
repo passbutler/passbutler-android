@@ -3,7 +3,6 @@ package de.passbutler.app
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.InputType
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -14,25 +13,25 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.textfield.TextInputLayout
-import de.passbutler.app.base.addLifecycleObserver
-import de.passbutler.app.base.bindEnabled
-import de.passbutler.app.base.bindInput
-import de.passbutler.app.base.bindTextAndVisibility
-import de.passbutler.app.base.bindVisibility
-import de.passbutler.app.base.formattedDateTime
-import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentItemdetailBinding
 import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ToolBarFragment
-import de.passbutler.app.ui.showError
-import de.passbutler.app.ui.showInformation
+import de.passbutler.app.ui.addLifecycleObserver
+import de.passbutler.app.ui.bindEnabled
+import de.passbutler.app.ui.bindInput
+import de.passbutler.app.ui.bindTextAndVisibility
+import de.passbutler.app.ui.bindVisibility
 import de.passbutler.app.ui.validateForm
-import de.passbutler.common.ItemEditingViewModel
+import de.passbutler.common.ItemEditingViewModel.Companion.NOTES_MAXIMUM_CHARACTERS
+import de.passbutler.common.LoggedInUserViewModelUninitializedException
 import de.passbutler.common.base.DependentValueGetterBindable
+import de.passbutler.common.base.formattedDateTime
+import de.passbutler.common.ui.RequestSending
+import de.passbutler.common.ui.launchRequestSending
 
-class ItemDetailFragment : ToolBarFragment() {
+class ItemDetailFragment : ToolBarFragment(), RequestSending {
 
     private val viewModel
         get() = viewModelWrapper.itemEditingViewModel
@@ -57,7 +56,7 @@ class ItemDetailFragment : ToolBarFragment() {
     private val itemAuthorizationDescription by lazy {
         DependentValueGetterBindable(viewModel.isItemAuthorizationAllowed, viewModel.isItemModificationAllowed, viewModel.ownerUsername, viewModel.itemAuthorizationModifiedDate) {
             val itemOwnerUsername = viewModel.ownerUsername.value
-            val itemAuthorizationModifiedDate = viewModel.itemAuthorizationModifiedDate.value?.formattedDateTime
+            val itemAuthorizationModifiedDate = viewModel.itemAuthorizationModifiedDate.value?.formattedDateTime()
 
             when {
                 viewModel.isItemAuthorizationAllowed.value -> getString(R.string.itemdetail_authorizations_description_owned_item)
@@ -131,7 +130,7 @@ class ItemDetailFragment : ToolBarFragment() {
                 listOfNotNull(
                     FormFieldValidator(
                         binding.textInputLayoutTitle, binding.textInputEditTextTitle, listOf(
-                            FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.itemdetail_title_validation_error_empty))
+                            FormFieldValidator.Rule({ it.isNullOrEmpty() }, getString(R.string.itemdetail_title_validation_error_empty))
                         )
                     )
                 )
@@ -159,7 +158,7 @@ class ItemDetailFragment : ToolBarFragment() {
     }
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentItemdetailBinding.inflate(inflater).also { binding ->
+        binding = FragmentItemdetailBinding.inflate(inflater, container, false).also { binding ->
             setupItemFields(binding)
             setupItemAuthorizationsSection(binding)
             setupInformationView(binding)
@@ -196,8 +195,7 @@ class ItemDetailFragment : ToolBarFragment() {
         binding.textInputLayoutUrl.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
         binding.textInputEditTextUrl.bindInput(viewModel.url)
 
-        binding.textInputLayoutNotes.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
-        binding.textInputEditTextNotes.bindInput(viewModel.notes)
+        setupNotesField(binding)
     }
 
     private fun setupPasswordField(binding: FragmentItemdetailBinding) {
@@ -214,7 +212,17 @@ class ItemDetailFragment : ToolBarFragment() {
         }
     }
 
+    private fun setupNotesField(binding: FragmentItemdetailBinding) {
+        binding.textInputLayoutNotes.isCounterEnabled = true
+        binding.textInputLayoutNotes.counterMaxLength = NOTES_MAXIMUM_CHARACTERS
+        binding.textInputLayoutNotes.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
+
+        binding.textInputEditTextNotes.bindInput(viewModel.notes)
+    }
+
     private fun setupItemAuthorizationsSection(binding: FragmentItemdetailBinding) {
+        binding.textViewAuthorizationsDescription.bindTextAndVisibility(viewLifecycleOwner, itemAuthorizationDescription)
+
         binding.buttonManageAuthorizations.isEnabled = viewModel.isItemAuthorizationAvailable
         binding.buttonManageAuthorizations.bindVisibility(viewLifecycleOwner, viewModel.isNewItem, viewModel.isItemAuthorizationAllowed) { isNewItem, isItemAuthorizationAllowed ->
             !isNewItem && isItemAuthorizationAllowed
@@ -228,11 +236,9 @@ class ItemDetailFragment : ToolBarFragment() {
             }
         }
 
-        binding.textViewAuthorizationsFooter.bindVisibility(viewLifecycleOwner, viewModel.isNewItem, viewModel.isItemAuthorizationAllowed) { isNewItem, isItemAuthorizationAllowed ->
+        binding.textViewAuthorizationsFooterTeaser.bindVisibility(viewLifecycleOwner, viewModel.isNewItem, viewModel.isItemAuthorizationAllowed) { isNewItem, isItemAuthorizationAllowed ->
             !isNewItem && isItemAuthorizationAllowed && !viewModel.isItemAuthorizationAvailable
         }
-
-        binding.textViewAuthorizationsDescription.bindTextAndVisibility(viewLifecycleOwner, itemAuthorizationDescription)
     }
 
     private fun setupInformationView(binding: FragmentItemdetailBinding) {
@@ -242,12 +248,12 @@ class ItemDetailFragment : ToolBarFragment() {
 
         binding.informationItemModified.textViewTitle.text = getString(R.string.itemdetail_modified_title)
         binding.informationItemModified.textViewValue.bindTextAndVisibility(viewLifecycleOwner, viewModel.modified) {
-            it?.formattedDateTime
+            it?.formattedDateTime()
         }
 
         binding.informationItemCreated.textViewTitle.text = getString(R.string.itemdetail_created_title)
         binding.informationItemCreated.textViewValue.bindTextAndVisibility(viewLifecycleOwner, viewModel.created) {
-            it?.formattedDateTime
+            it?.formattedDateTime()
         }
     }
 
@@ -323,8 +329,6 @@ class ItemDetailFragment : ToolBarFragment() {
         }
     }
 }
-
-class ItemEditingViewModelWrapper(val itemEditingViewModel: ItemEditingViewModel) : ViewModel()
 
 class ItemEditingViewModelFactory(
     private val userViewModelProvidingViewModel: UserViewModelProvidingViewModel,

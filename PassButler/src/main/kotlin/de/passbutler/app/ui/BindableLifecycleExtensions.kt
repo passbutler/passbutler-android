@@ -1,4 +1,4 @@
-package de.passbutler.app.base
+package de.passbutler.app.ui
 
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver

@@ -10,8 +10,8 @@ import android.service.autofill.SaveCallback
 import android.service.autofill.SaveRequest
 import android.widget.RemoteViews
 import androidx.annotation.RequiresApi
+import de.passbutler.app.PassButlerApplication
 import de.passbutler.app.R
-import de.passbutler.app.base.AbstractPassButlerApplication
 import kotlinx.coroutines.runBlocking
 import org.tinylog.kotlin.Logger
 
@@ -29,7 +29,7 @@ class PassButlerAutofillService : AutofillService() {
             Logger.debug("The autofill request was cancelled.")
         }
 
-        val userManager = AbstractPassButlerApplication.userManager
+        val userManager = PassButlerApplication.userManager
         val isUserLoggedIn = runBlocking {
             userManager.localRepository.findLoggedInStateStorage() != null
         }

@@ -6,14 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import de.passbutler.app.base.addLifecycleObserver
 import de.passbutler.app.databinding.FragmentRootBinding
 import de.passbutler.app.ui.BaseFragment
-import de.passbutler.app.ui.FragmentPresenter
-import de.passbutler.app.ui.TransitionType
+import de.passbutler.app.ui.UIPresenter
+import de.passbutler.app.ui.addLifecycleObserver
 import de.passbutler.app.ui.showFragmentAsFirstScreen
 import de.passbutler.common.base.BindableObserver
-import kotlinx.coroutines.launch
+import de.passbutler.common.ui.TransitionType
 import org.tinylog.kotlin.Logger
 import java.lang.ref.WeakReference
 
@@ -42,7 +41,7 @@ abstract class AbstractRootFragment : BaseFragment() {
 
             val contentContainerResourceId = R.id.frameLayout_fragment_root_content_container
             val progressScreenViewResourceId = R.id.frameLayout_progress_container
-            fragmentPresentingDelegate = FragmentPresenter(
+            uiPresentingDelegate = UIPresenter(
                 WeakReference(it),
                 WeakReference(this),
                 contentContainerResourceId,
@@ -57,15 +56,13 @@ abstract class AbstractRootFragment : BaseFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val binding = FragmentRootBinding.inflate(inflater)
+        val binding = FragmentRootBinding.inflate(inflater, container, false)
 
         viewModel.rootScreenState.addLifecycleObserver(viewLifecycleOwner, false, rootScreenStateObserver)
         viewModel.lockScreenState.addLifecycleObserver(viewLifecycleOwner, false, lockScreenStateObserver)
 
         // Try to restore logged-in user after the observers were added
-        launch {
-            viewModel.restoreLoggedInUser()
-        }
+        viewModel.restoreLoggedInUser()
 
         return binding.root
     }
@@ -105,6 +102,7 @@ class RootFragment : AbstractRootFragment() {
 
             showFragmentAsFirstScreen(
                 fragment = OverviewFragment.newInstance(),
+                userTriggered = false,
                 transitionType = if (viewWasInitialized) {
                     TransitionType.SLIDE
                 } else {
@@ -120,6 +118,7 @@ class RootFragment : AbstractRootFragment() {
 
             showFragmentAsFirstScreen(
                 fragment = LoginFragment.newInstance(),
+                userTriggered = false,
                 transitionType = if (viewWasInitialized) {
                     TransitionType.SLIDE
                 } else {
@@ -136,7 +135,7 @@ class RootFragment : AbstractRootFragment() {
             // The debounce check must be disabled because on app initialisation the fragment stack is artificially created
             showFragment(
                 fragment = LockedScreenFragment.newInstance(),
-                debounce = false,
+                userTriggered = false,
                 transitionType = if (viewWasInitialized) {
                     TransitionType.FADE
                 } else {

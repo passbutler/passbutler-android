@@ -15,6 +15,11 @@
             android:icon="@drawable/icon_settings_24dp"
             android:title="@string/drawer_menu_item_settings" />
         <item
+            android:id="@+id/drawer_menu_item_recycle_bin"
+            android:checkable="false"
+            android:icon="@drawable/icon_delete_24dp"
+            android:title="@string/drawer_menu_recycle_bin" />
+        <item
             android:id="@+id/drawer_menu_item_about"
             android:checkable="false"
             android:icon="@drawable/icon_info_24dp"

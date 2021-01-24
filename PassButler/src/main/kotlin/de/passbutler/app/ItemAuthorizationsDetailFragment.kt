@@ -6,6 +6,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
@@ -14,23 +15,25 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import de.passbutler.app.base.addLifecycleObserver
-import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentItemAuthorizationsDetailBinding
 import de.passbutler.app.databinding.ListItemAuthorizationEntryBinding
 import de.passbutler.app.databinding.ListItemAuthorizationHeaderBinding
-import de.passbutler.app.ui.ListItemIdentifiable
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.ToolBarFragment
-import de.passbutler.app.ui.showError
+import de.passbutler.app.ui.addLifecycleObserver
+import de.passbutler.app.ui.visible
 import de.passbutler.common.ItemAuthorizationEditingViewModel
 import de.passbutler.common.ItemAuthorizationsDetailViewModel
+import de.passbutler.common.LoggedInUserViewModelUninitializedException
 import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.base.addAllIfNotNull
+import de.passbutler.common.ui.ListItemIdentifiable
+import de.passbutler.common.ui.RequestSending
+import de.passbutler.common.ui.launchRequestSending
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 
-class ItemAuthorizationsDetailFragment : ToolBarFragment() {
+class ItemAuthorizationsDetailFragment : ToolBarFragment(), RequestSending {
 
     private val viewModel
         get() = viewModelWrapper.itemAuthorizationsDetailViewModel
@@ -54,6 +57,9 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment() {
 
         val adapter = binding?.recyclerViewItemAuthorizations?.adapter as? ItemAuthorizationsAdapter
         adapter?.submitList(newItemAuthorizationEntries)
+
+        val showEmptyScreen = newItemAuthorizationEntries.isEmpty()
+        binding?.layoutEmptyScreen?.root?.visible = showEmptyScreen
     }
 
     override fun getToolBarTitle(): String {
@@ -85,12 +91,19 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment() {
     }
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentItemAuthorizationsDetailBinding.inflate(inflater).also { binding ->
+        binding = FragmentItemAuthorizationsDetailBinding.inflate(inflater, container, false).also { binding ->
             setupItemAuthorizationsList(binding)
+            setupEmptyScreen(binding)
         }
 
         viewModel.itemAuthorizationEditingViewModelsModified.addLifecycleObserver(viewLifecycleOwner, true) {
             toolbarMenuSaveItem?.isEnabled = it
+        }
+
+        viewModel.itemAuthorizationEditingViewModels.addLifecycleObserver(viewLifecycleOwner, false, itemAuthorizationsObserver)
+
+        launch {
+            viewModel.initializeItemAuthorizationEditingViewModels()
         }
 
         return binding?.root
@@ -106,12 +119,19 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment() {
             val dividerItemDecoration = DividerItemDecoration(context, linearLayoutManager.orientation)
             addItemDecoration(dividerItemDecoration)
         }
+    }
 
-        viewModel.itemAuthorizationEditingViewModels.addLifecycleObserver(viewLifecycleOwner, false, itemAuthorizationsObserver)
-
-        launch {
-            viewModel.initializeItemAuthorizationEditingViewModels()
+    private fun setupEmptyScreen(binding: FragmentItemAuthorizationsDetailBinding) {
+        binding.layoutEmptyScreen.apply {
+            imageViewIcon.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.icon_account_circle_24dp, root.context.theme))
+            textViewTitle.text = getString(R.string.itemauthorizations_empty_screen_title)
+            textViewDescription.text = getString(R.string.itemauthorizations_empty_screen_description)
         }
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 
     companion object {
@@ -231,7 +251,7 @@ class ItemAuthorizationsAdapter : ListAdapter<ListItemIdentifiable, RecyclerView
     }
 }
 
-class ItemAuthorizationEntry(val itemAuthorizationEditingViewModel: ItemAuthorizationEditingViewModel) : ListItemIdentifiable {
+class ItemAuthorizationEntry(val itemAuthorizationEditingViewModel: ItemAuthorizationEditingViewModel) : ListItemIdentifiable, Comparable<ItemAuthorizationEntry> {
     override val listItemId: String
         get() = when (itemAuthorizationModel) {
             is ItemAuthorizationEditingViewModel.ItemAuthorizationModel.Provisional -> itemAuthorizationModel.itemAuthorizationId
@@ -239,13 +259,11 @@ class ItemAuthorizationEntry(val itemAuthorizationEditingViewModel: ItemAuthoriz
         }
 
     private val itemAuthorizationModel = itemAuthorizationEditingViewModel.itemAuthorizationModel
-}
 
-fun List<ItemAuthorizationEntry>.sorted(): List<ItemAuthorizationEntry> {
-    return sortedBy { it.itemAuthorizationEditingViewModel.username }
+    override fun compareTo(other: ItemAuthorizationEntry): Int {
+        return compareValuesBy(this, other, { it.itemAuthorizationEditingViewModel.username })
+    }
 }
-
-class ItemAuthorizationsDetailViewModelWrapper(val itemAuthorizationsDetailViewModel: ItemAuthorizationsDetailViewModel) : ViewModel()
 
 class ItemAuthorizationsDetailViewModelFactory(
     private val userViewModelProvidingViewModel: UserViewModelProvidingViewModel,

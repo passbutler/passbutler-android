@@ -1,5 +1,6 @@
 package de.passbutler.app
 
+import de.passbutler.common.LoggedInUserViewModelUninitializedException
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 
@@ -13,7 +14,7 @@ class RegisterLocalUserViewModel : UserViewModelUsingViewModel() {
         return if (masterPasswordTestResult is Failure) {
             masterPasswordTestResult
         } else {
-            userManager.registerLocalUser(serverUrlString, invitationCode, masterPassword)
+            loggedInUserViewModel.registerLocalUser(serverUrlString, invitationCode, masterPassword)
         }
     }
 }

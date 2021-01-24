@@ -9,7 +9,7 @@
     android:orientation="vertical"
     android:transitionGroup="true">
 
-    <!-- Use a theme overlay to be sure the contained view colors are inverted (toolbar title, burger menu) -->
+    <!-- Use a theme overlay to be sure the contained view colors are inverted (toolbar title, menu icons) -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"

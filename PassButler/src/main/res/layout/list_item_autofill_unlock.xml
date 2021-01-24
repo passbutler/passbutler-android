@@ -20,6 +20,7 @@
         android:paddingBottom="10dp"
         tools:ignore="UseCompoundDrawables">
 
+        <!-- Do not use `app:srcCompat` because it won't work -->
         <ImageView
             android:layout_width="32dp"
             android:layout_height="32dp"

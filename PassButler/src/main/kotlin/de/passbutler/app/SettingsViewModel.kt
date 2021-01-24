@@ -1,5 +1,6 @@
 package de.passbutler.app
 
+import de.passbutler.common.LoggedInUserViewModelUninitializedException
 import de.passbutler.common.UserViewModel
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result

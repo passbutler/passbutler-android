@@ -1,25 +1,23 @@
 package de.passbutler.app
 
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentChangeMasterPasswordBinding
 import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ToolBarFragment
-import de.passbutler.app.ui.showError
-import de.passbutler.app.ui.showShortFeedback
+import de.passbutler.app.ui.bindVisibility
 import de.passbutler.app.ui.validateForm
-import de.passbutler.app.ui.visible
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.UpdateUserFailedException
+import de.passbutler.common.ui.RequestSending
+import de.passbutler.common.ui.launchRequestSending
 
-class ChangeMasterPasswordFragment : ToolBarFragment() {
+class ChangeMasterPasswordFragment : ToolBarFragment(), RequestSending {
 
     private val viewModel by userViewModelUsingViewModels<ChangeMasterPasswordViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
@@ -41,7 +39,7 @@ class ChangeMasterPasswordFragment : ToolBarFragment() {
     override fun getToolBarTitle() = getString(R.string.change_master_password_title)
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentChangeMasterPasswordBinding.inflate(inflater).also { binding ->
+        binding = FragmentChangeMasterPasswordBinding.inflate(inflater, container, false).also { binding ->
             setupTextViews(binding)
             setupChangeButton(binding)
 
@@ -52,7 +50,9 @@ class ChangeMasterPasswordFragment : ToolBarFragment() {
     }
 
     private fun setupTextViews(binding: FragmentChangeMasterPasswordBinding) {
-        binding.textViewSubheaderDisableBiometricHint.visible = viewModel.loggedInUserViewModel?.biometricUnlockEnabled?.value ?: false
+        viewModel.loggedInUserViewModel?.biometricUnlockEnabled?.let { biometricUnlockEnabledBindable ->
+            binding.textViewSubheaderDisableBiometricHint.bindVisibility(viewLifecycleOwner, biometricUnlockEnabledBindable)
+        }
     }
 
     private fun setupChangeButton(binding: FragmentChangeMasterPasswordBinding) {
@@ -66,12 +66,12 @@ class ChangeMasterPasswordFragment : ToolBarFragment() {
             listOfNotNull(
                 FormFieldValidator(
                     binding.textInputLayoutOldMasterPassword, binding.textInputEditTextOldMasterPassword, listOf(
-                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.change_master_password_old_master_password_validation_error_empty))
+                        FormFieldValidator.Rule({ it.isNullOrEmpty() }, getString(R.string.change_master_password_old_master_password_validation_error_empty))
                     )
                 ),
                 FormFieldValidator(
                     binding.textInputLayoutNewMasterPassword, binding.textInputEditTextNewMasterPassword, listOf(
-                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.change_master_password_new_master_password_validation_error_empty))
+                        FormFieldValidator.Rule({ it.isNullOrEmpty() }, getString(R.string.change_master_password_new_master_password_validation_error_empty))
                     )
                 ),
                 FormFieldValidator(
@@ -114,7 +114,7 @@ class ChangeMasterPasswordFragment : ToolBarFragment() {
     private fun changeMasterPassword(oldMasterPassword: String, newMasterPassword: String) {
         launchRequestSending(
             handleSuccess = {
-                showShortFeedback(getString(R.string.change_master_password_successful_message))
+                showInformation(getString(R.string.change_master_password_successful_message))
                 popBackstack()
             },
             handleFailure = {

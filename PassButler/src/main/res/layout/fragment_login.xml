@@ -12,128 +12,145 @@
         android:id="@+id/constraintLayout_root_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?android:attr/colorBackground"
         android:clickable="true"
-        android:focusableInTouchMode="true"
-        android:transitionGroup="true">
+        android:transitionGroup="true"
+        android:focusableInTouchMode="true">
 
         <ImageView
-            android:id="@+id/imageView_logo"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_marginStart="?marginL"
-            android:layout_marginTop="?marginM"
-            android:layout_marginEnd="?marginL"
-            app:layout_constraintBottom_toTopOf="@+id/textInputLayout_serverurl"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.3"
-            app:layout_constraintVertical_chainStyle="packed"
-            app:srcCompat="@mipmap/icon_launcher_round"
-            tools:ignore="ContentDescription" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayout_serverurl"
+            android:id="@+id/imageView_background"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="?marginL"
-            android:layout_marginTop="?marginL"
-            android:layout_marginEnd="?marginL"
-            app:layout_constraintBottom_toTopOf="@+id/textInputLayout_username"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView_logo"
-            app:layout_constraintVertical_chainStyle="packed">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/textInputEditText_serverurl"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/login_serverurl_hint"
-                android:imeOptions="actionNext"
-                android:importantForAutofill="no"
-                android:inputType="textUri" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayout_username"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="?marginL"
-            android:layout_marginTop="0dp"
-            android:layout_marginEnd="?marginL"
-            app:layout_constraintBottom_toTopOf="@+id/textInputLayout_master_password"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textInputLayout_serverurl"
-            app:layout_constraintVertical_chainStyle="packed">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/textInputEditText_username"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/login_username_hint"
-                android:imeOptions="actionNext"
-                android:importantForAutofill="no"
-                android:inputType="textEmailAddress" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayout_master_password"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="?marginL"
-            android:layout_marginEnd="?marginL"
-            app:endIconMode="password_toggle"
-            app:layout_constraintBottom_toTopOf="@+id/checkBox_local_login"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textInputLayout_username"
-            app:layout_constraintVertical_chainStyle="packed">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/textInputEditText_master_password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/login_master_password_hint"
-                android:imeOptions="actionUnspecified"
-                android:importantForAutofill="no"
-                android:inputType="textPassword" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <CheckBox
-            android:id="@+id/checkBox_local_login"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="?marginL"
-            android:layout_marginTop="?marginS"
-            android:layout_marginEnd="?marginL"
-            android:text="@string/login_local_login_label"
-            app:layout_constraintBottom_toTopOf="@+id/button_login"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textInputLayout_master_password"
-            app:layout_constraintVertical_chainStyle="packed" />
-
-        <Button
-            android:id="@+id/button_login"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="?marginL"
-            android:layout_marginTop="?marginS"
-            android:layout_marginEnd="?marginL"
-            android:layout_marginBottom="?marginM"
-            android:text="@string/login_button_text"
+            android:layout_height="0dp"
+            android:scaleType="centerCrop"
+            android:tint="?colorBackgroundImageTint"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/checkBox_local_login"
-            app:layout_constraintVertical_chainStyle="packed" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/background_mesh_polygons"
+            tools:ignore="ContentDescription" />
+
+        <!-- Use 0dp elevation to avoid different border color when translucent background is used -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/materialCardView_container"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/color_surface_transparent"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- Set `clipToPadding` to `false` to avoid clip the elevation of the bottom button -->
+            <!-- The top padding calculates: logo height / 2  + marginM -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:orientation="vertical"
+                android:paddingStart="?marginM"
+                android:paddingTop="76dp"
+                android:paddingEnd="?marginM"
+                android:paddingBottom="?marginM">
+
+                <TextView
+                    android:id="@+id/textView_headline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/login_headline"
+                    android:textAlignment="center"
+                    android:textAppearance="?textAppearanceHeadline1" />
+
+                <TextView
+                    android:id="@+id/textView_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="?marginS"
+                    android:text="@string/login_description"
+                    android:textAlignment="center"
+                    android:textAppearance="?textAppearanceBody1" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textInputLayout_serverurl"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="?marginM">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/textInputEditText_serverurl"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/login_serverurl_hint"
+                        android:imeOptions="actionNext"
+                        android:importantForAutofill="no"
+                        android:inputType="textUri" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textInputLayout_username"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="?marginS">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/textInputEditText_username"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/login_username_hint"
+                        android:imeOptions="actionNext"
+                        android:importantForAutofill="no"
+                        android:inputType="textEmailAddress" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textInputLayout_master_password"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="?marginS"
+                    app:endIconMode="password_toggle">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/textInputEditText_master_password"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/login_master_password_hint"
+                        android:imeOptions="actionUnspecified"
+                        android:importantForAutofill="no"
+                        android:inputType="textPassword" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <CheckBox
+                    android:id="@+id/checkBox_local_login"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="?marginS"
+                    android:text="@string/login_local_login_label" />
+
+                <!-- Use `marginS` instead of `marginM` for top spacing because of massive padding of the checkbox -->
+                <Button
+                    android:id="@+id/button_login"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="?marginS"
+                    android:text="@string/login_button_text" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <ImageView
+            android:id="@+id/imageView_logo"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            app:layout_constraintBottom_toTopOf="@+id/materialCardView_container"
+            app:layout_constraintEnd_toEndOf="@+id/materialCardView_container"
+            app:layout_constraintStart_toStartOf="@+id/materialCardView_container"
+            app:layout_constraintTop_toTopOf="@+id/materialCardView_container"
+            app:srcCompat="@drawable/logo_elevated"
+            tools:ignore="ContentDescription" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

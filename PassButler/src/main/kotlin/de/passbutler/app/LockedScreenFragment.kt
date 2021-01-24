@@ -1,7 +1,6 @@
 package de.passbutler.app
 
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,28 +11,28 @@ import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.activityViewModels
 import de.passbutler.app.base.BuildInformationProvider
 import de.passbutler.app.base.DebugConstants
-import de.passbutler.app.base.bindEnabled
-import de.passbutler.app.base.bindVisibility
-import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.crypto.BiometricAuthenticationCallbackExecutor
 import de.passbutler.app.databinding.FragmentLockedScreenBinding
 import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
-import de.passbutler.app.ui.showError
+import de.passbutler.app.ui.bindEnabled
+import de.passbutler.app.ui.bindVisibility
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.base.BuildType
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
+import de.passbutler.common.ui.RequestSending
+import de.passbutler.common.ui.launchRequestSending
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
 
-class LockedScreenFragment : BaseFragment() {
+class LockedScreenFragment : BaseFragment(), RequestSending {
 
     var mode: Mode = Mode.Normal
 
@@ -58,7 +57,7 @@ class LockedScreenFragment : BaseFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentLockedScreenBinding.inflate(inflater).also { binding ->
+        binding = FragmentLockedScreenBinding.inflate(inflater, container, false).also { binding ->
             setupDebugPresetsButton(binding)
             setupTextViews(binding)
             setupUnlockWithPasswordButton(binding)
@@ -97,7 +96,7 @@ class LockedScreenFragment : BaseFragment() {
             listOf(
                 FormFieldValidator(
                     binding.textInputLayoutMasterPassword, binding.textInputEditTextMasterPassword, listOf(
-                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_master_password_validation_error_empty))
+                        FormFieldValidator.Rule({ it.isNullOrEmpty() }, getString(R.string.form_master_password_validation_error_empty))
                     )
                 )
             )
@@ -112,7 +111,7 @@ class LockedScreenFragment : BaseFragment() {
 
                 if (masterPassword != null) {
                     launchUnlockRequestSending {
-                        viewModel.unlockScreenWithPassword(masterPassword)
+                        viewModel.unlockVaultWithPassword(masterPassword)
                     }
                 }
             }
@@ -235,7 +234,7 @@ class LockedScreenFragment : BaseFragment() {
 
             if (initializedBiometricUnlockCipher != null) {
                 launchUnlockRequestSending {
-                    viewModel.unlockScreenWithBiometrics(initializedBiometricUnlockCipher)
+                    viewModel.unlockVaultWithBiometrics(initializedBiometricUnlockCipher)
                 }
             } else {
                 showError(getString(R.string.locked_screen_biometrics_unlock_failed_general_title))

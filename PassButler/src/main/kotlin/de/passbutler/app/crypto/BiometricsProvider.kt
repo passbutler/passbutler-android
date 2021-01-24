@@ -9,7 +9,7 @@ import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
 import android.security.keystore.KeyProperties.PURPOSE_DECRYPT
 import android.security.keystore.KeyProperties.PURPOSE_ENCRYPT
 import androidx.biometric.BiometricManager
-import de.passbutler.app.base.AbstractPassButlerApplication
+import de.passbutler.app.PassButlerApplication
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
@@ -58,7 +58,7 @@ class BiometricsProvider : BiometricsProviding {
         }
 
     private val applicationContext
-        get() = AbstractPassButlerApplication.applicationContext
+        get() = PassButlerApplication.applicationContext
 
     // Throws `KeyStoreException`
     private val androidKeyStore by lazy {

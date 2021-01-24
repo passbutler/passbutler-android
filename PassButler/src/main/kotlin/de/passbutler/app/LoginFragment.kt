@@ -1,30 +1,30 @@
 package de.passbutler.app
 
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import de.passbutler.app.base.BuildInformationProvider
 import de.passbutler.app.base.DebugConstants
-import de.passbutler.app.base.launchRequestSending
 import de.passbutler.app.databinding.FragmentLoginBinding
 import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.VisibilityHideMode
-import de.passbutler.app.ui.showError
 import de.passbutler.app.ui.showFadeInOutAnimation
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.base.BuildType
 import de.passbutler.common.database.RequestUnauthorizedException
+import de.passbutler.common.ui.RequestSending
+import de.passbutler.common.ui.launchRequestSending
 
-class LoginFragment : BaseFragment() {
+class LoginFragment : BaseFragment(), RequestSending {
 
-    private val viewModel by viewModels<LoginViewModel>()
+    private val viewModel by userViewModelUsingActivityViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var formServerUrl: String? = null
     private var formUsername: String? = null
@@ -43,7 +43,7 @@ class LoginFragment : BaseFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentLoginBinding.inflate(inflater).also { binding ->
+        binding = FragmentLoginBinding.inflate(inflater, container, false).also { binding ->
             setupDebugPresetsButton(binding)
             setupLocalLoginCheckbox(binding)
             setupLoginButton(binding)
@@ -85,20 +85,20 @@ class LoginFragment : BaseFragment() {
             listOfNotNull(
                 FormFieldValidator(
                     binding.textInputLayoutServerurl, binding.textInputEditTextServerurl, listOfNotNull(
-                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_serverurl_validation_error_empty)),
-                        FormFieldValidator.Rule({ !URLUtil.isValidUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid)),
+                        FormFieldValidator.Rule({ it.isNullOrEmpty() }, getString(R.string.form_serverurl_validation_error_empty)),
+                        FormFieldValidator.Rule({ !URLUtil.isNetworkUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid)),
                         FormFieldValidator.Rule({ !URLUtil.isHttpsUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid_scheme))
                             .takeIf { BuildInformationProvider.buildType == BuildType.Release }
                     )
                 ).takeIf { !isLocalLogin },
                 FormFieldValidator(
                     binding.textInputLayoutUsername, binding.textInputEditTextUsername, listOf(
-                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.login_username_validation_error_empty))
+                        FormFieldValidator.Rule({ it.isNullOrEmpty() }, getString(R.string.login_username_validation_error_empty))
                     )
                 ),
                 FormFieldValidator(
                     binding.textInputLayoutMasterPassword, binding.textInputEditTextMasterPassword, listOf(
-                        FormFieldValidator.Rule({ TextUtils.isEmpty(it) }, getString(R.string.form_master_password_validation_error_empty))
+                        FormFieldValidator.Rule({ it.isNullOrEmpty() }, getString(R.string.form_master_password_validation_error_empty))
                     )
                 )
             )
@@ -139,7 +139,7 @@ class LoginFragment : BaseFragment() {
             },
             isCancellable = false
         ) {
-            viewModel.loginUser(serverUrl, username, masterPassword)
+            viewModel.loginVault(serverUrl, username, masterPassword)
         }
     }
 

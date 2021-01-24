@@ -13,9 +13,11 @@
         android:textStyle="bold"
         tools:text="Title" />
 
+    <!-- Use `marginXS` instead of `marginS` for top spacing because otherwise it looks too separated -->
     <TextView
         android:id="@+id/textView_value"
         android:layout_width="match_parent"
+        android:layout_marginTop="?marginXS"
         android:layout_height="wrap_content"
         android:textAppearance="?textAppearanceBody2"
         tools:text="Value" />

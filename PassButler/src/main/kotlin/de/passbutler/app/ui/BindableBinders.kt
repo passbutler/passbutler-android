@@ -1,13 +1,16 @@
-package de.passbutler.app.base
+package de.passbutler.app.ui
 
 import android.view.View
 import android.widget.TextView
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.material.textfield.TextInputEditText
-import de.passbutler.app.ui.visible
 import de.passbutler.common.base.Bindable
 import de.passbutler.common.base.MutableBindable
+
+/**
+ * Visibility binders
+ */
 
 fun <T> View.bindVisibility(lifecycleOwner: LifecycleOwner, bindable: Bindable<T>, block: (T) -> Boolean) {
     bindable.addLifecycleObserver(lifecycleOwner, true) { newValue ->
@@ -101,9 +104,9 @@ fun <T> TextView.bindTextAndVisibility(lifecycleOwner: LifecycleOwner, bindable:
  * Input binders
  */
 
-fun TextInputEditText.bindInput(liveData: MutableBindable<String>) {
-    setText(liveData.value)
+fun TextInputEditText.bindInput(bindable: MutableBindable<String>) {
+    setText(bindable.value)
     addTextChangedListener { newText ->
-        liveData.value = newText.toString()
+        bindable.value = newText.toString()
     }
 }
