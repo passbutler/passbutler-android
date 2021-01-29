@@ -98,9 +98,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
         val loggedInUserViewModel = viewModel.loggedInUserViewModel
         Logger.debug("loggedInUserViewModel = $loggedInUserViewModel")
 
-        loggedInUserViewModel?.username?.addLifecycleObserver(viewLifecycleOwner, true) {
-            navigationHeaderSubtitleView?.text = it
-        }
+        navigationHeaderSubtitleView?.text = loggedInUserViewModel?.username
 
         loggedInUserViewModel?.loggedInStateStorage?.addLifecycleObserver(viewLifecycleOwner, true) {
             updateToolbarSubtitle()
