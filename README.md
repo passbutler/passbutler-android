@@ -13,3 +13,13 @@ Recommended version:
 
 Recommended plugin:
 - SQLDelight (https://plugins.jetbrains.com/plugin/8191-sqldelight)
+
+### Packaging
+
+Build the Android Application Package (APK):
+
+    $ ./gradlew assembleDebug
+
+Install on a connected device:
+
+    $ adb install ./PassButler/build/outputs/apk/debug/PassButler-debug.apk
