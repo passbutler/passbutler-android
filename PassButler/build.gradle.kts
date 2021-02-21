@@ -57,7 +57,7 @@ dependencies {
     implementation(project(":PassButlerCommon"))
 
     // Kotlin
-    val kotlinVersion = "1.4.21"
+    val kotlinVersion = "1.4.30"
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     // Kotlin Coroutines for Android
@@ -72,7 +72,7 @@ dependencies {
     implementation("com.squareup.sqldelight:android-driver:1.4.4")
 
     // Google Material theme/components
-    implementation("com.google.android.material:material:1.2.1")
+    implementation("com.google.android.material:material:1.3.0")
 
     // Android widgets
     implementation("androidx.appcompat:appcompat:1.2.0")
@@ -81,27 +81,28 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.0.4")
 
     // Android Lifecycle and ViewModel components
-    val lifecycleVersion = "2.2.0"
-    implementation("androidx.lifecycle:lifecycle-extensions:$lifecycleVersion")
+    implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
+
+    val lifecycleVersion = "2.3.0"
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
 
-    implementation("androidx.fragment:fragment-ktx:1.2.5")
+    implementation("androidx.fragment:fragment-ktx:1.3.0")
 
     // Android Biometrics framework
-    implementation("androidx.biometric:biometric:1.0.1")
+    implementation("androidx.biometric:biometric:1.1.0")
 
     // Android Preference framework
     implementation("androidx.preference:preference:1.1.1")
 
     // JUnit 5
-    val junitVersion = "5.7.0"
+    val junitVersion = "5.7.1"
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
     // Mockk.io
-    testImplementation("io.mockk:mockk:1.10.5")
+    testImplementation("io.mockk:mockk:1.10.6")
 }
 
 fun gitCommitCount(): Int {

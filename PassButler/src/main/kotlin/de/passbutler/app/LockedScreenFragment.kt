@@ -4,10 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.biometric.BiometricConstants.ERROR_CANCELED
-import androidx.biometric.BiometricConstants.ERROR_NEGATIVE_BUTTON
-import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
+import androidx.biometric.BiometricPrompt.ERROR_CANCELED
+import androidx.biometric.BiometricPrompt.ERROR_NEGATIVE_BUTTON
+import androidx.biometric.BiometricPrompt.ERROR_USER_CANCELED
 import androidx.fragment.app.activityViewModels
 import de.passbutler.app.base.BuildInformationProvider
 import de.passbutler.app.base.DebugConstants

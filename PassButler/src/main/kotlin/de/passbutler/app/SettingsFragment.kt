@@ -5,10 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
-import androidx.biometric.BiometricConstants.ERROR_CANCELED
-import androidx.biometric.BiometricConstants.ERROR_NEGATIVE_BUTTON
-import androidx.biometric.BiometricConstants.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt
+import androidx.biometric.BiometricPrompt.ERROR_CANCELED
+import androidx.biometric.BiometricPrompt.ERROR_NEGATIVE_BUTTON
+import androidx.biometric.BiometricPrompt.ERROR_USER_CANCELED
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.preference.ListPreference
