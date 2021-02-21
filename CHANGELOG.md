@@ -2,6 +2,9 @@
 
 ## [1.0.0] - UNRELEASED
 
+### Added
+- Missed "open URL" context menu entry
+
 ### Fixed
 - The case of items is ignored for sorting on item and item authorization screens
 

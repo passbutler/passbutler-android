@@ -31,6 +31,7 @@ import de.passbutler.app.ui.VisibilityHideMode
 import de.passbutler.app.ui.addLifecycleObserver
 import de.passbutler.app.ui.context
 import de.passbutler.app.ui.copyToClipboard
+import de.passbutler.app.ui.openBrowser
 import de.passbutler.app.ui.setupWithFilterableAdapter
 import de.passbutler.app.ui.showFadeInOutAnimation
 import de.passbutler.app.ui.showFragmentModally
@@ -158,6 +159,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
                     ItemEntryAdapter.ItemEntryContextMenuItem.COPY_USERNAME -> copyItemInformationToClipboard(viewContext, entry.itemViewModel.itemData?.username)
                     ItemEntryAdapter.ItemEntryContextMenuItem.COPY_PASSWORD -> copyItemInformationToClipboard(viewContext, entry.itemViewModel.itemData?.password)
                     ItemEntryAdapter.ItemEntryContextMenuItem.COPY_URL -> copyItemInformationToClipboard(viewContext, entry.itemViewModel.itemData?.url)
+                    ItemEntryAdapter.ItemEntryContextMenuItem.OPEN_URL -> openItemUrl(entry.itemViewModel.itemData?.url)
                 }
             }
         )
@@ -180,6 +182,14 @@ class OverviewFragment : BaseFragment(), RequestSending {
             showInformation(getString(R.string.overview_item_information_clipboard_successful_message))
         } else {
             showError(getString(R.string.overview_item_information_clipboard_failed_empty_title))
+        }
+    }
+
+    private fun openItemUrl(itemUrl: String?) {
+        if (itemUrl?.isNotBlank() == true) {
+            openBrowser(itemUrl)
+        } else {
+            showError(getString(R.string.overview_open_url_failed_title))
         }
     }
 
@@ -430,6 +440,7 @@ class ItemEntryAdapter(
                         menu.add(ItemEntryContextMenuItem.COPY_USERNAME, clickedCallback)
                         menu.add(ItemEntryContextMenuItem.COPY_PASSWORD, clickedCallback)
                         menu.add(ItemEntryContextMenuItem.COPY_URL, clickedCallback)
+                        menu.add(ItemEntryContextMenuItem.OPEN_URL, clickedCallback)
                     }
                 }
             }
@@ -447,6 +458,7 @@ class ItemEntryAdapter(
         COPY_USERNAME(R.string.overview_item_context_menu_copy_username),
         COPY_PASSWORD(R.string.overview_item_context_menu_copy_password),
         COPY_URL(R.string.overview_item_context_menu_copy_url),
+        OPEN_URL(R.string.overview_item_context_menu_open_url),
     }
 }
 
