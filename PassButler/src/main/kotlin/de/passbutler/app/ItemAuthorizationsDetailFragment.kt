@@ -32,6 +32,7 @@ import de.passbutler.common.ui.RequestSending
 import de.passbutler.common.ui.launchRequestSending
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
+import java.util.*
 
 class ItemAuthorizationsDetailFragment : ToolBarFragment(), RequestSending {
 
@@ -261,7 +262,7 @@ class ItemAuthorizationEntry(val itemAuthorizationEditingViewModel: ItemAuthoriz
     private val itemAuthorizationModel = itemAuthorizationEditingViewModel.itemAuthorizationModel
 
     override fun compareTo(other: ItemAuthorizationEntry): Int {
-        return compareValuesBy(this, other, { it.itemAuthorizationEditingViewModel.username })
+        return compareValuesBy(this, other, { it.itemAuthorizationEditingViewModel.username.toLowerCase(Locale.getDefault()) })
     }
 }
 

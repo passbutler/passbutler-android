@@ -48,6 +48,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
+import java.util.*
 
 class OverviewFragment : BaseFragment(), RequestSending {
 
@@ -463,7 +464,7 @@ class ItemEntry(val itemViewModel: ItemViewModel) : ListItemIdentifiable, Compar
         get() = PassButlerApplication.applicationContext
 
     override fun compareTo(other: ItemEntry): Int {
-        return compareValuesBy(this, other, { it.itemViewModel.title })
+        return compareValuesBy(this, other, { it.itemViewModel.title?.toLowerCase(Locale.getDefault()) })
     }
 }
 
