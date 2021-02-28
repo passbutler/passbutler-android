@@ -184,22 +184,22 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
     }
 
     private fun setupItemFields(binding: FragmentItemdetailBinding) {
-        binding.textInputLayoutTitle.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
+        binding.textInputEditTextTitle.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
         binding.textInputEditTextTitle.bindInput(viewModel.title)
 
         setupPasswordField(binding)
 
-        binding.textInputLayoutUsername.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
+        binding.textInputEditTextUsername.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
         binding.textInputEditTextUsername.bindInput(viewModel.username)
 
-        binding.textInputLayoutUrl.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
+        binding.textInputEditTextUrl.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
         binding.textInputEditTextUrl.bindInput(viewModel.url)
 
         setupNotesField(binding)
     }
 
     private fun setupPasswordField(binding: FragmentItemdetailBinding) {
-        binding.textInputLayoutPassword.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
+        binding.textInputEditTextPassword.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
         binding.textInputEditTextPassword.bindInput(viewModel.password)
 
         // Be sure, the `inputType` is set first to make `END_ICON_PASSWORD_TOGGLE` as `endIconMode` work properly
@@ -215,8 +215,8 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
     private fun setupNotesField(binding: FragmentItemdetailBinding) {
         binding.textInputLayoutNotes.isCounterEnabled = true
         binding.textInputLayoutNotes.counterMaxLength = NOTES_MAXIMUM_CHARACTERS
-        binding.textInputLayoutNotes.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
 
+        binding.textInputEditTextNotes.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
         binding.textInputEditTextNotes.bindInput(viewModel.notes)
     }
 
