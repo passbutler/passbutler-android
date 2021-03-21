@@ -19,7 +19,6 @@ import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.addLifecycleObserver
-import de.passbutler.app.ui.bindEnabled
 import de.passbutler.app.ui.bindInput
 import de.passbutler.app.ui.bindTextAndVisibility
 import de.passbutler.app.ui.bindVisibility
@@ -162,7 +161,7 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
             setupItemFields(binding)
             setupItemAuthorizationsSection(binding)
             setupInformationView(binding)
-            setupDeleteItemButton(binding)
+            setupDeleteSection(binding)
 
             binding.groupExistingItemViews.bindVisibility(viewLifecycleOwner, viewModel.isNewItem) { isNewItem ->
                 !isNewItem
@@ -184,22 +183,17 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
     }
 
     private fun setupItemFields(binding: FragmentItemdetailBinding) {
-        binding.textInputEditTextTitle.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
         binding.textInputEditTextTitle.bindInput(viewModel.title)
 
         setupPasswordField(binding)
 
-        binding.textInputEditTextUsername.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
         binding.textInputEditTextUsername.bindInput(viewModel.username)
-
-        binding.textInputEditTextUrl.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
         binding.textInputEditTextUrl.bindInput(viewModel.url)
 
         setupNotesField(binding)
     }
 
     private fun setupPasswordField(binding: FragmentItemdetailBinding) {
-        binding.textInputEditTextPassword.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
         binding.textInputEditTextPassword.bindInput(viewModel.password)
 
         // Be sure, the `inputType` is set first to make `END_ICON_PASSWORD_TOGGLE` as `endIconMode` work properly
@@ -216,7 +210,6 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
         binding.textInputLayoutNotes.isCounterEnabled = true
         binding.textInputLayoutNotes.counterMaxLength = NOTES_MAXIMUM_CHARACTERS
 
-        binding.textInputEditTextNotes.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
         binding.textInputEditTextNotes.bindInput(viewModel.notes)
     }
 
@@ -257,8 +250,10 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
         }
     }
 
-    private fun setupDeleteItemButton(binding: FragmentItemdetailBinding) {
-        binding.buttonDeleteItem.bindEnabled(viewLifecycleOwner, viewModel.isItemModificationAllowed)
+    private fun setupDeleteSection(binding: FragmentItemdetailBinding) {
+        binding.groupDeleteSectionViews.bindVisibility(viewLifecycleOwner, viewModel.isNewItem, viewModel.isItemModificationAllowed) { isNewItem, isItemModificationAllowed ->
+            !isNewItem && isItemModificationAllowed
+        }
 
         binding.buttonDeleteItem.setOnClickListener {
             deleteClicked()

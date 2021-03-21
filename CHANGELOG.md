@@ -6,6 +6,9 @@
 - Missed "open URL" context menu entry
 - Unmasking password icon for master password dialog when setup biometric unlock
 
+## Changed
+- Allow to copy item details of read-only items (do not disable them anymore) - the delete button is hidden instead of disabled to avoid user confusion (like the save accept toolbar icon)
+
 ### Fixed
 - The case of items is ignored for sorting on item and item authorization screens
 - Do not disable the unmasking password icon of password fields for readonly shared items

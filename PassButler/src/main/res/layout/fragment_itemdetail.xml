@@ -269,12 +269,27 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textView_delete_header" />
 
-        <!-- Contains all views that should be shown only for existing items (except for views `button_manage_authorizations` and `textView_authorizations_footer` that handle visibility by itself -->
+        <!--
+            Contains all views that should be shown only for existing items - except for:
+            - `button_manage_authorizations`
+            - `textView_authorizations_footer`
+            - `textView_delete_header`
+            - `button_delete_item`
+
+            that handle visibility otherwise.
+        -->
         <androidx.constraintlayout.widget.Group
             android:id="@+id/group_existing_item_views"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:constraint_referenced_ids="textView_authorizations_header,textView_authorizations_description,textView_information_header,information_item_modified,information_item_created,information_item_id,textView_delete_header,button_delete_item"
+            app:constraint_referenced_ids="textView_authorizations_header,textView_authorizations_description,textView_information_header,information_item_modified,information_item_created,information_item_id"
+            tools:visibility="visible" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/group_delete_section_views"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="textView_delete_header,button_delete_item"
             tools:visibility="visible" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
