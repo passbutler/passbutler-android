@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -7,19 +8,19 @@
 
     <TextView
         android:id="@+id/textView_title"
+        style="@style/Widget.PassButler.Body1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?textAppearanceBody1"
         android:textStyle="bold"
         tools:text="Title" />
 
     <!-- Use `marginXS` instead of `marginS` for top spacing because otherwise it looks too separated -->
     <TextView
         android:id="@+id/textView_value"
+        style="@style/Widget.PassButler.Body2"
         android:layout_width="match_parent"
-        android:layout_marginTop="?marginXS"
         android:layout_height="wrap_content"
-        android:textAppearance="?textAppearanceBody2"
+        android:layout_marginTop="?marginXS"
         tools:text="Value" />
 
 </LinearLayout>

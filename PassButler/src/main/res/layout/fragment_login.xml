@@ -57,18 +57,18 @@
                     android:id="@+id/textView_headline"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    style="@style/Widget.PassButler.Headline1"
                     android:text="@string/login_headline"
-                    android:textAlignment="center"
-                    android:textAppearance="?textAppearanceHeadline1" />
+                    android:textAlignment="center" />
 
                 <TextView
                     android:id="@+id/textView_description"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    style="@style/Widget.PassButler.Body1"
                     android:layout_marginTop="?marginS"
                     android:text="@string/login_description"
-                    android:textAlignment="center"
-                    android:textAppearance="?textAppearanceBody1" />
+                    android:textAlignment="center"/>
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/textInputLayout_serverurl"

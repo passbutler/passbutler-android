@@ -56,20 +56,20 @@
 
                 <TextView
                     android:id="@+id/textView_headline"
+                    style="@style/Widget.PassButler.Headline1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textAlignment="center"
-                    android:textAppearance="?textAppearanceHeadline1"
                     tools:text="@string/locked_screen_header_normal" />
 
                 <TextView
                     android:id="@+id/textView_description"
+                    style="@style/Widget.PassButler.Body1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="?marginS"
                     android:text="@string/locked_screen_description"
-                    android:textAlignment="center"
-                    android:textAppearance="?textAppearanceBody1" />
+                    android:textAlignment="center" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/textInputLayout_master_password"
@@ -98,6 +98,7 @@
 
                 <TextView
                     android:id="@+id/textView_unlock_method_divider"
+                    style="@style/Widget.PassButler.Body1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="?marginM"
@@ -113,12 +114,12 @@
 
                 <TextView
                     android:id="@+id/textView_button_unlock_biometric_disabled_hint"
+                    style="@style/Widget.PassButler.Caption"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="?marginS"
                     android:text="@string/locked_screen_button_biometric_disabled_hint_text"
-                    android:textAlignment="center"
-                    android:textAppearance="?textAppearanceCaption" />
+                    android:textAlignment="center" />
 
             </LinearLayout>
 

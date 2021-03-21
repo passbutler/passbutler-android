@@ -30,12 +30,12 @@
 
         <TextView
             android:id="@+id/textView_autofill_unlock_item"
+            style="@style/Widget.PassButler.Body2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/marginM"
             android:layout_marginEnd="@dimen/marginM"
-            android:text="@string/autofill_unlock_entry_label"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+            android:text="@string/autofill_unlock_entry_label" />
 
     </LinearLayout>
 

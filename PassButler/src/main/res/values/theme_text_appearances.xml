@@ -9,4 +9,10 @@
         <item name="android:textSize">@dimen/textSizeMedium</item>
     </style>
 
+    <style name="TextAppearance.PassButler.Subtitle1" parent="TextAppearance.MaterialComponents.Subtitle1" />
+
+    <style name="TextAppearance.PassButler.Body1" parent="TextAppearance.MaterialComponents.Body1" />
+    <style name="TextAppearance.PassButler.Body2" parent="TextAppearance.MaterialComponents.Body2" />
+    <style name="TextAppearance.PassButler.Caption" parent="TextAppearance.MaterialComponents.Caption" />
+
 </resources>

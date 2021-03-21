@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,13 +8,13 @@
 
     <TextView
         android:id="@+id/textView_header"
+        style="@style/Widget.PassButler.Headline1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"
         android:layout_marginTop="?marginM"
         android:layout_marginEnd="?marginM"
         android:text="@string/about_header"
-        android:textAppearance="?textAppearanceHeadline1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,12 +22,12 @@
 
     <TextView
         android:id="@+id/textView_subheader"
+        style="@style/Widget.PassButler.Body1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"
         android:layout_marginTop="?marginS"
         android:layout_marginEnd="?marginM"
-        android:textAppearance="?textAppearanceBody1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -35,6 +36,7 @@
 
     <TextView
         android:id="@+id/textView_passage_1"
+        style="@style/Widget.PassButler.Body2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"
@@ -42,7 +44,6 @@
         android:layout_marginEnd="?marginM"
         android:layout_marginBottom="?marginM"
         android:text="@string/about_passage_1"
-        android:textAppearance="?textAppearanceBody2"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"

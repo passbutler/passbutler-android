@@ -42,13 +42,13 @@
 
     <TextView
         android:id="@+id/textView_drawer_header_title"
+        style="@style/Widget.PassButler.Headline1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"
         android:layout_marginTop="?marginM"
         android:layout_marginEnd="?marginM"
         android:text="@string/drawer_header_title"
-        android:textAppearance="?textAppearanceHeadline1"
         app:layout_constraintBottom_toTopOf="@id/textView_drawer_header_subtitle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -56,6 +56,7 @@
 
     <TextView
         android:id="@+id/textView_drawer_header_subtitle"
+        style="@style/Widget.PassButler.Body2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"
@@ -70,6 +71,7 @@
 
     <TextView
         android:id="@+id/textView_drawer_header_usertype"
+        style="@style/Widget.PassButler.Body2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"

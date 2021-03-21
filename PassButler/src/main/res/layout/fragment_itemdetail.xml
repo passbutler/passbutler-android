@@ -11,8 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clickable="true"
-        android:paddingBottom="?marginM"
-        android:focusableInTouchMode="true">
+        android:focusableInTouchMode="true"
+        android:paddingBottom="?marginM">
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textInputLayout_title"
@@ -39,13 +39,13 @@
 
         <TextView
             android:id="@+id/textView_details_header"
+            style="@style/Widget.PassButler.Headline1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="?marginM"
             android:layout_marginTop="?marginL"
             android:layout_marginEnd="?marginM"
             android:text="@string/itemdetail_details_header"
-            android:textAppearance="?textAppearanceHeadline1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textInputLayout_title" />
@@ -144,25 +144,25 @@
 
         <TextView
             android:id="@+id/textView_authorizations_header"
+            style="@style/Widget.PassButler.Headline1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="?marginM"
             android:layout_marginTop="?marginL"
             android:layout_marginEnd="?marginM"
             android:text="@string/itemdetail_authorizations_header"
-            android:textAppearance="?textAppearanceHeadline1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textInputLayout_notes" />
 
         <TextView
             android:id="@+id/textView_authorizations_description"
+            style="@style/Widget.PassButler.Body1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="?marginM"
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
-            android:textAppearance="?textAppearanceBody1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textView_authorizations_header"
@@ -182,26 +182,26 @@
 
         <TextView
             android:id="@+id/textView_authorizations_footer_teaser"
+            style="@style/Widget.PassButler.Caption"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="?marginM"
             android:layout_marginTop="?marginS"
             android:layout_marginEnd="?marginM"
             android:text="@string/itemdetail_authorizations_footer_teaser"
-            android:textAppearance="?textAppearanceCaption"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/button_manage_authorizations" />
 
         <TextView
             android:id="@+id/textView_information_header"
+            style="@style/Widget.PassButler.Headline1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="?marginM"
             android:layout_marginTop="?marginL"
             android:layout_marginEnd="?marginM"
             android:text="@string/itemdetail_information_header"
-            android:textAppearance="?textAppearanceHeadline1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textView_authorizations_footer_teaser" />
@@ -245,13 +245,13 @@
 
         <TextView
             android:id="@+id/textView_delete_header"
+            style="@style/Widget.PassButler.Headline1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="?marginM"
             android:layout_marginTop="?marginL"
             android:layout_marginEnd="?marginM"
             android:text="@string/itemdetail_delete_header"
-            android:textAppearance="?textAppearanceHeadline1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/information_item_id" />

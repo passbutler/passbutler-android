@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Widget.PassButler.TextView" parent="Widget.MaterialComponents.TextView">
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="Widget.PassButler.Headline1" parent="Widget.PassButler.TextView">
+        <item name="android:textSize">@dimen/textSizeLarge</item>
+        <item name="android:textAppearance">@style/TextAppearance.PassButler.Headline1</item>
+    </style>
+
+    <style name="Widget.PassButler.Headline2" parent="Widget.PassButler.TextView">
+        <item name="android:textSize">@dimen/textSizeMedium</item>
+        <item name="android:textAppearance">@style/TextAppearance.PassButler.Headline2</item>
+    </style>
+
+    <style name="Widget.PassButler.Subtitle1" parent="Widget.PassButler.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.PassButler.Subtitle1</item>
+    </style>
+
+    <style name="Widget.PassButler.Body1" parent="Widget.PassButler.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.PassButler.Body1</item>
+    </style>
+
+    <style name="Widget.PassButler.Body2" parent="Widget.PassButler.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.PassButler.Body2</item>
+    </style>
+
+    <style name="Widget.PassButler.Caption" parent="Widget.PassButler.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.PassButler.Caption</item>
+    </style>
+
+</resources>
