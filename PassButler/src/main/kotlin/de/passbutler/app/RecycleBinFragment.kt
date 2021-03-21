@@ -57,6 +57,10 @@ class RecycleBinFragment : ToolBarFragment(), RequestSending {
         toolbarMenuSearchView = (toolbar.menu.findItem(R.id.item_search_menu_item_search)?.actionView as SearchView).apply {
             queryHint = getString(R.string.general_search)
         }
+
+        toolbar.setOnClickListener {
+            binding?.recyclerViewItems?.scrollToPosition(0)
+        }
     }
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

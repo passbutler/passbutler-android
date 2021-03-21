@@ -5,6 +5,7 @@
 ### Added
 - Missed "open URL" context menu entry
 - Unmasking password icon for master password dialog when setup biometric unlock
+- Scroll to top of the list when clicking on toolbar
 
 ## Changed
 - Allow to copy item details of read-only items (do not disable them anymore) - the delete button is hidden instead of disabled to avoid user confusion (like the save accept toolbar icon)

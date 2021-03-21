@@ -117,6 +117,10 @@ class OverviewFragment : BaseFragment(), RequestSending {
         binding.toolbar.apply {
             title = getString(R.string.general_app_name)
             setupToolbarMenu(this)
+
+            setOnClickListener {
+                binding.layoutOverviewContent.recyclerViewItems.scrollToPosition(0)
+            }
         }
     }
 
