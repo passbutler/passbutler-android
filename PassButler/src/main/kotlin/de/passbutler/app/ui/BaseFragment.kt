@@ -2,6 +2,7 @@ package de.passbutler.app.ui
 
 import android.content.Context
 import android.os.Bundle
+import android.view.View
 import androidx.fragment.app.Fragment
 import de.passbutler.app.MainActivity
 import de.passbutler.app.RootFragment
@@ -31,8 +32,8 @@ open class BaseFragment : Fragment(), UIPresenting, MainActivity.OnBackPressedLi
         super.onDetach()
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         if (savedInstanceState != null) {
             if (this !is RootFragment) {
