@@ -4,8 +4,8 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
+import de.passbutler.app.AbstractRootFragment
 import de.passbutler.app.MainActivity
-import de.passbutler.app.RootFragment
 import de.passbutler.common.ui.TransitionType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +36,7 @@ open class BaseFragment : Fragment(), UIPresenting, MainActivity.OnBackPressedLi
         super.onViewCreated(view, savedInstanceState)
 
         if (savedInstanceState != null) {
-            if (this !is RootFragment) {
+            if (this !is AbstractRootFragment) {
                 // Restore fragment presenting delegate from `RootFragment` on configuration changes
                 (activity as? MainActivity)?.rootFragment?.uiPresentingDelegate?.let {
                     uiPresentingDelegate = it

@@ -14,6 +14,7 @@
 - The case of items is ignored for sorting on item and item authorization screens
 - Do not disable the unmasking password icon of password fields for readonly shared items
 - Missed ellipsize of too long text (especially titles on overview screen)
+- Broken fragment presentation on autofill screen after configuration change
 
 ## [1.0.0-Preview1] - 2021-02-02
 
