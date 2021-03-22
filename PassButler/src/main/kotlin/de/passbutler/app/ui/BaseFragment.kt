@@ -27,11 +27,6 @@ open class BaseFragment : Fragment(), UIPresenting, MainActivity.OnBackPressedLi
         (activity as? MainActivity)?.addOnBackPressedListener(this)
     }
 
-    override fun onDetach() {
-        (activity as? MainActivity)?.removeOnBackPressedListener(this)
-        super.onDetach()
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -51,6 +46,11 @@ open class BaseFragment : Fragment(), UIPresenting, MainActivity.OnBackPressedLi
     override fun onDestroy() {
         coroutineJob.cancel()
         super.onDestroy()
+    }
+
+    override fun onDetach() {
+        (activity as? MainActivity)?.removeOnBackPressedListener(this)
+        super.onDetach()
     }
 
     override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean, userTriggered: Boolean, transitionType: TransitionType) {
