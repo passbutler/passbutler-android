@@ -21,6 +21,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
+import de.passbutler.app.ItemEntryAdapter.ItemEntryContextMenuItem
 import de.passbutler.app.base.createRelativeDateFormattingTranslations
 import de.passbutler.app.databinding.FragmentOverviewBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
@@ -160,10 +161,10 @@ class OverviewFragment : BaseFragment(), RequestSending {
             entryClickedCallback = { entry -> showFragment(ItemDetailFragment.newInstance(entry.itemViewModel.id)) },
             contextMenuItemClickedCallback = { entry, contextMenuItem ->
                 when (contextMenuItem) {
-                    ItemEntryAdapter.ItemEntryContextMenuItem.COPY_USERNAME -> copyItemInformationToClipboard(viewContext, entry.itemViewModel.itemData?.username)
-                    ItemEntryAdapter.ItemEntryContextMenuItem.COPY_PASSWORD -> copyItemInformationToClipboard(viewContext, entry.itemViewModel.itemData?.password)
-                    ItemEntryAdapter.ItemEntryContextMenuItem.COPY_URL -> copyItemInformationToClipboard(viewContext, entry.itemViewModel.itemData?.url)
-                    ItemEntryAdapter.ItemEntryContextMenuItem.OPEN_URL -> openItemUrl(entry.itemViewModel.itemData?.url)
+                    ItemEntryContextMenuItem.COPY_USERNAME -> copyItemInformationToClipboard(viewContext, entry.itemViewModel.itemData?.username)
+                    ItemEntryContextMenuItem.COPY_PASSWORD -> copyItemInformationToClipboard(viewContext, entry.itemViewModel.itemData?.password)
+                    ItemEntryContextMenuItem.COPY_URL -> copyItemInformationToClipboard(viewContext, entry.itemViewModel.itemData?.url)
+                    ItemEntryContextMenuItem.OPEN_URL -> openItemUrl(entry.itemViewModel.itemData?.url)
                 }
             }
         )
