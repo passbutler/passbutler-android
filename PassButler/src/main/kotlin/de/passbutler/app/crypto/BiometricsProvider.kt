@@ -9,6 +9,9 @@ import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
 import android.security.keystore.KeyProperties.PURPOSE_DECRYPT
 import android.security.keystore.KeyProperties.PURPOSE_ENCRYPT
 import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
+import androidx.biometric.BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED
+import androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS
 import de.passbutler.app.PassButlerApplication
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
@@ -39,8 +42,8 @@ class BiometricsProvider : BiometricsProviding {
     private val isHardwareCapable: Boolean
         get() {
             val biometricManager = BiometricManager.from(applicationContext)
-            val isHardwareSupportedConstants = listOf(BiometricManager.BIOMETRIC_SUCCESS, BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED)
-            val canAuthenticateResult = biometricManager.canAuthenticate()
+            val isHardwareSupportedConstants = listOf(BIOMETRIC_SUCCESS, BIOMETRIC_ERROR_NONE_ENROLLED)
+            val canAuthenticateResult = biometricManager.canAuthenticate(AUTHENTICATORS_TYPE)
 
             return isHardwareSupportedConstants.contains(canAuthenticateResult)
         }
@@ -54,7 +57,7 @@ class BiometricsProvider : BiometricsProviding {
     private val hasEnrolledBiometrics: Boolean
         get() {
             val biometricManager = BiometricManager.from(applicationContext)
-            return biometricManager.canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS
+            return biometricManager.canAuthenticate(AUTHENTICATORS_TYPE) == BIOMETRIC_SUCCESS
         }
 
     private val applicationContext
@@ -186,6 +189,8 @@ class BiometricsProvider : BiometricsProviding {
     companion object {
         private const val AES_KEY_BIT_SIZE = 256
         private const val GCM_AUTHENTICATION_TAG_BIT_SIZE = 128
+
+        private const val AUTHENTICATORS_TYPE = BIOMETRIC_WEAK
     }
 }
 
