@@ -9,6 +9,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import de.passbutler.app.ItemEntry
 import de.passbutler.app.ItemEntryAdapter
 import de.passbutler.app.R
@@ -105,7 +106,7 @@ class AutofillSelectionFragment : BaseFragment() {
         )
 
         binding.recyclerViewItems.apply {
-            layoutManager = LinearLayoutManager(context)
+            layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
             adapter = listAdapter
         }
 

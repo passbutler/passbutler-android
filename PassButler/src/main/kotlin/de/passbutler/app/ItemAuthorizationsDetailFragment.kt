@@ -112,7 +112,7 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment(), RequestSending {
 
     private fun setupItemAuthorizationsList(binding: FragmentItemAuthorizationsDetailBinding) {
         binding.recyclerViewItemAuthorizations.apply {
-            val linearLayoutManager = LinearLayoutManager(context)
+            val linearLayoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
 
             layoutManager = linearLayoutManager
             adapter = ItemAuthorizationsAdapter()
