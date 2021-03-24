@@ -39,6 +39,7 @@
         <!-- Custom attributes: -->
 
         <item name="colorBackgroundImageTint">#4D000000</item>
+        <item name="colorDivider">@color/grey70</item>
 
     </style>
 

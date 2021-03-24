@@ -8,6 +8,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.passbutler.app.databinding.FragmentRecycleBinBinding
@@ -80,8 +81,13 @@ class RecycleBinFragment : ToolBarFragment(), RequestSending {
         }
 
         binding.recyclerViewItems.apply {
-            layoutManager = LinearLayoutManager(context)
+            val linearLayoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+
+            layoutManager = linearLayoutManager
             adapter = listAdapter
+
+            val dividerItemDecoration = DividerItemDecoration(context, linearLayoutManager.orientation)
+            addItemDecoration(dividerItemDecoration)
         }
 
         toolbarMenuSearchView?.setupWithFilterableAdapter(listAdapter)

@@ -6,6 +6,7 @@
         <!-- Android widget styles: -->
 
         <item name="android:progressBarStyle">@style/Widget.PassButler.ProgressBar.Horizontal</item>
+        <item name="android:listDivider">@drawable/divider</item>
 
         <!-- AppCompat widget styles: -->
 

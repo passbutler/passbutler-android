@@ -18,8 +18,10 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.VERTICAL
 import com.google.android.material.navigation.NavigationView
 import de.passbutler.app.ItemEntryAdapter.ItemEntryContextMenuItem
 import de.passbutler.app.base.createRelativeDateFormattingTranslations
@@ -170,8 +172,13 @@ class OverviewFragment : BaseFragment(), RequestSending {
         )
 
         binding.layoutOverviewContent.recyclerViewItems.apply {
-            layoutManager = LinearLayoutManager(context)
+            val linearLayoutManager = LinearLayoutManager(context, VERTICAL, false)
+
+            layoutManager = linearLayoutManager
             adapter = listAdapter
+
+            val dividerItemDecoration = DividerItemDecoration(context, linearLayoutManager.orientation)
+            addItemDecoration(dividerItemDecoration)
         }
 
         toolbarMenuSearchView?.setupWithFilterableAdapter(listAdapter)

@@ -2,6 +2,7 @@
 <resources>
 
     <attr name="colorBackgroundImageTint" format="reference|color" />
+    <attr name="colorDivider" format="reference|color" />
 
     <attr name="marginXS" format="reference|dimension" />
     <attr name="marginS" format="reference|dimension" />
