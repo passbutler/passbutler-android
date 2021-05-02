@@ -10,6 +10,7 @@
     android:minHeight="180dp"
     android:theme="@style/ThemeOverlay.MaterialComponents.Dark">
 
+    <!-- `app:tint` does not work for dimming non-vector drawable images -->
     <ImageView
         android:id="@+id/imageView_background"
         android:layout_width="0dp"
@@ -21,7 +22,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/background_mesh_polygons"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription,UseAppTint" />
 
     <ImageView
         android:id="@+id/imageView_drawer_header_icon"

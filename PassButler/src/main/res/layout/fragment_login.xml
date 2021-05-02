@@ -16,6 +16,7 @@
         android:transitionGroup="true"
         android:focusableInTouchMode="true">
 
+        <!-- `app:tint` does not work for dimming non-vector drawable images -->
         <ImageView
             android:id="@+id/imageView_background"
             android:layout_width="0dp"
@@ -27,7 +28,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/background_mesh_polygons"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription,UseAppTint" />
 
         <!-- Use 0dp elevation to avoid different border color when translucent background is used -->
         <com.google.android.material.card.MaterialCardView
