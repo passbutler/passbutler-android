@@ -11,7 +11,7 @@ android {
         java.srcDir("./src/$name/kotlin/")
     }
 
-    compileSdkVersion(29)
+    compileSdkVersion(30)
 
     compileOptions {
         // Required minimum Java 8 for OkHttp3 used in Retrofit
@@ -25,7 +25,7 @@ android {
     defaultConfig {
         applicationId = "de.passbutler.app"
         minSdkVersion(26)
-        targetSdkVersion(29)
+        targetSdkVersion(30)
         versionCode = gitCommitCount()
         versionName = "1.0.0"
 
@@ -57,7 +57,7 @@ dependencies {
     implementation(project(":PassButlerCommon"))
 
     // Kotlin
-    val kotlinVersion = "1.4.31"
+    val kotlinVersion = "1.4.32"
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     // Kotlin Coroutines for Android
@@ -69,25 +69,25 @@ dependencies {
     implementation("org.tinylog:tinylog-impl:$tinylogVersion")
 
     // SQLDelight
-    implementation("com.squareup.sqldelight:android-driver:1.4.4")
+    implementation("com.squareup.sqldelight:android-driver:1.5.0")
 
     // Google Material theme/components
     implementation("com.google.android.material:material:1.3.0")
 
     // Android widgets
     implementation("androidx.appcompat:appcompat:1.2.0")
-    implementation("androidx.recyclerview:recyclerview:1.1.0")
+    implementation("androidx.recyclerview:recyclerview:1.2.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation("androidx.constraintlayout:constraintlayout:2.0.4")
 
     // Android Lifecycle and ViewModel components
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
 
-    val lifecycleVersion = "2.3.0"
+    val lifecycleVersion = "2.3.1"
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
 
-    implementation("androidx.fragment:fragment-ktx:1.3.1")
+    implementation("androidx.fragment:fragment-ktx:1.3.3")
 
     // Android Biometrics framework
     implementation("androidx.biometric:biometric:1.1.0")
