@@ -64,7 +64,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.3")
 
     // TinyLog logger
-    val tinylogVersion = "2.2.1"
+    val tinylogVersion = "2.3.1"
     implementation("org.tinylog:tinylog-api-kotlin:$tinylogVersion")
     implementation("org.tinylog:tinylog-impl:$tinylogVersion")
 
