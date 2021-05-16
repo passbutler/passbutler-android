@@ -21,6 +21,10 @@
 
         <item name="textAppearanceHeadline1">@style/TextAppearance.PassButler.Headline1</item>
         <item name="textAppearanceHeadline2">@style/TextAppearance.PassButler.Headline2</item>
+        <item name="textAppearanceSubtitle1">@style/TextAppearance.PassButler.Subtitle1</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.PassButler.Body1</item>
+        <item name="textAppearanceBody2">@style/TextAppearance.PassButler.Body2</item>
+        <item name="textAppearanceCaption">@style/TextAppearance.PassButler.Caption</item>
 
         <!-- Margins -->
 
