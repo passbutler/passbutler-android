@@ -16,6 +16,6 @@
 
     <!-- Special view spacings: -->
 
-    <dimen name="dialogSpacingHorizontal">20dp</dimen>
+    <dimen name="dialogSpacingHorizontal">24dp</dimen>
 
 </resources>

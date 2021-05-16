@@ -6,13 +6,14 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import de.passbutler.app.R
 
 fun BaseFragment.showEditTextDialog(title: String?, positiveClickListener: (String?) -> Unit, negativeClickListener: () -> Unit): AlertDialog? {
     return context?.let { fragmentContext ->
-        val builder = AlertDialog.Builder(fragmentContext)
+        val builder = MaterialAlertDialogBuilder(fragmentContext)
         builder.setTitle(title)
 
         val textInputLayout = TextInputLayout(fragmentContext).apply {
