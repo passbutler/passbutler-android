@@ -57,11 +57,11 @@ dependencies {
     implementation(project(":PassButlerCommon"))
 
     // Kotlin
-    val kotlinVersion = "1.4.32"
+    val kotlinVersion = "1.5.0"
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     // Kotlin Coroutines for Android
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0")
 
     // TinyLog logger
     val tinylogVersion = "2.3.1"
