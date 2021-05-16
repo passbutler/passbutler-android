@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="ThemeOverlay.PassButler.DangerousAlertDialogTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="materialAlertDialogTitleTextStyle">@style/Widget.PassButler.AlertDialog.Title.Text.Dangerous</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.PassButler.Button.TextButton.Dialog.Dangerous</item>
+    </style>
+
+</resources>

@@ -11,6 +11,9 @@
     <color name="pointRedLight">#FF7F7A</color>
     <color name="pointRedDark">#981926</color>
 
+    <color name="brightRed">#DC0017</color>
+    <color name="brightRedTransparent">#A6DC0017</color>
+
     <color name="white">#FFFFFF</color>
     <color name="whiteTransparent">#A6FFFFFF</color>
 

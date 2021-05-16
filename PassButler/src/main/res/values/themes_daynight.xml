@@ -40,6 +40,7 @@
 
         <item name="colorBackgroundImageTint">#00000000</item>
         <item name="colorDivider">@color/grey10</item>
+        <item name="colorWarning">@color/brightRed</item>
 
     </style>
 

@@ -22,6 +22,8 @@ import de.passbutler.app.ui.addLifecycleObserver
 import de.passbutler.app.ui.bindInput
 import de.passbutler.app.ui.bindTextAndVisibility
 import de.passbutler.app.ui.bindVisibility
+import de.passbutler.app.ui.showConfirmDialog
+import de.passbutler.app.ui.showDangerousConfirmDialog
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.ItemEditingViewModel.Companion.NOTES_MAXIMUM_CHARACTERS
 import de.passbutler.common.LoggedInUserViewModelUninitializedException
@@ -256,13 +258,23 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
         }
 
         binding.buttonDeleteItem.setOnClickListener {
-            deleteClicked()
+            deleteItemClicked()
         }
     }
 
-    private fun deleteClicked() {
+    private fun deleteItemClicked() {
         Keyboard.hideKeyboard(context, this)
 
+        showConfirmDialog(
+            title = getString(R.string.itemdetail_delete_confirmation_title),
+            positiveActionTitle = getString(R.string.itemdetail_delete_confirmation_button_title),
+            positiveClickListener = {
+                deleteItem()
+            }
+        )
+    }
+
+    private fun deleteItem() {
         launchRequestSending(
             handleSuccess = {
                 popBackstack()

@@ -1,5 +1,6 @@
 package de.passbutler.app
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -36,6 +37,7 @@ import de.passbutler.app.ui.context
 import de.passbutler.app.ui.copyToClipboard
 import de.passbutler.app.ui.openBrowser
 import de.passbutler.app.ui.setupWithFilterableAdapter
+import de.passbutler.app.ui.showDangerousConfirmDialog
 import de.passbutler.app.ui.showFadeInOutAnimation
 import de.passbutler.app.ui.showFragmentModally
 import de.passbutler.app.ui.visible
@@ -333,7 +335,18 @@ class OverviewFragment : BaseFragment(), RequestSending {
         }
     }
 
-    internal fun logoutUser() {
+    private fun logoutUserClicked() {
+        showDangerousConfirmDialog(
+            title = getString(R.string.overview_logout_confirmation_title),
+            message = getString(R.string.overview_logout_confirmation_message),
+            positiveActionTitle = getString(R.string.overview_logout_confirmation_button_title),
+            positiveClickListener = {
+                logoutUser()
+            }
+        )
+    }
+
+    private fun logoutUser() {
         launchRequestSending(
             handleFailure = { showError(getString(R.string.overview_logout_failed_title)) },
             isCancellable = false
@@ -345,7 +358,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
     /**
      * Closes drawer a little delayed to make show new fragment transaction more pretty
      */
-    internal fun closeDrawerDelayed() {
+    private fun closeDrawerDelayed() {
         launch {
             delay(100)
             binding?.drawerLayout?.closeDrawer(GravityCompat.START)
@@ -353,6 +366,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
     }
 
     private inner class NavigationItemSelectedListener : NavigationView.OnNavigationItemSelectedListener {
+        @SuppressLint("SyntheticAccessor")
         override fun onNavigationItemSelected(item: MenuItem): Boolean {
             val shouldCloseDrawer = when (item.itemId) {
                 R.id.drawer_menu_item_overview -> {
@@ -372,8 +386,8 @@ class OverviewFragment : BaseFragment(), RequestSending {
                     true
                 }
                 R.id.drawer_menu_item_logout -> {
-                    logoutUser()
-                    true
+                    logoutUserClicked()
+                    false
                 }
                 R.id.drawer_menu_item_homepage -> {
                     startExternalUriIntent(URL_HOMEPAGE)

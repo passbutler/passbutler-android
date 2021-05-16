@@ -11,7 +11,11 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import de.passbutler.app.R
 
-fun BaseFragment.showEditTextDialog(title: String?, positiveClickListener: (String?) -> Unit, negativeClickListener: () -> Unit): AlertDialog? {
+fun BaseFragment.showEditTextDialog(
+    title: String,
+    positiveClickListener: (String?) -> Unit,
+    negativeClickListener: (() -> Unit)? = null
+): AlertDialog? {
     return context?.let { fragmentContext ->
         val builder = MaterialAlertDialogBuilder(fragmentContext)
         builder.setTitle(title)
@@ -49,11 +53,11 @@ fun BaseFragment.showEditTextDialog(title: String?, positiveClickListener: (Stri
         }
 
         builder.setNegativeButton(getString(R.string.general_cancel)) { _, _ ->
-            negativeClickListener()
+            negativeClickListener?.invoke()
         }
 
         builder.setOnDismissListener {
-            negativeClickListener()
+            negativeClickListener?.invoke()
         }
 
         builder.create().also {
@@ -63,5 +67,61 @@ fun BaseFragment.showEditTextDialog(title: String?, positiveClickListener: (Stri
 
             textInputEditText.requestFocus()
         }
+    }
+}
+
+fun BaseFragment.showConfirmDialog(
+    title: String,
+    positiveActionTitle: String,
+    positiveClickListener: () -> Unit,
+    negativeClickListener: (() -> Unit)? = null
+) {
+    context?.let { fragmentContext ->
+        val builder = MaterialAlertDialogBuilder(fragmentContext).apply {
+            setTitle(title)
+
+            setPositiveButton(positiveActionTitle) { _, _ ->
+                positiveClickListener()
+            }
+
+            setNegativeButton(getString(R.string.general_cancel)) { _, _ ->
+                negativeClickListener?.invoke()
+            }
+
+            setOnDismissListener {
+                negativeClickListener?.invoke()
+            }
+        }
+
+        builder.show()
+    }
+}
+
+fun BaseFragment.showDangerousConfirmDialog(
+    title: String,
+    message: String,
+    positiveActionTitle: String,
+    positiveClickListener: () -> Unit,
+    negativeClickListener: (() -> Unit)? = null
+) {
+    context?.let { fragmentContext ->
+        val builder = MaterialAlertDialogBuilder(fragmentContext, R.style.ThemeOverlay_PassButler_DangerousAlertDialogTheme).apply {
+            setTitle(title)
+            setMessage(message)
+
+            setPositiveButton(positiveActionTitle) { _, _ ->
+                positiveClickListener()
+            }
+
+            setNegativeButton(getString(R.string.general_cancel)) { _, _ ->
+                negativeClickListener?.invoke()
+            }
+
+            setOnDismissListener {
+                negativeClickListener?.invoke()
+            }
+        }
+
+        builder.show()
     }
 }

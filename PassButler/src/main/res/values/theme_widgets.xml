@@ -28,6 +28,10 @@
         <item name="android:textSize">@dimen/textSizeMedium</item>
     </style>
 
+    <style name="Widget.PassButler.Button.TextButton.Dialog.Dangerous" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">?colorWarning</item>
+    </style>
+
     <style name="Widget.PassButler.TextInputLayout.Outlined" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense" />
     <style name="Widget.PassButler.TextInputLayout.Filled" parent="Widget.MaterialComponents.TextInputLayout.FilledBox.Dense" />
 
@@ -36,6 +40,11 @@
 
     <style name="Widget.PassButler.CardView" parent="Widget.MaterialComponents.CardView">
         <item name="cardCornerRadius">8dp</item>
+    </style>
+
+    <style name="Widget.PassButler.AlertDialog.Title.Text.Dangerous" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textColor">?colorWarning</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
 </resources>
