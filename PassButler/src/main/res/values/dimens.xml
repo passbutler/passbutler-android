@@ -14,8 +14,4 @@
     <dimen name="marginL">32dp</dimen>
     <dimen name="marginXL">48dp</dimen>
 
-    <!-- Special view spacings: -->
-
-    <dimen name="dialogSpacingHorizontal">24dp</dimen>
-
 </resources>

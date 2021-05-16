@@ -19,9 +19,9 @@ fun BaseFragment.showEditTextDialog(title: String?, positiveClickListener: (Stri
         val textInputLayout = TextInputLayout(fragmentContext).apply {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
                 setMargins(
-                    resources.getDimensionPixelSize(R.dimen.dialogSpacingHorizontal),
-                    resources.getDimensionPixelSize(context.resolveThemeAttributeId(R.attr.marginM)),
-                    resources.getDimensionPixelSize(R.dimen.dialogSpacingHorizontal),
+                    resources.getDimensionPixelSize(fragmentContext.resolveThemeAttributeId(R.attr.dialogPreferredPadding)),
+                    resources.getDimensionPixelSize(fragmentContext.resolveThemeAttributeId(R.attr.marginM)),
+                    resources.getDimensionPixelSize(fragmentContext.resolveThemeAttributeId(R.attr.dialogPreferredPadding)),
                     0
                 )
             }
