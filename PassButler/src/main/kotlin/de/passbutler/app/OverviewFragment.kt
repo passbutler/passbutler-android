@@ -340,7 +340,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
             title = getString(R.string.overview_logout_confirmation_title),
             message = getString(R.string.overview_logout_confirmation_message),
             positiveActionTitle = getString(R.string.overview_logout_confirmation_button_title),
-            positiveClickListener = {
+            positiveClickAction = {
                 logoutUser()
             }
         )

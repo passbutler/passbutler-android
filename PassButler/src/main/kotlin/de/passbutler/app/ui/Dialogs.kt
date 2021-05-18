@@ -13,8 +13,8 @@ import de.passbutler.app.R
 
 fun BaseFragment.showEditTextDialog(
     title: String,
-    positiveClickListener: (String?) -> Unit,
-    negativeClickListener: (() -> Unit)? = null
+    positiveClickAction: (String?) -> Unit,
+    negativeClickAction: (() -> Unit)? = null
 ): AlertDialog? {
     return context?.let { fragmentContext ->
         val builder = MaterialAlertDialogBuilder(fragmentContext)
@@ -49,15 +49,15 @@ fun BaseFragment.showEditTextDialog(
         builder.setView(editTextContainer)
 
         builder.setPositiveButton(getString(R.string.general_okay)) { _, _ ->
-            positiveClickListener(textInputEditText.text?.toString())
+            positiveClickAction(textInputEditText.text?.toString())
         }
 
         builder.setNegativeButton(getString(R.string.general_cancel)) { _, _ ->
-            negativeClickListener?.invoke()
+            negativeClickAction?.invoke()
         }
 
         builder.setOnDismissListener {
-            negativeClickListener?.invoke()
+            negativeClickAction?.invoke()
         }
 
         builder.create().also {
@@ -73,23 +73,23 @@ fun BaseFragment.showEditTextDialog(
 fun BaseFragment.showConfirmDialog(
     title: String,
     positiveActionTitle: String,
-    positiveClickListener: () -> Unit,
-    negativeClickListener: (() -> Unit)? = null
+    positiveClickAction: () -> Unit,
+    negativeClickAction: (() -> Unit)? = null
 ) {
     context?.let { fragmentContext ->
         val builder = MaterialAlertDialogBuilder(fragmentContext).apply {
             setTitle(title)
 
             setPositiveButton(positiveActionTitle) { _, _ ->
-                positiveClickListener()
+                positiveClickAction()
             }
 
             setNegativeButton(getString(R.string.general_cancel)) { _, _ ->
-                negativeClickListener?.invoke()
+                negativeClickAction?.invoke()
             }
 
             setOnDismissListener {
-                negativeClickListener?.invoke()
+                negativeClickAction?.invoke()
             }
         }
 
@@ -101,8 +101,8 @@ fun BaseFragment.showDangerousConfirmDialog(
     title: String,
     message: String,
     positiveActionTitle: String,
-    positiveClickListener: () -> Unit,
-    negativeClickListener: (() -> Unit)? = null
+    positiveClickAction: () -> Unit,
+    negativeClickAction: (() -> Unit)? = null
 ) {
     context?.let { fragmentContext ->
         val builder = MaterialAlertDialogBuilder(fragmentContext, R.style.ThemeOverlay_PassButler_DangerousAlertDialogTheme).apply {
@@ -110,15 +110,15 @@ fun BaseFragment.showDangerousConfirmDialog(
             setMessage(message)
 
             setPositiveButton(positiveActionTitle) { _, _ ->
-                positiveClickListener()
+                positiveClickAction()
             }
 
             setNegativeButton(getString(R.string.general_cancel)) { _, _ ->
-                negativeClickListener?.invoke()
+                negativeClickAction?.invoke()
             }
 
             setOnDismissListener {
-                negativeClickListener?.invoke()
+                negativeClickAction?.invoke()
             }
         }
 

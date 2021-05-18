@@ -268,7 +268,7 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
         showConfirmDialog(
             title = getString(R.string.itemdetail_delete_confirmation_title),
             positiveActionTitle = getString(R.string.itemdetail_delete_confirmation_button_title),
-            positiveClickListener = {
+            positiveClickAction = {
                 deleteItem()
             }
         )

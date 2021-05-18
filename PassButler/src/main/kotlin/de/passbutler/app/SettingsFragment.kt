@@ -196,12 +196,12 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
         private fun showMasterPasswordInputDialog(initializedSetupBiometricUnlockCipher: Cipher) = launch {
             masterPasswordInputDialog = showEditTextDialog(
                 title = getString(R.string.settings_setup_biometric_unlock_master_password_dialog_title),
-                positiveClickListener = { masterPassword ->
+                positiveClickAction = { masterPassword ->
                     if (masterPassword != null) {
                         confirmMasterPasswordInputDialog(initializedSetupBiometricUnlockCipher, masterPassword)
                     }
                 },
-                negativeClickListener = {
+                negativeClickAction = {
                     dismissMasterPasswordInputDialog()
                 }
             )
