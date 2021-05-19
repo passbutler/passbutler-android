@@ -6,12 +6,10 @@
     </style>
 
     <style name="Widget.PassButler.Headline1" parent="Widget.PassButler.TextView">
-        <item name="android:textSize">@dimen/textSizeLarge</item>
         <item name="android:textAppearance">@style/TextAppearance.PassButler.Headline1</item>
     </style>
 
     <style name="Widget.PassButler.Headline2" parent="Widget.PassButler.TextView">
-        <item name="android:textSize">@dimen/textSizeMedium</item>
         <item name="android:textAppearance">@style/TextAppearance.PassButler.Headline2</item>
     </style>
 
