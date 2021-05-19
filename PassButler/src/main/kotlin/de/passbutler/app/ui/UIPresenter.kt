@@ -2,7 +2,7 @@ package de.passbutler.app.ui
 
 import android.app.Activity
 import android.view.Gravity
-import android.widget.FrameLayout
+import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.transition.Fade
@@ -11,55 +11,40 @@ import androidx.transition.Transition
 import androidx.transition.TransitionSet
 import com.google.android.material.snackbar.Snackbar
 import de.passbutler.app.AbstractRootFragment
+import de.passbutler.common.ui.BannerPresenting
 import de.passbutler.common.ui.DebouncedUIPresenting
 import de.passbutler.common.ui.FADE_TRANSITION_DURATION
+import de.passbutler.common.ui.ProgressPresenting
 import de.passbutler.common.ui.SLIDE_TRANSITION_DURATION
 import de.passbutler.common.ui.TransitionType
 import org.tinylog.kotlin.Logger
-import java.lang.ref.WeakReference
 import java.time.Instant
 
 /**
  * Provides implementation of fragment management used by the one-activity app concept.
  * This delegate is delegated in `BaseFragment` and provided in the `AbstractRootFragment`.
  */
-// TODO: Weak refs should not be needed
 class UIPresenter(
-    private val activityWeakReference: WeakReference<Activity>,
-    private val rootFragmentWeakReference: WeakReference<AbstractRootFragment>,
-    private val rootFragmentContainerResourceId: Int,
+    private val activity: Activity,
+    private val rootFragment: AbstractRootFragment,
+    private val rootFragmentScreenContainerResourceId: Int,
     private val rootFragmentProgressScreenViewResourceId: Int
-) : UIPresenting, DebouncedUIPresenting {
+) : UIPresenting,
+    ProgressPresenting by ProgressPresenter(rootFragment, rootFragmentProgressScreenViewResourceId),
+    BannerPresenting by BannerPresenter(rootFragment),
+    DebouncedUIPresenting {
 
     override var lastViewTransactionTime: Instant? = null
 
-    private val activity
-        get() = activityWeakReference.get()
-
-    /**
-     * The root fragment actually is used to contain the shown fragments
-     */
-    private val rootFragment
-        get() = rootFragmentWeakReference.get()
-
-    /**
-     * The root fragment manager is used to provide fragment handling for the one-activity app concept
-     */
     private val rootFragmentManager
-        get() = rootFragment?.childFragmentManager
-
-    /**
-     * The progress screen view is contained in the root fragment and used for progress indication
-     */
-    private val rootFragmentProgressScreenView
-        get() = rootFragment?.view?.findViewById<FrameLayout>(rootFragmentProgressScreenViewResourceId)
+        get() = rootFragment.childFragmentManager
 
     override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean, userTriggered: Boolean, transitionType: TransitionType) {
         val debouncedViewTransactionEnsured = ensureDebouncedViewTransaction().takeIf { userTriggered } ?: true
 
         if (activity.isNotFinished) {
             if (debouncedViewTransactionEnsured) {
-                rootFragmentManager?.beginTransaction()?.let { fragmentTransaction ->
+                rootFragmentManager.beginTransaction().let { fragmentTransaction ->
                     if (fragment is BaseFragment) {
                         fragment.transitionType = transitionType
                         applyTransitionToFragment(fragment)
@@ -70,9 +55,9 @@ class UIPresenter(
                     val fragmentTag = getFragmentTag(fragment)
 
                     if (replaceFragment) {
-                        fragmentTransaction.replace(rootFragmentContainerResourceId, fragment, fragmentTag)
+                        fragmentTransaction.replace(rootFragmentScreenContainerResourceId, fragment, fragmentTag)
                     } else {
-                        fragmentTransaction.add(rootFragmentContainerResourceId, fragment, fragmentTag)
+                        fragmentTransaction.add(rootFragmentScreenContainerResourceId, fragment, fragmentTag)
                     }
 
                     if (addToBackstack) {
@@ -95,7 +80,7 @@ class UIPresenter(
     override fun <T : Fragment> isFragmentShown(fragmentClass: Class<T>): Boolean {
         return if (activity.isNotFinished && rootFragment.isStateNotSaved) {
             val fragmentTag = getFragmentTag(fragmentClass)
-            rootFragmentManager?.findFragmentByTag(fragmentTag) != null
+            rootFragmentManager.findFragmentByTag(fragmentTag) != null
         } else {
             false
         }
@@ -103,31 +88,12 @@ class UIPresenter(
 
     override fun popBackstack() {
         if (activity.isNotFinished && rootFragment.isStateNotSaved) {
-            rootFragmentManager?.popBackStack()
+            rootFragmentManager.popBackStack()
         }
     }
 
     override fun backstackCount(): Int {
-        return rootFragmentManager?.backStackEntryCount ?: 0
-    }
-
-    override fun showProgress() {
-        rootFragmentProgressScreenView?.showFadeInOutAnimation(true)
-    }
-
-    override fun hideProgress() {
-        rootFragmentProgressScreenView?.showFadeInOutAnimation(false)
-    }
-
-    override fun showInformation(message: String) {
-        rootFragment?.view?.let {
-            Snackbar.make(it, message, Snackbar.LENGTH_SHORT).show()
-        }
-    }
-
-    override fun showError(message: String) {
-        // Same as information at the moment
-        showInformation(message)
+        return rootFragmentManager.backStackEntryCount
     }
 
     companion object {
@@ -145,6 +111,39 @@ class UIPresenter(
                 fragment.exitTransition = it.exitTransition
             }
         }
+    }
+}
+
+class ProgressPresenter(
+    private val rootFragment: AbstractRootFragment,
+    private val rootFragmentProgressScreenViewResourceId: Int
+) : ProgressPresenting {
+
+    private val progressScreenView
+        get() = rootFragment.view?.findViewById<View>(rootFragmentProgressScreenViewResourceId)
+
+    override fun showProgress() {
+        progressScreenView?.showFadeInOutAnimation(true)
+    }
+
+    override fun hideProgress() {
+        progressScreenView?.showFadeInOutAnimation(false)
+    }
+}
+
+class BannerPresenter(
+    private val rootFragment: AbstractRootFragment
+) : BannerPresenting {
+
+    override fun showInformation(message: String) {
+        rootFragment.view?.let {
+            Snackbar.make(it, message, Snackbar.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun showError(message: String) {
+        // Same as information at the moment
+        showInformation(message)
     }
 }
 

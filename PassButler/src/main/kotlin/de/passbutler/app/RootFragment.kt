@@ -39,13 +39,11 @@ abstract class AbstractRootFragment : BaseFragment() {
         activity?.let {
             Logger.debug("Apply viewModel = $viewModel in $this")
 
-            val contentContainerResourceId = R.id.frameLayout_fragment_root_content_container
-            val progressScreenViewResourceId = R.id.frameLayout_progress_container
             uiPresentingDelegate = UIPresenter(
-                WeakReference(it),
-                WeakReference(this),
-                contentContainerResourceId,
-                progressScreenViewResourceId
+                activity = it,
+                rootFragment = this,
+                rootFragmentScreenContainerResourceId = R.id.frameLayout_screen_container,
+                rootFragmentProgressScreenViewResourceId = R.id.frameLayout_progress_container
             )
         }
     }

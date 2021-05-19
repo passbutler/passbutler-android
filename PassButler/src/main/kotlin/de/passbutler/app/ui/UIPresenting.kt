@@ -5,7 +5,7 @@ import de.passbutler.common.ui.BannerPresenting
 import de.passbutler.common.ui.ProgressPresenting
 import de.passbutler.common.ui.TransitionType
 
-interface UIPresenting : ProgressPresenting, BannerPresenting {
+interface ScreenPresenting {
     fun showFragment(fragment: Fragment, replaceFragment: Boolean = false, addToBackstack: Boolean = true, userTriggered: Boolean = true, transitionType: TransitionType = TransitionType.SLIDE)
 
     fun <T : Fragment> isFragmentShown(fragmentClass: Class<T>): Boolean
@@ -14,10 +14,12 @@ interface UIPresenting : ProgressPresenting, BannerPresenting {
     fun backstackCount(): Int
 }
 
-fun UIPresenting.showFragmentAsFirstScreen(fragment: Fragment, userTriggered: Boolean = true, transitionType: TransitionType = TransitionType.SLIDE) {
+fun ScreenPresenting.showFragmentAsFirstScreen(fragment: Fragment, userTriggered: Boolean = true, transitionType: TransitionType = TransitionType.SLIDE) {
     showFragment(fragment, replaceFragment = true, addToBackstack = false, userTriggered = userTriggered, transitionType = transitionType)
 }
 
-fun UIPresenting.showFragmentModally(fragment: Fragment) {
+fun ScreenPresenting.showFragmentModally(fragment: Fragment) {
     showFragment(fragment, transitionType = TransitionType.MODAL)
 }
+
+interface UIPresenting : ScreenPresenting, ProgressPresenting, BannerPresenting
