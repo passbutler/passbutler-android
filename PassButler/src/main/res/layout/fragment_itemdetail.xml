@@ -33,13 +33,13 @@
                 android:imeOptions="actionNext"
                 android:importantForAutofill="no"
                 android:inputType="text"
-                android:textAppearance="?textAppearanceHeadline1" />
+                android:textAppearance="?textAppearanceHeadline6" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:id="@+id/textView_details_header"
-            style="@style/Widget.PassButler.Headline1"
+            style="@style/Widget.PassButler.Headline.Order1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="?marginM"
@@ -144,7 +144,7 @@
 
         <TextView
             android:id="@+id/textView_authorizations_header"
-            style="@style/Widget.PassButler.Headline1"
+            style="@style/Widget.PassButler.Headline.Order1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="?marginM"
@@ -157,7 +157,7 @@
 
         <TextView
             android:id="@+id/textView_authorizations_description"
-            style="@style/Widget.PassButler.Body1"
+            style="@style/Widget.PassButler.Body.Order1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="?marginM"
@@ -195,7 +195,7 @@
 
         <TextView
             android:id="@+id/textView_information_header"
-            style="@style/Widget.PassButler.Headline1"
+            style="@style/Widget.PassButler.Headline.Order1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="?marginM"
@@ -245,7 +245,7 @@
 
         <TextView
             android:id="@+id/textView_delete_header"
-            style="@style/Widget.PassButler.Headline1"
+            style="@style/Widget.PassButler.Headline.Order1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="?marginM"

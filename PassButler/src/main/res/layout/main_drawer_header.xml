@@ -43,7 +43,7 @@
 
     <TextView
         android:id="@+id/textView_drawer_header_title"
-        style="@style/Widget.PassButler.Headline1"
+        style="@style/Widget.PassButler.Headline.Order1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"
@@ -57,7 +57,7 @@
 
     <TextView
         android:id="@+id/textView_drawer_header_subtitle"
-        style="@style/Widget.PassButler.Body2"
+        style="@style/Widget.PassButler.Body.Order2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"
@@ -72,7 +72,7 @@
 
     <TextView
         android:id="@+id/textView_drawer_header_usertype"
-        style="@style/Widget.PassButler.Body2"
+        style="@style/Widget.PassButler.Body.Order2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"

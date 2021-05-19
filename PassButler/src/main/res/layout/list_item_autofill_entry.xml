@@ -4,7 +4,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/textView_autofill_entry_item"
-    style="@style/Widget.PassButler.Body2"
+    style="@style/Widget.PassButler.Body.Order2"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="@dimen/marginM"

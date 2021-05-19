@@ -57,7 +57,7 @@
 
                 <TextView
                     android:id="@+id/textView_headline"
-                    style="@style/Widget.PassButler.Headline1"
+                    style="@style/Widget.PassButler.Headline.Order1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textAlignment="center"
@@ -65,7 +65,7 @@
 
                 <TextView
                     android:id="@+id/textView_description"
-                    style="@style/Widget.PassButler.Body1"
+                    style="@style/Widget.PassButler.Body.Order1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="?marginS"
@@ -99,7 +99,7 @@
 
                 <TextView
                     android:id="@+id/textView_unlock_method_divider"
-                    style="@style/Widget.PassButler.Body1"
+                    style="@style/Widget.PassButler.Body.Order1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="?marginM"

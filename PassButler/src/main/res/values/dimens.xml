@@ -1,11 +1,5 @@
 <resources>
 
-    <!-- Semantic text sizes: -->
-
-    <dimen name="textSizeSmall">12sp</dimen>
-    <dimen name="textSizeMedium">16sp</dimen>
-    <dimen name="textSizeLarge">24sp</dimen>
-
     <!-- Semantic spacings: -->
 
     <dimen name="marginXS">4dp</dimen>

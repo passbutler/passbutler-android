@@ -58,7 +58,7 @@
                     android:id="@+id/textView_headline"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/Widget.PassButler.Headline1"
+                    style="@style/Widget.PassButler.Headline.Order1"
                     android:text="@string/login_headline"
                     android:textAlignment="center" />
 
@@ -66,7 +66,7 @@
                     android:id="@+id/textView_description"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/Widget.PassButler.Body1"
+                    style="@style/Widget.PassButler.Body.Order1"
                     android:layout_marginTop="?marginS"
                     android:text="@string/login_description"
                     android:textAlignment="center"/>

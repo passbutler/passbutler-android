@@ -8,7 +8,7 @@
 
     <TextView
         android:id="@+id/textView_title"
-        style="@style/Widget.PassButler.Body1"
+        style="@style/Widget.PassButler.Body.Order1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textStyle="bold"
@@ -17,7 +17,7 @@
     <!-- Use `marginXS` instead of `marginS` for top spacing because otherwise it looks too separated -->
     <TextView
         android:id="@+id/textView_value"
-        style="@style/Widget.PassButler.Body2"
+        style="@style/Widget.PassButler.Body.Order2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="?marginXS"

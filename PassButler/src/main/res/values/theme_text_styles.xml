@@ -5,28 +5,28 @@
         <item name="android:ellipsize">end</item>
     </style>
 
-    <style name="Widget.PassButler.Headline1" parent="Widget.PassButler.TextView">
-        <item name="android:textAppearance">@style/TextAppearance.PassButler.Headline1</item>
+    <style name="Widget.PassButler.Headline.Order1" parent="Widget.PassButler.TextView">
+        <item name="android:textAppearance">?textAppearanceHeadline5</item>
     </style>
 
-    <style name="Widget.PassButler.Headline2" parent="Widget.PassButler.TextView">
-        <item name="android:textAppearance">@style/TextAppearance.PassButler.Headline2</item>
+    <style name="Widget.PassButler.Headline.Order2" parent="Widget.PassButler.TextView">
+        <item name="android:textAppearance">?textAppearanceHeadline6</item>
     </style>
 
-    <style name="Widget.PassButler.Subtitle1" parent="Widget.PassButler.TextView">
-        <item name="android:textAppearance">@style/TextAppearance.PassButler.Subtitle1</item>
+    <style name="Widget.PassButler.Subtitle.Order1" parent="Widget.PassButler.TextView">
+        <item name="android:textAppearance">?textAppearanceSubtitle1</item>
     </style>
 
-    <style name="Widget.PassButler.Body1" parent="Widget.PassButler.TextView">
-        <item name="android:textAppearance">@style/TextAppearance.PassButler.Body1</item>
+    <style name="Widget.PassButler.Body.Order1" parent="Widget.PassButler.TextView">
+        <item name="android:textAppearance">?textAppearanceBody1</item>
     </style>
 
-    <style name="Widget.PassButler.Body2" parent="Widget.PassButler.TextView">
-        <item name="android:textAppearance">@style/TextAppearance.PassButler.Body2</item>
+    <style name="Widget.PassButler.Body.Order2" parent="Widget.PassButler.TextView">
+        <item name="android:textAppearance">?textAppearanceBody2</item>
     </style>
 
     <style name="Widget.PassButler.Caption" parent="Widget.PassButler.TextView">
-        <item name="android:textAppearance">@style/TextAppearance.PassButler.Caption</item>
+        <item name="android:textAppearance">?textAppearanceCaption</item>
     </style>
 
 </resources>

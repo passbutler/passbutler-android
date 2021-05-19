@@ -21,7 +21,7 @@
 
     <TextView
         android:id="@+id/textView_title"
-        style="@style/Widget.PassButler.Headline1"
+        style="@style/Widget.PassButler.Headline.Order2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"
@@ -35,7 +35,7 @@
 
     <TextView
         android:id="@+id/textView_subtitle"
-        style="@style/Widget.PassButler.Subtitle1"
+        style="@style/Widget.PassButler.Subtitle.Order1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"
