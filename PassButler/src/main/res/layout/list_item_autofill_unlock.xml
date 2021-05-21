@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Do not use theme attributes or views not listed in `RemoteViews` because it won't work! -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/pointRed"
-    android:orientation="vertical">
+    android:background="?colorAccent"
+    android:orientation="vertical"
+    android:theme="@style/Theme.PassButler.DayNight">
 
     <!-- A "CompoundDrawable" is not possible because of custom size of icon -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/marginM"
+        android:layout_marginTop="?marginM"
         android:background="?android:attr/windowBackground"
         android:gravity="center"
         android:orientation="horizontal"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
+        android:paddingTop="?marginS"
+        android:paddingBottom="?marginS"
         tools:ignore="UseCompoundDrawables">
 
         <!-- Do not use `app:srcCompat` because it won't work -->
         <ImageView
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:layout_marginStart="@dimen/marginM"
+            android:layout_marginStart="?marginM"
             android:src="@drawable/logo_elevated"
             tools:ignore="ContentDescription" />
 
@@ -33,8 +33,8 @@
             style="@style/Widget.PassButler.Body.Order2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/marginM"
-            android:layout_marginEnd="@dimen/marginM"
+            android:layout_marginStart="?marginM"
+            android:layout_marginEnd="?marginM"
             android:text="@string/autofill_unlock_entry_label" />
 
     </LinearLayout>

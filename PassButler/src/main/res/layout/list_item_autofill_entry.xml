@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Do not use theme attributes or views not listed in `RemoteViews` because it won't work! -->
 <TextView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,6 +6,7 @@
     style="@style/Widget.PassButler.Body.Order2"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="@dimen/marginM"
+    android:padding="?marginM"
+    android:theme="@style/Theme.PassButler.DayNight"
     tools:text="Item title"
     />
