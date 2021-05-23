@@ -19,8 +19,8 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import de.passbutler.app.crypto.BiometricAuthenticationCallbackExecutor
 import de.passbutler.app.databinding.FragmentSettingsBinding
+import de.passbutler.app.ui.ScreenPresentingExtensions.Companion.instanceIdentification
 import de.passbutler.app.ui.ToolBarFragment
-import de.passbutler.app.ui.UIPresenter
 import de.passbutler.app.ui.addLifecycleObserver
 import de.passbutler.app.ui.showEditTextDialog
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
@@ -52,7 +52,7 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = FragmentSettingsBinding.inflate(inflater, container, false)
 
-        val settingsPreferenceFragmentTag = UIPresenter.getFragmentTag(SettingsPreferenceFragment::class.java)
+        val settingsPreferenceFragmentTag = SettingsPreferenceFragment::class.java.instanceIdentification
         settingsPreferenceFragment = ((childFragmentManager.findFragmentByTag(settingsPreferenceFragmentTag) as? SettingsPreferenceFragment) ?: run {
             SettingsPreferenceFragment.newInstance().also { newSettingsPreferenceFragment ->
                 childFragmentManager

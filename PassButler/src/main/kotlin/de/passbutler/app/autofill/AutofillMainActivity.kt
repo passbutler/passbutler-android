@@ -15,7 +15,7 @@ import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
 import de.passbutler.app.R
-import de.passbutler.app.ui.UIPresenter
+import de.passbutler.app.ui.ScreenPresentingExtensions.Companion.instanceIdentification
 import de.passbutler.common.ItemViewModel
 import de.passbutler.common.unlockedItemData
 import org.tinylog.kotlin.Logger
@@ -41,7 +41,7 @@ class AutofillMainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_autofill_main)
 
-        val autofillRootFragmentTag = UIPresenter.getFragmentTag(AutofillRootFragment::class.java)
+        val autofillRootFragmentTag = AutofillRootFragment::class.java.instanceIdentification
         rootFragment = supportFragmentManager.findFragmentByTag(autofillRootFragmentTag) as? AutofillRootFragment
 
         if (rootFragment == null) {

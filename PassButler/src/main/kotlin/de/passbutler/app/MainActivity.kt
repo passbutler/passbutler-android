@@ -2,7 +2,7 @@ package de.passbutler.app
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import de.passbutler.app.ui.UIPresenter
+import de.passbutler.app.ui.ScreenPresentingExtensions.Companion.instanceIdentification
 import org.tinylog.kotlin.Logger
 
 class MainActivity : AppCompatActivity() {
@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
 
         Logger.debug("savedInstanceState = $savedInstanceState")
 
-        val rootFragmentTag = UIPresenter.getFragmentTag(RootFragment::class.java)
+        val rootFragmentTag = RootFragment::class.java.instanceIdentification
         rootFragment = supportFragmentManager.findFragmentByTag(rootFragmentTag) as? RootFragment
 
         // Add `RootFragment` only if still not there (e.g. on configuration changes the fragment will be restored automatically)
