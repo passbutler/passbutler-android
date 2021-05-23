@@ -23,7 +23,6 @@ import de.passbutler.app.ui.bindInput
 import de.passbutler.app.ui.bindTextAndVisibility
 import de.passbutler.app.ui.bindVisibility
 import de.passbutler.app.ui.showConfirmDialog
-import de.passbutler.app.ui.showDangerousConfirmDialog
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.ItemEditingViewModel.Companion.NOTES_MAXIMUM_CHARACTERS
 import de.passbutler.common.LoggedInUserViewModelUninitializedException

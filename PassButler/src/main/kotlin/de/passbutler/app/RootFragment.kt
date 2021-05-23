@@ -14,7 +14,6 @@ import de.passbutler.app.ui.showFragmentAsFirstScreen
 import de.passbutler.common.base.BindableObserver
 import de.passbutler.common.ui.TransitionType
 import org.tinylog.kotlin.Logger
-import java.lang.ref.WeakReference
 
 abstract class AbstractRootFragment : BaseFragment() {
 
