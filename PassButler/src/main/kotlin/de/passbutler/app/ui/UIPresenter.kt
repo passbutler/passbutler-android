@@ -20,14 +20,20 @@ import java.time.Instant
  * This delegate is delegated in `BaseFragment` and provided in the `AbstractRootFragment`.
  */
 class UIPresenter(
+    activity: Activity,
+    rootFragment: AbstractRootFragment,
+    rootFragmentScreenContainerResourceId: Int,
+    rootFragmentProgressScreenViewResourceId: Int
+) : UIPresenting,
+    ScreenPresenting by ScreenPresenter(activity, rootFragment, rootFragmentScreenContainerResourceId),
+    ProgressPresenting by ProgressPresenter(rootFragment, rootFragmentProgressScreenViewResourceId),
+    BannerPresenting by BannerPresenter(rootFragment)
+
+class ScreenPresenter(
     private val activity: Activity,
     private val rootFragment: AbstractRootFragment,
-    private val rootFragmentScreenContainerResourceId: Int,
-    private val rootFragmentProgressScreenViewResourceId: Int
-) : UIPresenting,
-    ProgressPresenting by ProgressPresenter(rootFragment, rootFragmentProgressScreenViewResourceId),
-    BannerPresenting by BannerPresenter(rootFragment),
-    DebouncedUIPresenting {
+    private val rootFragmentScreenContainerResourceId: Int
+) : ScreenPresenting, DebouncedUIPresenting {
 
     override var lastViewTransactionTime: Instant? = null
 
@@ -44,7 +50,7 @@ class UIPresenter(
                         fragment.transitionType = transitionType
                         applyTransitionToFragment(fragment)
 
-                        fragment.uiPresentingDelegate = this
+                        fragment.uiPresentingDelegate = rootFragment.uiPresentingDelegate
                     }
 
                     val fragmentTag = fragment.instanceIdentification
