@@ -1,5 +1,6 @@
 package de.passbutler.app.ui
 
+import android.content.Context
 import android.text.InputType
 import android.view.View
 import android.view.WindowManager
@@ -72,56 +73,76 @@ fun BaseFragment.showEditTextDialog(
 
 fun BaseFragment.showConfirmDialog(
     title: String,
+    message: String? = null,
     positiveActionTitle: String,
     positiveClickAction: () -> Unit,
     negativeClickAction: (() -> Unit)? = null
 ) {
     context?.let { fragmentContext ->
-        val builder = MaterialAlertDialogBuilder(fragmentContext).apply {
-            setTitle(title)
+        val confirmDialog = createConfirmDialog(
+            fragmentContext,
+            0,
+            title,
+            message,
+            positiveActionTitle,
+            positiveClickAction,
+            negativeClickAction
+        )
 
-            setPositiveButton(positiveActionTitle) { _, _ ->
-                positiveClickAction()
-            }
-
-            setNegativeButton(getString(R.string.general_cancel)) { _, _ ->
-                negativeClickAction?.invoke()
-            }
-
-            setOnDismissListener {
-                negativeClickAction?.invoke()
-            }
-        }
-
-        builder.show()
+        confirmDialog.show()
     }
 }
 
 fun BaseFragment.showDangerousConfirmDialog(
     title: String,
-    message: String,
+    message: String? = null,
     positiveActionTitle: String,
     positiveClickAction: () -> Unit,
     negativeClickAction: (() -> Unit)? = null
 ) {
     context?.let { fragmentContext ->
-        val builder = MaterialAlertDialogBuilder(fragmentContext, R.style.ThemeOverlay_PassButler_DangerousAlertDialogTheme).apply {
-            setTitle(title)
+        val confirmDialog = createConfirmDialog(
+            fragmentContext,
+            R.style.ThemeOverlay_PassButler_DangerousAlertDialogTheme,
+            title,
+            message,
+            positiveActionTitle,
+            positiveClickAction,
+            negativeClickAction
+        )
+
+        confirmDialog.show()
+    }
+}
+
+private fun createConfirmDialog(
+    viewContext: Context,
+    themeOverlay: Int,
+    title: String,
+    message: String?,
+    positiveActionTitle: String,
+    positiveClickAction: () -> Unit,
+    negativeClickAction: (() -> Unit)?
+): AlertDialog {
+    val builder = MaterialAlertDialogBuilder(viewContext, themeOverlay).apply {
+        setTitle(title)
+
+        if (message != null) {
             setMessage(message)
-
-            setPositiveButton(positiveActionTitle) { _, _ ->
-                positiveClickAction()
-            }
-
-            setNegativeButton(getString(R.string.general_cancel)) { _, _ ->
-                negativeClickAction?.invoke()
-            }
-
-            setOnDismissListener {
-                negativeClickAction?.invoke()
-            }
         }
 
-        builder.show()
+        setPositiveButton(positiveActionTitle) { _, _ ->
+            positiveClickAction()
+        }
+
+        setNegativeButton(viewContext.resources.getString(R.string.general_cancel)) { _, _ ->
+            negativeClickAction?.invoke()
+        }
+
+        setOnDismissListener {
+            negativeClickAction?.invoke()
+        }
     }
+
+    return builder.create()
 }
