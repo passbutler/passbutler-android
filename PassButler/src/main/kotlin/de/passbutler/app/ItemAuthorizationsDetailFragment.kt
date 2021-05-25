@@ -21,6 +21,7 @@ import de.passbutler.app.databinding.ListItemAuthorizationHeaderBinding
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.addLifecycleObserver
+import de.passbutler.app.ui.showConfirmDialog
 import de.passbutler.app.ui.visible
 import de.passbutler.common.ItemAuthorizationEditingViewModel
 import de.passbutler.common.ItemAuthorizationsDetailViewModel
@@ -130,9 +131,40 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment(), RequestSending {
         }
     }
 
+    override fun onHandleBackPress(): Boolean {
+        return if (viewModel.itemAuthorizationEditingViewModelsModified.value) {
+            showDiscardChangesConfirmDialog {
+                super.onHandleBackPress()
+            }
+
+            true
+        } else {
+            super.onHandleBackPress()
+        }
+    }
+
+    override fun onBackIconClicked() {
+        if (viewModel.itemAuthorizationEditingViewModelsModified.value) {
+            showDiscardChangesConfirmDialog {
+                super.onBackIconClicked()
+            }
+        } else {
+            super.onBackIconClicked()
+        }
+    }
+
     override fun onDestroyView() {
         binding = null
         super.onDestroyView()
+    }
+
+    private fun showDiscardChangesConfirmDialog(positiveClickAction: () -> Unit) {
+        showConfirmDialog(
+            title = getString(R.string.itemauthorizations_discard_changes_confirmation_title),
+            message = getString(R.string.itemauthorizations_discard_changes_confirmation_message),
+            positiveActionTitle = getString(R.string.general_discard),
+            positiveClickAction = positiveClickAction
+        )
     }
 
     companion object {

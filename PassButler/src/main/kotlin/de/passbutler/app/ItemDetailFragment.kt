@@ -298,6 +298,28 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
         toolbarMenuSaveItem?.isEnabled = isItemModified.value
     }
 
+    override fun onHandleBackPress(): Boolean {
+        return if (isItemModified.value) {
+            showDiscardChangesConfirmDialog {
+                super.onHandleBackPress()
+            }
+
+            true
+        } else {
+            super.onHandleBackPress()
+        }
+    }
+
+    override fun onBackIconClicked() {
+        if (isItemModified.value) {
+            showDiscardChangesConfirmDialog {
+                super.onBackIconClicked()
+            }
+        } else {
+            super.onBackIconClicked()
+        }
+    }
+
     override fun onStop() {
         Keyboard.hideKeyboard(context, this)
 
@@ -317,6 +339,15 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
     override fun onDestroyView() {
         binding = null
         super.onDestroyView()
+    }
+
+    private fun showDiscardChangesConfirmDialog(positiveClickAction: () -> Unit) {
+        showConfirmDialog(
+            title = getString(R.string.itemdetail_discard_changes_confirmation_title),
+            message = getString(R.string.itemdetail_discard_changes_confirmation_message),
+            positiveActionTitle = getString(R.string.general_discard),
+            positiveClickAction = positiveClickAction
+        )
     }
 
     companion object {

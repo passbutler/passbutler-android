@@ -42,7 +42,7 @@ abstract class ToolBarFragment : BaseFragment() {
             }
 
             toolBar.setNavigationOnClickListener {
-                popBackstack()
+                onBackIconClicked()
             }
 
             setupToolbarMenu(toolBar)
@@ -72,6 +72,10 @@ abstract class ToolBarFragment : BaseFragment() {
         outState.putInt(BUNDLE_TRANSITION_TYPE, transitionType.ordinal)
 
         super.onSaveInstanceState(outState)
+    }
+
+    protected open fun onBackIconClicked() {
+        popBackstack()
     }
 
     companion object {
