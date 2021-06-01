@@ -104,8 +104,14 @@ fun <T> TextView.bindTextAndVisibility(lifecycleOwner: LifecycleOwner, bindable:
  * Input binders
  */
 
-fun TextInputEditText.bindInput(bindable: MutableBindable<String>) {
-    setText(bindable.value)
+fun TextInputEditText.bindInput(lifecycleOwner: LifecycleOwner, bindable: MutableBindable<String>) {
+    bindable.addLifecycleObserver(lifecycleOwner, true) { newValue ->
+        if (text.toString() != newValue) {
+            setText(newValue)
+            setSelection(newValue.length)
+        }
+    }
+
     addTextChangedListener { newText ->
         bindable.value = newText.toString()
     }

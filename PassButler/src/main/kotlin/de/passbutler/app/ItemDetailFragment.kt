@@ -184,18 +184,18 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
     }
 
     private fun setupItemFields(binding: FragmentItemdetailBinding) {
-        binding.textInputEditTextTitle.bindInput(viewModel.title)
+        binding.textInputEditTextTitle.bindInput(viewLifecycleOwner, viewModel.title)
 
         setupPasswordField(binding)
 
-        binding.textInputEditTextUsername.bindInput(viewModel.username)
-        binding.textInputEditTextUrl.bindInput(viewModel.url)
+        binding.textInputEditTextUsername.bindInput(viewLifecycleOwner, viewModel.username)
+        binding.textInputEditTextUrl.bindInput(viewLifecycleOwner, viewModel.url)
 
         setupNotesField(binding)
     }
 
     private fun setupPasswordField(binding: FragmentItemdetailBinding) {
-        binding.textInputEditTextPassword.bindInput(viewModel.password)
+        binding.textInputEditTextPassword.bindInput(viewLifecycleOwner, viewModel.password)
 
         // Be sure, the `inputType` is set first to make `END_ICON_PASSWORD_TOGGLE` as `endIconMode` work properly
         if (viewModel.hidePasswordsEnabled) {
@@ -211,7 +211,7 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
         binding.textInputLayoutNotes.isCounterEnabled = true
         binding.textInputLayoutNotes.counterMaxLength = NOTES_MAXIMUM_CHARACTERS
 
-        binding.textInputEditTextNotes.bindInput(viewModel.notes)
+        binding.textInputEditTextNotes.bindInput(viewLifecycleOwner, viewModel.notes)
     }
 
     private fun setupItemAuthorizationsSection(binding: FragmentItemdetailBinding) {
