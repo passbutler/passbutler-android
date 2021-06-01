@@ -13,8 +13,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clickable="true"
-        android:transitionGroup="true"
-        android:focusableInTouchMode="true">
+        android:focusableInTouchMode="true"
+        android:transitionGroup="true">
 
         <!-- `app:tint` does not work for dimming non-vector drawable images -->
         <ImageView
@@ -56,20 +56,20 @@
 
                 <TextView
                     android:id="@+id/textView_headline"
+                    style="@style/Widget.PassButler.Headline.Order1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/Widget.PassButler.Headline.Order1"
                     android:text="@string/login_headline"
                     android:textAlignment="center" />
 
                 <TextView
                     android:id="@+id/textView_description"
+                    style="@style/Widget.PassButler.Body.Order1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/Widget.PassButler.Body.Order1"
                     android:layout_marginTop="?marginS"
                     android:text="@string/login_description"
-                    android:textAlignment="center"/>
+                    android:textAlignment="center" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/textInputLayout_serverurl"
