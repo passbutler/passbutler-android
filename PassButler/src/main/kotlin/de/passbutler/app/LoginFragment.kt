@@ -45,7 +45,7 @@ class LoginFragment : BaseFragment(), RequestSending {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentLoginBinding.inflate(inflater, container, false).also { binding ->
             setupDebugPresetsButton(binding)
-            setupLocalLoginCheckbox(binding)
+            setupLocalLoginCheckBox(binding)
             setupLoginButton(binding)
 
             applyRestoredViewStates(binding)
@@ -66,7 +66,7 @@ class LoginFragment : BaseFragment(), RequestSending {
         }
     }
 
-    private fun setupLocalLoginCheckbox(binding: FragmentLoginBinding) {
+    private fun setupLocalLoginCheckBox(binding: FragmentLoginBinding) {
         binding.checkBoxLocalLogin.setOnCheckedChangeListener { _, isLocalLogin ->
             val shouldShowServerUrl = !isLocalLogin
             binding.textInputLayoutServerurl.showFadeInOutAnimation(shouldShowServerUrl, VisibilityHideMode.INVISIBLE)

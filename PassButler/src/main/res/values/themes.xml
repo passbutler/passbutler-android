@@ -14,6 +14,7 @@
 
         <!-- Material widget styles: -->
 
+        <item name="checkboxStyle">@style/Widget.PassButler.CheckBox</item>
         <item name="materialButtonStyle">@style/Widget.PassButler.Button.Primary</item>
         <item name="materialCardViewStyle">@style/Widget.PassButler.CardView</item>
         <item name="textInputStyle">@style/Widget.PassButler.TextInputLayout.Outlined</item>
