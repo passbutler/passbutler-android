@@ -294,7 +294,7 @@ class ItemAuthorizationEntry(val itemAuthorizationEditingViewModel: ItemAuthoriz
     private val itemAuthorizationModel = itemAuthorizationEditingViewModel.itemAuthorizationModel
 
     override fun compareTo(other: ItemAuthorizationEntry): Int {
-        return compareValuesBy(this, other, { it.itemAuthorizationEditingViewModel.username.toLowerCase(Locale.getDefault()) })
+        return compareValuesBy(this, other, { it.itemAuthorizationEditingViewModel.username.lowercase(Locale.getDefault()) })
     }
 }
 

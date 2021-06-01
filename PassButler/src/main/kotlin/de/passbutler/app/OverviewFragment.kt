@@ -502,7 +502,7 @@ class ItemEntry(val itemViewModel: ItemViewModel) : ListItemIdentifiable, Compar
         get() = PassButlerApplication.applicationContext
 
     override fun compareTo(other: ItemEntry): Int {
-        return compareValuesBy(this, other, { it.itemViewModel.title?.toLowerCase(Locale.getDefault()) })
+        return compareValuesBy(this, other, { it.itemViewModel.title?.lowercase(Locale.getDefault()) })
     }
 }
 

@@ -302,7 +302,7 @@ internal fun List<String>.containsIgnoreCase(search: String): Boolean {
 }
 
 internal fun String.toLowerCaseWithEnglishLocale(): String {
-    return toLowerCase(Locale.ENGLISH)
+    return lowercase(Locale.ENGLISH)
 }
 
 internal fun ViewStructure.HtmlInfo.isInputFormTag(): Boolean {
