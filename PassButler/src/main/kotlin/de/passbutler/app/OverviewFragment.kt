@@ -302,8 +302,6 @@ class OverviewFragment : BaseFragment(), RequestSending {
         updateToolbarJob?.cancel()
         updateToolbarJob = launch {
             while (isActive) {
-                Logger.debug("Update relative time in toolbar subtitle")
-
                 // Update relative time in toolbar periodically
                 updateToolbarSubtitle()
                 delay(10_000)
