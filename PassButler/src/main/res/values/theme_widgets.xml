@@ -36,6 +36,10 @@
         <item name="android:minHeight">0dp</item>
     </style>
 
+    <style name="Widget.PassButler.Slider.Discrete" parent="Widget.MaterialComponents.Slider">
+        <item name="tickColor">@color/transparent</item>
+    </style>
+
     <style name="Widget.PassButler.TextInputLayout.Outlined" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense" />
 
     <style name="Widget.PassButler.TextInputLayout.Filled" parent="Widget.MaterialComponents.TextInputLayout.FilledBox.Dense" />

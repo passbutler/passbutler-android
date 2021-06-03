@@ -17,11 +17,13 @@ import de.passbutler.app.databinding.FragmentItemdetailBinding
 import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
+import de.passbutler.app.ui.PasswordGeneratorDialogBuilder
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.addLifecycleObserver
 import de.passbutler.app.ui.bindInput
 import de.passbutler.app.ui.bindTextAndVisibility
 import de.passbutler.app.ui.bindVisibility
+import de.passbutler.app.ui.setTextWithClickablePart
 import de.passbutler.app.ui.showConfirmDialog
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.ItemEditingViewModel.Companion.NOTES_MAXIMUM_CHARACTERS
@@ -187,6 +189,7 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
         binding.textInputEditTextTitle.bindInput(viewLifecycleOwner, viewModel.title)
 
         setupPasswordField(binding)
+        setupPasswordGeneratorText(binding)
 
         binding.textInputEditTextUsername.bindInput(viewLifecycleOwner, viewModel.username)
         binding.textInputEditTextUrl.bindInput(viewLifecycleOwner, viewModel.url)
@@ -205,6 +208,27 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
             binding.textInputEditTextPassword.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
             binding.textInputLayoutPassword.endIconMode = TextInputLayout.END_ICON_NONE
         }
+    }
+
+    private fun setupPasswordGeneratorText(binding: FragmentItemdetailBinding) {
+        val generateWord = getString(R.string.itemdetail_password_generator_generate_word)
+        val formattedText = getString(R.string.itemdetail_password_generator_text, generateWord)
+
+        binding.textViewPasswordGeneratorText.setTextWithClickablePart(formattedText, generateWord) {
+            showPasswordGeneratorDialog(binding)
+        }
+    }
+
+    private fun showPasswordGeneratorDialog(binding: FragmentItemdetailBinding) {
+        val passwordGeneratorDialog = PasswordGeneratorDialogBuilder(
+            presentingFragment = this,
+            positiveClickAction = { newPassword ->
+                viewModel.password.value = newPassword
+                binding.textInputEditTextPassword.requestFocus()
+            }
+        )
+
+        passwordGeneratorDialog.show()
     }
 
     private fun setupNotesField(binding: FragmentItemdetailBinding) {
