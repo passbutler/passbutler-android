@@ -125,7 +125,7 @@ class PasswordGeneratorDialogBuilder(
                 generatePassword = null
 
                 binding.textViewGeneratedPassword.text = context.getString(R.string.passwordgenerator_dialog_missing_character_types_error)
-                binding.textViewGeneratedPassword.setTextColor(context.resolveThemeAttributeData(R.attr.colorWarning))
+                binding.textViewGeneratedPassword.setTextColor(context.resolveThemeAttributeData(R.attr.colorError))
             }
         }
     }

@@ -28,7 +28,7 @@
     </style>
 
     <style name="Widget.PassButler.Button.TextButton.Dialog.Dangerous" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
-        <item name="android:textColor">?colorWarning</item>
+        <item name="android:textColor">?colorError</item>
     </style>
 
     <style name="Widget.PassButler.CheckBox" parent="Widget.MaterialComponents.CompoundButton.CheckBox">
@@ -52,7 +52,7 @@
     </style>
 
     <style name="Widget.PassButler.AlertDialog.Title.Text.Dangerous" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
-        <item name="android:textColor">?colorWarning</item>
+        <item name="android:textColor">?colorError</item>
         <item name="android:textStyle">bold</item>
     </style>
 

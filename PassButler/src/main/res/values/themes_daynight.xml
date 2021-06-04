@@ -36,11 +36,12 @@
 
         <item name="colorOnSurface">@color/grey80</item>
 
+        <item name="colorError">@color/brightRedDark</item>
+
         <!-- Custom attributes: -->
 
         <item name="colorBackgroundImageTint">#00000000</item>
         <item name="colorDivider">@color/grey10</item>
-        <item name="colorWarning">@color/brightRed</item>
 
     </style>
 
