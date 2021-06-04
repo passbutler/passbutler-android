@@ -19,6 +19,7 @@
         <item name="materialCardViewStyle">@style/Widget.PassButler.CardView</item>
         <item name="textInputStyle">@style/Widget.PassButler.TextInputLayout.Outlined</item>
         <item name="toolbarStyle">@style/Widget.PassButler.Toolbar</item>
+        <item name="navigationViewStyle">@style/Widget.PassButler.NavigationView</item>
 
         <!-- Semantic spacings: -->
 

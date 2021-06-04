@@ -56,4 +56,9 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <style name="Widget.PassButler.NavigationView" parent="Widget.MaterialComponents.NavigationView">
+        <!-- Use theme overlay instead directly setting items to avoid losing stateful color selectors: -->
+        <item name="materialThemeOverlay">@style/ThemeOverlay.PassButler.NavigationView</item>
+    </style>
+
 </resources>

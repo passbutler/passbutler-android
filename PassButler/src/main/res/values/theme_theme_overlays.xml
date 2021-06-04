@@ -6,4 +6,9 @@
         <item name="buttonBarPositiveButtonStyle">@style/Widget.PassButler.Button.TextButton.Dialog.Dangerous</item>
     </style>
 
+    <style name="ThemeOverlay.PassButler.NavigationView" parent="">
+        <!-- Remap color for text and activated overlay to archive a better contrast in dark mode: -->
+        <item name="colorPrimary">?colorError</item>
+    </style>
+
 </resources>
