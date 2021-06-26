@@ -3,10 +3,13 @@
 
     <style name="Widget.PassButler.TextView" parent="Widget.MaterialComponents.TextView">
         <item name="android:ellipsize">end</item>
+        <item name="android:drawablePadding">?marginM</item>
+        <item name="drawableTint">?android:textColorPrimary</item>
     </style>
 
     <style name="Widget.PassButler.Headline.Order1" parent="Widget.PassButler.TextView">
         <item name="android:textAppearance">?textAppearanceHeadline5</item>
+        <item name="drawableTint">?android:textColorSecondary</item>
     </style>
 
     <style name="Widget.PassButler.Headline.Order2" parent="Widget.PassButler.TextView">
