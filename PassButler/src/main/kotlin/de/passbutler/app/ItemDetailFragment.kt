@@ -52,7 +52,6 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
     private var formNotes: String? = null
 
     private var toolbarMenuSaveItem: MenuItem? = null
-
     private var binding: FragmentItemdetailBinding? = null
 
     private val itemAuthorizationDescription by lazy {
@@ -361,7 +360,9 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
     }
 
     override fun onDestroyView() {
+        toolbarMenuSaveItem = null
         binding = null
+
         super.onDestroyView()
     }
 

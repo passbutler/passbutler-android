@@ -317,6 +317,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
     }
 
     override fun onDestroyView() {
+        toolbarMenuSearchView = null
         binding = null
         navigationHeaderSubtitleView = null
         navigationHeaderUserTypeView = null

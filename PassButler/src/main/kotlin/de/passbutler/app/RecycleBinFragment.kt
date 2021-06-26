@@ -113,6 +113,7 @@ class RecycleBinFragment : ToolBarFragment(), RequestSending {
     }
 
     override fun onDestroyView() {
+        toolbarMenuSearchView = null
         binding = null
         super.onDestroyView()
     }

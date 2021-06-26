@@ -154,7 +154,9 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment(), RequestSending {
     }
 
     override fun onDestroyView() {
+        toolbarMenuSaveItem = null
         binding = null
+
         super.onDestroyView()
     }
 
