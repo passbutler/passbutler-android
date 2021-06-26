@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:theme="@style/Theme.PassButler.Dark">
+
+    <ImageView
+        android:id="@+id/imageView_logo"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/logo_outlined"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/textView_app_name"
+        style="@style/Widget.PassButler.Headline.Order1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="?marginS"
+        android:text="@string/general_app_name"
+        app:layout_constraintBottom_toTopOf="@id/textView_app_subtitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/imageView_logo"
+        app:layout_constraintTop_toTopOf="@+id/imageView_logo"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/textView_app_subtitle"
+        style="@style/Widget.PassButler.Subtitle.Order1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="?marginS"
+        android:text="@string/general_app_description"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView_logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/imageView_logo"
+        app:layout_constraintTop_toBottomOf="@+id/textView_app_name" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

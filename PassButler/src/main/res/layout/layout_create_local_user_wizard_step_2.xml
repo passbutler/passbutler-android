@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="?marginL"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/textView_step_title"
+        style="@style/Widget.PassButler.Headline.Order1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="?marginM"
+        android:textAppearance="?textAppearanceHeadline4"
+        tools:text="Schritt 2 von 2" />
+
+    <TextView
+        style="@style/Widget.PassButler.Headline.Order2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="?marginM"
+        android:layout_marginTop="?marginS"
+        android:text="@string/create_local_user_step_master_password_title" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayout_master_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="?marginM"
+        android:layout_marginTop="?marginS"
+        app:endIconMode="password_toggle">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textInputEditText_master_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/general_master_password_hint"
+            android:imeOptions="actionNext"
+            android:importantForAutofill="no"
+            android:inputType="textPassword" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayout_master_password_confirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="?marginM"
+        android:layout_marginTop="?marginS"
+        android:layout_marginEnd="?marginM"
+        app:endIconMode="password_toggle">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textInputEditText_master_password_confirm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/general_master_password_confirmation_hint"
+            android:imeOptions="actionDone"
+            android:importantForAutofill="no"
+            android:inputType="textPassword" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        style="@style/Widget.PassButler.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="?marginM"
+        android:layout_marginTop="?marginS"
+        android:text="@string/create_local_user_step_master_password_hint_text"
+        />
+
+    <Button
+        android:id="@+id/button_done"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="?marginM"
+        android:layout_marginTop="?marginM"
+        android:text="@string/general_done" />
+
+</LinearLayout>

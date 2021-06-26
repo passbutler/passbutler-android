@@ -53,7 +53,7 @@
             android:orientation="horizontal"
             app:layout_constraintGuide_percent="@dimen/guidelineStartPercentage" />
 
-        <LinearLayout
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="?marginL"
@@ -64,86 +64,23 @@
             app:layout_constraintTop_toBottomOf="@id/guideline_start"
             app:layout_constraintVertical_bias="0.0">
 
-            <TextView
-                style="@style/Widget.PassButler.Headline.Order1"
+            <include
+                android:id="@+id/layout_step_1"
+                layout="@layout/layout_create_local_user_wizard_step_1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="?marginM"
-                android:text="@string/login_headline"
-                android:textAppearance="?textAppearanceHeadline4" />
+                android:visibility="gone"
+                />
 
-            <TextView
-                style="@style/Widget.PassButler.Headline.Order2"
+            <include
+                android:id="@+id/layout_step_2"
+                layout="@layout/layout_create_local_user_wizard_step_2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="?marginM"
-                android:layout_marginTop="?marginS"
-                android:text="@string/login_description" />
+                android:visibility="gone"
+                />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/textInputLayout_serverurl"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="?marginM"
-                android:layout_marginTop="?marginM">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/textInputEditText_serverurl"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/general_serverurl_hint"
-                    android:imeOptions="actionNext"
-                    android:importantForAutofill="no"
-                    android:inputType="textUri" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/textInputLayout_username"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="?marginM"
-                android:layout_marginTop="?marginS">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/textInputEditText_username"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/general_username_hint"
-                    android:imeOptions="actionNext"
-                    android:importantForAutofill="no"
-                    android:inputType="textEmailAddress" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/textInputLayout_master_password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="?marginM"
-                android:layout_marginTop="?marginS"
-                app:endIconMode="password_toggle">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/textInputEditText_master_password"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/general_master_password_hint"
-                    android:imeOptions="actionDone"
-                    android:importantForAutofill="no"
-                    android:inputType="textPassword" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <Button
-                android:id="@+id/button_login"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="?marginM"
-                android:layout_marginTop="?marginM"
-                android:text="@string/login_button_text" />
-
-        </LinearLayout>
+        </FrameLayout>
 
         <Button
             android:id="@+id/button_back"

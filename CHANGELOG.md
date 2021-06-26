@@ -16,6 +16,7 @@
 - Improved contrast on navigation view in dark mode
 - Show dedicated error for entering wrong invitation code when try to register user
 - Automatically show biometric prompt if enabled
+- Introduction flow to be more understandable / user friendly
 
 ### Fixed
 - The case of items is ignored for sorting on item and item authorization screens

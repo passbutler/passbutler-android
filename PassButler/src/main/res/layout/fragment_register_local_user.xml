@@ -58,7 +58,7 @@
                 android:id="@+id/textInputEditText_serverurl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/register_local_user_serverurl_hint"
+                android:hint="@string/general_serverurl_hint"
                 android:imeOptions="actionNext"
                 android:importantForAutofill="no"
                 android:inputType="textUri" />
@@ -103,7 +103,7 @@
                 android:id="@+id/textInputEditText_master_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/register_local_user_master_password_hint"
+                android:hint="@string/general_master_password_hint"
                 android:imeOptions="actionUnspecified"
                 android:importantForAutofill="no"
                 android:inputType="textPassword" />

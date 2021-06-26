@@ -110,11 +110,11 @@ class RootFragment : AbstractRootFragment() {
     }
 
     override fun showLoggedOutState() {
-        if (!isFragmentShown(LoginFragment::class.java)) {
+        if (!isFragmentShown(IntroductionFragment::class.java)) {
             Logger.debug("Show logged-out state")
 
             showFragmentAsFirstScreen(
-                fragment = LoginFragment.newInstance(),
+                fragment = IntroductionFragment.newInstance(),
                 userTriggered = false,
                 transitionType = if (viewWasInitialized) {
                     TransitionType.SLIDE

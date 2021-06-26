@@ -8,4 +8,6 @@
     <dimen name="marginL">32dp</dimen>
     <dimen name="marginXL">48dp</dimen>
 
+    <dimen name="guidelineStartPercentage">0.25</dimen>
+
 </resources>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <!-- Set `android:clipChildren="false"` to avoid clip the elevation of the bottom button of the contained `LinearLayout` -->
+    <!-- Use `android:transitionGroup="true"` to be sure all views are animated simultaneously in transitions -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:theme="@style/Theme.PassButler.Dark"
+        android:transitionGroup="true">
+
+        <!-- `app:tint` does not work for dimming non-vector drawable images -->
+        <ImageView
+            android:id="@+id/imageView_background"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scaleType="centerCrop"
+            android:tint="?colorBackgroundImageTint"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/background_mesh_polygons"
+            tools:ignore="ContentDescription,UseAppTint" />
+
+        <include
+            android:id="@+id/layout_header"
+            layout="@layout/layout_screen_header"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="?marginM"
+            android:layout_marginTop="?marginM"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="@dimen/guidelineStartPercentage" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="?marginL"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/guideline_start"
+            app:layout_constraintVertical_bias="0.0">
+
+            <TextView
+                style="@style/Widget.PassButler.Headline.Order1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginEnd="?marginM"
+                android:text="@string/introduction_title"
+                android:textAppearance="?textAppearanceHeadline4" />
+
+            <TextView
+                style="@style/Widget.PassButler.Headline.Order2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginL"
+                android:layout_marginEnd="?marginM"
+                android:text="@string/introduction_create_user_title" />
+
+            <TextView
+                style="@style/Widget.PassButler.Body.Order1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginS"
+                android:layout_marginEnd="?marginM"
+                android:text="@string/introduction_create_user_description"
+                />
+
+            <Button
+                android:id="@+id/button_create_user"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginS"
+                android:layout_marginEnd="?marginM"
+                android:minWidth="240dp"
+                android:text="@string/introduction_create_user_button_text"
+                app:icon="@drawable/icon_check_circle_24dp" />
+
+            <TextView
+                style="@style/Widget.PassButler.Headline.Order2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginL"
+                android:layout_marginEnd="?marginM"
+                android:text="@string/introduction_login_user_title" />
+
+            <TextView
+                style="@style/Widget.PassButler.Body.Order1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginS"
+                android:layout_marginEnd="?marginM"
+                android:text="@string/introduction_login_user_description"
+                />
+
+            <Button
+                android:id="@+id/button_login"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="?marginM"
+                android:layout_marginTop="?marginS"
+                android:layout_marginEnd="?marginM"
+                android:minWidth="240dp"
+                android:text="@string/introduction_login_user_button_text"
+                app:icon="@drawable/icon_login_24dp" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

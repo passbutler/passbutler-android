@@ -15,6 +15,8 @@ import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.util.TypedValue
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.widget.EditText
 import android.widget.Filterable
 import android.widget.TextView
 import androidx.annotation.AttrRes
@@ -160,4 +162,30 @@ fun TextView.setTextWithClickablePart(text: String, clickableTextPart: String, c
     this.text = spannableString
     movementMethod = LinkMovementMethod.getInstance()
     highlightColor = Color.TRANSPARENT
+}
+
+/**
+ * Form views
+ */
+
+fun EditText.onActionNext(block: () -> Unit) {
+    setOnEditorActionListener { _, actionId, _ ->
+        if (actionId == EditorInfo.IME_ACTION_NEXT) {
+            block()
+            true
+        } else {
+            false
+        }
+    }
+}
+
+fun EditText.onActionDone(block: () -> Unit) {
+    setOnEditorActionListener { _, actionId, _ ->
+        if (actionId == EditorInfo.IME_ACTION_DONE) {
+            block()
+            true
+        } else {
+            false
+        }
+    }
 }

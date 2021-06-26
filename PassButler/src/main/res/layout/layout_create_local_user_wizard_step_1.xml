@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="?marginL"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/textView_step_title"
+        style="@style/Widget.PassButler.Headline.Order1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="?marginM"
+        android:textAppearance="?textAppearanceHeadline4"
+        tools:text="Schritt 1 von 2" />
+
+    <TextView
+        style="@style/Widget.PassButler.Headline.Order2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="?marginM"
+        android:layout_marginTop="?marginS"
+        android:text="@string/create_local_user_step_username_title" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayout_username"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="?marginM"
+        android:layout_marginTop="?marginM">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textInputEditText_username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/general_username_hint"
+            android:imeOptions="actionNext"
+            android:importantForAutofill="no"
+            android:inputType="textEmailAddress" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        style="@style/Widget.PassButler.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="?marginM"
+        android:layout_marginTop="?marginS"
+        android:text="@string/create_local_user_step_username_hint_text"
+        />
+
+    <Button
+        android:id="@+id/button_next"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="?marginM"
+        android:layout_marginTop="?marginM"
+        android:text="@string/general_next" />
+
+</LinearLayout>

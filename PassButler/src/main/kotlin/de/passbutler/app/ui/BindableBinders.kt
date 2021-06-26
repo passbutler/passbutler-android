@@ -9,6 +9,16 @@ import de.passbutler.common.base.Bindable
 import de.passbutler.common.base.MutableBindable
 
 /**
+ * General binders
+ */
+
+fun <ViewType : View, BindableType> ViewType.bind(lifecycleOwner: LifecycleOwner, bindable: Bindable<BindableType>, block: ViewType.(BindableType) -> Unit) {
+    bindable.addLifecycleObserver(lifecycleOwner, true) { newValue ->
+        block(newValue)
+    }
+}
+
+/**
  * Visibility binders
  */
 
@@ -104,15 +114,16 @@ fun <T> TextView.bindTextAndVisibility(lifecycleOwner: LifecycleOwner, bindable:
  * Input binders
  */
 
-fun TextInputEditText.bindInput(lifecycleOwner: LifecycleOwner, bindable: MutableBindable<String>) {
+fun <T : String?> TextInputEditText.bindInput(lifecycleOwner: LifecycleOwner, bindable: MutableBindable<T>) {
     bindable.addLifecycleObserver(lifecycleOwner, true) { newValue ->
-        if (text.toString() != newValue) {
+        if (text?.toString() != newValue) {
             setText(newValue)
-            setSelection(newValue.length)
+            setSelection(newValue?.length ?: 0)
         }
     }
 
     addTextChangedListener { newText ->
-        bindable.value = newText.toString()
+        @Suppress("UNCHECKED_CAST")
+        bindable.value = newText?.toString() as T
     }
 }

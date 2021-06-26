@@ -13,8 +13,7 @@ import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
-import de.passbutler.app.ui.VisibilityHideMode
-import de.passbutler.app.ui.showFadeInOutAnimation
+import de.passbutler.app.ui.onActionDone
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.base.BuildType
 import de.passbutler.common.database.RequestUnauthorizedException
@@ -31,8 +30,9 @@ class LoginFragment : BaseFragment(), RequestSending {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentLoginBinding.inflate(inflater, container, false).also { binding ->
             setupDebugPresetsButton(binding)
-            setupLocalLoginCheckBox(binding)
+            setupFormFields(binding)
             setupLoginButton(binding)
+            setupBackButton(binding)
         }
 
         return binding?.root
@@ -40,20 +40,18 @@ class LoginFragment : BaseFragment(), RequestSending {
 
     private fun setupDebugPresetsButton(binding: FragmentLoginBinding) {
         if (BuildInformationProvider.buildType == BuildType.Debug) {
-            binding.imageViewLogo.setOnLongClickListener {
+            binding.layoutHeader.root.setOnLongClickListener {
                 binding.textInputEditTextServerurl.setText(DebugConstants.TEST_SERVERURL)
                 binding.textInputEditTextUsername.setText(DebugConstants.TEST_USERNAME)
                 binding.textInputEditTextMasterPassword.setText(DebugConstants.TEST_PASSWORD)
-                binding.checkBoxLocalLogin.isChecked = false
                 true
             }
         }
     }
 
-    private fun setupLocalLoginCheckBox(binding: FragmentLoginBinding) {
-        binding.checkBoxLocalLogin.setOnCheckedChangeListener { _, isLocalLogin ->
-            val shouldShowServerUrl = !isLocalLogin
-            binding.textInputLayoutServerurl.showFadeInOutAnimation(shouldShowServerUrl, VisibilityHideMode.INVISIBLE)
+    private fun setupFormFields(binding: FragmentLoginBinding) {
+        binding.textInputEditTextMasterPassword.onActionDone {
+            loginClicked(binding)
         }
     }
 
@@ -64,7 +62,6 @@ class LoginFragment : BaseFragment(), RequestSending {
     }
 
     private fun loginClicked(binding: FragmentLoginBinding) {
-        val isLocalLogin = binding.checkBoxLocalLogin.isChecked
         val formValidationResult = validateForm(
             listOfNotNull(
                 FormFieldValidator(
@@ -74,10 +71,10 @@ class LoginFragment : BaseFragment(), RequestSending {
                         FormFieldValidator.Rule({ !URLUtil.isHttpsUrl(it) }, getString(R.string.form_serverurl_validation_error_invalid_scheme))
                             .takeIf { BuildInformationProvider.buildType == BuildType.Release }
                     )
-                ).takeIf { !isLocalLogin },
+                ),
                 FormFieldValidator(
                     binding.textInputLayoutUsername, binding.textInputEditTextUsername, listOf(
-                        FormFieldValidator.Rule({ it.isNullOrEmpty() }, getString(R.string.login_username_validation_error_empty))
+                        FormFieldValidator.Rule({ it.isNullOrEmpty() }, getString(R.string.form_username_validation_error_empty))
                     )
                 ),
                 FormFieldValidator(
@@ -93,11 +90,11 @@ class LoginFragment : BaseFragment(), RequestSending {
                 removeFormFieldsFocus()
                 Keyboard.hideKeyboard(context, this)
 
-                val serverUrl = binding.textInputEditTextServerurl.text?.toString()?.takeIf { !isLocalLogin }
+                val serverUrl = binding.textInputEditTextServerurl.text?.toString()
                 val username = binding.textInputEditTextUsername.text?.toString()
                 val masterPassword = binding.textInputEditTextMasterPassword.text?.toString()
 
-                if (username != null && masterPassword != null) {
+                if (serverUrl != null && username != null && masterPassword != null) {
                     loginUser(serverUrl, username, masterPassword)
                 }
             }
@@ -111,7 +108,7 @@ class LoginFragment : BaseFragment(), RequestSending {
         binding?.constraintLayoutRootContainer?.requestFocus()
     }
 
-    private fun loginUser(serverUrl: String?, username: String, masterPassword: String) {
+    private fun loginUser(serverUrl: String, username: String, masterPassword: String) {
         launchRequestSending(
             handleFailure = {
                 val errorStringResourceId = when (it) {
@@ -124,6 +121,12 @@ class LoginFragment : BaseFragment(), RequestSending {
             isCancellable = false
         ) {
             viewModel.loginVault(serverUrl, username, masterPassword)
+        }
+    }
+
+    private fun setupBackButton(binding: FragmentLoginBinding) {
+        binding.buttonBack.setOnClickListener {
+            popBackstack()
         }
     }
 
