@@ -22,6 +22,14 @@ open class BaseFragment : Fragment(), UIPresenting, MainActivity.OnBackPressedLi
     var transitionType = TransitionType.NONE
     var uiPresentingDelegate: UIPresenting? = null
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        savedInstanceState?.getInt(BUNDLE_TRANSITION_TYPE)?.let { TransitionType.values().getOrNull(it) }?.let { restoredTransitionType ->
+            transitionType = restoredTransitionType
+        }
+    }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as? MainActivity)?.addOnBackPressedListener(this)
@@ -41,6 +49,12 @@ open class BaseFragment : Fragment(), UIPresenting, MainActivity.OnBackPressedLi
             // Re-apply fragment transition after configuration change
             applyTransitionToFragment(this)
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt(BUNDLE_TRANSITION_TYPE, transitionType.ordinal)
+
+        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroy() {
@@ -97,5 +111,9 @@ open class BaseFragment : Fragment(), UIPresenting, MainActivity.OnBackPressedLi
         } else {
             false
         }
+    }
+
+    companion object {
+        private const val BUNDLE_TRANSITION_TYPE = "BUNDLE_TRANSITION_TYPE"
     }
 }
