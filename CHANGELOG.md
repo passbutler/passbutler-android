@@ -15,6 +15,7 @@
 - Allow to copy item details of read-only items (do not disable them anymore) - the delete button is hidden instead of disabled to avoid user confusion (like the save accept toolbar icon)
 - Improved contrast on navigation view in dark mode
 - Show dedicated error for entering wrong invitation code when try to register user
+- Automatically show biometric prompt if enabled
 
 ### Fixed
 - The case of items is ignored for sorting on item and item authorization screens

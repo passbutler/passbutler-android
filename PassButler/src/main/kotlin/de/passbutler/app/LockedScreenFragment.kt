@@ -188,6 +188,14 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
         loggedInUserViewModel?.biometricUnlockEnabled?.notifyChange()
     }
 
+    override fun onStart() {
+        super.onStart()
+
+        if (loggedInUserViewModel?.biometricUnlockEnabled?.value == true) {
+            showBiometricPrompt()
+        }
+    }
+
     override fun onStop() {
         Keyboard.hideKeyboard(context, this)
         super.onStop()
