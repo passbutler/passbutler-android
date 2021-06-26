@@ -34,19 +34,26 @@ import org.tinylog.kotlin.Logger
 
 class LockedScreenFragment : BaseFragment(), RequestSending {
 
-    var mode: Mode = Mode.Normal
-
     internal val viewModel by userViewModelUsingActivityViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
-    private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
+    private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
     private val loggedInUserViewModel
         get() = userViewModelProvidingViewModel.loggedInUserViewModel
 
+    private var lockedScreenMode: LockedScreenMode = LockedScreenMode.Normal
 
     private var binding: FragmentLockedScreenBinding? = null
 
     private val biometricCallbackExecutor by lazy {
         BiometricAuthenticationCallbackExecutor(this, Dispatchers.Main)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        arguments?.getInt(BUNDLE_LOCKED_SCREEN_MODE)?.let { LockedScreenMode.values().getOrNull(it) }?.let { restoredLockedScreenMode ->
+            lockedScreenMode = restoredLockedScreenMode
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -70,9 +77,9 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
     }
 
     private fun setupTextViews(binding: FragmentLockedScreenBinding) {
-        binding.textViewHeadline.text = when (mode) {
-            Mode.Normal -> getString(R.string.locked_screen_header_normal)
-            Mode.AutoFill -> getString(R.string.locked_screen_header_autofill)
+        binding.textViewHeadline.text = when (lockedScreenMode) {
+            LockedScreenMode.Normal -> getString(R.string.locked_screen_header_normal)
+            LockedScreenMode.AutoFill -> getString(R.string.locked_screen_header_autofill)
         }
     }
 
@@ -227,15 +234,18 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
         }
     }
 
-    enum class Mode {
+    enum class LockedScreenMode {
         Normal,
         AutoFill
     }
 
     companion object {
+        private const val BUNDLE_LOCKED_SCREEN_MODE = "BUNDLE_LOCKED_SCREEN_MODE"
 
-        fun newInstance(mode: Mode = Mode.Normal) = LockedScreenFragment().apply {
-            this.mode = mode
+        fun newInstance(lockedScreenMode: LockedScreenMode = LockedScreenMode.Normal) = LockedScreenFragment().apply {
+            arguments = Bundle().apply {
+                putInt(BUNDLE_LOCKED_SCREEN_MODE, lockedScreenMode.ordinal)
+            }
         }
     }
 }

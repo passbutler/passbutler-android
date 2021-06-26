@@ -2,6 +2,7 @@ package de.passbutler.app.autofill
 
 import de.passbutler.app.AbstractRootFragment
 import de.passbutler.app.LockedScreenFragment
+import de.passbutler.app.LockedScreenFragment.LockedScreenMode.*
 import de.passbutler.app.ui.showFragmentAsFirstScreen
 import de.passbutler.common.ui.TransitionType
 import org.tinylog.kotlin.Logger
@@ -31,7 +32,7 @@ class AutofillRootFragment : AbstractRootFragment() {
 
             // Disabled transition and debounce check because the fragment stack is always cold initialised
             showFragment(
-                fragment = LockedScreenFragment.newInstance(LockedScreenFragment.Mode.AutoFill),
+                fragment = LockedScreenFragment.newInstance(AutoFill),
                 userTriggered = false,
                 transitionType = TransitionType.NONE
             )

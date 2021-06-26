@@ -22,6 +22,7 @@
 - Missed ellipsize of too long text (especially titles on overview screen)
 - Broken fragment presentation on autofill screen after configuration change
 - Missed transition animation after configuration change
+- Broken state when locked screen in autofill mode is rebuild after configuration change
 
 ## [1.0.0-Preview1] - 2021-02-02
 
@@ -30,3 +31,4 @@
 
 ### Known issues
 - If Android decides to destroy the `MainActivity` and restore it later, the item detail screen and item authorizations screen are not restored to previous state due to too late `ItemViewModel` recreation
+- If locked screen in autofill mode is shown while a configuration change is done, the unlock does not work
