@@ -8,7 +8,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="180dp"
-    android:theme="@style/ThemeOverlay.MaterialComponents.Dark">
+    android:theme="@style/Theme.PassButler.Dark">
 
     <!-- `app:tint` does not work for dimming non-vector drawable images -->
     <ImageView

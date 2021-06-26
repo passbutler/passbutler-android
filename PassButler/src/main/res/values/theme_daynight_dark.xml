@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.PassButler.DayNight" parent="Theme.PassButler.Base">
+    <style name="Theme.PassButler.Dark" parent="Theme.PassButler.Base">
 
         <!-- Android colors: -->
 

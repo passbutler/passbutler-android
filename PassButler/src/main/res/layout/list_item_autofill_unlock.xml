@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:background="?colorAccent"
     android:orientation="vertical"
-    android:theme="@style/Theme.PassButler.DayNight">
+    android:theme="@style/Theme.PassButler">
 
     <!-- A "CompoundDrawable" is not possible because of custom size of icon -->
     <LinearLayout
