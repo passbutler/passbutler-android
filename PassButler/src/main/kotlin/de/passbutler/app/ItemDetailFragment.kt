@@ -45,12 +45,6 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
 
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
-    private var formTitle: String? = null
-    private var formUsername: String? = null
-    private var formPassword: String? = null
-    private var formUrl: String? = null
-    private var formNotes: String? = null
-
     private var toolbarMenuSaveItem: MenuItem? = null
     private var binding: FragmentItemdetailBinding? = null
 
@@ -100,13 +94,6 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
         } else {
             getString(R.string.itemdetail_title_edit)
         }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        formTitle = savedInstanceState?.getString(FORM_FIELD_TITLE)
-        formPassword = savedInstanceState?.getString(FORM_FIELD_PASSWORD)
     }
 
     override fun setupToolbarMenu(toolbar: Toolbar) {
@@ -168,8 +155,6 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
             binding.groupExistingItemViews.bindVisibility(viewLifecycleOwner, viewModel.isNewItem) { isNewItem ->
                 !isNewItem
             }
-
-            applyRestoredViewStates(binding)
         }
 
         isItemModified.addLifecycleObserver(viewLifecycleOwner, false) {
@@ -308,14 +293,6 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
         }
     }
 
-    private fun applyRestoredViewStates(binding: FragmentItemdetailBinding) {
-        formTitle?.let { binding.textInputEditTextTitle.setText(it) }
-        formUsername?.let { binding.textInputEditTextUsername.setText(it) }
-        formPassword?.let { binding.textInputEditTextPassword.setText(it) }
-        formUrl?.let { binding.textInputEditTextUrl.setText(it) }
-        formNotes?.let { binding.textInputEditTextNotes.setText(it) }
-    }
-
     private fun updateToolbarMenuItems() {
         toolbarMenuSaveItem?.isVisible = viewModel.isItemModificationAllowed.value
         toolbarMenuSaveItem?.isEnabled = isItemModified.value
@@ -345,18 +322,7 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
 
     override fun onStop() {
         Keyboard.hideKeyboard(context, this)
-
         super.onStop()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString(FORM_FIELD_TITLE, binding?.textInputEditTextTitle?.text?.toString())
-        outState.putString(FORM_FIELD_USERNAME, binding?.textInputEditTextUsername?.text?.toString())
-        outState.putString(FORM_FIELD_PASSWORD, binding?.textInputEditTextPassword?.text?.toString())
-        outState.putString(FORM_FIELD_URL, binding?.textInputEditTextUrl?.text?.toString())
-        outState.putString(FORM_FIELD_NOTES, binding?.textInputEditTextNotes?.text?.toString())
-
-        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroyView() {
@@ -377,12 +343,6 @@ class ItemDetailFragment : ToolBarFragment(), RequestSending {
 
     companion object {
         private const val ARGUMENT_ITEM_ID = "ARGUMENT_ITEM_ID"
-
-        private const val FORM_FIELD_TITLE = "FORM_FIELD_TITLE"
-        private const val FORM_FIELD_USERNAME = "FORM_FIELD_USERNAME"
-        private const val FORM_FIELD_PASSWORD = "FORM_FIELD_PASSWORD"
-        private const val FORM_FIELD_URL = "FORM_FIELD_URL"
-        private const val FORM_FIELD_NOTES = "FORM_FIELD_NOTES"
 
         fun newInstance(itemId: String?) = ItemDetailFragment().apply {
             arguments = Bundle().apply {

@@ -42,18 +42,11 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
     private val loggedInUserViewModel
         get() = userViewModelProvidingViewModel.loggedInUserViewModel
 
-    private var formMasterPassword: String? = null
 
     private var binding: FragmentLockedScreenBinding? = null
 
     private val biometricCallbackExecutor by lazy {
         BiometricAuthenticationCallbackExecutor(this, Dispatchers.Main)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        formMasterPassword = savedInstanceState?.getString(FORM_FIELD_MASTER_PASSWORD)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -62,8 +55,6 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
             setupTextViews(binding)
             setupUnlockWithPasswordButton(binding)
             setupUnlockWithBiometricsButton(binding)
-
-            applyRestoredViewStates(binding)
         }
 
         return binding?.root
@@ -182,10 +173,6 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
         }
     }
 
-    private fun applyRestoredViewStates(binding: FragmentLockedScreenBinding) {
-        formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
-    }
-
     override fun onResume() {
         super.onResume()
 
@@ -196,14 +183,7 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
 
     override fun onStop() {
         Keyboard.hideKeyboard(context, this)
-
         super.onStop()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString(FORM_FIELD_MASTER_PASSWORD, binding?.textInputEditTextMasterPassword?.text?.toString())
-
-        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroyView() {
@@ -253,7 +233,6 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
     }
 
     companion object {
-        private const val FORM_FIELD_MASTER_PASSWORD = "FORM_FIELD_MASTER_PASSWORD"
 
         fun newInstance(mode: Mode = Mode.Normal) = LockedScreenFragment().apply {
             this.mode = mode

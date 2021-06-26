@@ -22,19 +22,7 @@ class ChangeMasterPasswordFragment : ToolBarFragment(), RequestSending {
     private val viewModel by userViewModelUsingViewModels<ChangeMasterPasswordViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
-    private var formOldMasterPassword: String? = null
-    private var formNewMasterPassword: String? = null
-    private var formNewMasterPasswordConfirm: String? = null
-
     private var binding: FragmentChangeMasterPasswordBinding? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        formOldMasterPassword = savedInstanceState?.getString(FORM_FIELD_OLD_MASTER_PASSWORD)
-        formNewMasterPassword = savedInstanceState?.getString(FORM_FIELD_NEW_MASTER_PASSWORD)
-        formNewMasterPasswordConfirm = savedInstanceState?.getString(FORM_FIELD_NEW_MASTER_PASSWORD_CONFIRM)
-    }
 
     override fun getToolBarTitle() = getString(R.string.change_master_password_title)
 
@@ -42,8 +30,6 @@ class ChangeMasterPasswordFragment : ToolBarFragment(), RequestSending {
         binding = FragmentChangeMasterPasswordBinding.inflate(inflater, container, false).also { binding ->
             setupTextViews(binding)
             setupChangeButton(binding)
-
-            applyRestoredViewStates(binding)
         }
 
         return binding?.root
@@ -135,22 +121,9 @@ class ChangeMasterPasswordFragment : ToolBarFragment(), RequestSending {
         binding?.constraintLayoutRootContainer?.requestFocus()
     }
 
-    private fun applyRestoredViewStates(binding: FragmentChangeMasterPasswordBinding) {
-        formOldMasterPassword?.let { binding.textInputEditTextOldMasterPassword.setText(it) }
-    }
-
     override fun onStop() {
         Keyboard.hideKeyboard(context, this)
-
         super.onStop()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString(FORM_FIELD_OLD_MASTER_PASSWORD, binding?.textInputEditTextOldMasterPassword?.text?.toString())
-        outState.putString(FORM_FIELD_NEW_MASTER_PASSWORD, binding?.textInputEditTextNewMasterPassword?.text?.toString())
-        outState.putString(FORM_FIELD_NEW_MASTER_PASSWORD_CONFIRM, binding?.textInputEditTextNewMasterPasswordConfirm?.text?.toString())
-
-        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroyView() {
@@ -159,10 +132,6 @@ class ChangeMasterPasswordFragment : ToolBarFragment(), RequestSending {
     }
 
     companion object {
-        private const val FORM_FIELD_OLD_MASTER_PASSWORD = "FORM_FIELD_OLD_MASTER_PASSWORD"
-        private const val FORM_FIELD_NEW_MASTER_PASSWORD = "FORM_FIELD_NEW_MASTER_PASSWORD"
-        private const val FORM_FIELD_NEW_MASTER_PASSWORD_CONFIRM = "FORM_FIELD_NEW_MASTER_PASSWORD_CONFIRM"
-
         fun newInstance() = ChangeMasterPasswordFragment()
     }
 }

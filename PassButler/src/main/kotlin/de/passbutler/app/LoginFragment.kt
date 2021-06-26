@@ -26,29 +26,13 @@ class LoginFragment : BaseFragment(), RequestSending {
     private val viewModel by userViewModelUsingActivityViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
-    private var formServerUrl: String? = null
-    private var formUsername: String? = null
-    private var formMasterPassword: String? = null
-    private var formLocalLogin: Boolean? = null
-
     private var binding: FragmentLoginBinding? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        formServerUrl = savedInstanceState?.getString(FORM_FIELD_SERVERURL)
-        formUsername = savedInstanceState?.getString(FORM_FIELD_USERNAME)
-        formMasterPassword = savedInstanceState?.getString(FORM_FIELD_MASTER_PASSWORD)
-        formLocalLogin = savedInstanceState?.getBoolean(FORM_FIELD_LOCAL_LOGIN)
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentLoginBinding.inflate(inflater, container, false).also { binding ->
             setupDebugPresetsButton(binding)
             setupLocalLoginCheckBox(binding)
             setupLoginButton(binding)
-
-            applyRestoredViewStates(binding)
         }
 
         return binding?.root
@@ -143,26 +127,9 @@ class LoginFragment : BaseFragment(), RequestSending {
         }
     }
 
-    private fun applyRestoredViewStates(binding: FragmentLoginBinding) {
-        formServerUrl?.let { binding.textInputEditTextServerurl.setText(it) }
-        formUsername?.let { binding.textInputEditTextUsername.setText(it) }
-        formMasterPassword?.let { binding.textInputEditTextMasterPassword.setText(it) }
-        formLocalLogin?.let { binding.checkBoxLocalLogin.isChecked = it }
-    }
-
     override fun onStop() {
         Keyboard.hideKeyboard(context, this)
-
         super.onStop()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString(FORM_FIELD_SERVERURL, binding?.textInputEditTextServerurl?.text?.toString())
-        outState.putString(FORM_FIELD_USERNAME, binding?.textInputEditTextUsername?.text?.toString())
-        outState.putString(FORM_FIELD_MASTER_PASSWORD, binding?.textInputEditTextMasterPassword?.text?.toString())
-        outState.putBoolean(FORM_FIELD_LOCAL_LOGIN, binding?.checkBoxLocalLogin?.isChecked ?: false)
-
-        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroyView() {
@@ -171,11 +138,6 @@ class LoginFragment : BaseFragment(), RequestSending {
     }
 
     companion object {
-        private const val FORM_FIELD_SERVERURL = "FORM_FIELD_SERVERURL"
-        private const val FORM_FIELD_USERNAME = "FORM_FIELD_USERNAME"
-        private const val FORM_FIELD_MASTER_PASSWORD = "FORM_FIELD_MASTER_PASSWORD"
-        private const val FORM_FIELD_LOCAL_LOGIN = "FORM_FIELD_LOCAL_LOGIN"
-
         fun newInstance() = LoginFragment()
     }
 }
