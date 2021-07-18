@@ -33,11 +33,22 @@ class RegisterLocalUserFragment : ToolBarFragment(), RequestSending {
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentRegisterLocalUserBinding.inflate(inflater, container, false).also { binding ->
-            setupRegisterButton(binding)
             setupDebugPresetsButton(binding)
+            setupRegisterButton(binding)
         }
 
         return binding?.root
+    }
+
+    private fun setupDebugPresetsButton(binding: FragmentRegisterLocalUserBinding) {
+        if (BuildInformationProvider.buildType == BuildType.Debug) {
+            binding.textViewHeader.setOnLongClickListener {
+                binding.textInputEditTextServerurl.setText(DebugConstants.TEST_SERVERURL)
+                binding.textInputEditTextInvitationCode.setText(DebugConstants.TEST_INVITATION_CODE)
+                binding.textInputEditTextMasterPassword.setText(DebugConstants.TEST_PASSWORD)
+                true
+            }
+        }
     }
 
     private fun setupRegisterButton(binding: FragmentRegisterLocalUserBinding) {
@@ -113,17 +124,6 @@ class RegisterLocalUserFragment : ToolBarFragment(), RequestSending {
 
     private fun removeFormFieldsFocus() {
         binding?.constraintLayoutRootContainer?.requestFocus()
-    }
-
-    private fun setupDebugPresetsButton(binding: FragmentRegisterLocalUserBinding) {
-        if (BuildInformationProvider.buildType == BuildType.Debug) {
-            binding.textViewHeader.setOnLongClickListener {
-                binding.textInputEditTextServerurl.setText(DebugConstants.TEST_SERVERURL)
-                binding.textInputEditTextInvitationCode.setText(DebugConstants.TEST_INVITATION_CODE)
-                binding.textInputEditTextMasterPassword.setText(DebugConstants.TEST_PASSWORD)
-                true
-            }
-        }
     }
 
     override fun onStop() {
