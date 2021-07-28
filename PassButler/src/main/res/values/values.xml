@@ -1,0 +1,6 @@
+<resources>
+
+    <!-- Should be the same as `FADE_TRANSITION_DURATION` and `SLIDE_TRANSITION_DURATION` -->
+    <integer name="transitionDuration">300</integer>
+
+</resources>

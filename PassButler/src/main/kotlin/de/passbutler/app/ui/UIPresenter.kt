@@ -48,7 +48,7 @@ class ScreenPresenter(
                 rootFragmentManager.beginTransaction().let { fragmentTransaction ->
                     if (fragment is BaseFragment) {
                         fragment.transitionType = transitionType
-                        applyTransitionToFragment(fragment)
+                        fragmentTransaction.applyTransition(transitionType)
 
                         fragment.uiPresentingDelegate = rootFragment.uiPresentingDelegate
                     }

@@ -45,9 +45,6 @@ open class BaseFragment : Fragment(), UIPresenting, MainActivity.OnBackPressedLi
                     uiPresentingDelegate = it
                 }
             }
-
-            // Re-apply fragment transition after configuration change
-            applyTransitionToFragment(this)
         }
     }
 
