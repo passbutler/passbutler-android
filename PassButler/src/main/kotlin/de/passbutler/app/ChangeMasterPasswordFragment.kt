@@ -11,6 +11,7 @@ import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.bindVisibility
+import de.passbutler.app.ui.onActionDone
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.UpdateUserFailedException
@@ -29,10 +30,17 @@ class ChangeMasterPasswordFragment : ToolBarFragment(), RequestSending {
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentChangeMasterPasswordBinding.inflate(inflater, container, false).also { binding ->
             setupTextViews(binding)
+            setupInputFields(binding)
             setupChangeButton(binding)
         }
 
         return binding?.root
+    }
+
+    private fun setupInputFields(binding: FragmentChangeMasterPasswordBinding) {
+        binding.textInputEditTextNewMasterPasswordConfirm.onActionDone {
+            changeClicked(binding)
+        }
     }
 
     private fun setupTextViews(binding: FragmentChangeMasterPasswordBinding) {

@@ -19,6 +19,7 @@ import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.bindEnabled
 import de.passbutler.app.ui.bindVisibility
+import de.passbutler.app.ui.onActionDone
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.base.BuildType
@@ -60,6 +61,7 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
         binding = FragmentLockedScreenBinding.inflate(inflater, container, false).also { binding ->
             setupDebugPresetsButton(binding)
             setupTextViews(binding)
+            setupMasterPasswordField(binding)
             setupUnlockWithPasswordButton(binding)
             setupUnlockWithBiometricsButton(binding)
         }
@@ -80,6 +82,12 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
         binding.textViewHeadline.text = when (lockedScreenMode) {
             LockedScreenMode.Normal -> getString(R.string.locked_screen_header_normal)
             LockedScreenMode.AutoFill -> getString(R.string.locked_screen_header_autofill)
+        }
+    }
+
+    private fun setupMasterPasswordField(binding: FragmentLockedScreenBinding) {
+        binding.textInputEditTextMasterPassword.onActionDone {
+            unlockWithPasswordClicked(binding)
         }
     }
 

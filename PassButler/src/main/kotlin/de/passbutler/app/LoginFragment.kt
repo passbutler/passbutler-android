@@ -30,7 +30,7 @@ class LoginFragment : BaseFragment(), RequestSending {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentLoginBinding.inflate(inflater, container, false).also { binding ->
             setupDebugPresetsButton(binding)
-            setupFormFields(binding)
+            setupInputFields(binding)
             setupLoginButton(binding)
             setupBackButton(binding)
         }
@@ -49,7 +49,7 @@ class LoginFragment : BaseFragment(), RequestSending {
         }
     }
 
-    private fun setupFormFields(binding: FragmentLoginBinding) {
+    private fun setupInputFields(binding: FragmentLoginBinding) {
         binding.textInputEditTextMasterPassword.onActionDone {
             loginClicked(binding)
         }

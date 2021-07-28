@@ -13,6 +13,7 @@ import de.passbutler.app.ui.FormFieldValidator
 import de.passbutler.app.ui.FormValidationResult
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ToolBarFragment
+import de.passbutler.app.ui.onActionDone
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.base.BuildType
@@ -34,6 +35,7 @@ class RegisterLocalUserFragment : ToolBarFragment(), RequestSending {
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentRegisterLocalUserBinding.inflate(inflater, container, false).also { binding ->
             setupDebugPresetsButton(binding)
+            setupInputFields(binding)
             setupRegisterButton(binding)
         }
 
@@ -48,6 +50,12 @@ class RegisterLocalUserFragment : ToolBarFragment(), RequestSending {
                 binding.textInputEditTextMasterPassword.setText(DebugConstants.TEST_PASSWORD)
                 true
             }
+        }
+    }
+
+    private fun setupInputFields(binding: FragmentRegisterLocalUserBinding) {
+        binding.textInputEditTextMasterPassword.onActionDone {
+            registerClicked(binding)
         }
     }
 

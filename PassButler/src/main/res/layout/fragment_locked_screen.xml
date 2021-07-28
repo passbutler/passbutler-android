@@ -84,7 +84,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/locked_screen_master_password_hint"
-                        android:imeOptions="actionUnspecified"
+                        android:imeOptions="actionDone"
                         android:importantForAutofill="no"
                         android:inputType="textPassword" />
 
