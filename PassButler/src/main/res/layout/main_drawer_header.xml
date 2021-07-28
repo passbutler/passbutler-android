@@ -36,6 +36,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
         app:layout_constraintVertical_chainStyle="packed"
         app:srcCompat="@drawable/logo_outlined"
         app:tint="?colorOnPrimary"
@@ -49,7 +50,7 @@
         android:layout_marginStart="?marginM"
         android:layout_marginTop="?marginM"
         android:layout_marginEnd="?marginM"
-        android:text="@string/drawer_header_title"
+        android:text="@string/general_app_name"
         app:layout_constraintBottom_toTopOf="@id/textView_drawer_header_subtitle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -63,27 +64,29 @@
         android:layout_marginStart="?marginM"
         android:layout_marginTop="?marginS"
         android:layout_marginEnd="?marginM"
-        android:layout_marginBottom="?marginM"
-        app:layout_constraintBottom_toTopOf="@id/textView_drawer_header_usertype"
+        app:layout_constraintBottom_toTopOf="@id/button_drawer_header_register_local_user"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textView_drawer_header_title"
         tools:text="username@passbutler-server" />
 
-    <TextView
-        android:id="@+id/textView_drawer_header_usertype"
-        style="@style/Widget.PassButler.Body.Order2"
-        android:layout_width="0dp"
+    <Button
+        android:id="@+id/button_drawer_header_register_local_user"
+        style="@style/Widget.PassButler.Button.OutlinedButton.OnSurface"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"
+        android:layout_marginTop="?marginS"
         android:layout_marginEnd="?marginM"
         android:layout_marginBottom="?marginM"
-        android:background="?selectableItemBackground"
-        android:text="@string/drawer_header_usertype_local"
-        android:textStyle="bold"
+        android:padding="?marginS"
+        android:text="@string/drawer_header_register_local_user_button_title"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/textView_drawer_header_subtitle"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textView_drawer_header_subtitle" />
+        app:layout_constraintTop_toBottomOf="@id/textView_drawer_header_subtitle"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

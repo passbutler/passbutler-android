@@ -11,6 +11,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.SearchView
@@ -37,7 +38,6 @@ import de.passbutler.app.ui.context
 import de.passbutler.app.ui.copyToClipboard
 import de.passbutler.app.ui.openBrowser
 import de.passbutler.app.ui.setupWithFilterableAdapter
-import de.passbutler.app.ui.showDangerousConfirmDialog
 import de.passbutler.app.ui.showFadeInOutAnimation
 import de.passbutler.app.ui.showFragmentModally
 import de.passbutler.app.ui.visible
@@ -59,13 +59,12 @@ import java.util.*
 class OverviewFragment : BaseFragment(), RequestSending {
 
     private val viewModel by userViewModelUsingViewModels<OverviewViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
-    private val rootViewModel by userViewModelUsingActivityViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var toolbarMenuSearchView: SearchView? = null
     private var binding: FragmentOverviewBinding? = null
     private var navigationHeaderSubtitleView: TextView? = null
-    private var navigationHeaderUserTypeView: TextView? = null
+    private var navigationHeaderRegisterLocalUserButton: Button? = null
     private val navigationItemSelectedListener = NavigationItemSelectedListener()
 
     private var updateToolbarJob: Job? = null
@@ -109,7 +108,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
 
         loggedInUserViewModel?.loggedInStateStorage?.addLifecycleObserver(viewLifecycleOwner, true) {
             updateToolbarSubtitle()
-            updateNavigationHeaderUserTypeView()
+            updateNavigationHeaderRegisterLocalUserButton()
             updateSwipeRefreshLayout()
         }
 
@@ -156,7 +155,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
 
         val navigationHeaderView = binding.navigationView.inflateHeaderView(R.layout.main_drawer_header)
         navigationHeaderSubtitleView = navigationHeaderView?.findViewById(R.id.textView_drawer_header_subtitle)
-        navigationHeaderUserTypeView = navigationHeaderView?.findViewById(R.id.textView_drawer_header_usertype)
+        navigationHeaderRegisterLocalUserButton = navigationHeaderView?.findViewById(R.id.button_drawer_header_register_local_user)
     }
 
     private fun setupEntryList(binding: FragmentOverviewBinding) {
@@ -228,8 +227,8 @@ class OverviewFragment : BaseFragment(), RequestSending {
         }
     }
 
-    private fun updateNavigationHeaderUserTypeView() {
-        navigationHeaderUserTypeView?.apply {
+    private fun updateNavigationHeaderRegisterLocalUserButton() {
+        navigationHeaderRegisterLocalUserButton?.apply {
             if (viewModel.loggedInUserViewModel?.userType == UserType.LOCAL) {
                 visible = true
                 setOnClickListener {
@@ -320,7 +319,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
         toolbarMenuSearchView = null
         binding = null
         navigationHeaderSubtitleView = null
-        navigationHeaderUserTypeView = null
+        navigationHeaderRegisterLocalUserButton = null
 
         super.onDestroyView()
     }
@@ -331,26 +330,6 @@ class OverviewFragment : BaseFragment(), RequestSending {
             true
         } else {
             super.onHandleBackPress()
-        }
-    }
-
-    private fun logoutUserClicked() {
-        showDangerousConfirmDialog(
-            title = getString(R.string.overview_logout_confirmation_title),
-            message = getString(R.string.overview_logout_confirmation_message),
-            positiveActionTitle = getString(R.string.overview_logout_confirmation_button_title),
-            positiveClickAction = {
-                logoutUser()
-            }
-        )
-    }
-
-    private fun logoutUser() {
-        launchRequestSending(
-            handleFailure = { showError(getString(R.string.overview_logout_failed_title)) },
-            isCancellable = false
-        ) {
-            rootViewModel.closeVault()
         }
     }
 
@@ -384,12 +363,8 @@ class OverviewFragment : BaseFragment(), RequestSending {
                     showFragmentModally(AboutFragment.newInstance())
                     true
                 }
-                R.id.drawer_menu_item_logout -> {
-                    logoutUserClicked()
-                    false
-                }
-                R.id.drawer_menu_item_homepage -> {
-                    startExternalUriIntent(URL_HOMEPAGE)
+                R.id.drawer_menu_item_website -> {
+                    startExternalUriIntent(URL_WEBSITE)
                     false
                 }
                 R.id.drawer_menu_item_googleplay -> {
@@ -415,7 +390,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
     }
 
     companion object {
-        private const val URL_HOMEPAGE = "https://sicherheitskritisch.de"
+        private const val URL_WEBSITE = "https://www.passbutler.de"
         private const val URL_GOOGLE_PLAY = "market://details?id=de.passbutler.app"
 
         fun newInstance() = OverviewFragment()

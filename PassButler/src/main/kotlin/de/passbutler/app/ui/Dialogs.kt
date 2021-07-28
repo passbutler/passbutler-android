@@ -77,8 +77,8 @@ fun BaseFragment.showConfirmDialog(
     positiveActionTitle: String,
     positiveClickAction: () -> Unit,
     negativeClickAction: (() -> Unit)? = null
-) {
-    context?.let { fragmentContext ->
+): AlertDialog? {
+    return context?.let { fragmentContext ->
         val confirmDialog = createConfirmDialog(
             fragmentContext,
             0,
@@ -89,7 +89,9 @@ fun BaseFragment.showConfirmDialog(
             negativeClickAction
         )
 
-        confirmDialog.show()
+        confirmDialog.also {
+            it.show()
+        }
     }
 }
 
@@ -99,8 +101,8 @@ fun BaseFragment.showDangerousConfirmDialog(
     positiveActionTitle: String,
     positiveClickAction: () -> Unit,
     negativeClickAction: (() -> Unit)? = null
-) {
-    context?.let { fragmentContext ->
+): AlertDialog? {
+    return context?.let { fragmentContext ->
         val confirmDialog = createConfirmDialog(
             fragmentContext,
             R.style.ThemeOverlay_PassButler_DangerousAlertDialogTheme,
@@ -111,7 +113,9 @@ fun BaseFragment.showDangerousConfirmDialog(
             negativeClickAction
         )
 
-        confirmDialog.show()
+        confirmDialog.also {
+            it.show()
+        }
     }
 }
 

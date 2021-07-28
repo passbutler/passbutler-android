@@ -22,10 +22,13 @@ import de.passbutler.app.databinding.FragmentSettingsBinding
 import de.passbutler.app.ui.ScreenPresentingExtensions.Companion.instanceIdentification
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.addLifecycleObserver
+import de.passbutler.app.ui.showDangerousConfirmDialog
 import de.passbutler.app.ui.showEditTextDialog
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
+import de.passbutler.common.LoggedInUserViewModelUninitializedException
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Success
+import de.passbutler.common.database.models.UserType
 import de.passbutler.common.ui.RequestSending
 import de.passbutler.common.ui.launchRequestSending
 import kotlinx.coroutines.Dispatchers
@@ -37,11 +40,13 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
 
     // Retrieve viewmodel from activity to provide nested fragment the same instance
     internal val viewModel by userViewModelUsingActivityViewModels<SettingsViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
+    private val rootViewModel by userViewModelUsingActivityViewModels<RootViewModel>(userViewModelProvidingViewModel = { userViewModelProvidingViewModel })
     private val userViewModelProvidingViewModel by activityViewModels<UserViewModelProvidingViewModel>()
 
     private var settingsPreferenceFragment: SettingsPreferenceFragment? = null
     private var biometricPrompt: BiometricPrompt? = null
-    internal var masterPasswordInputDialog: AlertDialog? = null
+    private var masterPasswordInputDialog: AlertDialog? = null
+    private var logoutDialog: AlertDialog? = null
 
     private val biometricCallbackExecutor by lazy {
         BiometricAuthenticationCallbackExecutor(this, Dispatchers.Main)
@@ -76,8 +81,49 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
         dismissPreferenceDialog()
         dismissMasterPasswordInputDialog()
         dismissBiometricPrompt()
+        dismissLogoutDialog()
 
         super.onPause()
+    }
+
+    private fun dismissPreferenceDialog() {
+        // Dirty approach to dismiss the visible preference dialog fragment (fragment tag copied from `PreferenceFragmentCompat.DIALOG_FRAGMENT_TAG`):
+        val preferenceDialogFragmentTag = "androidx.preference.PreferenceFragment.DIALOG"
+        (settingsPreferenceFragment?.parentFragmentManager?.findFragmentByTag(preferenceDialogFragmentTag) as? DialogFragment)?.dismiss()
+    }
+
+    internal fun dismissMasterPasswordInputDialog() {
+        masterPasswordInputDialog?.let {
+            it.dismiss()
+
+            Logger.debug("The master password dialog was dismissed, cancel setup")
+            cancelBiometricUnlockSetup()
+        }
+
+        masterPasswordInputDialog = null
+    }
+
+    private fun dismissBiometricPrompt() {
+        biometricPrompt?.cancelAuthentication()
+        biometricPrompt = null
+    }
+
+    private fun dismissLogoutDialog() {
+        logoutDialog?.dismiss()
+        logoutDialog = null
+    }
+
+    internal fun generateBiometricUnlockKey() {
+        launchRequestSending(
+            handleSuccess = {
+                showBiometricPrompt()
+            },
+            handleFailure = {
+                showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))
+            }
+        ) {
+            viewModel.generateBiometricUnlockKey()
+        }
     }
 
     private fun showBiometricPrompt() {
@@ -109,41 +155,6 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
         }
     }
 
-    private fun dismissPreferenceDialog() {
-        // Dirty approach to dismiss the visible preference dialog fragment (fragment tag copied from `PreferenceFragmentCompat.DIALOG_FRAGMENT_TAG`):
-        val preferenceDialogFragmentTag = "androidx.preference.PreferenceFragment.DIALOG"
-        (settingsPreferenceFragment?.parentFragmentManager?.findFragmentByTag(preferenceDialogFragmentTag) as? DialogFragment)?.dismiss()
-    }
-
-    internal fun dismissMasterPasswordInputDialog() {
-        masterPasswordInputDialog?.let {
-            it.dismiss()
-
-            Logger.debug("The master password dialog was dismissed, cancel setup")
-            cancelBiometricUnlockSetup()
-        }
-
-        masterPasswordInputDialog = null
-    }
-
-    private fun dismissBiometricPrompt() {
-        biometricPrompt?.cancelAuthentication()
-        biometricPrompt = null
-    }
-
-    internal fun generateBiometricUnlockKey() {
-        launchRequestSending(
-            handleSuccess = {
-                showBiometricPrompt()
-            },
-            handleFailure = {
-                showError(getString(R.string.settings_setup_biometric_unlock_failed_general_title))
-            }
-        ) {
-            viewModel.generateBiometricUnlockKey()
-        }
-    }
-
     internal fun disableBiometricUnlock() {
         launchRequestSending(
             handleSuccess = {
@@ -164,6 +175,39 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
             }
         ) {
             viewModel.cancelBiometricUnlockSetup()
+        }
+    }
+
+    internal fun logoutUserClicked() {
+        val loggedInUserViewModel = viewModel.loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
+
+        logoutDialog = if (loggedInUserViewModel.userType == UserType.LOCAL) {
+            showDangerousConfirmDialog(
+                title = getString(R.string.settings_logout_local_user_confirmation_title),
+                message = getString(R.string.settings_logout_local_user_confirmation_message),
+                positiveActionTitle = getString(R.string.settings_logout_local_user_confirmation_button_title),
+                positiveClickAction = {
+                    logoutUser(getString(R.string.settings_logout_local_user_failed_title))
+                }
+            )
+        } else {
+            showDangerousConfirmDialog(
+                title = getString(R.string.settings_logout_remote_user_confirmation_title),
+                message = getString(R.string.settings_logout_remote_user_confirmation_message),
+                positiveActionTitle = getString(R.string.settings_logout_remote_user_confirmation_button_title),
+                positiveClickAction = {
+                    logoutUser(getString(R.string.settings_logout_remote_user_failed_title))
+                }
+            )
+        }
+    }
+
+    private fun logoutUser(errorTitle: String) {
+        launchRequestSending(
+            handleFailure = { showError(errorTitle) },
+            isCancellable = false
+        ) {
+            rootViewModel.closeVault()
         }
     }
 
@@ -249,6 +293,7 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
             preferenceScreen = preferenceManager.createPreferenceScreen(context)
 
             setupSecuritySettingsSection()
+            setupAccountSection()
         }
 
         private fun setupSecuritySettingsSection() {
@@ -259,7 +304,6 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
             addAutomaticLockTimeoutSetting()
             addHidePasswordsSetting()
             addBiometricUnlockSetting()
-            addChangeMasterPasswordEntry()
         }
 
         private fun addAutomaticLockTimeoutSetting() {
@@ -281,11 +325,13 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
         }
 
         private fun addBiometricUnlockSetting() {
+            val loggedInUserViewModel = viewModel.loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
+
             enableBiometricUnlockPreference = SwitchPreferenceCompat(context).apply {
                 key = SettingKey.BIOMETRIC_UNLOCK_ENABLED.name
                 title = getString(R.string.settings_biometric_unlock_setting_title)
                 summary = getString(R.string.settings_biometric_unlock_setting_summary)
-                isVisible = viewModel.loggedInUserViewModel?.biometricUnlockAvailable?.value ?: false
+                isVisible = loggedInUserViewModel.biometricUnlockAvailable.value
 
                 setOnPreferenceChangeListener { _, newValue ->
                     when (newValue) {
@@ -301,6 +347,15 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
             }
         }
 
+        private fun setupAccountSection() {
+            preferenceScreen.addPreference(PreferenceCategory(context).apply {
+                title = getString(R.string.settings_category_account_title)
+            })
+
+            addChangeMasterPasswordEntry()
+            addLogoutEntry()
+        }
+
         private fun addChangeMasterPasswordEntry() {
             preferenceScreen.addPreference(Preference(context).apply {
                 title = getString(R.string.settings_change_master_password_setting_title)
@@ -308,6 +363,25 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
 
                 setOnPreferenceClickListener {
                     settingsFragment?.showFragment(ChangeMasterPasswordFragment.newInstance())
+                    true
+                }
+            })
+        }
+
+        private fun addLogoutEntry() {
+            preferenceScreen.addPreference(Preference(context).apply {
+                val loggedInUserViewModel = viewModel.loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
+
+                if (loggedInUserViewModel.userType == UserType.LOCAL) {
+                    title = getString(R.string.settings_logout_local_user_setting_title)
+                    summary = getString(R.string.settings_logout_local_user_setting_summary)
+                } else {
+                    title = getString(R.string.settings_logout_remote_user_setting_title)
+                    summary = getString(R.string.settings_logout_remote_user_setting_summary)
+                }
+
+                setOnPreferenceClickListener {
+                    settingsFragment?.logoutUserClicked()
                     true
                 }
             })

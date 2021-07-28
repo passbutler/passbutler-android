@@ -24,19 +24,14 @@
             android:checkable="false"
             android:icon="@drawable/icon_info_24dp"
             android:title="@string/drawer_menu_item_about" />
-        <item
-            android:id="@+id/drawer_menu_item_logout"
-            android:checkable="false"
-            android:icon="@drawable/icon_eject_24dp"
-            android:title="@string/drawer_menu_item_logout" />
     </group>
 
     <item android:title="@string/drawer_menu_category_external_links">
         <menu>
             <item
-                android:id="@+id/drawer_menu_item_homepage"
+                android:id="@+id/drawer_menu_item_website"
                 android:icon="@drawable/icon_open_in_browser_24dp"
-                android:title="@string/drawer_menu_item_homepage" />
+                android:title="@string/drawer_menu_item_website" />
             <item
                 android:id="@+id/drawer_menu_item_googleplay"
                 android:icon="@drawable/icon_favorite_24dp"
