@@ -232,7 +232,6 @@ class OverviewFragment : BaseFragment(), RequestSending {
             if (viewModel.loggedInUserViewModel?.userType == UserType.LOCAL) {
                 visible = true
                 setOnClickListener {
-                    closeDrawerDelayed()
                     showFragmentModally(RegisterLocalUserFragment.newInstance())
                 }
             } else {
@@ -353,15 +352,15 @@ class OverviewFragment : BaseFragment(), RequestSending {
                 }
                 R.id.drawer_menu_item_settings -> {
                     showFragmentModally(SettingsFragment.newInstance())
-                    true
+                    false
                 }
                 R.id.drawer_menu_item_recycle_bin -> {
                     showFragmentModally(RecycleBinFragment.newInstance())
-                    true
+                    false
                 }
                 R.id.drawer_menu_item_about -> {
                     showFragmentModally(AboutFragment.newInstance())
-                    true
+                    false
                 }
                 R.id.drawer_menu_item_website -> {
                     startExternalUriIntent(URL_WEBSITE)
