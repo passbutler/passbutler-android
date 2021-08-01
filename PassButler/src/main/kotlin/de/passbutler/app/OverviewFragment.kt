@@ -329,11 +329,18 @@ class OverviewFragment : BaseFragment(), RequestSending {
     }
 
     override fun onHandleBackPress(): Boolean {
-        return if (binding?.drawerLayout?.isDrawerOpen(GravityCompat.START) == true) {
-            binding?.drawerLayout?.closeDrawer(GravityCompat.START)
-            true
-        } else {
-            super.onHandleBackPress()
+        return when {
+            binding?.drawerLayout?.isDrawerOpen(GravityCompat.START) == true -> {
+                binding?.drawerLayout?.closeDrawer(GravityCompat.START)
+                true
+            }
+            binding?.toolbar?.hasExpandedActionView() == true -> {
+                binding?.toolbar?.collapseActionView()
+                true
+            }
+            else -> {
+                super.onHandleBackPress()
+            }
         }
     }
 
