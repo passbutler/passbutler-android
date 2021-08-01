@@ -28,6 +28,7 @@
 - Missed transition animation after configuration change
 - Broken state when locked screen in autofill mode is rebuild after configuration change
 - Keyboard was not hidden on overview screen if an item was searched and the item detail screen was shown
+- Non-updated filtered list on overview / recycle bin screen if a searched item was deleted
 
 ## [1.0.0-Preview1] - 2021-02-02
 

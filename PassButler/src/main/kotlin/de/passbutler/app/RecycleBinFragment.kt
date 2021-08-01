@@ -48,6 +48,11 @@ class RecycleBinFragment : ToolBarFragment(), RequestSending {
 
         val showEmptyScreen = newItemEntries.isEmpty()
         binding?.layoutEmptyScreen?.root?.visible = showEmptyScreen
+
+        // Update list according to new list
+        toolbarMenuSearchView?.query?.takeIf { it.isNotEmpty() }?.let { currentText ->
+            adapter?.filter?.filter(currentText)
+        }
     }
 
     override fun getToolBarTitle() = getString(R.string.recycle_bin_title)

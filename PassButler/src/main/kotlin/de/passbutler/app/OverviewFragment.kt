@@ -86,6 +86,11 @@ class OverviewFragment : BaseFragment(), RequestSending {
 
         val showEmptyScreen = newItemEntries.isEmpty()
         binding?.layoutOverviewContent?.layoutEmptyScreen?.root?.visible = showEmptyScreen
+
+        // Update list according to new list
+        toolbarMenuSearchView?.query?.takeIf { it.isNotEmpty() }?.let { currentText ->
+            adapter?.filter?.filter(currentText)
+        }
     }
 
     private val webservicesInitializedObserver: BindableObserver<Webservices?> = {
