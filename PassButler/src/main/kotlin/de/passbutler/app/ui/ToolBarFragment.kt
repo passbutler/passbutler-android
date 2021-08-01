@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.res.ResourcesCompat
 import de.passbutler.app.R
 import de.passbutler.common.ui.TransitionType
 
@@ -38,7 +39,7 @@ abstract class ToolBarFragment : BaseFragment() {
             }
 
             toolBar.navigationIcon = toolBarIconDrawableId?.let {
-                resources.getDrawable(it, toolBar.context.theme)
+                ResourcesCompat.getDrawable(resources, it, toolBar.context.theme)
             }
 
             toolBar.setNavigationOnClickListener {

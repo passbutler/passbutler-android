@@ -22,7 +22,7 @@ import org.tinylog.kotlin.Logger
 
 class AutofillMainActivity : AppCompatActivity() {
 
-    var rootFragment: AutofillRootFragment? = null
+    private var rootFragment: AutofillRootFragment? = null
 
     lateinit var structureParserResult: StructureParser.Result
 
@@ -135,8 +135,7 @@ class AutofillMainActivity : AppCompatActivity() {
     }
 
     companion object {
-        var pendingIntentId = 0
-            private set
+        private var pendingIntentId = 0
 
         private const val INTENT_EXTRA_STRUCTURE_PARSER_RESULT_APPLICATION_ID = "INTENT_EXTRA_STRUCTURE_PARSER_RESULT_APPLICATION_ID"
         private const val INTENT_EXTRA_STRUCTURE_PARSER_RESULT_WEB_DOMAIN = "INTENT_EXTRA_STRUCTURE_PARSER_RESULT_WEB_DOMAIN"
