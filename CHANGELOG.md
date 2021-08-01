@@ -26,6 +26,7 @@
 - Broken fragment presentation on autofill screen after configuration change
 - Missed transition animation after configuration change
 - Broken state when locked screen in autofill mode is rebuild after configuration change
+- Keyboard was not hidden on overview screen if an item was searched and the item detail screen was shown
 
 ## [1.0.0-Preview1] - 2021-02-02
 

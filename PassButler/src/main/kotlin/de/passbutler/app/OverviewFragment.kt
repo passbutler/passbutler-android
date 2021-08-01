@@ -31,6 +31,7 @@ import de.passbutler.app.databinding.FragmentOverviewBinding
 import de.passbutler.app.databinding.ListItemEntryBinding
 import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.FilterableListAdapter
+import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.VisibilityHideMode
 import de.passbutler.app.ui.addLifecycleObserver
@@ -161,7 +162,10 @@ class OverviewFragment : BaseFragment(), RequestSending {
     private fun setupEntryList(binding: FragmentOverviewBinding) {
         val viewContext = binding.context
         val listAdapter = ItemEntryAdapter(
-            entryClickedCallback = { entry -> showFragment(ItemDetailFragment.newInstance(entry.itemViewModel.id)) },
+            entryClickedCallback = { entry ->
+                Keyboard.hideKeyboard(context, this)
+                showFragment(ItemDetailFragment.newInstance(entry.itemViewModel.id))
+            },
             contextMenuItemClickedCallback = { entry, contextMenuItem ->
                 when (contextMenuItem) {
                     ItemEntryContextMenuItem.COPY_USERNAME -> copyItemInformationToClipboard(viewContext, entry.itemViewModel.itemData?.username)
@@ -185,6 +189,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
         toolbarMenuSearchView?.setupWithFilterableAdapter(listAdapter)
 
         binding.layoutOverviewContent.floatingActionButtonAddEntry.setOnClickListener {
+            Keyboard.hideKeyboard(context, this)
             showFragment(ItemDetailFragment.newInstance(null))
         }
     }
