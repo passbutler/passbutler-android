@@ -318,6 +318,8 @@ class OverviewFragment : BaseFragment(), RequestSending {
     }
 
     override fun onStop() {
+        Keyboard.hideKeyboard(context, this)
+
         viewModel.loggedInUserViewModel?.webservices?.removeObserver(webservicesInitializedObserver)
         updateToolbarJob?.cancel()
 
