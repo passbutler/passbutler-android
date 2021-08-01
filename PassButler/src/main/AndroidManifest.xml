@@ -18,6 +18,7 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name="de.passbutler.app.MainActivity"
+            android:exported="true"
             android:label="@string/general_app_name"
             android:taskAffinity=".MainActivity"
             android:windowSoftInputMode="adjustResize">
@@ -29,11 +30,13 @@
 
         <activity
             android:name="de.passbutler.app.autofill.AutofillMainActivity"
+            android:exported="false"
             android:label="@string/autofill_activity_name"
             android:taskAffinity=".autofill.AutofillMainActivity" />
 
         <service
             android:name="de.passbutler.app.autofill.PassButlerAutofillService"
+            android:exported="false"
             android:permission="android.permission.BIND_AUTOFILL">
             <intent-filter>
                 <action android:name="android.service.autofill.AutofillService" />

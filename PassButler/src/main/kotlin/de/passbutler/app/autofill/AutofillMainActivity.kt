@@ -156,7 +156,7 @@ class AutofillMainActivity : AppCompatActivity() {
                 putExtra(INTENT_EXTRA_STRUCTURE_PARSER_RESULT_PASSWORD_ID, structureParserResult.passwordId)
             }
 
-            return PendingIntent.getActivity(context, ++pendingIntentId, authenticateActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT).intentSender
+            return PendingIntent.getActivity(context, ++pendingIntentId, authenticateActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE).intentSender
         }
     }
 }
