@@ -15,7 +15,7 @@ Git is needed for a build task that generates the version information for the bu
 ### Install Android Studio
 
 Recommended version:
-- Android Studio 4.2 Stable
+- Android Studio 2020.3.1 Stable
 
 Recommended plugin:
 - SQLDelight (https://plugins.jetbrains.com/plugin/8191-sqldelight)

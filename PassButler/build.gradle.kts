@@ -11,7 +11,7 @@ android {
         java.srcDir("./src/$name/kotlin/")
     }
 
-    compileSdkVersion(30)
+    compileSdk = 30
 
     compileOptions {
         // Required minimum Java 8 for OkHttp3 used in Retrofit
@@ -24,8 +24,8 @@ android {
 
     defaultConfig {
         applicationId = "de.passbutler.app"
-        minSdkVersion(26)
-        targetSdkVersion(30)
+        minSdk = 26
+        targetSdk = 30
         versionCode = gitCommitCount()
         versionName = "1.0.0"
 
@@ -57,28 +57,28 @@ dependencies {
     implementation(project(":PassButlerCommon"))
 
     // Kotlin
-    val kotlinVersion = "1.5.0"
+    val kotlinVersion = "1.5.20"
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     // Kotlin Coroutines for Android
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1")
 
     // TinyLog logger
-    val tinylogVersion = "2.3.1"
+    val tinylogVersion = "2.3.2"
     implementation("org.tinylog:tinylog-api-kotlin:$tinylogVersion")
     implementation("org.tinylog:tinylog-impl:$tinylogVersion")
 
     // SQLDelight
-    implementation("com.squareup.sqldelight:android-driver:1.5.0")
+    implementation("com.squareup.sqldelight:android-driver:1.5.1")
 
     // Google Material theme/components
-    implementation("com.google.android.material:material:1.3.0")
+    implementation("com.google.android.material:material:1.4.0")
 
     // Android widgets
-    implementation("androidx.appcompat:appcompat:1.2.0")
-    implementation("androidx.recyclerview:recyclerview:1.2.0")
+    implementation("androidx.appcompat:appcompat:1.3.1")
+    implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.0.4")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.0")
 
     // Android Lifecycle and ViewModel components
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
@@ -87,7 +87,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
 
-    implementation("androidx.fragment:fragment-ktx:1.3.3")
+    implementation("androidx.fragment:fragment-ktx:1.3.6")
 
     // Android Biometrics framework
     implementation("androidx.biometric:biometric:1.1.0")
@@ -96,13 +96,13 @@ dependencies {
     implementation("androidx.preference:preference:1.1.1")
 
     // JUnit 5
-    val junitVersion = "5.7.1"
+    val junitVersion = "5.7.2"
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
     // Mockk.io
-    testImplementation("io.mockk:mockk:1.11.0")
+    testImplementation("io.mockk:mockk:1.12.0")
 }
 
 fun gitCommitCount(): Int {
