@@ -17,17 +17,21 @@
       <w>doublebang</w>
       <w>hmac</w>
       <w>itemauthorizations</w>
+      <w>itemdetail</w>
       <w>itemkeys</w>
       <w>lifecycles</w>
       <w>masterkey</w>
       <w>mockk</w>
       <w>modally</w>
       <w>oaep</w>
+      <w>passbutler</w>
+      <w>passwordgenerator</w>
       <w>pbkdf</w>
       <w>serverurl</w>
       <w>snackbar</w>
       <w>splitted</w>
       <w>sqlite</w>
+      <w>subheader</w>
       <w>synchronizable</w>
       <w>tinylog</w>
       <w>underlaying</w>
