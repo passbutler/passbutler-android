@@ -30,6 +30,7 @@
 - Keyboard was not hidden on overview screen if an item was searched and the item detail screen was shown
 - Non-updated filtered list on overview / recycle bin screen if a searched item was deleted
 - Keyboard was not hidden on overview screen if the locked screen was shown
+- Disabling biometrics if keychain access was not possible in rare cases (e.g. when deploying to locked phone)
 
 ## [1.0.0-Preview1] - 2021-02-02
 

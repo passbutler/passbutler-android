@@ -97,9 +97,7 @@ class RootViewModel : UserViewModelUsingViewModel() {
 
             Success(biometricUnlockCipher)
         } catch (exception: Exception) {
-            Logger.warn("The biometric authentication failed because key could not be initialized - disable biometric unlock")
-            loggedInUserViewModel.disableBiometricUnlock()
-
+            Logger.warn("The biometric authentication failed because key could not be initialized!")
             Failure(exception)
         }
     }
