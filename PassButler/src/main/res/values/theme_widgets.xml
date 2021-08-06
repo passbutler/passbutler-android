@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Default Android component based styles: -->
+
+    <style name="Widget.PassButler.ImageView" parent="">
+        <item name="tint">?android:textColorPrimary</item>
+    </style>
+
+    <style name="Widget.PassButler.ImageView.BackgroundDimming" parent="">
+        <!-- Do not set `app:tint` because it does not work for dimming non-vector drawable images -->
+        <item name="android:tint">?colorBackgroundImageTint</item>
+    </style>
+
     <!-- AppCompat component based styles: -->
 
     <style name="Widget.PassButler.ProgressBar.Horizontal" parent="Widget.AppCompat.ProgressBar.Horizontal">

@@ -16,19 +16,18 @@
         android:theme="@style/Theme.PassButler.Dark"
         android:transitionGroup="true">
 
-        <!-- `app:tint` does not work for dimming non-vector drawable images -->
         <ImageView
             android:id="@+id/imageView_background"
+            style="@style/Widget.PassButler.ImageView.BackgroundDimming"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:scaleType="centerCrop"
-            android:tint="?colorBackgroundImageTint"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/background_mesh_polygons"
-            tools:ignore="ContentDescription,UseAppTint" />
+            tools:ignore="ContentDescription" />
 
         <include
             android:id="@+id/layout_header"
