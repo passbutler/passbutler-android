@@ -11,7 +11,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +19,7 @@ import de.passbutler.app.databinding.ListItemAuthorizationEntryBinding
 import de.passbutler.app.databinding.ListItemAuthorizationHeaderBinding
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.ToolBarFragment
+import de.passbutler.app.ui.VerticalSpaceItemDecoration
 import de.passbutler.app.ui.addLifecycleObserver
 import de.passbutler.app.ui.showConfirmDialog
 import de.passbutler.app.ui.visible
@@ -118,8 +118,8 @@ class ItemAuthorizationsDetailFragment : ToolBarFragment(), RequestSending {
             layoutManager = linearLayoutManager
             adapter = ItemAuthorizationsAdapter()
 
-            val dividerItemDecoration = DividerItemDecoration(context, linearLayoutManager.orientation)
-            addItemDecoration(dividerItemDecoration)
+            val verticalSpaceItemDecoration = VerticalSpaceItemDecoration(context)
+            addItemDecoration(verticalSpaceItemDecoration)
         }
     }
 

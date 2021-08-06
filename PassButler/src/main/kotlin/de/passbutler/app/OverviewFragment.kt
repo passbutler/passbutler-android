@@ -33,6 +33,7 @@ import de.passbutler.app.ui.BaseFragment
 import de.passbutler.app.ui.FilterableListAdapter
 import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
+import de.passbutler.app.ui.VerticalSpaceItemDecoration
 import de.passbutler.app.ui.VisibilityHideMode
 import de.passbutler.app.ui.addLifecycleObserver
 import de.passbutler.app.ui.context
@@ -187,8 +188,8 @@ class OverviewFragment : BaseFragment(), RequestSending {
             layoutManager = linearLayoutManager
             adapter = listAdapter
 
-            val dividerItemDecoration = DividerItemDecoration(context, linearLayoutManager.orientation)
-            addItemDecoration(dividerItemDecoration)
+            val verticalSpaceItemDecoration = VerticalSpaceItemDecoration(context)
+            addItemDecoration(verticalSpaceItemDecoration)
         }
 
         toolbarMenuSearchView?.setupWithFilterableAdapter(listAdapter)

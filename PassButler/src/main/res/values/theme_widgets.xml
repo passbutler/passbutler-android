@@ -7,6 +7,10 @@
         <item name="tint">?android:textColorPrimary</item>
     </style>
 
+    <style name="Widget.PassButler.ImageView.Accent" parent="Widget.PassButler.ImageView">
+        <item name="tint">?colorAccent</item>
+    </style>
+
     <style name="Widget.PassButler.ImageView.BackgroundDimming" parent="">
         <!-- Do not set `app:tint` because it does not work for dimming non-vector drawable images -->
         <item name="android:tint">?colorBackgroundImageTint</item>
@@ -68,7 +72,16 @@
     <style name="Widget.PassButler.Toolbar" parent="Widget.MaterialComponents.Toolbar.Primary" />
 
     <style name="Widget.PassButler.CardView" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">4dp</item>
+        <item name="cardElevation">4dp</item>
+    </style>
+
+    <style name="Widget.PassButler.CardView.TranslucentContainer" parent="Widget.PassButler.CardView">
+        <item name="cardBackgroundColor">@color/color_surface_transparent</item>
         <item name="cardCornerRadius">8dp</item>
+
+        <!-- Use 0dp elevation to avoid different border color when translucent background is used -->
+        <item name="cardElevation">0dp</item>
     </style>
 
     <style name="Widget.PassButler.AlertDialog.Title.Text.Dangerous" parent="MaterialAlertDialog.MaterialComponents.Title.Text">

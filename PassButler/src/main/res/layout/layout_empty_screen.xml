@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -9,10 +8,10 @@
 
     <ImageView
         android:id="@+id/imageView_icon"
+        style="@style/Widget.PassButler.ImageView.Accent"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_gravity="center_horizontal"
-        app:tint="?colorOnBackground"
         tools:ignore="ContentDescription"
         tools:srcCompat="@drawable/icon_list_24dp" />
 
@@ -29,7 +28,7 @@
 
     <TextView
         android:id="@+id/textView_description"
-        style="@style/Widget.PassButler.Body.Order1"
+        style="@style/Widget.PassButler.Subtitle.Order1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"

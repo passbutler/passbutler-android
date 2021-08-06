@@ -1,75 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Use `marginXS` instead of `marginS` for vertical item spacing because of massive padding of the checkboxes -->
-<androidx.constraintlayout.widget.ConstraintLayout
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="?marginXS"
-    android:paddingBottom="?marginXS">
+    android:layout_marginHorizontal="?marginM"
+    tools:layout_marginVertical="?marginM">
 
-    <ImageView
-        android:id="@+id/imageView_icon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginStart="?marginM"
-        app:layout_constraintBottom_toBottomOf="@+id/textView_title"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/textView_title"
-        app:srcCompat="@drawable/icon_account_circle_24dp"
-        app:tint="?android:textColorPrimary"
-        tools:ignore="ContentDescription" />
-
-    <TextView
-        android:id="@+id/textView_title"
-        style="@style/Widget.PassButler.Headline.Order2"
-        android:layout_width="0dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="?marginM"
-        android:layout_marginEnd="?marginM"
-        android:lines="1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/imageView_icon"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="testuser@passbutler.de" />
+        android:paddingVertical="?marginS">
 
-    <!-- Use `marginS` instead of `marginM` for top spacing because of massive padding of the checkbox -->
-    <!-- Use `marginS` instead of `marginM` for end spacing because the dividing spacing between the checkboxes is splitted -->
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switch_read"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="?marginM"
-        android:layout_marginTop="?marginS"
-        android:layout_marginEnd="?marginS"
-        android:text="@string/itemauthorizations_read_switch_title"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline_middle_divider"
-        app:layout_constraintStart_toEndOf="@+id/imageView_icon"
-        app:layout_constraintTop_toBottomOf="@+id/textView_title" />
+        <ImageView
+            android:id="@+id/imageView_icon"
+            style="@style/Widget.PassButler.ImageView.Accent"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="?marginM"
+            app:layout_constraintBottom_toBottomOf="@+id/textView_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/textView_title"
+            app:srcCompat="@drawable/icon_account_circle_24dp"
+            tools:ignore="ContentDescription" />
 
-    <!-- Use `marginS` instead of `marginM` for top spacing because of massive padding of the checkbox -->
-    <!-- Use `marginS` instead of `marginM` for start spacing because the dividing spacing between the checkboxes is splitted -->
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switch_write"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="?marginS"
-        android:layout_marginTop="?marginS"
-        android:layout_marginEnd="?marginM"
-        android:text="@string/itemauthorizations_write_switch_title"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/guideline_middle_divider"
-        app:layout_constraintTop_toBottomOf="@+id/textView_title" />
+        <TextView
+            android:id="@+id/textView_title"
+            style="@style/Widget.PassButler.Headline.Order2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="?marginM"
+            android:layout_marginEnd="?marginM"
+            android:lines="1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/imageView_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="testuser@passbutler.de" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_middle_divider"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.5" />
+        <!-- Use `marginS` instead of `marginM` for top spacing because of massive padding of the checkbox -->
+        <!-- Use `marginS` instead of `marginM` for end spacing because the dividing spacing between the checkboxes is splitted -->
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switch_read"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="?marginM"
+            android:layout_marginTop="?marginS"
+            android:layout_marginEnd="?marginS"
+            android:text="@string/itemauthorizations_read_switch_title"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline_middle_divider"
+            app:layout_constraintStart_toEndOf="@+id/imageView_icon"
+            app:layout_constraintTop_toBottomOf="@+id/textView_title" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Use `marginS` instead of `marginM` for top spacing because of massive padding of the checkbox -->
+        <!-- Use `marginS` instead of `marginM` for start spacing because the dividing spacing between the checkboxes is splitted -->
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switch_write"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="?marginS"
+            android:layout_marginTop="?marginS"
+            android:layout_marginEnd="?marginM"
+            android:text="@string/itemauthorizations_write_switch_title"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/guideline_middle_divider"
+            app:layout_constraintTop_toBottomOf="@+id/textView_title" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_middle_divider"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</com.google.android.material.card.MaterialCardView>

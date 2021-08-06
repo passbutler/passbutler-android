@@ -1,52 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?selectableItemBackground">
+    android:layout_marginHorizontal="?marginM"
+    tools:layout_marginVertical="?marginM">
 
-    <ImageView
-        android:id="@+id/imageView_icon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginStart="?marginM"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/icon_text_snippet_24dp"
-        app:tint="?android:textColorPrimary"
-        tools:ignore="ContentDescription" />
-
-    <TextView
-        android:id="@+id/textView_title"
-        style="@style/Widget.PassButler.Headline.Order2"
-        android:layout_width="0dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="?marginM"
-        android:layout_marginTop="?marginS"
-        android:layout_marginEnd="?marginM"
-        android:lines="1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/imageView_icon"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Title" />
+        android:background="?selectableItemBackground">
 
-    <TextView
-        android:id="@+id/textView_subtitle"
-        style="@style/Widget.PassButler.Subtitle.Order1"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="?marginM"
-        android:layout_marginTop="?marginS"
-        android:layout_marginEnd="?marginM"
-        android:layout_marginBottom="?marginS"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/imageView_icon"
-        app:layout_constraintTop_toBottomOf="@+id/textView_title"
-        app:layout_constraintVertical_bias="0.0"
-        tools:text="Subtitle" />
+        <ImageView
+            android:id="@+id/imageView_icon"
+            style="@style/Widget.PassButler.ImageView.Accent"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="?marginM"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/icon_text_snippet_24dp"
+            tools:ignore="ContentDescription" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/textView_title"
+            style="@style/Widget.PassButler.Headline.Order2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="?marginM"
+            android:layout_marginTop="?marginS"
+            android:layout_marginEnd="?marginM"
+            android:lines="1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/imageView_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Title" />
+
+        <TextView
+            android:id="@+id/textView_subtitle"
+            style="@style/Widget.PassButler.Subtitle.Order1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="?marginM"
+            android:layout_marginTop="?marginS"
+            android:layout_marginEnd="?marginM"
+            android:layout_marginBottom="?marginS"
+            android:lines="1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/imageView_icon"
+            app:layout_constraintTop_toBottomOf="@+id/textView_title"
+            app:layout_constraintVertical_bias="0.0"
+            tools:text="Subtitle" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

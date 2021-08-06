@@ -30,13 +30,11 @@
             app:srcCompat="@drawable/background_mesh_polygons"
             tools:ignore="ContentDescription" />
 
-        <!-- Use 0dp elevation to avoid different border color when translucent background is used -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/materialCardView_container"
+            style="@style/Widget.PassButler.CardView.TranslucentContainer"
             android:layout_width="320dp"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="@color/color_surface_transparent"
-            app:cardElevation="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

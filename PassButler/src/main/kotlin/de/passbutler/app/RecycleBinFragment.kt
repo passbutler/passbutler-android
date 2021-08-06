@@ -8,7 +8,6 @@ import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.passbutler.app.databinding.FragmentRecycleBinBinding
@@ -16,6 +15,7 @@ import de.passbutler.app.databinding.ListItemEntryBinding
 import de.passbutler.app.ui.FilterableListAdapter
 import de.passbutler.app.ui.ListItemIdentifiableDiffCallback
 import de.passbutler.app.ui.ToolBarFragment
+import de.passbutler.app.ui.VerticalSpaceItemDecoration
 import de.passbutler.app.ui.addLifecycleObserver
 import de.passbutler.app.ui.setupWithFilterableAdapter
 import de.passbutler.app.ui.visible
@@ -91,8 +91,8 @@ class RecycleBinFragment : ToolBarFragment(), RequestSending {
             layoutManager = linearLayoutManager
             adapter = listAdapter
 
-            val dividerItemDecoration = DividerItemDecoration(context, linearLayoutManager.orientation)
-            addItemDecoration(dividerItemDecoration)
+            val verticalSpaceItemDecoration = VerticalSpaceItemDecoration(context)
+            addItemDecoration(verticalSpaceItemDecoration)
         }
 
         toolbarMenuSearchView?.setupWithFilterableAdapter(listAdapter)

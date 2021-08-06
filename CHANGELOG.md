@@ -19,6 +19,7 @@
 - Introduction flow to be more understandable / user friendly
 - New wording for "register local user" button and moved "logout" to deeper level in settings and have different wording for local/remote user to avoid accidental data loss
 - The search on overview is closed if the user clicks backpress
+- To more modern list style
 
 ### Fixed
 - The case of items is ignored for sorting on item and item authorization screens
