@@ -123,6 +123,18 @@ class RecycleBinFragment : ToolBarFragment(), RequestSending {
         super.onDestroyView()
     }
 
+    override fun onHandleBackPress(): Boolean {
+        return when {
+            toolBar?.hasExpandedActionView() == true -> {
+                toolBar?.collapseActionView()
+                true
+            }
+            else -> {
+                super.onHandleBackPress()
+            }
+        }
+    }
+
     companion object {
         fun newInstance() = RecycleBinFragment()
     }

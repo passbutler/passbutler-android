@@ -12,7 +12,8 @@ import de.passbutler.common.ui.TransitionType
 
 abstract class ToolBarFragment : BaseFragment() {
 
-    private var toolBar: Toolbar? = null
+    protected var toolBar: Toolbar? = null
+        private set
 
     abstract fun getToolBarTitle(): String
 
