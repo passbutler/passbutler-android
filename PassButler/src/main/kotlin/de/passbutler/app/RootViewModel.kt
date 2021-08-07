@@ -50,9 +50,7 @@ class RootViewModel : UserViewModelUsingViewModel() {
     suspend fun loginVault(serverUrlString: String?, username: String, masterPassword: String): Result<Unit> {
         Logger.debug("Login current vault")
 
-        val loginResult = userViewModelProvidingViewModel.loginUser(serverUrlString, username, masterPassword)
-
-        return when (loginResult) {
+        return when (val loginResult = userViewModelProvidingViewModel.loginUser(serverUrlString, username, masterPassword)) {
             is Success -> {
                 _rootScreenState.value = RootScreenState.LoggedIn
                 _lockScreenState.value = LockScreenState.Unlocked
