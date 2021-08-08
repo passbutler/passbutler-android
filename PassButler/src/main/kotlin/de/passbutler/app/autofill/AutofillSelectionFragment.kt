@@ -116,7 +116,7 @@ class AutofillSelectionFragment : BaseFragment() {
     private fun setupEmptyScreen(binding: FragmentAutofillSelectionBinding) {
         binding.layoutEmptyScreen.apply {
             imageViewIcon.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.icon_list_24dp, root.context.theme))
-            textViewTitle.text = getString(R.string.overview_empty_screen_title)
+            textViewTitle.text = getString(R.string.overview_empty_screen_headline)
             textViewDescription.text = getString(R.string.overview_empty_screen_description)
         }
     }

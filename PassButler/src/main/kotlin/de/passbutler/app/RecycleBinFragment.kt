@@ -112,7 +112,7 @@ class RecycleBinFragment : ToolBarFragment(), RequestSending {
     private fun setupEmptyScreen(binding: FragmentRecycleBinBinding) {
         binding.layoutEmptyScreen.apply {
             imageViewIcon.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.icon_list_24dp, root.context.theme))
-            textViewTitle.text = getString(R.string.recycle_bin_empty_screen_title)
+            textViewTitle.text = getString(R.string.recycle_bin_empty_screen_headline)
             textViewDescription.text = getString(R.string.recycle_bin_empty_screen_description)
         }
     }

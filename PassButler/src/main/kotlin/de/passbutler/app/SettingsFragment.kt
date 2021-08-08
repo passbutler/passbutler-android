@@ -298,7 +298,7 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
 
         private fun setupSecuritySettingsSection() {
             preferenceScreen.addPreference(PreferenceCategory(context).apply {
-                title = getString(R.string.settings_category_security_title)
+                title = getString(R.string.settings_category_security_headline)
             })
 
             addAutomaticLockTimeoutSetting()
@@ -349,7 +349,7 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
 
         private fun setupAccountSection() {
             preferenceScreen.addPreference(PreferenceCategory(context).apply {
-                title = getString(R.string.settings_category_account_title)
+                title = getString(R.string.settings_category_account_headline)
             })
 
             addChangeMasterPasswordEntry()

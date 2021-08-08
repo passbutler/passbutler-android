@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="?marginM"
         android:layout_marginTop="?marginS"
-        android:text="@string/create_local_user_step_username_title" />
+        android:text="@string/create_local_user_step_username_headline" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout_username"

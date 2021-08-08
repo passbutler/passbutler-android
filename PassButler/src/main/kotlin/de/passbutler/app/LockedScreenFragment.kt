@@ -80,8 +80,8 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
 
     private fun setupTextViews(binding: FragmentLockedScreenBinding) {
         binding.textViewHeadline.text = when (lockedScreenMode) {
-            LockedScreenMode.Normal -> getString(R.string.locked_screen_header_normal)
-            LockedScreenMode.AutoFill -> getString(R.string.locked_screen_header_autofill)
+            LockedScreenMode.Normal -> getString(R.string.locked_screen_headline_normal)
+            LockedScreenMode.AutoFill -> getString(R.string.locked_screen_headline_autofill)
         }
     }
 

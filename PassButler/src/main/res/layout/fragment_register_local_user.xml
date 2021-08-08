@@ -22,7 +22,7 @@
             android:layout_marginStart="?marginM"
             android:layout_marginTop="?marginM"
             android:layout_marginEnd="?marginM"
-            android:text="@string/register_local_user_header"
+            android:text="@string/register_local_user_headline"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"

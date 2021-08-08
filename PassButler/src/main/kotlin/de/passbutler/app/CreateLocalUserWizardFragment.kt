@@ -86,7 +86,7 @@ class CreateLocalUserWizardFragment : BaseFragment(), RequestSending {
     }
 
     private fun LayoutCreateLocalUserWizardStep1Binding.setupStep1() {
-        textViewStepTitle.text = getString(R.string.create_local_user_step_title, 1, 2)
+        textViewStepTitle.text = getString(R.string.create_local_user_step_headline, 1, 2)
 
         textInputEditTextUsername.bindInput(viewLifecycleOwner, viewModel.username)
         textInputEditTextUsername.onActionNext {
@@ -120,7 +120,7 @@ class CreateLocalUserWizardFragment : BaseFragment(), RequestSending {
     }
 
     private fun LayoutCreateLocalUserWizardStep2Binding.setupStep2() {
-        textViewStepTitle.text = getString(R.string.create_local_user_step_title, 2, 2)
+        textViewStepTitle.text = getString(R.string.create_local_user_step_headline, 2, 2)
 
         textInputEditTextMasterPassword.bindInput(viewLifecycleOwner, viewModel.masterPassword)
         textInputEditTextMasterPasswordConfirm.onActionDone {

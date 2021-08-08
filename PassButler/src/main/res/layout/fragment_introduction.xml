@@ -75,7 +75,7 @@
                 android:layout_marginStart="?marginM"
                 android:layout_marginTop="?marginL"
                 android:layout_marginEnd="?marginM"
-                android:text="@string/introduction_create_user_title" />
+                android:text="@string/introduction_create_user_headline" />
 
             <TextView
                 style="@style/Widget.PassButler.Body.Order1"
@@ -105,7 +105,7 @@
                 android:layout_marginStart="?marginM"
                 android:layout_marginTop="?marginL"
                 android:layout_marginEnd="?marginM"
-                android:text="@string/introduction_login_user_title" />
+                android:text="@string/introduction_login_user_headline" />
 
             <TextView
                 style="@style/Widget.PassButler.Body.Order1"
