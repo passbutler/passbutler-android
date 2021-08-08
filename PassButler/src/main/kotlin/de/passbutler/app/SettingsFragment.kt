@@ -22,6 +22,7 @@ import de.passbutler.app.databinding.FragmentSettingsBinding
 import de.passbutler.app.ui.ScreenPresentingExtensions.Companion.instanceIdentification
 import de.passbutler.app.ui.ToolBarFragment
 import de.passbutler.app.ui.addLifecycleObserver
+import de.passbutler.app.ui.showConfirmDialog
 import de.passbutler.app.ui.showDangerousConfirmDialog
 import de.passbutler.app.ui.showEditTextDialog
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
@@ -336,7 +337,16 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
                 setOnPreferenceChangeListener { _, newValue ->
                     when (newValue) {
                         true -> settingsFragment?.generateBiometricUnlockKey()
-                        false -> settingsFragment?.disableBiometricUnlock()
+                        false -> {
+                            settingsFragment?.showConfirmDialog(
+                                title = getString(R.string.settings_disable_biometric_unlock_confirmation_title),
+                                message = getString(R.string.settings_disable_biometric_unlock_confirmation_message),
+                                positiveActionTitle = getString(R.string.settings_disable_biometric_unlock_button_title),
+                                positiveClickAction = {
+                                    settingsFragment?.disableBiometricUnlock()
+                                }
+                            )
+                        }
                     }
 
                     // Never update the preference value on switch change (this will be done programmatically after setup)
