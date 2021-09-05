@@ -40,3 +40,19 @@ Build the Android Application Package (APK):
 Install on a connected device:
 
     $ adb install ./PassButler/build/outputs/apk/debug/PassButler-debug.apk
+
+## Debugging
+
+### How to get logs from device
+
+This is only possible for debug build, **not** for release build!
+
+#### Pull log file
+
+    $ adb shell "run-as de.passbutler.app.debug cat /data/data/de.passbutler.app.debug/cache/passbutler-debug.log" > ~/Desktop/passbutler-debug.log
+
+#### Remove log file
+
+    $ adb shell "run-as de.passbutler.app.debug rm /data/data/de.passbutler.app.debug/cache/passbutler-debug.log"
+
+
