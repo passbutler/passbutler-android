@@ -18,6 +18,8 @@ import org.hamcrest.Matcher
 import java.time.Duration
 
 abstract class BaseTestRobot {
+    abstract fun matchScreenShown()
+
     fun clickButton(@IdRes resourceId: Int) {
         onView(withId(resourceId))
             .perform(click())
@@ -47,8 +49,6 @@ abstract class BaseTestRobot {
         onView(isRoot())
             .perform(waitViewAction)
     }
-
-    abstract fun matchScreenShown()
 
     fun matchDisplayed(@IdRes resourceId: Int) {
         waitForView(withId(resourceId))

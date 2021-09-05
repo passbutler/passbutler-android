@@ -4,6 +4,10 @@ import de.passbutler.app.R
 import de.passbutler.app.TestConstants
 
 class LoginRobot : BaseTestRobot() {
+    override fun matchScreenShown() {
+        matchDisplayed(R.id.constraintLayout_login_root)
+    }
+
     fun enterServerUrl() {
         enterText(R.id.textInputEditText_serverurl, TestConstants.TEST_SERVERURL)
     }
@@ -18,10 +22,6 @@ class LoginRobot : BaseTestRobot() {
 
     fun clickLoginButton() {
         clickButton(R.id.button_login)
-    }
-
-    override fun matchScreenShown() {
-        matchDisplayed(R.id.constraintLayout_login_root)
     }
 }
 

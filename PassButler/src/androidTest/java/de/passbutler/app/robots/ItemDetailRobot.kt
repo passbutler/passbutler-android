@@ -4,6 +4,10 @@ import de.passbutler.app.R
 import de.passbutler.app.TestConstants
 
 class ItemDetailRobot : BaseTestRobot() {
+    override fun matchScreenShown() {
+        matchDisplayed(R.id.constraintLayout_itemdetail_root)
+    }
+
     fun enterTitle() {
         enterText(R.id.textInputEditText_title, TestConstants.TEST_ITEM_TITLE)
     }
@@ -22,10 +26,6 @@ class ItemDetailRobot : BaseTestRobot() {
 
     fun clickSaveButton() {
         clickButton(R.id.item_detail_menu_item_save)
-    }
-
-    override fun matchScreenShown() {
-        matchDisplayed(R.id.constraintLayout_itemdetail_root)
     }
 }
 

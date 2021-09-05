@@ -4,6 +4,10 @@ import de.passbutler.app.R
 import de.passbutler.app.TestConstants
 
 class LocalUserCreationRobot : BaseTestRobot() {
+    override fun matchScreenShown() {
+        matchDisplayed(R.id.constraintLayout_create_local_user_root)
+    }
+
     fun enterUsername() {
         enterText(R.id.textInputEditText_username, TestConstants.TEST_USERNAME)
     }
@@ -22,10 +26,6 @@ class LocalUserCreationRobot : BaseTestRobot() {
 
     fun clickDoneButton() {
         clickButton(R.id.button_done)
-    }
-
-    override fun matchScreenShown() {
-        matchDisplayed(R.id.constraintLayout_create_local_user_root)
     }
 }
 

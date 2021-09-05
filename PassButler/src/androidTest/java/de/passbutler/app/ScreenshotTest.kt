@@ -49,6 +49,8 @@ class ScreenshotTest {
             clickLoginButton()
 
             loginScreen {
+                matchScreenShown()
+
                 enterServerUrl()
                 enterUsername()
                 enterMasterPassword()
@@ -57,8 +59,6 @@ class ScreenshotTest {
                 waitFor(Duration.ofMillis(250))
 
                 // Do not click login button because we just want to capture screenshot of filled screen
-
-                matchScreenShown()
             }
         }
     }
@@ -69,14 +69,14 @@ class ScreenshotTest {
             clickCreateLocalUserButton()
 
             localUserCreationScreen {
+                matchScreenShown()
+
                 enterUsername()
                 clickNextButton()
 
                 enterMasterPassword()
                 enterMasterPasswordConfirm()
                 clickDoneButton()
-
-                matchScreenShown()
             }
 
             overviewScreen {
@@ -102,13 +102,13 @@ class ScreenshotTest {
             clickAddItemButton()
 
             itemDetailScreen {
+                matchScreenShown()
+
                 enterTitle()
                 enterUsername()
                 enterPassword()
                 enterUrl()
                 clickSaveButton()
-
-                matchScreenShown()
             }
         }
     }

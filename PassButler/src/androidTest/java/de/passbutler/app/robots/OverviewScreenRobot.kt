@@ -9,6 +9,10 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import de.passbutler.app.R
 
 class OverviewScreenRobot : BaseTestRobot() {
+    override fun matchScreenShown() {
+        matchDisplayed(R.id.drawerLayout_overview_root)
+    }
+
     fun openDrawer() {
         onView(withId(R.id.drawerLayout_overview_root))
             .perform(open())
@@ -22,10 +26,6 @@ class OverviewScreenRobot : BaseTestRobot() {
     fun matchOpenDrawerDisplayed() {
         onView(withId(R.id.drawerLayout_overview_root))
             .check(matches(isOpen()))
-    }
-
-    override fun matchScreenShown() {
-        matchDisplayed(R.id.drawerLayout_overview_root)
     }
 }
 
