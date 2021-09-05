@@ -10,6 +10,7 @@
     <!-- Set `android:clipChildren="false"` to avoid clip the elevation of the bottom button of the contained `LinearLayout` -->
     <!-- Use `android:transitionGroup="true"` to be sure all views are animated simultaneously in transitions -->
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout_introduction_root"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clipChildren="false"

@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
+import android.provider.Settings
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
@@ -22,7 +23,14 @@ import android.widget.TextView
 import androidx.annotation.AttrRes
 import androidx.appcompat.widget.SearchView
 import androidx.viewbinding.ViewBinding
+import de.passbutler.app.PassButlerApplication
 import de.passbutler.common.ui.FADE_TRANSITION_DURATION
+
+val animationDurationScale: Float
+    get() {
+        val applicationContext = PassButlerApplication.applicationContext
+        return Settings.Global.getFloat(applicationContext.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1.0f)
+    }
 
 var View.visible: Boolean
     get() = visibility == View.VISIBLE
@@ -96,9 +104,10 @@ fun View.showFadeInOutAnimation(shouldShow: Boolean, visibilityHideMode: Visibil
     val endAlpha = if (shouldShow) 1.0f else 0.0f
 
     val viewPropertyAnimator = animate()
+    val animationDuration = (FADE_TRANSITION_DURATION.toMillis() * animationDurationScale).toLong()
 
     viewPropertyAnimator
-        .setDuration(FADE_TRANSITION_DURATION.toMillis())
+        .setDuration(animationDuration)
         .alpha(endAlpha)
         .setListener(animatorListenerAdapter(
             onAnimationStart = {

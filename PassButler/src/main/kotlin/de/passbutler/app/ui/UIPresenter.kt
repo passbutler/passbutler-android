@@ -40,15 +40,25 @@ class ScreenPresenter(
     private val rootFragmentManager
         get() = rootFragment.childFragmentManager
 
+    private val animationsEnabled = animationDurationScale > 0.0f
+
     override fun showFragment(fragment: Fragment, replaceFragment: Boolean, addToBackstack: Boolean, userTriggered: Boolean, transitionType: TransitionType) {
-        val debouncedViewTransactionEnsured = ensureDebouncedViewTransaction().takeIf { userTriggered } ?: true
+        // Enable debouncing only if user triggered view transactions and if animations are enabled (not for UI tests)
+        val debouncedViewTransactionEnsured = if (userTriggered && animationsEnabled) {
+            ensureDebouncedViewTransaction()
+        } else {
+            true
+        }
 
         if (activity.isNotFinished) {
             if (debouncedViewTransactionEnsured) {
                 rootFragmentManager.beginTransaction().let { fragmentTransaction ->
                     if (fragment is BaseFragment) {
                         fragment.transitionType = transitionType
-                        fragmentTransaction.applyTransition(transitionType)
+
+                        if (animationsEnabled) {
+                            fragmentTransaction.applyTransition(transitionType)
+                        }
 
                         fragment.uiPresentingDelegate = rootFragment.uiPresentingDelegate
                     }

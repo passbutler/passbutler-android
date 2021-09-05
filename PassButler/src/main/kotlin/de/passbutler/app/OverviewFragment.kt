@@ -143,7 +143,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
     }
 
     private fun setupDrawerLayout(binding: FragmentOverviewBinding) {
-        binding.drawerLayout.apply {
+        binding.drawerLayoutOverviewRoot.apply {
             val toggle = ActionBarDrawerToggle(
                 activity,
                 this,
@@ -337,8 +337,8 @@ class OverviewFragment : BaseFragment(), RequestSending {
 
     override fun onHandleBackPress(): Boolean {
         return when {
-            binding?.drawerLayout?.isDrawerOpen(GravityCompat.START) == true -> {
-                binding?.drawerLayout?.closeDrawer(GravityCompat.START)
+            binding?.drawerLayoutOverviewRoot?.isDrawerOpen(GravityCompat.START) == true -> {
+                binding?.drawerLayoutOverviewRoot?.closeDrawer(GravityCompat.START)
                 true
             }
             binding?.toolbar?.hasExpandedActionView() == true -> {
@@ -357,7 +357,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
     private fun closeDrawerDelayed() {
         launch {
             delay(100)
-            binding?.drawerLayout?.closeDrawer(GravityCompat.START)
+            binding?.drawerLayoutOverviewRoot?.closeDrawer(GravityCompat.START)
         }
     }
 

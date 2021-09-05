@@ -105,7 +105,7 @@ class LoginFragment : BaseFragment(), RequestSending {
     }
 
     private fun removeFormFieldsFocus() {
-        binding?.constraintLayoutRootContainer?.requestFocus()
+        binding?.constraintLayoutLoginRoot?.requestFocus()
     }
 
     private fun loginUser(serverUrl: String, username: String, masterPassword: String) {

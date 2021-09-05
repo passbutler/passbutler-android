@@ -10,7 +10,7 @@
     <!-- Add explicit background to hide underlaying fragments, also made container clickable to avoid touch-through underlaying fragments -->
     <!-- The `focusableInTouchMode` with `clickable` removes focus of `TextInputEditText` if user clicked outer area -->
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout_root_container"
+        android:id="@+id/constraintLayout_locked_screen_root"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:attr/colorBackground"

@@ -29,7 +29,7 @@ android {
         versionCode = gitCommitCount()
         versionName = "1.0.0"
 
-        testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("Long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
         buildConfigField("String", "BUILD_REVISION_HASH", "\"${gitCommitHashShort()}\"")
@@ -103,6 +103,12 @@ dependencies {
 
     // Mockk.io
     testImplementation("io.mockk:mockk:1.12.0")
+
+    // UI tests
+    val espressoVersion = "3.4.0"
+    androidTestImplementation("androidx.test.espresso:espresso-core:$espressoVersion")
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:$espressoVersion")
+    androidTestImplementation("androidx.test.ext:junit-ktx:1.1.3")
 }
 
 fun gitCommitCount(): Int {

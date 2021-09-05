@@ -11,7 +11,7 @@
     <!-- Set `android:clipChildren="false"` to avoid clip the elevation of the bottom button of the contained `LinearLayout` -->
     <!-- The `focusableInTouchMode` with `clickable` removes focus of `TextInputEditText` if user clicked outer area -->
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout_root_container"
+        android:id="@+id/constraintLayout_create_local_user_root"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clickable="true"

@@ -157,7 +157,7 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
     }
 
     private fun removeFormFieldsFocus() {
-        binding?.constraintLayoutRootContainer?.requestFocus()
+        binding?.constraintLayoutLockedScreenRoot?.requestFocus()
     }
 
     private fun showBiometricPrompt() {
