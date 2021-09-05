@@ -34,6 +34,11 @@
 - Keyboard was not hidden on overview screen if the locked screen was shown
 - Disabling biometrics if keychain access was not possible in rare cases (e.g. when deploying to locked phone)
 
+### Known issues
+- If Android decides to destroy the `MainActivity` and restore it later, the item detail screen and item authorizations screen are not restored to previous state due to too late `ItemViewModel` recreation
+- If locked screen in autofill mode is shown while a configuration change is done, the unlock does not work
+- The subtitle is cut / lacks of bottom spacing if the display size or font size is larger than default due to apparently buggy `MaterialToolbar`
+
 ## [1.0.0-Preview1] - 2021-02-02
 
 ### Added
