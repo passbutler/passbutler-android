@@ -29,6 +29,8 @@ class LocalUserCreationRobot : BaseTestRobot() {
     }
 }
 
+// The extension receiver is for semantic scoping
+@Suppress("unused")
 fun IntroductionRobot.localUserCreationScreen(block: LocalUserCreationRobot.() -> Unit): LocalUserCreationRobot {
     return LocalUserCreationRobot().apply(block)
 }

@@ -25,6 +25,8 @@ class LoginRobot : BaseTestRobot() {
     }
 }
 
+// The extension receiver is for semantic scoping
+@Suppress("unused")
 fun IntroductionRobot.loginScreen(block: LoginRobot.() -> Unit): LoginRobot {
     return LoginRobot().apply(block)
 }

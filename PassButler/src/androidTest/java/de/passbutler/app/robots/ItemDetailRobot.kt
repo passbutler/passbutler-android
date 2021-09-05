@@ -29,6 +29,8 @@ class ItemDetailRobot : BaseTestRobot() {
     }
 }
 
-fun itemDetailScreen(block: ItemDetailRobot.() -> Unit): ItemDetailRobot {
+// The extension receiver is for semantic scoping
+@Suppress("unused")
+fun OverviewScreenRobot.itemDetailScreen(block: ItemDetailRobot.() -> Unit): ItemDetailRobot {
     return ItemDetailRobot().apply(block)
 }
