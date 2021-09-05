@@ -11,8 +11,9 @@ import org.junit.runner.Description
 import org.tinylog.kotlin.Logger
 import java.io.File
 import java.io.IOException
+import java.util.*
 
-const val SCREENSHOT_DIRECTORY = "screenshots"
+val SCREENSHOT_DIRECTORY = "screenshots/" + Locale.getDefault()
 
 class ScreenshotRule : TestWatcher() {
     override fun finished(description: Description?) {
