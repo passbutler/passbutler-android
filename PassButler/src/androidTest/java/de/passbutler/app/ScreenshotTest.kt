@@ -1,5 +1,6 @@
 package de.passbutler.app
 
+import androidx.test.espresso.Espresso.pressBack
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -104,17 +105,34 @@ class ScreenshotTest {
             itemDetailScreen {
                 matchScreenShown()
 
-                enterTitle()
-                enterUsername()
-                enterPassword()
-                enterUrl()
+                enterItemDetails(TestItems.amazon)
+                clickSaveButton()
+                pressBack()
+            }
+
+            clickAddItemButton()
+
+            itemDetailScreen {
+                matchScreenShown()
+
+                enterItemDetails(TestItems.googleMail)
+                clickSaveButton()
+                pressBack()
+            }
+
+            clickAddItemButton()
+
+            itemDetailScreen {
+                matchScreenShown()
+
+                enterItemDetails(TestItems.netflix)
                 clickSaveButton()
             }
         }
     }
 
     @Test
-    fun screenshot_06_OverviewScreenWithItem() {
+    fun screenshot_06_OverviewScreenWithItems() {
         lockedScreen {
             unlockWithPassword()
         }

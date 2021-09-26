@@ -1,27 +1,34 @@
 package de.passbutler.app.robots
 
 import de.passbutler.app.R
-import de.passbutler.app.TestConstants
+import de.passbutler.app.TestItem
 
 class ItemDetailRobot : BaseTestRobot() {
     override fun matchScreenShown() {
         matchDisplayed(R.id.constraintLayout_itemdetail_root)
     }
 
-    fun enterTitle() {
-        enterText(R.id.textInputEditText_title, TestConstants.TEST_ITEM_TITLE)
+    fun enterItemDetails(testItem: TestItem) {
+        enterTitle(testItem.title)
+        enterUsername(testItem.username)
+        enterPassword(testItem.password)
+        enterUrl(testItem.url)
     }
 
-    fun enterUsername() {
-        enterText(R.id.textInputEditText_username, TestConstants.TEST_ITEM_USERNAME)
+    private fun enterTitle(title: String) {
+        enterText(R.id.textInputEditText_title, title)
     }
 
-    fun enterPassword() {
-        enterText(R.id.textInputEditText_password, TestConstants.TEST_ITEM_PASSWORD)
+    private fun enterUsername(username: String) {
+        enterText(R.id.textInputEditText_username, username)
     }
 
-    fun enterUrl() {
-        enterText(R.id.textInputEditText_url, TestConstants.TEST_ITEM_URL)
+    private fun enterPassword(password: String) {
+        enterText(R.id.textInputEditText_password, password)
+    }
+
+    private fun enterUrl(url: String) {
+        enterText(R.id.textInputEditText_url, url)
     }
 
     fun clickSaveButton() {
