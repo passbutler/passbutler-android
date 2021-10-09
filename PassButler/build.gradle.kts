@@ -57,11 +57,11 @@ dependencies {
     implementation(project(":PassButlerCommon"))
 
     // Kotlin
-    val kotlinVersion = "1.5.20"
+    val kotlinVersion = "1.5.30"
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     // Kotlin Coroutines for Android
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2")
 
     // TinyLog logger
     val tinylogVersion = "2.3.2"
@@ -78,7 +78,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.3.1")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.1")
 
     // Android Lifecycle and ViewModel components
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
@@ -96,7 +96,7 @@ dependencies {
     implementation("androidx.preference:preference:1.1.1")
 
     // JUnit 5
-    val junitVersion = "5.7.2"
+    val junitVersion = "5.8.1"
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
