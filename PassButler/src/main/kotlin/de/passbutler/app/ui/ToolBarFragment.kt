@@ -33,9 +33,9 @@ abstract class ToolBarFragment : BaseFragment() {
 
         toolBar = rootView.findViewById<Toolbar>(R.id.toolbar)?.also { toolBar ->
             val toolBarIconDrawableId = when (transitionType) {
-                TransitionType.MODAL -> R.drawable.icon_clear_24dp
-                TransitionType.SLIDE,
-                TransitionType.FADE -> R.drawable.icon_arrow_back_24dp
+                TransitionType.MODAL,
+                TransitionType.FADE -> R.drawable.icon_clear_24dp
+                TransitionType.SLIDE -> R.drawable.icon_arrow_back_24dp
                 TransitionType.NONE -> null
             }
 
