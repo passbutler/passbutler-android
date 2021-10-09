@@ -16,6 +16,7 @@ import de.passbutler.app.R
 import de.passbutler.app.UserViewModelProvidingViewModel
 import de.passbutler.app.databinding.FragmentAutofillSelectionBinding
 import de.passbutler.app.ui.BaseFragment
+import de.passbutler.app.ui.VerticalSpaceItemDecoration
 import de.passbutler.app.ui.addLifecycleObserver
 import de.passbutler.app.ui.setupWithFilterableAdapter
 import de.passbutler.app.ui.visible
@@ -108,6 +109,9 @@ class AutofillSelectionFragment : BaseFragment() {
         binding.recyclerViewItems.apply {
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
             adapter = listAdapter
+
+            val verticalSpaceItemDecoration = VerticalSpaceItemDecoration(context)
+            addItemDecoration(verticalSpaceItemDecoration)
         }
 
         toolbarMenuSearchView?.setupWithFilterableAdapter(listAdapter)
