@@ -19,6 +19,6 @@ fun Fragment.openWriteEmail(email: String) {
         val writeEmailIntent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email"))
         startActivity(writeEmailIntent)
     } catch (exception: Exception) {
-        Logger.warn(exception, "The URL could not be opened!")
+        Logger.warn(exception, "The open write email intent could not be sent!")
     }
 }
