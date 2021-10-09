@@ -20,7 +20,6 @@ import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.bindEnabled
 import de.passbutler.app.ui.bindVisibility
 import de.passbutler.app.ui.onActionDone
-import de.passbutler.app.ui.showFragmentModally
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.base.BuildType
@@ -28,6 +27,7 @@ import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
 import de.passbutler.common.ui.RequestSending
+import de.passbutler.common.ui.TransitionType
 import de.passbutler.common.ui.launchRequestSending
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -192,7 +192,8 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
 
     private fun setupImprintButton(binding: FragmentLockedScreenBinding) {
         binding.buttonImprint.setOnClickListener {
-            showFragmentModally(AboutFragment.newInstance())
+            // Replace fragment to avoid biometric unlock is shown if came back from background
+            showFragment(AboutFragment.newInstance(), replaceFragment = true, transitionType = TransitionType.FADE)
         }
     }
 
