@@ -48,6 +48,7 @@
 
     <style name="Widget.PassButler.Button.TextButton.OnSurface" parent="Widget.MaterialComponents.Button.TextButton">
         <item name="android:textColor">?colorOnSurface</item>
+        <item name="android:minWidth">0dp</item>
     </style>
 
     <style name="Widget.PassButler.Button.TextButton.OnSurface.Tiny" parent="Widget.PassButler.Button.TextButton.OnSurface">

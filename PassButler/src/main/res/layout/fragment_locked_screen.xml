@@ -140,13 +140,20 @@
             style="@style/Widget.PassButler.Button.TextButton.OnSurface.Tiny"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="?marginM"
             android:text="@string/general_about"
             android:theme="@style/Theme.PassButler.Dark"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/barrier_about_button_alignment_helper"
             app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="@+id/materialCardView_container" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier_about_button_alignment_helper"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="end"
+            app:barrierMargin="?marginM"
+            app:constraint_referenced_ids="materialCardView_container" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
