@@ -35,7 +35,7 @@
             style="@style/Widget.PassButler.CardView.TranslucentContainer"
             android:layout_width="320dp"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@+id/button_imprint"
+            app:layout_constraintBottom_toTopOf="@+id/button_about"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -136,13 +136,12 @@
             tools:ignore="ContentDescription" />
 
         <Button
-            android:id="@+id/button_imprint"
-            style="@style/Widget.PassButler.Button.TextButton.OnSurface"
+            android:id="@+id/button_about"
+            style="@style/Widget.PassButler.Button.TextButton.OnSurface.Tiny"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="?marginM"
-            android:text="@string/general_imprint"
-            android:textAppearance="?textAppearanceCaption"
+            android:text="@string/general_about"
             android:theme="@style/Theme.PassButler.Dark"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

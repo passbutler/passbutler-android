@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <style name="TextAppearance.PassButler.Button.Tiny" parent="TextAppearance.MaterialComponents.Button">
+        <item name="android:textSize">12sp</item>
+        <item name="android:letterSpacing">0.0333333333</item>
+    </style>
+
 </resources>

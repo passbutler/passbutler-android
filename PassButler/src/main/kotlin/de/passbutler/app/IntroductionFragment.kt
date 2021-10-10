@@ -20,7 +20,7 @@ class IntroductionFragment : BaseFragment() {
                 showFragment(LoginFragment.newInstance(), transitionType = TransitionType.FADE)
             }
 
-            buttonImprint.setOnClickListener {
+            buttonAbout.setOnClickListener {
                 showFragment(AboutFragment.newInstance(), transitionType = TransitionType.FADE)
             }
         }

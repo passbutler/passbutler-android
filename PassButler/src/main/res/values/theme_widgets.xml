@@ -50,6 +50,10 @@
         <item name="android:textColor">?colorOnSurface</item>
     </style>
 
+    <style name="Widget.PassButler.Button.TextButton.OnSurface.Tiny" parent="Widget.PassButler.Button.TextButton.OnSurface">
+        <item name="android:textAppearance">@style/TextAppearance.PassButler.Button.Tiny</item>
+    </style>
+
     <style name="Widget.PassButler.Button.OutlinedButton.OnSurface" parent="Widget.MaterialComponents.Button.OutlinedButton">
         <item name="android:textColor">?colorOnSurface</item>
         <item name="strokeColor">?colorOnSurface</item>

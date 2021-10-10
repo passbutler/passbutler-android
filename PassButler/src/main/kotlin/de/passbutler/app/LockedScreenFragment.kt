@@ -65,7 +65,7 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
             setupMasterPasswordField(binding)
             setupUnlockWithPasswordButton(binding)
             setupUnlockWithBiometricsButton(binding)
-            setupImprintButton(binding)
+            setupAboutButton(binding)
         }
 
         return binding?.root
@@ -190,8 +190,8 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
         }
     }
 
-    private fun setupImprintButton(binding: FragmentLockedScreenBinding) {
-        binding.buttonImprint.setOnClickListener {
+    private fun setupAboutButton(binding: FragmentLockedScreenBinding) {
+        binding.buttonAbout.setOnClickListener {
             // Replace fragment to avoid biometric unlock is shown if came back from background
             showFragment(AboutFragment.newInstance(), replaceFragment = true, transitionType = TransitionType.FADE)
         }
