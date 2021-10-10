@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0] - UNRELEASED
+## [1.0.0-Preview2] - 2021-10-10
 
 ### Added
 - Missed "open URL" context menu entry
