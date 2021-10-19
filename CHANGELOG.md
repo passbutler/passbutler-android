@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.0] - UNRELEASED
+
+### Added
+- Privacy policy link on about screen
+
+### Changed
+
+### Fixed
+
+### Known issues
+- If Android decides to destroy the `MainActivity` and restore it later, the item detail screen and item authorizations screen are not restored to previous state due to too late `ItemViewModel` recreation
+- If locked screen in autofill mode is shown while a configuration change is done, the unlock does not work
+- The subtitle is cut / lacks of bottom spacing if the display size or font size is larger than default due to apparently buggy `MaterialToolbar`
+
 ## [1.0.0-Preview2] - 2021-10-10
 
 ### Added

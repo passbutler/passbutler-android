@@ -48,4 +48,25 @@
         android:text="@string/about_open_imprint_button_text"
         />
 
+    <TextView
+        android:id="@+id/textView_privacy_policy_headline"
+        style="@style/Widget.PassButler.Headline.Order1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="?marginM"
+        android:layout_marginTop="?marginL"
+        android:layout_marginEnd="?marginM"
+        android:text="@string/about_privacy_policy_headline"
+        />
+
+    <Button
+        android:id="@+id/button_open_privacy_policy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="?marginM"
+        android:layout_marginTop="?marginS"
+        android:layout_marginEnd="?marginM"
+        android:text="@string/about_open_privacy_policy_button_text"
+        />
+
 </LinearLayout>

@@ -15,10 +15,11 @@ class AboutFragment : ToolBarFragment() {
 
     override fun getToolBarTitle() = getString(R.string.about_title)
 
-    override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = FragmentAboutBinding.inflate(inflater, container, false).apply {
             setupVersionInformation()
             setupImprintButton()
+            setupPrivacyPolicyButton()
         }
 
         return binding.root
@@ -40,6 +41,12 @@ class AboutFragment : ToolBarFragment() {
     private fun FragmentAboutBinding.setupImprintButton() {
         buttonOpenImprint.setOnClickListener {
             openBrowser(getString(R.string.about_imprint_url))
+        }
+    }
+
+    private fun FragmentAboutBinding.setupPrivacyPolicyButton() {
+        buttonOpenPrivacyPolicy.setOnClickListener {
+            openBrowser(getString(R.string.about_privacy_policy_url))
         }
     }
 
