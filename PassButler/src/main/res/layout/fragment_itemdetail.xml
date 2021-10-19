@@ -39,7 +39,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
-            android:id="@+id/textView_details_header"
+            android:id="@+id/textView_details_headline"
             style="@style/Widget.PassButler.Headline.Order1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -60,7 +60,7 @@
             android:layout_marginEnd="?marginM"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textView_details_header">
+            app:layout_constraintTop_toBottomOf="@id/textView_details_headline">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/textInputEditText_username"
@@ -158,7 +158,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
-            android:id="@+id/textView_authorizations_header"
+            android:id="@+id/textView_authorizations_headline"
             style="@style/Widget.PassButler.Headline.Order1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -180,7 +180,7 @@
             android:layout_marginEnd="?marginM"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textView_authorizations_header"
+            app:layout_constraintTop_toBottomOf="@id/textView_authorizations_headline"
             tools:text="@string/itemdetail_authorizations_description_owned_item" />
 
         <Button
@@ -209,7 +209,7 @@
             app:layout_constraintTop_toBottomOf="@id/button_manage_authorizations" />
 
         <TextView
-            android:id="@+id/textView_information_header"
+            android:id="@+id/textView_information_headline"
             style="@style/Widget.PassButler.Headline.Order1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -231,7 +231,7 @@
             android:layout_marginEnd="?marginM"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textView_information_header" />
+            app:layout_constraintTop_toBottomOf="@id/textView_information_headline" />
 
         <include
             android:id="@+id/information_item_created"
@@ -259,7 +259,7 @@
             app:layout_constraintVertical_bias="0.0" />
 
         <TextView
-            android:id="@+id/textView_delete_header"
+            android:id="@+id/textView_delete_headline"
             style="@style/Widget.PassButler.Headline.Order1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -282,13 +282,13 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textView_delete_header" />
+            app:layout_constraintTop_toBottomOf="@id/textView_delete_headline" />
 
         <!--
             Contains all views that should be shown only for existing items - except for:
             - `button_manage_authorizations`
             - `textView_authorizations_footer`
-            - `textView_delete_header`
+            - `textView_delete_headline`
             - `button_delete_item`
 
             that handle visibility otherwise.
@@ -297,14 +297,14 @@
             android:id="@+id/group_existing_item_views"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:constraint_referenced_ids="textView_authorizations_header,textView_authorizations_description,textView_information_header,information_item_modified,information_item_created,information_item_id"
+            app:constraint_referenced_ids="textView_authorizations_headline,textView_authorizations_description,textView_information_headline,information_item_modified,information_item_created,information_item_id"
             tools:visibility="visible" />
 
         <androidx.constraintlayout.widget.Group
             android:id="@+id/group_delete_section_views"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:constraint_referenced_ids="textView_delete_header,button_delete_item"
+            app:constraint_referenced_ids="textView_delete_headline,button_delete_item"
             tools:visibility="visible" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

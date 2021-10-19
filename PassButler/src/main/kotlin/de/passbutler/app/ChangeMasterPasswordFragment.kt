@@ -45,7 +45,7 @@ class ChangeMasterPasswordFragment : ToolBarFragment(), RequestSending {
 
     private fun setupTextViews(binding: FragmentChangeMasterPasswordBinding) {
         viewModel.loggedInUserViewModel?.biometricUnlockEnabled?.let { biometricUnlockEnabledBindable ->
-            binding.textViewSubheaderDisableBiometricHint.bindVisibility(viewLifecycleOwner, biometricUnlockEnabledBindable)
+            binding.textViewDescriptionDisableBiometricHint.bindVisibility(viewLifecycleOwner, biometricUnlockEnabledBindable)
         }
     }
 

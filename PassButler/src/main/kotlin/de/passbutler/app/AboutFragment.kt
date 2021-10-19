@@ -25,7 +25,7 @@ class AboutFragment : ToolBarFragment() {
     }
 
     private fun FragmentAboutBinding.setupVersionInformation() {
-        textViewSubheader.apply {
+        textViewVersionInformation.apply {
             val versionName = BuildConfig.VERSION_NAME
             val formattedBuildTime = Instant.ofEpochMilli(BuildConfig.BUILD_TIMESTAMP).formattedDateTime()
             val gitShortHash = BuildConfig.BUILD_REVISION_HASH

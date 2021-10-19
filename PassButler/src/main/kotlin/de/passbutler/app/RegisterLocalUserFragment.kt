@@ -44,7 +44,7 @@ class RegisterLocalUserFragment : ToolBarFragment(), RequestSending {
 
     private fun setupDebugPresetsButton(binding: FragmentRegisterLocalUserBinding) {
         if (BuildInformationProvider.buildType == BuildType.Debug) {
-            binding.textViewHeader.setOnLongClickListener {
+            binding.textViewHeadline.setOnLongClickListener {
                 binding.textInputEditTextServerurl.setText(DebugConstants.TEST_SERVERURL)
                 binding.textInputEditTextInvitationCode.setText(DebugConstants.TEST_INVITATION_CODE)
                 binding.textInputEditTextMasterPassword.setText(DebugConstants.TEST_PASSWORD)
