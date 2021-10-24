@@ -80,7 +80,7 @@ class ScreenshotTest {
                 clickDoneButton()
             }
 
-            waitFor(Duration.ofMillis(250))
+            waitFor(Duration.ofMillis(1000))
 
             overviewScreen {
                 matchScreenShown()
