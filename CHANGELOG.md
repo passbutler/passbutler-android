@@ -32,18 +32,18 @@
 - Improved contrast on navigation view in dark mode
 - Show dedicated error for entering wrong invitation code when try to register user
 - Automatically show biometric prompt if enabled
-- Introduction flow to be more understandable / user friendly
+- Introduction flow to be more understandable / user-friendly
 - New wording for "register local user" button and moved "logout" to deeper level in settings and have different wording for local/remote user to avoid accidental data loss
 - The search on overview and recycle bin screen is closed if the user clicks backpress
 - To more modern list style
 
 ### Fixed
 - The case of items is ignored for sorting on item and item authorization screens
-- Do not disable the unmasking password icon of password fields for readonly shared items
+- Do not disable the unmasking password icon of password fields for read only shared items
 - Missed ellipsize of too long text (especially titles on overview screen)
 - Broken fragment presentation on autofill screen after configuration change
 - Missed transition animation after configuration change
-- Broken state when locked screen in autofill mode is rebuild after configuration change
+- Broken state when locked screen in autofill mode is rebuilt after configuration change
 - Keyboard was not hidden on overview screen if an item was searched and the item detail screen was shown
 - Non-updated filtered list on overview / recycle bin screen if a searched item was deleted
 - Keyboard was not hidden on overview screen if the locked screen was shown
