@@ -242,43 +242,43 @@ class StructureParser(private val assistStructure: AssistStructure) {
         )
 
         private val AUTOFILL_HINTS_PASSWORD = listOf(
-            View.AUTOFILL_HINT_PASSWORD
+            View.AUTOFILL_HINT_PASSWORD,
         )
 
         private val AUTOFILL_AUTOCOMPLETE_IGNORE_HINTS = listOf(
             "on",
-            "off"
+            "off",
         )
 
         private const val HTML_ATTRIBUTE_TYPE = "type"
 
         private val HTML_ATTRIBUTES_USERNAME = listOf(
             "tel",
-            "email"
+            "email",
         )
 
         private val HTML_ATTRIBUTES_USERNAME_CANDIDATE = listOf(
-            "text"
+            "text",
         )
 
         private val HTML_ATTRIBUTES_PASSWORD = listOf(
-            "password"
+            "password",
         )
 
         private val INPUT_TYPES_USERNAME = listOf(
-            InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+            InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS,
         )
 
         private val INPUT_TYPES_USERNAME_CANDIDATE = listOf(
             InputType.TYPE_TEXT_VARIATION_NORMAL,
             InputType.TYPE_NUMBER_VARIATION_NORMAL,
-            InputType.TYPE_TEXT_VARIATION_PERSON_NAME
+            InputType.TYPE_TEXT_VARIATION_PERSON_NAME,
         )
 
         private val INPUT_TYPES_PASSWORD = listOf(
             InputType.TYPE_TEXT_VARIATION_PASSWORD,
             InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD,
-            InputType.TYPE_NUMBER_VARIATION_PASSWORD
+            InputType.TYPE_NUMBER_VARIATION_PASSWORD,
         )
 
         private val INPUT_TYPES_IGNORED = listOf(
@@ -290,7 +290,7 @@ class StructureParser(private val assistStructure: AssistStructure) {
             InputType.TYPE_TEXT_VARIATION_URI,
             InputType.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT,
             InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS,
-            InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD
+            InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD,
         )
     }
 }
