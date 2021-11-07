@@ -11,7 +11,7 @@ android {
         java.srcDir("./src/$name/kotlin/")
     }
 
-    compileSdk = 30
+    compileSdk = 31
 
     compileOptions {
         // Required minimum Java 8 for OkHttp3 used in Retrofit
@@ -25,7 +25,7 @@ android {
     defaultConfig {
         applicationId = "de.passbutler.app"
         minSdk = 26
-        targetSdk = 30
+        targetSdk = 31
         versionCode = gitCommitCount()
         versionName = "1.0.0"
 
@@ -69,7 +69,7 @@ dependencies {
     implementation("org.tinylog:tinylog-impl:$tinylogVersion")
 
     // SQLDelight
-    implementation("com.squareup.sqldelight:android-driver:1.5.1")
+    implementation("com.squareup.sqldelight:android-driver:1.5.2")
 
     // Google Material theme/components
     implementation("com.google.android.material:material:1.4.0")
@@ -83,7 +83,7 @@ dependencies {
     // Android Lifecycle and ViewModel components
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
 
-    val lifecycleVersion = "2.3.1"
+    val lifecycleVersion = "2.4.0"
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
 
