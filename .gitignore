@@ -3,7 +3,7 @@
 /local.properties
 
 ## IntelliJ
-/.idea/
+/.idea/*
 !/.idea/codeStyles/
 !/.idea/dictionaries/
 !/.idea/inspectionProfiles/
