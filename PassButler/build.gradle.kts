@@ -57,28 +57,28 @@ dependencies {
     implementation(project(":PassButlerCommon"))
 
     // Kotlin
-    val kotlinVersion = "1.5.30"
+    val kotlinVersion = "1.6.0"
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     // Kotlin Coroutines for Android
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2")
 
     // TinyLog logger
-    val tinylogVersion = "2.3.2"
+    val tinylogVersion = "2.4.0"
     implementation("org.tinylog:tinylog-api-kotlin:$tinylogVersion")
     implementation("org.tinylog:tinylog-impl:$tinylogVersion")
 
     // SQLDelight
-    implementation("com.squareup.sqldelight:android-driver:1.5.2")
+    implementation("com.squareup.sqldelight:android-driver:1.5.3")
 
     // Google Material theme/components
     implementation("com.google.android.material:material:1.4.0")
 
     // Android widgets
-    implementation("androidx.appcompat:appcompat:1.3.1")
+    implementation("androidx.appcompat:appcompat:1.4.0")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.1")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.2")
 
     // Android Lifecycle and ViewModel components
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
@@ -87,7 +87,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
 
-    implementation("androidx.fragment:fragment-ktx:1.3.6")
+    implementation("androidx.fragment:fragment-ktx:1.4.0")
 
     // Android Biometrics framework
     implementation("androidx.biometric:biometric:1.1.0")
@@ -96,13 +96,13 @@ dependencies {
     implementation("androidx.preference:preference:1.1.1")
 
     // JUnit 5
-    val junitVersion = "5.8.1"
+    val junitVersion = "5.8.2"
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
     // Mockk.io
-    testImplementation("io.mockk:mockk:1.12.0")
+    testImplementation("io.mockk:mockk:1.12.1")
 
     // UI tests
     val espressoVersion = "3.4.0"

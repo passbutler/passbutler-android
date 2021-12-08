@@ -81,6 +81,9 @@ abstract class AbstractRootFragment : BaseFragment() {
         when (rootScreenState) {
             is RootViewModel.RootScreenState.LoggedIn -> showLoggedInState()
             is RootViewModel.RootScreenState.LoggedOut -> showLoggedOutState()
+            null -> {
+                // Nothing to do
+            }
         }
 
         viewWasInitialized = true
