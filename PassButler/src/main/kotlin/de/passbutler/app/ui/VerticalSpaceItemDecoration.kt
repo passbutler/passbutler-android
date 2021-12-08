@@ -11,7 +11,7 @@ class VerticalSpaceItemDecoration(private val viewContext: Context) : RecyclerVi
         val verticalSpace = viewContext.resources.getDimensionPixelSize(viewContext.resolveThemeAttributeId(R.attr.marginM))
 
         if (parent.getChildAdapterPosition(view) == 0) {
-            outRect.top = verticalSpace;
+            outRect.top = verticalSpace
         }
 
         outRect.bottom = verticalSpace
