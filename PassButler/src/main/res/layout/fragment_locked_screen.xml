@@ -35,10 +35,11 @@
             style="@style/Widget.PassButler.CardView.TranslucentContainer"
             android:layout_width="320dp"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/button_imprint"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.60">
 
             <!-- Set `clipToPadding` to `false` to avoid clip the elevation of the bottom button -->
             <!-- The top padding calculates: logo height / 2  + marginM -->
@@ -133,6 +134,20 @@
             app:layout_constraintTop_toTopOf="@+id/materialCardView_container"
             app:srcCompat="@drawable/logo_elevated"
             tools:ignore="ContentDescription" />
+
+        <Button
+            android:id="@+id/button_imprint"
+            style="@style/Widget.PassButler.Button.TextButton.OnSurface"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="?marginM"
+            android:text="@string/general_imprint"
+            android:textAppearance="?textAppearanceCaption"
+            android:theme="@style/Theme.PassButler.Dark"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

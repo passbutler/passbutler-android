@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import de.passbutler.app.databinding.FragmentIntroductionBinding
 import de.passbutler.app.ui.BaseFragment
+import de.passbutler.app.ui.showFragmentModally
 import de.passbutler.common.ui.TransitionType
 
 class IntroductionFragment : BaseFragment() {
@@ -18,6 +19,10 @@ class IntroductionFragment : BaseFragment() {
 
             buttonLogin.setOnClickListener {
                 showFragment(LoginFragment.newInstance(), transitionType = TransitionType.FADE)
+            }
+
+            buttonImprint.setOnClickListener {
+                showFragmentModally(AboutFragment.newInstance())
             }
         }
 

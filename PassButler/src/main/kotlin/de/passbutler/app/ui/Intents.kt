@@ -7,8 +7,17 @@ import org.tinylog.kotlin.Logger
 
 fun Fragment.openBrowser(url: String) {
     try {
-        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        startActivity(browserIntent)
+        val openBrowserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        startActivity(openBrowserIntent)
+    } catch (exception: Exception) {
+        Logger.warn(exception, "The URL could not be opened!")
+    }
+}
+
+fun Fragment.openWriteEmail(email: String) {
+    try {
+        val writeEmailIntent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email"))
+        startActivity(writeEmailIntent)
     } catch (exception: Exception) {
         Logger.warn(exception, "The URL could not be opened!")
     }

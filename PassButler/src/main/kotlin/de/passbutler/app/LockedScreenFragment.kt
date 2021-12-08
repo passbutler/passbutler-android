@@ -20,6 +20,7 @@ import de.passbutler.app.ui.Keyboard
 import de.passbutler.app.ui.bindEnabled
 import de.passbutler.app.ui.bindVisibility
 import de.passbutler.app.ui.onActionDone
+import de.passbutler.app.ui.showFragmentModally
 import de.passbutler.app.ui.validateForm
 import de.passbutler.common.DecryptMasterEncryptionKeyFailedException
 import de.passbutler.common.base.BuildType
@@ -64,6 +65,7 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
             setupMasterPasswordField(binding)
             setupUnlockWithPasswordButton(binding)
             setupUnlockWithBiometricsButton(binding)
+            setupImprintButton(binding)
         }
 
         return binding?.root
@@ -185,6 +187,12 @@ class LockedScreenFragment : BaseFragment(), RequestSending {
                     showError(getString(R.string.locked_screen_biometrics_unlock_failed_missing_key_title))
                 }
             }
+        }
+    }
+
+    private fun setupImprintButton(binding: FragmentLockedScreenBinding) {
+        binding.buttonImprint.setOnClickListener {
+            showFragmentModally(AboutFragment.newInstance())
         }
     }
 

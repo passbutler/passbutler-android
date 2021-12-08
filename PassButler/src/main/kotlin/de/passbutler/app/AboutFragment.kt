@@ -16,20 +16,31 @@ class AboutFragment : ToolBarFragment() {
     override fun getToolBarTitle() = getString(R.string.about_title)
 
     override fun createContentView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val binding = FragmentAboutBinding.inflate(inflater, container, false)
+        val binding = FragmentAboutBinding.inflate(inflater, container, false).apply {
+            setupVersionInformation()
+            setupImprintButton()
+        }
 
-        binding.textViewSubheader.also { subHeader ->
+        return binding.root
+    }
+
+    private fun FragmentAboutBinding.setupVersionInformation() {
+        textViewSubheader.apply {
             val versionName = BuildConfig.VERSION_NAME
             val formattedBuildTime = Instant.ofEpochMilli(BuildConfig.BUILD_TIMESTAMP).formattedDateTime()
             val gitShortHash = BuildConfig.BUILD_REVISION_HASH
             val formattedText = getString(R.string.about_subheader, versionName, formattedBuildTime, gitShortHash)
 
-            subHeader.setTextWithClickablePart(formattedText, gitShortHash) {
+            setTextWithClickablePart(formattedText, gitShortHash) {
                 openBrowser(GIT_PROJECT_URL.format(gitShortHash))
             }
         }
+    }
 
-        return binding.root
+    private fun FragmentAboutBinding.setupImprintButton() {
+        buttonOpenImprint.setOnClickListener {
+            openBrowser(getString(R.string.about_imprint_url))
+        }
     }
 
     companion object {

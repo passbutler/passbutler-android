@@ -11,6 +11,7 @@
 - Confirmation dialog for discard item and item authorization changes action
 - Password generator dialog on item screen
 - Confirmation dialog for disable biometric unlock
+- Imprint to about screen and buttons to show screen from multiple places
 
 ## Changed
 - Allow to copy item details of read-only items (do not disable them anymore) - the delete button is hidden instead of disabled to avoid user confusion (like the save accept toolbar icon)

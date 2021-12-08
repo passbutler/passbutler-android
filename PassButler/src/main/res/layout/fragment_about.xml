@@ -1,54 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="?marginM">
 
     <TextView
         android:id="@+id/textView_header"
         style="@style/Widget.PassButler.Headline.Order1"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"
         android:layout_marginTop="?marginM"
         android:layout_marginEnd="?marginM"
-        android:text="@string/about_headline"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:text="@string/about_headline" />
 
     <TextView
         android:id="@+id/textView_subheader"
         style="@style/Widget.PassButler.Body.Order1"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"
         android:layout_marginTop="?marginS"
         android:layout_marginEnd="?marginM"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView_header"
         tools:text="@string/about_subheader" />
 
     <TextView
-        android:id="@+id/textView_passage_1"
-        style="@style/Widget.PassButler.Body.Order2"
-        android:layout_width="0dp"
+        android:id="@+id/textView_imprint_header"
+        style="@style/Widget.PassButler.Headline.Order1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="?marginM"
+        android:layout_marginTop="?marginL"
+        android:layout_marginEnd="?marginM"
+        android:text="@string/about_imprint_headline"
+        />
+
+    <Button
+        android:id="@+id/button_open_imprint"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="?marginM"
         android:layout_marginTop="?marginS"
         android:layout_marginEnd="?marginM"
-        android:layout_marginBottom="?marginM"
-        android:text="@string/about_passage_1"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView_subheader"
-        app:layout_constraintVertical_bias="0.0" />
+        android:text="@string/about_open_imprint_button_text"
+        />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
