@@ -1,8 +1,8 @@
 [submodule "PassButlerCommon"]
 	path = PassButlerCommon
-	url = ssh://git@git.sicherheitskritisch.de/passbutler/passbutler-common.git
-	branch = master
+	url = ssh://git@github.com/passbutler/passbutler-common.git
+	branch = main
 [submodule "PassButlerLocalization"]
 	path = PassButlerLocalization
-	url = ssh://git@git.sicherheitskritisch.de/passbutler/passbutler-localization.git
-	branch = master
+	url = ssh://git@github.com/passbutler/passbutler-localization.git
+	branch = main

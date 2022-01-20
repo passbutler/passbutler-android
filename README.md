@@ -24,7 +24,7 @@ Recommended plugin:
 
 Clone repository:
 
-    $ git clone ssh://git@git.sicherheitskritisch.de/passbutler/passbutler-android.git
+    $ git clone ssh://git@github.com/passbutler/passbutler-android.git
 
 Clone submodules:
 

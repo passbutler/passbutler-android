@@ -51,7 +51,7 @@ class AboutFragment : ToolBarFragment() {
     }
 
     companion object {
-        private const val GIT_PROJECT_URL = "https://git.sicherheitskritisch.de/passbutler/passbutler-android/commit/%s"
+        private const val GIT_PROJECT_URL = "https://github.com/passbutler/passbutler-android/commit/%s"
 
         fun newInstance() = AboutFragment()
     }
