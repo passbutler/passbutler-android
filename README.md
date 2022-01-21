@@ -1,6 +1,14 @@
+<div align="center">
+    <img alt="Pass Butler – Private Cloud Password Manager" src="./projectcover.jpg" width="600">
+</div>
+
 # Pass Butler for Android
 
 This repository contains the source code of Pass Butler for Android.
+
+## Installation
+
+Install Pass Butler on the Google Play store.
 
 ## Development setup
 
@@ -25,11 +33,23 @@ Recommended plugin:
 Clone repository:
 
     $ git clone ssh://git@github.com/passbutler/passbutler-android.git
+    $ cd ./passbutler-android/
 
 Clone submodules:
 
-    $ cd ./passbutler-android/
     $ git submodule update --init
+
+### Manage log files
+
+This is only possible for debug build, **not** for release build!
+
+Pull log file:
+
+    $ adb shell "run-as de.passbutler.app.debug cat /data/data/de.passbutler.app.debug/cache/passbutler-debug.log" > ~/Desktop/passbutler-debug.log
+
+Remove log file:
+
+    $ adb shell "run-as de.passbutler.app.debug rm /data/data/de.passbutler.app.debug/cache/passbutler-debug.log"
 
 ### Packaging
 
@@ -40,22 +60,6 @@ Build the Android Application Package (APK):
 Install on a connected device:
 
     $ adb install ./PassButler/build/outputs/apk/debug/PassButler-debug.apk
-
-## Debugging
-
-### How to get logs from device
-
-This is only possible for debug build, **not** for release build!
-
-#### Pull log file
-
-    $ adb shell "run-as de.passbutler.app.debug cat /data/data/de.passbutler.app.debug/cache/passbutler-debug.log" > ~/Desktop/passbutler-debug.log
-
-#### Remove log file
-
-    $ adb shell "run-as de.passbutler.app.debug rm /data/data/de.passbutler.app.debug/cache/passbutler-debug.log"
-
-
 
 ## License
 
