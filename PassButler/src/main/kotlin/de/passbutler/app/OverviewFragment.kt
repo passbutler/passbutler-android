@@ -408,7 +408,7 @@ class OverviewFragment : BaseFragment(), RequestSending {
     }
 
     companion object {
-        private const val URL_WEBSITE = "https://www.passbutler.de"
+        private const val URL_WEBSITE = "https://passbutler.de"
         private const val URL_GOOGLE_PLAY = "market://details?id=de.passbutler.app"
 
         fun newInstance() = OverviewFragment()
