@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0] - UNRELEASED
+## [1.0.0] - 2022-01-23
 
 ### Added
 - Privacy policy link on about screen
