@@ -7,10 +7,6 @@ plugins {
 }
 
 android {
-    sourceSets.all {
-        java.srcDir("./src/$name/kotlin/")
-    }
-
     compileSdk = 31
 
     compileOptions {
