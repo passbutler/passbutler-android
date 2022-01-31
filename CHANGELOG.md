@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.1] - UNRELEASED
+
+### Fixed
+- Crash on smaller devices due to huge background image
+
+### Known issues
+- If Android decides to destroy the `MainActivity` and restore it later, the item detail screen and item authorizations screen are not restored to previous state due to too late `ItemViewModel` recreation
+- If locked screen in autofill mode is shown while a configuration change is done, the unlock does not work
+- The subtitle is cut / lacks of bottom spacing if the display size or font size is larger than default due to apparently buggy `MaterialToolbar`
+- Broken date formatting for locale "en_DE" like "31/03/2021, 21 ├minute: 7┤" when using `DateTimeFormatter.ofLocalizedDateTime(FormatStyle)` on Android 12 due to a supposed bug in "android.icu"
+
 ## [1.0.0] - 2022-01-23
 
 ### Added
