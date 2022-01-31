@@ -5,10 +5,6 @@
 ### Added
 - Privacy policy link on about screen
 
-### Changed
-
-### Fixed
-
 ### Known issues
 - If Android decides to destroy the `MainActivity` and restore it later, the item detail screen and item authorizations screen are not restored to previous state due to too late `ItemViewModel` recreation
 - If locked screen in autofill mode is shown while a configuration change is done, the unlock does not work
