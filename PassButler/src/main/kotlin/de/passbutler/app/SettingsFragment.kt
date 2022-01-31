@@ -291,14 +291,14 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
 
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             preferenceManager.preferenceDataStore = SettingsPreferenceDataStore(viewModel)
-            preferenceScreen = preferenceManager.createPreferenceScreen(context)
+            preferenceScreen = preferenceManager.createPreferenceScreen(requireContext())
 
             setupSecuritySettingsSection()
             setupAccountSection()
         }
 
         private fun setupSecuritySettingsSection() {
-            preferenceScreen.addPreference(PreferenceCategory(context).apply {
+            preferenceScreen.addPreference(PreferenceCategory(preferenceScreen.context).apply {
                 title = getString(R.string.settings_category_security_headline)
             })
 
@@ -308,7 +308,7 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
         }
 
         private fun addAutomaticLockTimeoutSetting() {
-            preferenceScreen.addPreference(ListPreference(context).apply {
+            preferenceScreen.addPreference(ListPreference(preferenceScreen.context).apply {
                 key = SettingKey.AUTOMATIC_LOCK_TIMEOUT.name
                 title = getString(R.string.settings_automatic_lock_timeout_setting_title)
                 summary = getString(R.string.settings_automatic_lock_timeout_setting_summary)
@@ -318,7 +318,7 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
         }
 
         private fun addHidePasswordsSetting() {
-            preferenceScreen.addPreference(SwitchPreferenceCompat(context).apply {
+            preferenceScreen.addPreference(SwitchPreferenceCompat(preferenceScreen.context).apply {
                 key = SettingKey.HIDE_PASSWORDS_ENABLED.name
                 title = getString(R.string.settings_hide_passwords_setting_title)
                 summary = getString(R.string.settings_hide_passwords_setting_summary)
@@ -328,7 +328,7 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
         private fun addBiometricUnlockSetting() {
             val loggedInUserViewModel = viewModel.loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
 
-            enableBiometricUnlockPreference = SwitchPreferenceCompat(context).apply {
+            enableBiometricUnlockPreference = SwitchPreferenceCompat(preferenceScreen.context).apply {
                 key = SettingKey.BIOMETRIC_UNLOCK_ENABLED.name
                 title = getString(R.string.settings_biometric_unlock_setting_title)
                 summary = getString(R.string.settings_biometric_unlock_setting_summary)
@@ -358,7 +358,7 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
         }
 
         private fun setupAccountSection() {
-            preferenceScreen.addPreference(PreferenceCategory(context).apply {
+            preferenceScreen.addPreference(PreferenceCategory(preferenceScreen.context).apply {
                 title = getString(R.string.settings_category_account_headline)
             })
 
@@ -367,7 +367,7 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
         }
 
         private fun addChangeMasterPasswordEntry() {
-            preferenceScreen.addPreference(Preference(context).apply {
+            preferenceScreen.addPreference(Preference(preferenceScreen.context).apply {
                 title = getString(R.string.settings_change_master_password_setting_title)
                 summary = getString(R.string.settings_change_master_password_setting_summary)
 
@@ -379,7 +379,7 @@ class SettingsFragment : ToolBarFragment(), RequestSending {
         }
 
         private fun addLogoutEntry() {
-            preferenceScreen.addPreference(Preference(context).apply {
+            preferenceScreen.addPreference(Preference(preferenceScreen.context).apply {
                 val loggedInUserViewModel = viewModel.loggedInUserViewModel ?: throw LoggedInUserViewModelUninitializedException
 
                 if (loggedInUserViewModel.userType == UserType.LOCAL) {

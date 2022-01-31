@@ -68,13 +68,13 @@ dependencies {
     implementation("com.squareup.sqldelight:android-driver:1.5.3")
 
     // Google Material theme/components
-    implementation("com.google.android.material:material:1.4.0")
+    implementation("com.google.android.material:material:1.5.0")
 
     // Android widgets
-    implementation("androidx.appcompat:appcompat:1.4.0")
+    implementation("androidx.appcompat:appcompat:1.4.1")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.2")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.3")
 
     // Android Lifecycle and ViewModel components
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
@@ -83,13 +83,13 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
 
-    implementation("androidx.fragment:fragment-ktx:1.4.0")
+    implementation("androidx.fragment:fragment-ktx:1.4.1")
 
     // Android Biometrics framework
     implementation("androidx.biometric:biometric:1.1.0")
 
     // Android Preference framework
-    implementation("androidx.preference:preference:1.1.1")
+    implementation("androidx.preference:preference:1.2.0")
 
     // JUnit 5
     val junitVersion = "5.8.2"
