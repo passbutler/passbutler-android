@@ -2,6 +2,9 @@
 
 ## [1.0.1] - UNRELEASED
 
+### Changed
+- Improved introduction layout especially on small devices to avoid unnecessary scrolling
+
 ### Fixed
 - Crash on smaller devices due to huge background image
 
