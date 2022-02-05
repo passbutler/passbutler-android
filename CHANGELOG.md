@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.1] - UNRELEASED
+## [1.0.1] - 2022-02-05
 
 ### Changed
 - Improved introduction layout especially on small devices to avoid unnecessary scrolling
